@@ -1,0 +1,22 @@
+/* CSS Document */
+
+#leaky_paywall_message {
+	background-color: #111111;
+    border: 2px solid #FFFFFF;
+    -webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+    box-shadow: 0 0 20px #888888;
+    color: #D6D6D6;
+    font-weight: 500;
+    margin: 2em auto;
+    padding: 22px;
+    width: 90%;
+	font-size: 16px;
+    line-height: 26px;
+}
+
+#leaky_paywall_message a {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #FBFBFB;
+}
