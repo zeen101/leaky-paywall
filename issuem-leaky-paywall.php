@@ -17,7 +17,7 @@ Tags:
 */
 
 //Define global variables...
-define( 'ISSUEM_LEAKY_PAYWALL_PLUGIN_SLUG', 	'1.0.0' );
+define( 'ISSUEM_LEAKY_PAYWALL_PLUGIN_SLUG', 	'issuem-leaky-paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_VERSION', 		'1.0.0' );
 define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION', 		'1.0.0' );
 define( 'ISSUEM_LEAKY_PAYWALL_PLUGIN_URL', 		plugin_dir_url( __FILE__ ) );

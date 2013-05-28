@@ -709,7 +709,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			// Check if this plugins API is about this plugin
 			if( $args->slug != $plugin_slug )
-				return false;
+				return $false;
 				
 			// POST data to send to your API
 			$args = array(
