@@ -17,7 +17,7 @@ if ( !function_exists( 'get_issuem_leaky_paywall_settings' ) ) {
 	
 		global $dl_pluginissuem_leaky_paywall;
 		
-		return $dl_pluginissuem_leaky_paywall->get_issuem_leaky_paywall_settings();
+		return $dl_pluginissuem_leaky_paywall->get_settings();
 		
 	}
 	

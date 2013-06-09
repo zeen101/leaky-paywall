@@ -17,13 +17,17 @@ Tags:
 */
 
 //Define global variables...
-define( 'ISSUEM_LEAKY_PAYWALL_PLUGIN_SLUG', 	'issuem-leaky-paywall' );
-define( 'ISSUEM_LEAKY_PAYWALL_VERSION', 		'1.0.0' );
-define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION', 		'1.0.0' );
-define( 'ISSUEM_LEAKY_PAYWALL_PLUGIN_URL', 		plugin_dir_url( __FILE__ ) );
-define( 'ISSUEM_LEAKY_PAYWALL_PLUGIN_PATH', 	plugin_dir_path( __FILE__ ) );
-define( 'ISSUEM_LEAKY_PAYWALL_BASENAME', 		plugin_basename( __FILE__ ) );
-define( 'ISSUEM_LEAKY_PAYWALL_REL_DIR', 		dirname( ISSUEM_LEAKY_PAYWALL_BASENAME ) );
+if ( !defined( 'ISSUEM_STORE_URL' ) )
+	define( 'ISSUEM_STORE_URL',				'http://dev.issuem.com' );
+	
+define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall' );
+define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
+define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.0.0' );
+define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.0' );
+define( 'ISSUEM_LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
+define( 'ISSUEM_LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
+define( 'ISSUEM_LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );
+define( 'ISSUEM_LEAKY_PAYWALL_REL_DIR',		dirname( ISSUEM_LEAKY_PAYWALL_BASENAME ) );
 
 /**
  * Instantiate Pigeon Pack class, require helper files

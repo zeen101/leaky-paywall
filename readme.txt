@@ -31,7 +31,7 @@ You must have:
 
 == Changelog ==
 = 1.0.0 =
-* Beta Release
+* Initial Release
 
 == License ==
 

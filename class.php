@@ -15,32 +15,38 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	
 	class IssueM_Leaky_Paywall {
 		
+		private $plugin_name	= ISSUEM_LEAKY_PAYWALL_NAME;
+		private $plugin_slug	= ISSUEM_LEAKY_PAYWALL_SLUG;
+		private $basename		= ISSUEM_LEAKY_PAYWALL_BASENAME;
+		
 		/**
 		 * Class constructor, puts things in motion
 		 *
 		 * @since 1.0.0
 		 */
-		function IssueM_Leaky_Paywall() {
+		function __construct() {
 		
 			session_start(); //we're using sessios to track logins and subsribers
 			
-			$settings = $this->get_issuem_leaky_paywall_settings();
+			$settings = $this->get_settings();
 		
 			add_action( 'admin_init', array( $this, 'upgrade' ) );
+			add_action( 'admin_init', array( $this, 'activate_license' ) );
+			add_action( 'admin_init', array( $this, 'deactivate_license' ) );
 			
-			add_action( 'admin_enqueue_scripts', array( $this, 'issuem_leaky_paywall_admin_wp_enqueue_scripts' ) );
-			add_action( 'admin_print_styles', array( $this, 'issuem_leaky_paywall_admin_wp_print_styles' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'issuem_leaky_paywall_frontend_scripts' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'admin_wp_enqueue_scripts' ) );
+			add_action( 'admin_print_styles', array( $this, 'admin_wp_print_styles' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 					
-			add_action( 'admin_menu', array( $this, 'issuem_leaky_paywall_admin_menu' ) );
+			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 
 			//Premium Plugin Filters
-			add_filter( 'plugins_api', array( $this, 'issuem_leaky_paywall_plugins_api' ), 10, 3 );
-			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'issuem_leaky_paywall_update_plugins' ) );
+			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
+			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 			
 			if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
 				
-				add_action( 'wp', array( $this, 'process_leaky_paywall_requests' ) );
+				add_action( 'wp', array( $this, 'process_requests' ) );
 				
 				// Initialized Stripe...
 				require_once('include/stripe/Stripe.php');
@@ -63,15 +69,15 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 * @uses add_submenu_page() Creates Help submenu to Pigeon Pack menu
 		 * @uses do_action() To call 'pigeonpack_admin_menu' for future addons
 		 */
-		function issuem_leaky_paywall_admin_menu() {
+		function admin_menu() {
 			
-			add_submenu_page( 'edit.php?post_type=article', __( 'Leaky Paywall', 'pigeonpack' ), __( 'Leaky Paywall', 'pigeonpack' ), apply_filters( 'manage_issuem_settings', 'manage_issuem_settings' ), 'leaky-paywall-settings', array( $this, 'issuem_leaky_paywall_settings_page' ) );
+			add_submenu_page( 'edit.php?post_type=article', __( 'Leaky Paywall', 'pigeonpack' ), __( 'Leaky Paywall', 'pigeonpack' ), apply_filters( 'manage_issuem_settings', 'manage_issuem_settings' ), 'leaky-paywall-settings', array( $this, 'settings_page' ) );
 			
 		}
 		
-		function process_leaky_paywall_requests() {
+		function process_requests() {
 				
-			$settings = $this->get_issuem_leaky_paywall_settings();
+			$settings = $this->get_settings();
 			
 			if ( is_singular( 'article' ) ) {
 				
@@ -175,10 +181,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		
 		function the_content_paywall( $content ) {
 		
-			$settings = $this->get_issuem_leaky_paywall_settings();
+			$settings = $this->get_settings();
 			
 			$message  = '<div id="leaky_paywall_message">';
-			$message .= $this->replace_leaky_paywall_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
 			$message .= '</div>';
 		
 			$new_content = $content . $message;
@@ -187,9 +193,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 		}
 		
-		function replace_leaky_paywall_variables( $message ) {
+		function replace_variables( $message ) {
 	
-			$settings = $this->get_issuem_leaky_paywall_settings();
+			$settings = $this->get_settings();
 			
 			if ( 0 === $settings['page_for_login'] )
 				$login_url = get_bloginfo( 'wpurl' ) . '/?login';
@@ -221,12 +227,12 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 *
 		 * @since 1.0.0
 		 */
-		function issuem_leaky_paywall_admin_wp_print_styles() {
+		function admin_wp_print_styles() {
 		
 			global $hook_suffix;
 			
 			if ( 'article_page_leaky-paywall-settings' === $hook_suffix )
-				wp_enqueue_style( 'issuem_leaky_paywall_admin_style', ISSUEM_LEAKY_PAYWALL_PLUGIN_URL . 'css/issuem-leaky-paywall-admin.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+				wp_enqueue_style( 'issuem_leaky_paywall_admin_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
 			
 		}
 	
@@ -235,23 +241,13 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 *
 		 * @since 1.0.0
 		 */
-		function issuem_leaky_paywall_admin_wp_enqueue_scripts( $hook_suffix ) {
+		function admin_wp_enqueue_scripts( $hook_suffix ) {
 			
 			//echo "<h4>$hook_suffix</h4>";
 			
 			if ( 'article_page_leaky-paywall-settings' === $hook_suffix )
-				wp_enqueue_script( 'issuem_leaky_paywall_js', ISSUEM_LEAKY_PAYWALL_PLUGIN_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
-				
-			/*
-			if ( 'post.php' == $hook_suffix )
-				wp_enqueue_script( 'issuem_leaky_issue-edit-article-hacks', IM_URL . '/js/issuem_leaky_issue-edit-article-hacks.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
-				
-			if ( 'article_page_issuem' == $hook_suffix )
-				wp_enqueue_script( 'issuem-admin', IM_URL . '/js/issuem-admin.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
-				
-			if ( 'article_page_issuem-migration-tool' == $hook_suffix )
-				wp_enqueue_script( 'issuem-migrate', IM_URL . '/js/issuem-migrate.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
-			*/
+				wp_enqueue_script( 'issuem_leaky_paywall_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
+			
 		}
 		
 		/**
@@ -259,45 +255,126 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 *
 		 * @since 1.0.0
 		 */
-		function issuem_leaky_paywall_frontend_scripts() {
+		function frontend_scripts() {
 			
-			/*
-			wp_enqueue_script( 'jquery-issuem-flexslider', IM_URL . '/js/jquery.flexslider-min.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
-			wp_enqueue_style( 'jquery-issuem-flexslider', IM_URL . '/css/flexslider.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
-			*/
-			wp_enqueue_style( 'issuem-leaky-paywall', ISSUEM_LEAKY_PAYWALL_PLUGIN_URL . '/css/issuem-leaky-paywall.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+			wp_enqueue_style( 'issuem-leaky-paywall', ISSUEM_LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+			
+		}
+		
+		function activate_license() {
+		
+			// listen for our activate button to be clicked
+			if( isset( $_POST['issuem_leaky_paywall_license_activate'] ) ) {
+		
+				// run a quick security check 
+				if( ! check_admin_referer( 'verify', 'license_wpnonce' ) )
+					return; // get out if we didn't click the Activate button
+				
+				$settings = $this->get_settings();
+		
+				// retrieve the license from the database
+				$license = trim( $settings['license_key'] );
+		
+				// data to send in our API request
+				$api_params = array( 
+					'edd_action'=> 'activate_license', 
+					'license' 	=> $license, 
+					'item_name' => urlencode( $this->plugin_name ) // the name of our product in EDD
+				);
+				
+				// Call the custom API.
+				$response = wp_remote_get( add_query_arg( $api_params, ISSUEM_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+		
+				// make sure the response came back okay
+				if ( is_wp_error( $response ) )
+					return false;
+		
+				// decode the license data
+				$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+				
+				// $license_data->license will be either "active" or "inactive"
+				$settings['license_status'] = $license_data->license;
+				$this->update_settings( $settings );
+		
+			}
+			
+		}
+		
+		function deactivate_license() {
+		
+			// listen for our activate button to be clicked
+			if( isset( $_POST['issuem_leaky_paywall_license_deactivate'] ) ) {
+		
+				// run a quick security check 
+				if( ! check_admin_referer( 'verify', 'license_wpnonce' ) ) 	
+					return; // get out if we didn't click the Activate button
+				
+				$settings = $this->get_settings();
+		
+				// retrieve the license from the database
+				$license = trim( $settings['license_key'] );
+		
+				// data to send in our API request
+				$api_params = array( 
+					'edd_action'=> 'deactivate_license', 
+					'license' 	=> $license, 
+					'item_name' => urlencode( $this->plugin_name ) // the name of our product in EDD
+				);
+				
+				// Call the custom API.
+				$response = wp_remote_get( add_query_arg( $api_params, ISSUEM_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+		
+				// make sure the response came back okay
+				if ( is_wp_error( $response ) )
+					return false;
+		
+				// decode the license data
+				$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+				
+				// $license_data->license will be either "deactivated" or "failed"
+				if( $license_data->license == 'deactivated' ) {
+					
+					unset( $settings['license_key'] );
+					unset( $settings['license_status'] );
+					$this->update_settings( $settings );
+					
+				}
+		
+			}
 			
 		}
 		
 		/**
-		 * Get IssueM options set in options table
+		 * Get IssueM Leaky Paywall options
 		 *
 		 * @since 1.0.0
 		 */
-		function get_issuem_leaky_paywall_settings() {
+		function get_settings() {
 			
 			$defaults = array( 
-								'page_for_login'				=> 0,
-								'page_for_subscription'			=> 0,
-								'free_articles'					=> 2,
-								'cookie_expiration'				=> 24,
-								'subscribe_login_message'		=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this article. Subscriptions include access to the website and <strong>all back issues</strong>.', 'issuem-leaky-paywall' ),
-								'css_style'						=> 'default',
-								'site_name'						=> get_option( 'blogname' ),
-								'from_name'						=> get_option( 'blogname' ),
-								'from_email'					=> get_option( 'admin_email' ),
-								'price'							=> '1.99',
-								'interval_count'				=> 1,
-								'interval'						=> 'month',
-								'recurring'						=> 'off',
-								'plan_id'						=> '',
-								'charge_description'			=> __( 'Magazine Subscription', 'issuem-leaky-paywall' ),
-								'test_mode'						=> 'off',
-								'live_secret_key'				=> '',
-								'live_publishable_key'			=> '',
-								'test_secret_key'				=> '',
-								'test_publishable_key'			=> '',
-							);
+				'license_key'				=> '',
+				'license_status'			=> '',
+				'page_for_login'			=> 0,
+				'page_for_subscription'		=> 0,
+				'free_articles'				=> 2,
+				'cookie_expiration'			=> 24,
+				'subscribe_login_message'	=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this article. Subscriptions include access to the website and <strong>all back issues</strong>.', 'issuem-leaky-paywall' ),
+				'css_style'					=> 'default',
+				'site_name'					=> get_option( 'blogname' ),
+				'from_name'					=> get_option( 'blogname' ),
+				'from_email'				=> get_option( 'admin_email' ),
+				'price'						=> '1.99',
+				'interval_count'			=> 1,
+				'interval'					=> 'month',
+				'recurring'					=> 'off',
+				'plan_id'					=> '',
+				'charge_description'		=> __( 'Magazine Subscription', 'issuem-leaky-paywall' ),
+				'test_mode'					=> 'off',
+				'live_secret_key'			=> '',
+				'live_publishable_key'		=> '',
+				'test_secret_key'			=> '',
+				'test_publishable_key'		=> '',
+			);
 		
 			$defaults = apply_filters( 'issuem_leaky_paywall_default_settings', $defaults );
 			
@@ -308,16 +385,40 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		}
 		
 		/**
+		 * Update IssueM Leaky Paywall options
+		 *
+		 * @since 1.0.0
+		 */
+		function update_settings( $settings ) {
+			
+			update_option( 'issuem-leaky-paywall', $settings );
+			
+		}
+		
+		/**
 		 * Create and Display IssueM settings page
 		 *
 		 * @since 1.0.0
 		 */
-		function issuem_leaky_paywall_settings_page() {
+		function settings_page() {
 			
 			// Get the user options
-			$settings = $this->get_issuem_leaky_paywall_settings();
+			$settings = $this->get_settings();
+			$settings_saved = false;
 			
-			if ( isset( $_REQUEST['update_issuem_leaky_paywall_settings'] ) ) {
+			if ( isset( $_REQUEST['update_issuem_leaky_paywall_settings'] )
+				|| isset( $_REQUEST['issuem_leaky_paywall_license_activate'] ) ) {
+				
+				if ( !empty( $_REQUEST['license_key'] ) ) {
+					
+					if ( $settings['license_key'] != $_REQUEST['license_key'] ) {
+						
+						$settings['license_key'] = $_REQUEST['license_key'];
+						unset( $settings['license_status'] );
+						
+					}
+					
+				}
 					
 				if ( isset( $_REQUEST['page_for_login'] ) )
 					$settings['page_for_login'] = $_REQUEST['page_for_login'];
@@ -383,23 +484,15 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( isset( $_REQUEST['test_publishable_key'] ) )
 					$settings['test_publishable_key'] = trim( $_REQUEST['test_publishable_key'] );
 				
-				update_option( 'issuem-leaky-paywall', $settings );
-					
-				// It's not pretty, but the easiest way to get the menu to refresh after save...
-				?>
-					<script type="text/javascript">
-					<!--
-					window.location = "<?php echo $_SERVER['PHP_SELF'] .'?post_type=article&page=leaky-paywall-settings&settings_saved'; ?>"
-					//-->
-					</script>
-				<?php
+				$this->update_settings( $settings );
+				$settings_saved = true;
 				
 			}
 			
-			if ( isset( $_POST['update_issuem_leaky_paywall_settings'] ) || isset( $_GET['settings_saved'] ) ) {
+			if ( $settings_saved ) {
 				
 				// update settings notification ?>
-				<div class="updated"><p><strong><?php _e( 'IssueM Settings Updated.', 'issuem-leaky-paywall' );?></strong></p></div>
+				<div class="updated"><p><strong><?php _e( 'IssueM Leaky Paywall Settings Updated.', 'issuem-leaky-paywall' );?></strong></p></div>
 				<?php
 				
 			}
@@ -414,6 +507,42 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                 <form id="issuem" method="post" action="" enctype="multipart/form-data" encoding="multipart/form-data">
             
                     <h2 style='margin-bottom: 10px;' ><?php _e( 'IssueM Leaky Paywall Settings', 'issuem-leaky-paywall' ); ?></h2>
+                    
+                    <div id="license-key" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'License Key', 'issuem' ); ?></span></h3>
+                        
+                        <div class="inside">
+                        
+                        <table id="issuem_license_key">
+                        	<tr>
+                                <th rowspan="1"> <?php _e( 'License Key', 'issuem' ); ?></th>
+                                <td class="leenkme_plugin_name">
+                                <input type="text" id="license_key" class="regular-text" name="license_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['license_key'] ) ); ?>" />
+                                
+                                <?php if( $settings['license_status'] !== false 
+										&& $settings['license_status'] == 'valid' ) { ?>
+									<span style="color:green;"><?php _e('active'); ?></span>
+									<input type="submit" class="button-secondary" name="issuem_leaky_paywall_license_deactivate" value="<?php _e( 'Deactivate License', 'issuem-leaky-paywall' ); ?>"/>
+								<?php } else { ?>
+									<input type="submit" class="button-secondary" name="issuem_leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
+								<?php } ?>
+                                <?php wp_nonce_field( 'verify', 'license_wpnonce' ); ?>
+                                </td>
+                            </tr>
+                        </table>
+                                                       
+                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+                                                  
+                        <p class="submit">
+                            <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+                        
+                        </div>
+                        
+                    </div>
                     
                     <div id="modules" class="postbox">
                     
@@ -466,9 +595,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             </tr>
                             
                         </table>
-                        
-                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
-                                                  
+                                                                          
                         <p class="submit">
                             <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
                         </p>
@@ -630,15 +757,12 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function upgrade() {
 			
-			$settings = $this->get_issuem_leaky_paywall_settings();
+			$settings = $this->get_settings();
 			
 			if ( isset( $settings['version'] ) )
 				$old_version = $settings['version'];
 			else
 				$old_version = 0;
-			
-			if ( version_compare( $old_version, '1.0.0', '<' ) )
-				$this->upgrade_to_1_0_0();
 				
 			/* Table Version Changes */
 			if ( isset( $settings['db_version'] ) )
@@ -650,17 +774,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				$this->init_db_table();
 
 			$settings['version'] = ISSUEM_LEAKY_PAYWALL_VERSION;
-			update_option( 'issuem-leaky-paywall', $settings );
 			
-		}
-		
-		/**
-		 * Initialized permissions
-		 *
-		 * @since 1.0.0
-		 */
-		function upgrade_to_1_0_0() {
-				
+			$this->update_settings( $settings );
+			
 		}
 		
 		function init_db_table() {
@@ -703,53 +819,50 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 		}
 		
-		function issuem_leaky_paywall_plugins_api( $false, $action, $args ) {
-		
-			$plugin_slug = ISSUEM_LEAKY_PAYWALL_PLUGIN_SLUG;
+		function plugins_api( $_data, $_action = '', $_args = NULL ) {
 			
-			// Check if this plugins API is about this plugin
-			if( !isset( $args->slug ) || $args->slug != $plugin_slug )
-				return $false;
+			if ( ( $_action != 'plugin_information' ) || !isset( $_args->slug ) || ( $_args->slug != $this->plugin_slug ) ) 
+				return $_data;
 				
-			// POST data to send to your API
-			$args = array(
-				'action'	=> 'get-plugin-information',
-				'slug'		=> $plugin_slug,
+			$settings = $this->get_settings();
+	
+			$to_send = array( 
+				'slug' 		=> $this->plugin_slug,
+				'name'		=> $this->plugin_name,
+				'license'	=> $settings['license_key'],
 			);
-				
-			// Send request for detailed information
-			$response = issuem_api_request( $args );
-				
-			return $response;
+	
+			$api_response = issuem_api_request( 'plugin_information', $to_send );			
+			if ( false !== $api_response ) 
+				$_data = $api_response;
+	
+			return $_data;
 			
 		}
 		
-		function issuem_leaky_paywall_update_plugins( $transient ) {
-			
-			// Check if the transient contains the 'checked' information
-    		// If no, just return its value without hacking it
-			if ( empty( $transient->checked ) )
-				return $transient;
-		
+		function update_plugins( $_transient_data ) {
+
+			if( empty( $_transient_data->checked ) ) 
+				return $_transient_data;
+				
+			$settings = $this->get_settings();
+				
 			// The transient contains the 'checked' information
 			// Now append to it information form your own API
-			$plugin_slug = ISSUEM_LEAKY_PAYWALL_PLUGIN_SLUG;
-				
-			// POST data to send to your API
-			$args = array(
-				'action'	=> 'check-latest-version',
-				'slug'		=> $plugin_slug,
+	
+			$to_send = array( 
+				'slug' 		=> $this->plugin_slug,
+				'name'		=> $this->plugin_name,
+				'license'	=> $settings['license_key'],
 			);
+	
+			$api_response = issuem_api_request( 'plugin_latest_version', $to_send );
 			
-			// Send request checking for an update
-			$response = issuem_api_request( $args );
-				
-			// If there is a new version, modify the transient
-			if ( isset( $response->new_version ) )
-				if( version_compare( $response->new_version, $transient->checked[ISSUEM_LEAKY_PAYWALL_BASENAME], '>' ) )
-					$transient->response[ISSUEM_LEAKY_PAYWALL_BASENAME] = $response;
-				
-			return $transient;
+			if( false !== $api_response && is_object( $api_response ) )
+				if( version_compare( $api_response->new_version, $_transient_data->checked[$this->basename], '>' ) )
+					$_transient_data->response[$this->basename] = $api_response;
+			
+			return $_transient_data;
 			
 		}
 		
