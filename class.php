@@ -713,8 +713,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 			// POST data to send to your API
 			$args = array(
-				'action' 		=> 'get-plugin-information',
-				'plugin_slug'	=> $plugin_slug,
+				'action'	=> 'get-plugin-information',
+				'slug'		=> $plugin_slug,
 			);
 				
 			// Send request for detailed information
@@ -737,8 +737,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 			// POST data to send to your API
 			$args = array(
-				'action' 		=> 'check-latest-version',
-				'plugin_slug'	=> $plugin_slug,
+				'action'	=> 'check-latest-version',
+				'slug'		=> $plugin_slug,
 			);
 			
 			// Send request checking for an update
