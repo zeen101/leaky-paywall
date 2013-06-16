@@ -18,7 +18,7 @@ Tags:
 
 //Define global variables...
 if ( !defined( 'ISSUEM_STORE_URL' ) )
-	define( 'ISSUEM_STORE_URL',				'http://dev.issuem.com' );
+	define( 'ISSUEM_STORE_URL',				'http://issuem.com' );
 	
 define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
