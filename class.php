@@ -111,18 +111,17 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	
 			}
 			
+			if ( isset( $_REQUEST['logout'] ) ) {
+			
+				unset( $_SESSION['lp_hash'] );
+				unset( $_SESSION['lp_email'] );
+				unset( $_SESSION['lp_subscriber'] );
+				setcookie( 'lp_subscriber', null, 0, '/' );
+				wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
+				
+			}
+			
 			if ( is_issuem_leaky_subscriber_logged_in() ) {
-				
-				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
-					&& isset( $_REQUEST['logout'] ) ) {
-				
-					unset( $_SESSION['issuem_lp_hash'] );
-					unset( $_SESSION['issuem_lp_email'] );
-					unset( $_SESSION['issuem_lp_subscriber'] );
-					setcookie( 'issuem_lp_subscriber', null, 0, '/' );
-					wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
-					
-				}
 						
 				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
 					&& isset( $_REQUEST['cancel'] ) ) {
@@ -458,7 +457,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( isset( $_REQUEST['interval_count'] ) )
 					$settings['interval_count'] = $_REQUEST['interval_count'];
 					
-				if ( isset( $_REQUEST['Charge Description'] ) )
+				if ( isset( $_REQUEST['charge_description'] ) )
 					$settings['charge_description'] = trim( $_REQUEST['charge_description']);
 					
 				if ( isset( $_REQUEST['subscribe_login_message'] ) )
@@ -512,13 +511,13 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                     
                         <div class="handlediv" title="Click to toggle"><br /></div>
                         
-                        <h3 class="hndle"><span><?php _e( 'License Key', 'issuem' ); ?></span></h3>
+                        <h3 class="hndle"><span><?php _e( 'License Key', 'issuem-leaky-paywall' ); ?></span></h3>
                         
                         <div class="inside">
                         
                         <table id="issuem_license_key">
                         	<tr>
-                                <th rowspan="1"> <?php _e( 'License Key', 'issuem' ); ?></th>
+                                <th rowspan="1"> <?php _e( 'License Key', 'issuem-leaky-paywall' ); ?></th>
                                 <td class="leenkme_plugin_name">
                                 <input type="text" id="license_key" class="regular-text" name="license_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['license_key'] ) ); ?>" />
                                 
@@ -555,12 +554,12 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         <table id="issuem_leaky_paywall_administrator_options">
                         
                         	<tr>
-                                <th><?php _e( 'Page for Log In', 'issuem' ); ?></th>
+                                <th><?php _e( 'Page for Log In', 'issuem-leaky-paywall' ); ?></th>
                                 <td><?php echo wp_dropdown_pages( array( 'name' => 'page_for_login', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_login'] ) ); ?></td>
                             </tr>
                             
                         	<tr>
-                                <th><?php _e( 'Page for Subscription', 'issuem' ); ?></th>
+                                <th><?php _e( 'Page for Subscription', 'issuem-leaky-paywall' ); ?></th>
                                 <td><?php echo wp_dropdown_pages( array( 'name' => 'page_for_subscription', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_subscription'] ) ); ?></td>
                             </tr>
                             
@@ -681,12 +680,12 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							?>
                             
                         	<tr class="stripe_manual" <?php echo $hidden; ?>>
-                                <th><?php _e( 'Subscription Price', 'issuem' ); ?></th>
+                                <th><?php _e( 'Subscription Price', 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="text" id="price" class="small-text" name="price" value="<?php echo stripcslashes( $settings['price'] ); ?>" /></td>
                             </tr>
                             
                         	<tr class="stripe_manual" <?php echo $hidden; ?>>
-                                <th><?php _e( 'Subscription Length', 'issuem' ); ?></th>
+                                <th><?php _e( 'Subscription Length', 'issuem-leaky-paywall' ); ?></th>
                                 <td><?php _e( 'For', 'issuem-leaky-paywall' ); ?> <input type="text" id="interval_count" class="small-text" name="interval_count" value="<?php echo stripcslashes( $settings['interval_count'] ); ?>" /> 
                                 <select id="interval" name="interval">
                                 	<option value="day" <?php selected( 'day' === $settings['interval'] ); ?>><?php _e( 'Day(s)', 'issuem-leaky-paywall' ); ?></option>
