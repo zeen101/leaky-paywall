@@ -32,6 +32,8 @@ You must have:
 == Changelog ==
 = 1.0.2 =
 * Extended IssueM's Leaky Paywall add-on to work without IssueM
+* Fixed a few typos
+* Fixed bug with using the same email address in Live or Test mode with Stripe.
 
 = 1.0.1 =
 * Fixed bug to allow changing charge description
