@@ -643,27 +643,6 @@ if ( !function_exists( 'issuem_leaky_paywall_get_email_from_subscriber_hash' ) )
 	
 }
 
-if ( !function_exists( 'activate_issuem_admin_notice' ) ) {
-
-	/**
-	 * Helper function used print error nag if IssueM is not activated
-	 *
-	 * @since 1.0.0
-	 */
-	function activate_issuem_admin_notice() {
-	
-		?>
-        
-        <div class="error">
-            <p><?php _e( "Error! You must have the IssueM plugin activated to use IssueM's Leaky Paywall", 'issuem-leaky-paywall' ); ?></p>
-        </div>
-        
-        <?php
-		
-	}
-	
-}
-
 if ( !function_exists( 'wp_print_r' ) ) { 
 
 	/**

@@ -9,9 +9,9 @@
 /*
 Plugin Name: IssueM's Leaky Paywall
 Plugin URI: http://issuem.com/
-Description: A premium leaky paywall add-on for IssueM.
+Description: A premium leaky paywall add-on for WordPress and IssueM.
 Author: IssueM Development Team
-Version: 1.0.1
+Version: 1.0.2
 Author URI: http://issuem.com/
 Tags:
 */
@@ -22,7 +22,7 @@ if ( !defined( 'ISSUEM_STORE_URL' ) )
 	
 define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
-define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.0.1' );
+define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.0.2' );
 define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.0' );
 define( 'ISSUEM_LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
@@ -39,11 +39,10 @@ function issuem_leaky_paywall_plugins_loaded() {
 	if ( is_admin() ) {
 		
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-		if ( !is_plugin_active( 'issuem/issuem.php' ) ) {
-			
-			add_action( 'admin_notices', 'activate_issuem_admin_notice' );
-			
-		}
+		if ( is_plugin_active( 'issuem/issuem.php' ) )
+			define( 'ISSUEM_ACTIVE', true );
+		else
+			define( 'ISSUEM_ACTIVE', false );
 		
 	}
 

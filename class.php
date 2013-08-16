@@ -40,9 +40,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 
-			//Premium Plugin Filters
-			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
-			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
+			if ( ISSUEM_ACTIVE ) {
+				//Premium Plugin Filters
+				add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
+				add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
+			}
 			
 			if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
 				
@@ -71,7 +73,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function admin_menu() {
 			
-			add_submenu_page( 'edit.php?post_type=article', __( 'Leaky Paywall', 'pigeonpack' ), __( 'Leaky Paywall', 'pigeonpack' ), apply_filters( 'manage_issuem_settings', 'manage_issuem_settings' ), 'leaky-paywall-settings', array( $this, 'settings_page' ) );
+			add_submenu_page( 'options-general.php', __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-settings', array( $this, 'settings_page' ) );
+			
+			if ( ISSUEM_ACTIVE )
+				add_submenu_page( 'edit.php?post_type=article', __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_issuem_settings', 'manage_issuem_settings' ), 'leaky-paywall-settings', array( $this, 'settings_page' ) );
 			
 		}
 		
@@ -355,6 +360,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'license_status'			=> '',
 				'page_for_login'			=> 0,
 				'page_for_subscription'		=> 0,
+				'post_types'				=> ISSUEM_ACTIVE ? array( 'article' ) : array( 'post' ),
 				'free_articles'				=> 2,
 				'cookie_expiration'			=> 24,
 				'subscribe_login_message'	=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this article. Subscriptions include access to the website and <strong>all back issues</strong>.', 'issuem-leaky-paywall' ),
@@ -424,6 +430,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				if ( isset( $_REQUEST['page_for_subscription'] ) )
 					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
+				
+				if ( isset( $_REQUEST['post_types'] ) )
+					$settings['post_types'] = $_REQUEST['post_types'];
 					
 				if ( isset( $_REQUEST['free_articles'] ) )
 					$settings['free_articles'] = trim( $_REQUEST['free_articles'] );
@@ -507,6 +516,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             
                     <h2 style='margin-bottom: 10px;' ><?php _e( 'IssueM Leaky Paywall Settings', 'issuem-leaky-paywall' ); ?></h2>
                     
+                    <?php if ( ISSUEM_ACTIVE ) { ?>
                     <div id="license-key" class="postbox">
                     
                         <div class="handlediv" title="Click to toggle"><br /></div>
@@ -532,9 +542,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 </td>
                             </tr>
                         </table>
-                                                       
-                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
-                                                  
+                                                                                                         
                         <p class="submit">
                             <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
                         </p>
@@ -542,6 +550,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         </div>
                         
                     </div>
+                    
+                   	<?php } ?>
+                    
+					<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+
                     
                     <div id="modules" class="postbox">
                     
@@ -561,6 +574,29 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         	<tr>
                                 <th><?php _e( 'Page for Subscription', 'issuem-leaky-paywall' ); ?></th>
                                 <td><?php echo wp_dropdown_pages( array( 'name' => 'page_for_subscription', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_subscription'] ) ); ?></td>
+                            </tr>
+                            
+                            <?php 
+							$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
+							$post_types = get_post_types( array(), 'objects' );
+							?>
+                            
+                        	<tr>
+                                <th><?php _e( 'Leaky Post Types', 'leaky-paywall' ); ?></th>
+                                <td>
+								<select name="post_types[]" multiple="multiple">
+                                <?php
+								foreach ( $post_types as $post_type ) {
+									
+									if ( in_array( $post_type->name, $hidden_post_types ) ) 
+										continue;
+										
+									echo '<option value="' . $post_type->name . '" ' . selected( in_array( $post_type->name, $settings['post_types'] ) ) . '>' . $post_type->name . '</option>';
+								
+                                }
+                                ?>
+                                </select>
+                                </td>
                             </tr>
                             
                         	<tr>
