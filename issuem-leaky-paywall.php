@@ -35,16 +35,12 @@ define( 'ISSUEM_LEAKY_PAYWALL_REL_DIR',		dirname( ISSUEM_LEAKY_PAYWALL_BASENAME 
  * @since 1.0.0
  */
 function issuem_leaky_paywall_plugins_loaded() {
-
-	if ( is_admin() ) {
-		
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-		if ( is_plugin_active( 'issuem/issuem.php' ) )
-			define( 'ISSUEM_ACTIVE', true );
-		else
-			define( 'ISSUEM_ACTIVE', false );
-		
-	}
+	
+	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+	if ( is_plugin_active( 'issuem/issuem.php' ) )
+		define( 'ISSUEM_ACTIVE', true );
+	else
+		define( 'ISSUEM_ACTIVE', false );
 
 	require_once( 'class.php' );
 

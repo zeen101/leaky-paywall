@@ -84,7 +84,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 			$settings = $this->get_settings();
 			
-			if ( is_singular( 'article' ) ) {
+			if ( is_singular( $settings['post_types'] ) ) {
 				
 				if ( !is_user_logged_in() && !is_issuem_leaky_subscriber_logged_in() ) {
 					
