@@ -832,6 +832,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				plan 		VARCHAR(64),
 				created 	DATETIME 		NOT NULL,
 				expires 	DATETIME 		NOT NULL,
+				stripe_mode VARCHAR(4),
 				UNIQUE KEY hash (hash),
 				UNIQUE KEY email (email)
 			);";
