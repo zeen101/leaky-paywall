@@ -23,7 +23,7 @@ if ( !defined( 'ISSUEM_STORE_URL' ) )
 define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.0.2' );
-define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.1' );
+define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.2' );
 define( 'ISSUEM_LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );

@@ -117,11 +117,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			}
 			
 			if ( isset( $_REQUEST['logout'] ) ) {
-			
-				unset( $_SESSION['lp_hash'] );
-				unset( $_SESSION['lp_email'] );
-				unset( $_SESSION['lp_subscriber'] );
-				setcookie( 'lp_subscriber', null, 0, '/' );
+						
+				unset( $_SESSION['issuem_lp_hash'] );
+				unset( $_SESSION['issuem_lp_email'] );
+				unset( $_SESSION['issuem_lp_subscriber'] );
+				setcookie( 'issuem_lp_subscriber', null, 0, '/' );
 				wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
 				
 			}
@@ -834,7 +834,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				expires 	DATETIME 		NOT NULL,
 				stripe_mode VARCHAR(4),
 				UNIQUE KEY hash (hash),
-				UNIQUE KEY email (email)
 			);";
 			
 			dbDelta( $sql );
