@@ -1,13 +1,13 @@
 <?php
 /**
- * @package IssueM Leaky Paywall
+ * @package IssueM's Leaky Paywall
  * @since 1.0.0
  */
  
 if ( !function_exists( 'get_issuem_leaky_paywall_settings' ) ) {
 
 	/**
-	 * Helper function to get IssueM Leaky Paywall settings for current site
+	 * Helper function to get IssueM's Leaky Paywall settings for current site
 	 *
 	 * @since 1.0.0
 	 *

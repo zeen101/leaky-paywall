@@ -349,7 +349,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		}
 		
 		/**
-		 * Get IssueM Leaky Paywall options
+		 * Get IssueM's Leaky Paywall options
 		 *
 		 * @since 1.0.0
 		 */
@@ -390,7 +390,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		}
 		
 		/**
-		 * Update IssueM Leaky Paywall options
+		 * Update IssueM's Leaky Paywall options
 		 *
 		 * @since 1.0.0
 		 */
@@ -500,7 +500,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			if ( $settings_saved ) {
 				
 				// update settings notification ?>
-				<div class="updated"><p><strong><?php _e( 'IssueM Leaky Paywall Settings Updated.', 'issuem-leaky-paywall' );?></strong></p></div>
+				<div class="updated"><p><strong><?php _e( "IssueM's Leaky Paywall Settings Updated.", 'issuem-leaky-paywall' );?></strong></p></div>
 				<?php
 				
 			}
@@ -514,7 +514,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             
                 <form id="issuem" method="post" action="" enctype="multipart/form-data" encoding="multipart/form-data">
             
-                    <h2 style='margin-bottom: 10px;' ><?php _e( 'IssueM Leaky Paywall Settings', 'issuem-leaky-paywall' ); ?></h2>
+                    <h2 style='margin-bottom: 10px;' ><?php _e( "IssueM's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
                     
                     <?php if ( ISSUEM_ACTIVE ) { ?>
                     <div id="license-key" class="postbox">

@@ -1,6 +1,6 @@
 <?php
 /**
- * @package IssueM Leaky Paywall
+ * @package IssueM's Leaky Paywall
  * @since 1.0.0
  */
 
@@ -40,8 +40,8 @@ if ( !function_exists( 'issuem_do_leaky_paywall_shortcode_wp_enqueue_scripts' ) 
 if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) { 
 
 	/**
-	 * Shortcode for IssueM Leaky Paywall
-	 * Prints out the IssueM Leaky Paywall
+	 * Shortcode for IssueM's Leaky Paywall
+	 * Prints out the IssueM's Leaky Paywall
 	 *
 	 * @since 1.0.0
 	 */
@@ -88,8 +88,8 @@ if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) {
 if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) { 
 
 	/**
-	 * Shortcode for IssueM Leaky Paywall
-	 * Prints out the IssueM Leaky Paywall
+	 * Shortcode for IssueM's Leaky Paywall
+	 * Prints out the IssueM's Leaky Paywall
 	 *
 	 * @since 1.0.0
 	 */

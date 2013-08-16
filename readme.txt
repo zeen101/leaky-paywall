@@ -18,20 +18,20 @@ A premium leaky paywall add-on for IssueM. More info at http://issuem.com
 
 == Frequently Asked Questions ==
 
-= What are the minimum requirements for IssueM Leaky Paywall? =
+= What are the minimum requirements for IssueM's Leaky Paywall? =
 
 You must have:
 
 * WordPress 3.3 or later
 * PHP 5
 
-= How is IssueM Leaky Paywall Licensed? =
+= How is IssueM's Leaky Paywall Licensed? =
 
 * Like IssueM, Leaky Paywall is GPL
 
 == Changelog ==
 = 1.0.2 =
-* Extended IssueM Leaky Paywall add-on to work without IssueM
+* Extended IssueM's Leaky Paywall add-on to work without IssueM
 
 = 1.0.1 =
 * Fixed bug to allow changing charge description
