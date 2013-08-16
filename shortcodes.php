@@ -232,7 +232,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 								
 							$stripe_plan = Stripe_Plan::retrieve( $settings['plan_id'] );
 												
-							$results .= '<h2>' . sprintf( __( 'Susbcribe for just $%s %s', 'issuem-leaky-paywall' ), number_format( (float)$stripe_plan->amount/100, 2 ), issuem_leaky_paywall::human_readable_interval( $stripe_plan->interval_count, $stripe_plan->interval ) ) . '</h2>';
+							$results .= '<h2>' . sprintf( __( 'Subscribe for just $%s %s', 'issuem-leaky-paywall' ), number_format( (float)$stripe_plan->amount/100, 2 ), issuem_leaky_paywall::human_readable_interval( $stripe_plan->interval_count, $stripe_plan->interval ) ) . '</h2>';
 							
 							if ( $stripe_plan->trial_period_days ) {
 								$results .= '<h3>' . sprintf( __( 'Free for the first %s day(s)', 'issuem-leaky-paywall' ), $stripe_plan->trial_period_days ) . '</h3>';
@@ -256,7 +256,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						
 					} else {
 					
-						$results .= '<h2>' . sprintf( __( 'Susbcribe for just $%s %s', 'issuem-leaky-paywall' ), $price, issuem_leaky_paywall::human_readable_interval( $interval_count, $interval ) ) . '</h2>';
+						$results .= '<h2>' . sprintf( __( 'Subscribe for just $%s %s', 'issuem-leaky-paywall' ), $price, issuem_leaky_paywall::human_readable_interval( $interval_count, $interval ) ) . '</h2>';
 							
 						$results .= '<form action="" method="post">
 									  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
