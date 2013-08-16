@@ -680,7 +680,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                     
                         <div class="handlediv" title="Click to toggle"><br /></div>
                         
-                        <h3 class="hndle"><span><?php _e( 'Strip Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+                        <h3 class="hndle"><span><?php _e( 'Stripe Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
                         
                         <div class="inside">
                         
