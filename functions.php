@@ -38,10 +38,13 @@ if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_email' ) ) {
 		global $wpdb;
 			
 		if ( is_email( $email ) ) {
+			
+			$settings = get_issuem_leaky_paywall_settings();
 				
-			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE email = %s';
+			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE email = %s AND stripe_mode = %s';
+			$stripe_mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
-			return $wpdb->get_row( $wpdb->prepare( $query, $email ) );
+			return $wpdb->get_row( $wpdb->prepare( $query, $email, $stripe_mode ) );
 		
 		}
 		
@@ -273,19 +276,22 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 		
 		if ( is_email( $email ) ) {
 			
+			$settings = get_issuem_leaky_paywall_settings();
+			
 			$expires = '0000-00-00 00:00:00';
 			
 			if ( isset( $customer->subscription ) ) {
 			
 				$insert = array(
-							'hash'			=> $hash,
-							'email'			=> $email,
-							'stripe_id'		=> $customer->id,
-							'price'			=> number_format( $customer->subscription->plan->amount, '2', '.', '' ),
-							'description'	=> $customer->subscription->plan->name,
-							'plan'			=> $customer->subscription->plan->id,
-							'created'		=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
-							'expires'		=> $expires,
+					'hash'			=> $hash,
+					'email'			=> $email,
+					'stripe_id'		=> $customer->id,
+					'price'			=> number_format( $customer->subscription->plan->amount, '2', '.', '' ),
+					'description'	=> $customer->subscription->plan->name,
+					'plan'			=> $customer->subscription->plan->id,
+					'created'		=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
+					'expires'		=> $expires,
+					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
 				);		
 						
 			} else {
@@ -294,14 +300,15 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $args['interval_count'] . ' ' . $args['interval'] ) ); //we're generous, give them the whole day!
 				
 				$insert = array(
-							'hash'			=> $hash,
-							'email'			=> $email,
-							'stripe_id'		=> $customer->id,
-							'price'			=> $args['price'],
-							'description'	=> $args['description'],
-							'plan'			=> '',
-							'created'		=> date( 'Y-m-d H:i:s' ),
-							'expires'		=> $expires,
+					'hash'			=> $hash,
+					'email'			=> $email,
+					'stripe_id'		=> $customer->id,
+					'price'			=> $args['price'],
+					'description'	=> $args['description'],
+					'plan'			=> '',
+					'created'		=> date( 'Y-m-d H:i:s' ),
+					'expires'		=> $expires,
+					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
 				);
 
 			}
@@ -309,6 +316,7 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 			return $wpdb->insert( $wpdb->prefix . 'issuem_leaky_paywall_subscribers',
 								$insert,
 								array(
+										'%s',
 										'%s',
 										'%s',
 										'%s',
@@ -347,19 +355,22 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 		
 		if ( is_email( $email ) ) {
 			
+			$settings = get_issuem_leaky_paywall_settings();
+			
 			$expires = '0000-00-00 00:00:00';
 			
 			if ( isset( $customer->subscription ) ) {
 			
 				$update = array(
-							'hash'			=> $hash,
-							'email'			=> $email,
-							'stripe_id'		=> $customer->id,
-							'price'			=> number_format( $customer->subscription->plan->amount, '2', '.', '' ),
-							'description'	=> $customer->subscription->plan->name,
-							'plan'			=> $customer->subscription->plan->id,
-							'created'		=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
-							'expires'		=> $expires,
+					'hash'			=> $hash,
+					'email'			=> $email,
+					'stripe_id'		=> $customer->id,
+					'price'			=> number_format( $customer->subscription->plan->amount, '2', '.', '' ),
+					'description'	=> $customer->subscription->plan->name,
+					'plan'			=> $customer->subscription->plan->id,
+					'created'		=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
+					'expires'		=> $expires,
+					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
 				);		
 						
 			} else {
@@ -368,14 +379,15 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $args['interval_count'] . ' ' . $args['interval'] ) ); //we're generous, give them the whole day!
 				
 				$update = array(
-							'hash'			=> $hash,
-							'email'			=> $email,
-							'stripe_id'		=> $customer->id,
-							'price'			=> $args['price'],
-							'description'	=> $args['description'],
-							'plan'			=> '',
-							'created'		=> date( 'Y-m-d H:i:s' ),
-							'expires'		=> $expires,
+					'hash'			=> $hash,
+					'email'			=> $email,
+					'stripe_id'		=> $customer->id,
+					'price'			=> $args['price'],
+					'description'	=> $args['description'],
+					'plan'			=> '',
+					'created'		=> date( 'Y-m-d H:i:s' ),
+					'expires'		=> $expires,
+					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
 				);
 
 			}
@@ -384,6 +396,7 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 								$update,
 								array( 'email' => $email ),
 								array(
+										'%s',
 										'%s',
 										'%s',
 										'%s',
