@@ -192,7 +192,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 								$cu->save();
 								
 							} else {
-								
+									
 								$cu = Stripe_Customer::create( $customer_array );
 								
 							}
@@ -200,7 +200,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							$charge = Stripe_Charge::create(array(
 								'customer' 		=> $cu->id,
 								'amount'   		=> $stripe_price,
-								'currency' 		=> apply_filters( 'issuem_leaky_paywall_stripe_currencye', 'usd' ), //currently Stripe only supports USD and CAD
+								'currency' 		=> apply_filters( 'issuem_leaky_paywall_stripe_currency', 'usd' ), //currently Stripe only supports USD and CAD
 								'description'	=> $description,
 							));
 						

@@ -824,16 +824,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			//available subscriber status = pending, unsubscribed, subscribed, bounced
 			//Max Email Length is 254 http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
 			$sql = "CREATE TABLE $table_name (
-				hash 		VARCHAR(64) 	NOT NULL,
-				email 		VARCHAR(254) 	NOT NULL,
-				stripe_id 	VARCHAR(64) 	NOT NULL,
-				price 		VARCHAR(8),
+				hash        VARCHAR(64)   NOT NULL,
+				email       VARCHAR(254)  NOT NULL,
+				stripe_id   VARCHAR(64)   NOT NULL,
+				price       VARCHAR(8),
 				description VARCHAR(254),
-				plan 		VARCHAR(64),
-				created 	DATETIME 		NOT NULL,
-				expires 	DATETIME 		NOT NULL,
+				plan        VARCHAR(64),
+				created     DATETIME      NOT NULL,
+				expires     DATETIME      NOT NULL,
 				stripe_mode VARCHAR(4),
-				UNIQUE KEY hash (hash),
+				UNIQUE KEY hash (hash)
 			);";
 			
 			dbDelta( $sql );
@@ -843,10 +843,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			//available subscriber status = pending, unsubscribed, subscribed, bounced
 			//Max Email Length is 254 http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
 			$sql = "CREATE TABLE $table_name (
-				hash 		VARCHAR(64) 	NOT NULL,
-				email 		VARCHAR(254) 	NOT NULL,
-				created 	DATETIME 		NOT NULL,
-				expires 	DATETIME 		NOT NULL,
+				hash    VARCHAR(64)  NOT NULL,
+				email   VARCHAR(254) NOT NULL,
+				created DATETIME     NOT NULL,
+				expires DATETIME     NOT NULL,
 				UNIQUE KEY hash (hash)
 			);";
 			

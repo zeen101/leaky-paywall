@@ -70,9 +70,10 @@ if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_hash' ) ) {
 			
 		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
 				
-			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s';
+			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s AND stripe_mode = %s';
+			$stripe_mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
-			return $wpdb->get_row( $wpdb->prepare( $query, $hash ) );
+			return $wpdb->get_row( $wpdb->prepare( $query, $hash, $stripe_mode ) );
 		
 		}
 		
@@ -644,9 +645,10 @@ if ( !function_exists( 'issuem_leaky_paywall_get_email_from_subscriber_hash' ) )
 		
 		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
 				
-			$query = 'SELECT email FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s';
+			$query = 'SELECT email FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s AND stripe_mode = %s';
+			$stripe_mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
-			return $wpdb->get_var( $wpdb->prepare( $query, $hash ) );
+			return $wpdb->get_var( $wpdb->prepare( $query, $hash, $stripe_mode ) );
 		
 		}
 		
