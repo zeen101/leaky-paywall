@@ -41,10 +41,10 @@ if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_email' ) ) {
 			
 			$settings = get_issuem_leaky_paywall_settings();
 				
-			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE email = %s AND stripe_mode = %s';
-			$stripe_mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE email = %s AND mode = %s';
+			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
-			return $wpdb->get_row( $wpdb->prepare( $query, $email, $stripe_mode ) );
+			return $wpdb->get_row( $wpdb->prepare( $query, $email, $mode ) );
 		
 		}
 		
@@ -69,11 +69,13 @@ if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_hash' ) ) {
 		global $wpdb;
 			
 		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
+			
+			$settings = get_issuem_leaky_paywall_settings();
 				
-			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s AND stripe_mode = %s';
-			$stripe_mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			$query = 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s AND mode = %s';
+			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
-			return $wpdb->get_row( $wpdb->prepare( $query, $hash, $stripe_mode ) );
+			return $wpdb->get_row( $wpdb->prepare( $query, $hash, $mode ) );
 		
 		}
 		
@@ -194,6 +196,8 @@ if ( !function_exists( 'issuem_leaky_paywall_has_user_paid' ) ) {
 	 */
 	function issuem_leaky_paywall_has_user_paid( $email ) {
 		
+		$settings = get_issuem_leaky_paywall_settings();
+		
 		if ( is_email( $email ) ) {
 			
 			if ( $customer = get_issuem_leaky_paywall_subscriber_by_email( $email ) ) {
@@ -202,41 +206,108 @@ if ( !function_exists( 'issuem_leaky_paywall_has_user_paid' ) ) {
 					
 					$settings = get_issuem_leaky_paywall_settings();
 					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-					
 					$expires = $customer->expires;
-							
-					$cu = Stripe_Customer::retrieve( $customer->stripe_id );
+					
+					if ( 'stripe' === $customer->payment_gateway ) {
+								
+						$cu = Stripe_Customer::retrieve( $customer->subscriber_id );
+											
+						if ( !empty( $cu ) )
+							if ( true === $cu->deleted )
+								return false;
+						
+						if ( !empty( $customer->plan ) ) {
 										
-					if ( !empty( $cu ) )
-						if ( true === $cu->deleted )
-							return false;
-					
-					if ( !empty( $customer->plan ) ) {
-									
-						if ( isset( $cu->subscription ) ) {
+							if ( isset( $cu->subscription ) ) {
+								
+								if ( 'active' === $cu->subscription->status )
+									return 'subscription';
+						
+							}
 							
-							if ( 'active' === $cu->subscription->status )
-								return 'subscription';
-					
+							return false;
+							
 						}
 						
-						return false;
+						$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $customer->subscriber_id ) );
+												
+						if ( '0000-00-00 00:00:00' !== $expires ) {
+							
+							if ( strtotime( $expires ) > time() )
+								if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
+									return $expires;
+							else
+								return false;
+									
+						} else {
 						
-					}
+							return 'unlimited';
+							
+						}
 					
-					$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $customer->stripe_id ) );
-											
-					if ( $expires !== '0000-00-00 00:00:00' ) {
+					} else if ( 'paypal_standard' === $customer->payment_gateway ) {
 						
-						if ( strtotime( $expires ) > time() )
-							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
-								return $expires;
-						else
-							return false;
-								
-					} else {
-					
-						return 'unlimited';
+						if ( '0000-00-00 00:00:00' === $expires )
+							return 'unlimited';
+						
+						if ( !empty( $customer->plan ) && 'active' == $customer->payment_status )
+							return 'subscription';
+							
+						switch( $customer->payment_status ) {
+						
+							case 'active':
+							case 'refunded':
+							case 'refund':
+								if ( strtotime( $expires ) > time() )
+									return $expires;
+								else
+									return false;
+								break;
+							case 'canceled':
+								return 'canceled';
+							case 'reversed':
+							case 'buyer_complaint':
+							case 'denied' :
+							case 'expired' :
+							case 'failed' :
+							case 'voided' :
+							case 'deactivated' :
+								return false;
+								break;
+							
+						}
+						
+					} else if ( 'manual' === $customer->payment_gateway ) {
+							
+						switch( $customer->payment_status ) {
+						
+							case 'active':
+							case 'refunded':
+							case 'refund':
+								if ( $expires === '0000-00-00 00:00:00' )
+									return 'unlimited';
+									
+								if ( strtotime( $expires ) > time() )
+									return $expires;
+								else
+									return false;
+								break;
+							case 'canceled':
+								if ( $expires === '0000-00-00 00:00:00' )
+									return false;
+								else
+									return 'canceled';
+							case 'reversed':
+							case 'buyer_complaint':
+							case 'denied' :
+							case 'expired' :
+							case 'failed' :
+							case 'voided' :
+							case 'deactivated' :
+								return false;
+								break;
+							
+						}
 						
 					}
 					
@@ -253,6 +324,82 @@ if ( !function_exists( 'issuem_leaky_paywall_has_user_paid' ) ) {
 		}
 	
 		return false;
+		
+	}
+	
+}
+
+if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
+
+	/**
+	 * Processes a PayPal IPN
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array $request
+	 */
+	function issuem_process_paypal_standard_ipn() {
+		
+		$settings = get_issuem_leaky_paywall_settings();
+		
+		$subscriber_id = !empty( $_REQUEST['subscr_id'] ) ? $_REQUEST['subscr_id'] : false;
+		$subscriber_id = !empty( $_REQUEST['recurring_payment_id'] ) ? $_REQUEST['recurring_payment_id'] : $subscriber_id;
+		
+		wp_mail( "lew@lewayotte.com", 'IPN' , print_r( $_REQUEST, true ) );
+		
+		if ( !empty( $_REQUEST['txn_type'] ) ) {
+			$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $_REQUEST['custom'] );
+			
+			if ( !empty( $subscriber ) ) {
+				
+				switch( $_REQUEST['txn_type'] ) {
+				
+					case 'web_accept':
+						switch( strtolower( $_REQUEST['payment_status'] ) ) {
+						
+							case 'completed' :
+							case 'reversed' :
+								issuem_leaky_paywall_update_subscriber_column( $subscriber->email, 'payment_status', strtolower( $_REQUEST['payment_status'] ) );
+								break;			
+						}
+						break;
+						
+					case 'subscr_signup':
+						$period = $_REQUEST['period3'];
+						issuem_leaky_paywall_update_subscriber_column( $subscriber->email, 'plan', strtoupper( $period ) );
+						break;
+						
+					case 'subscr_payment':
+						if ( $_REQUEST['txn_id'] === $subscriber->subscriber_id )
+							issuem_leaky_paywall_update_subscriber_column( $subscriber->email, 'subscriber_id', $_REQUEST['subscr_id'] );
+							
+						if ( !empty( $subscriber->plan ) ) {// @todo
+							$new_expiration = date( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $subscriber->plan ), strtotime( $_REQUEST['payment_date'] ) ) );
+							switch( strtolower( $_REQUEST['payment_status'] ) ) {
+								case 'completed' :
+									issuem_leaky_paywall_update_subscriber_column( $subscriber->email, 'expires', $new_expiration );
+									break;
+							}
+						}
+						break;
+						
+					case 'subscr_cancel':
+						issuem_leaky_paywall_update_subscriber_column( $subscriber->email, 'payment_status', 'canceled' );
+						break;
+						
+					case 'subscr_eot':
+						issuem_leaky_paywall_update_subscriber_column( $subscriber->email, 'payment_status', 'expired' );
+						break;
+					
+				}
+				
+			} else {
+			
+				error_log( sprintf( __( 'Unable to find PayPal subscriber: %s', 'issuem-leaky-paywall' ), maybe_serialize( $_REQUEST ) ) );
+				
+			}
+			
+		}
 		
 	}
 	
@@ -281,35 +428,41 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 			
 			$expires = '0000-00-00 00:00:00';
 			
-			if ( isset( $customer->subscription ) ) {
+			if ( isset( $customer->subscription ) ) { //only stripe
 			
 				$insert = array(
-					'hash'			=> $hash,
-					'email'			=> $email,
-					'stripe_id'		=> $customer->id,
-					'price'			=> number_format( $customer->subscription->plan->amount, '2', '.', '' ),
-					'description'	=> $customer->subscription->plan->name,
-					'plan'			=> $customer->subscription->plan->id,
-					'created'		=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
-					'expires'		=> $expires,
-					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'hash'			  => $hash,
+					'email'			  => $email,
+					'subscriber_id'   => $customer->id,
+					'price'			  => number_format( $customer->subscription->plan->amount, '2', '.', '' ),
+					'description' 	  => $customer->subscription->plan->name,
+					'plan'		 	  => $customer->subscription->plan->id,
+					'created'		  => date( 'Y-m-d H:i:s', $customer->subscription->start ),
+					'expires'		  => $expires,
+					'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'payment_gateway' => 'stripe',
+					'payment_status'  => $args['payment_status'],
 				);		
 						
 			} else {
 				
 				if ( 0 !== $args['interval'] )
 					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $args['interval_count'] . ' ' . $args['interval'] ) ); //we're generous, give them the whole day!
+				else if ( !empty( $args['expires'] ) )
+					$expires = $args['expires'];
 				
 				$insert = array(
-					'hash'			=> $hash,
-					'email'			=> $email,
-					'stripe_id'		=> $customer->id,
-					'price'			=> $args['price'],
-					'description'	=> $args['description'],
-					'plan'			=> '',
-					'created'		=> date( 'Y-m-d H:i:s' ),
-					'expires'		=> $expires,
-					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'hash'			  => $hash,
+					'email'			  => $email,
+					'subscriber_id'   => $customer->id,
+					'price'			  => $args['price'],
+					'description'	  => $args['description'],
+					'plan'			  => '',
+					'created'		  => date( 'Y-m-d H:i:s' ),
+					'expires'		  => $expires,
+					'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'payment_gateway' => $args['payment_gateway'],
+					'payment_status'  => $args['payment_status'],
 				);
 
 			}
@@ -317,6 +470,8 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 			return $wpdb->insert( $wpdb->prefix . 'issuem_leaky_paywall_subscribers',
 								$insert,
 								array(
+										'%s',
+										'%s',
 										'%s',
 										'%s',
 										'%s',
@@ -360,35 +515,41 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 			
 			$expires = '0000-00-00 00:00:00';
 			
-			if ( isset( $customer->subscription ) ) {
+			if ( isset( $customer->subscription ) ) { //only stripe
 			
 				$update = array(
-					'hash'			=> $hash,
-					'email'			=> $email,
-					'stripe_id'		=> $customer->id,
-					'price'			=> number_format( $customer->subscription->plan->amount, '2', '.', '' ),
-					'description'	=> $customer->subscription->plan->name,
-					'plan'			=> $customer->subscription->plan->id,
-					'created'		=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
-					'expires'		=> $expires,
-					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'hash'			  => $hash,
+					'email'			  => $email,
+					'subscriber_id'   => $customer->id,
+					'price'			  => number_format( $customer->subscription->plan->amount, '2', '.', '' ),
+					'description'	  => $customer->subscription->plan->name,
+					'plan'			  => $customer->subscription->plan->id,
+					'created'		  => date( 'Y-m-d H:i:s', $customer->subscription->start ),
+					'expires'		  => $expires,
+					'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'payment_gateway' => 'stripe',
+					'payment_status'  => $args['payment_status'],
 				);		
 						
 			} else {
 				
 				if ( 0 !== $args['interval'] )
 					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $args['interval_count'] . ' ' . $args['interval'] ) ); //we're generous, give them the whole day!
+				else if ( !empty( $args['expires'] ) )
+					$expires = $args['expires'];
 				
 				$update = array(
-					'hash'			=> $hash,
-					'email'			=> $email,
-					'stripe_id'		=> $customer->id,
-					'price'			=> $args['price'],
-					'description'	=> $args['description'],
-					'plan'			=> '',
-					'created'		=> date( 'Y-m-d H:i:s' ),
-					'expires'		=> $expires,
-					'stripe_mode'	=> 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'hash'			  => $hash,
+					'email'			  => $email,
+					'subscriber_id'   => $customer->id,
+					'price'			  => $args['price'],
+					'description'	  => $args['description'],
+					'plan'			  => '',
+					'created'		  => date( 'Y-m-d H:i:s' ),
+					'expires'		  => $expires,
+					'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
+					'payment_gateway' => $args['payment_gateway'],
+					'payment_status'  => $args['payment_status'],
 				);
 
 			}
@@ -397,6 +558,8 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 								$update,
 								array( 'email' => $email ),
 								array(
+										'%s',
+										'%s',
 										'%s',
 										'%s',
 										'%s',
@@ -418,7 +581,68 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 	
 }
 
-if ( !function_exists( 'issuem_leaky_paywal_cancellation_confirmation' ) ){
+if ( !function_exists( 'issuem_leaky_paywall_update_subscriber_column' ) ) {
+
+	/**
+	 * Updates an existing subscriber to subscriber table
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $email Address of user you want to update
+	 * @param string $column The MySQL column you want ot update
+	 * @param array $value New value
+	 * @return mixed $wpdb update ID or false
+	 */
+	function issuem_leaky_paywall_update_subscriber_column( $email, $column, $value ) {
+		
+		global $wpdb;
+		
+		if ( is_email( $email ) ) {
+			
+			$update = array( $column => $value );
+			
+			return $wpdb->update( $wpdb->prefix . 'issuem_leaky_paywall_subscribers',
+								$update,
+								array( 'email' => $email ),
+								array( '%s' ),
+								array( '%s' )
+							);
+		
+		}
+		
+		return false;
+		
+	}
+	
+}
+
+if ( !function_exists( 'issuem_translate_payment_gateway_slug_to_name' ) ) {
+	
+	function issuem_translate_payment_gateway_slug_to_name( $slug ) {
+		
+		switch( $slug ) {
+		
+			case 'stripe':
+				$return = 'Stripe';
+				break;
+				
+			case 'paypal_standard':
+				$return = 'PayPal';
+				break;
+				
+			case 'manual':
+				$return = __( 'Manually Added', 'issue-leaky-paywall' );
+				break;
+			
+		}
+		
+		return apply_filters( 'issuem_translate_payment_gateway_slug_to_name', $return, $slug );
+		
+	}
+	
+}
+
+if ( !function_exists( 'issuem_leaky_paywall_cancellation_confirmation' ) ) {
 
 	/**
 	 * Cancels a subscriber from Stripe subscription plan
@@ -427,7 +651,7 @@ if ( !function_exists( 'issuem_leaky_paywal_cancellation_confirmation' ) ){
 	 *
 	 * @return string Cancellation form output
 	 */
-	function issuem_leaky_paywal_cancellation_confirmation() {
+	function issuem_leaky_paywall_cancellation_confirmation() {
 		
 		$settings = get_issuem_leaky_paywall_settings();
 		
@@ -447,45 +671,53 @@ if ( !function_exists( 'issuem_leaky_paywal_cancellation_confirmation' ) ){
 			if ( isset( $_COOKIE['issuem_lp_subscriber'] ) ) {
 				
 				if ( $customer = get_issuem_leaky_paywall_subscriber_by_hash( $_COOKIE['issuem_lp_subscriber'] ) ) {
-				
-					try {
+					
+					if ( 'stripe' === $customer->payment_gateway ) {
+					
+						try {
 							
-						$settings = get_issuem_leaky_paywall_settings();
-						$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+							$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+							
+							$expires = $customer->expires;
+														
+							$cu = Stripe_Customer::retrieve( $customer->subscriber_id );
+								
+							if ( !empty( $cu ) )
+								if ( true === $cu->deleted )
+									throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
+							
+							$results = $cu->cancelSubscription();
+												
+							if ( 'canceled' === $results->status ) {
+								
+								$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+								
+								unset( $_SESSION['issuem_lp_hash'] );
+								unset( $_SESSION['issuem_lp_email'] );
+								unset( $_SESSION['issuem_lp_subscriber'] );
+								setcookie( 'issuem_lp_subscriber', null, 0, '/' );
+								
+							} else {
+							
+								$form .= '<p>' . sprintf( __( 'ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+								
+							}
+							
+							$form .= '<a href="' . get_home_url() . '">' . sprintf( __( 'Return to %s...', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
+							
+						} catch ( Exception $e ) {
 						
-						$expires = $customer->expires;
-						
-						$cu = Stripe_Customer::retrieve( $customer->stripe_id );
-							
-						if ( !empty( $cu ) )
-							if ( true === $cu->deleted )
-								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
-						
-						$results = $cu->cancelSubscription();
-											
-						if ( 'canceled' === $results->status ) {
-							
-							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
-							
-							unset( $_SESSION['issuem_lp_hash'] );
-							unset( $_SESSION['issuem_lp_email'] );
-							unset( $_SESSION['issuem_lp_subscriber'] );
-							setcookie( 'issuem_lp_subscriber', null, 0, '/' );
-							
-						} else {
-						
-							$form .= '<p>' . sprintf( __( 'ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+							$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
 							
 						}
-						
-						$form .= '<a href="' . get_home_url() . '">' . sprintf( __( 'Return to %s...', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
-						
-					} catch ( Exception $e ) {
 					
-						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
-						
+					} else if ( 'paypal_standard' === $customer->payment_gateway ) {
+
+						$paypal_url   = 'test' === $customer->mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
+						$paypal_email = 'test' === $customer->mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+						$form .= '<p>' . sprintf( __( 'You must cancel your account through PayPal. Please click this unsubscribe button to complete the cancellation process.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+						$form .= '<p><a href="' . $paypal_url . '?cmd=_subscr-find&alias=' . urlencode( $paypal_email ) . '"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_unsubscribe_LG.gif" border="0"></a></p>';
 					}
-					
 				}
 				
 			}
@@ -644,12 +876,101 @@ if ( !function_exists( 'issuem_leaky_paywall_get_email_from_subscriber_hash' ) )
 		global $wpdb;
 		
 		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
+			
+			$settings = get_issuem_leaky_paywall_settings();
 				
-			$query = 'SELECT email FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s AND stripe_mode = %s';
-			$stripe_mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			$query = 'SELECT email FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers WHERE hash = %s AND mode = %s';
+			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
-			return $wpdb->get_var( $wpdb->prepare( $query, $hash, $stripe_mode ) );
+			return $wpdb->get_var( $wpdb->prepare( $query, $hash, $mode ) );
 		
+		}
+		
+		return false;
+		
+	}
+	
+}
+
+if ( !function_exists( 'issuem_leaky_paywall_subscriber_query' ) ){
+
+	/**
+	 * Gets leaky paywall subscribers
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array $args Leaky Paywall Subscribers
+	 * @return mixed $wpdb var or false if invalid hash
+	 */
+	function issuem_leaky_paywall_subscriber_query( $args ) {
+	
+		global $wpdb;
+		
+		if ( !empty( $args ) ) {
+			
+			$join = apply_filters( 'issuem_leaky_paywall_subscriber_query_join', '' );
+			
+			$where = '';
+			$where_array = array();
+			
+			if ( !empty( $args['search'] ) ) {
+				$search = $args['search'] ;
+				$wild = ( trim( $search, '*%' ) != $search );
+				$search = str_replace( '*', '%', trim( $search ) );
+					
+				if ( $wild ) {
+					$search_type = 'LIKE';
+				} else {
+					$search_type = '=';
+				}
+				
+				$columns = apply_filters( 'issuem_leaky_paywall_search_susbcriber_columns', array( 'hash', 'email', 'subscriber_id', 'price', 'description', 'plan', 'created', 'expires', 'mode', 'payment_gateway', 'payment_status' ) ); 
+				
+				if ( !empty( $columns ) ) {
+					
+					foreach ( $columns as $column ) {
+					
+						$where_array[] .= sprintf( "lps.`%s` %s '%s'", $column, $search_type, $search );
+						
+					}
+						
+					$where_array = apply_filters( 'issuem_leaky_paywall_search_susbcriber_where_array', $where_array, $search_type, $search ); 
+					
+					if ( !empty( $where_array ) ) 
+						$where = 'where ' . join( ' OR ', $where_array );
+				
+				}
+			}
+			
+			switch ( strtoupper( $args['order'] ) ) {
+				case 'DESC':
+					$order = 'DESC';
+					break;
+			
+				case 'ASC':
+				default:
+					$order = 'ASC';	
+					break;
+			}
+			
+			$offset = !empty( $args['offset'] ) ? absint( $args['offset'] ) : 0;
+			$limit =  !empty( $args['number'] ) ? absint( $args['number'] ) : 20;
+			
+			$sql = "SELECT DISTINCT lps.* 
+						 FROM " . $wpdb->prefix . "issuem_leaky_paywall_subscribers as lps
+						 {$join}
+						 {$where} 
+						 order by {$args['orderby']}
+						 {$order} 
+						 limit {$offset}, {$limit}
+						";
+						
+			return $wpdb->get_results( $sql );
+
+		} else {
+			
+			return $wpdb->query( 'SELECT * FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_subscribers' );
+			
 		}
 		
 		return false;
@@ -678,5 +999,79 @@ if ( !function_exists( 'wp_print_r' ) ) {
         	else echo $echo;
 		
     }   
+	
+}
+
+if ( !function_exists( 'issuem_leaky_paywall_jquery_datepicker_format' ) ) { 
+
+	/**
+	 * Pass a PHP date format string to this function to return its jQuery datepicker equivalent
+	 *
+	 * @since 1.1.0
+	 * @param string $date_format PHP Date Format
+	 * @return string jQuery datePicker Format
+	*/
+	function issuem_leaky_paywall_jquery_datepicker_format( $date_format ) {
+		
+		//http://us2.php.net/manual/en/function.date.php
+		//http://api.jqueryui.com/datepicker/#utility-formatDate
+		$php_format = array(
+			//day
+			'/d/', //Day of the month, 2 digits with leading zeros
+			'/D/', //A textual representation of a day, three letters
+			'/j/', //Day of the month without leading zeros
+			'/l/', //A full textual representation of the day of the week
+			//'/N/', //ISO-8601 numeric representation of the day of the week (added in PHP 5.1.0)
+			//'/S/', //English ordinal suffix for the day of the month, 2 characters
+			//'/w/', //Numeric representation of the day of the week
+			'/z/', //The day of the year (starting from 0)
+			
+			//week
+			//'/W/', //ISO-8601 week number of year, weeks starting on Monday (added in PHP 4.1.0)
+			
+			//month
+			'/F/', //A full textual representation of a month, such as January or March
+			'/m/', //Numeric representation of a month, with leading zeros
+			'/M/', //A short textual representation of a month, three letters
+			'/n/', //numeric month no leading zeros
+			//'t/', //Number of days in the given month
+			
+			//year
+			//'/L/', //Whether it's a leap year
+			//'/o/', //ISO-8601 year number. This has the same value as Y, except that if the ISO week number (W) belongs to the previous or next year, that year is used instead. (added in PHP 5.1.0)
+			'/Y/', //A full numeric representation of a year, 4 digits
+			'/y/', //A two digit representation of a year
+		);
+		
+		$datepicker_format = array(
+			//day
+			'dd', //day of month (two digit)
+			'D',  //day name short
+			'd',  //day of month (no leading zero)
+			'DD', //day name long
+			//'',   //N - Equivalent does not exist in datePicker
+			//'',   //S - Equivalent does not exist in datePicker
+			//'',   //w - Equivalent does not exist in datePicker
+			'z' => 'o',  //The day of the year (starting from 0)
+			
+			//week
+			//'',   //W - Equivalent does not exist in datePicker
+			
+			//month
+			'MM', //month name long
+			'mm', //month of year (two digit)
+			'M',  //month name short
+			'm',  //month of year (no leading zero)
+			//'',   //t - Equivalent does not exist in datePicker
+			
+			//year
+			//'',   //L - Equivalent does not exist in datePicker
+			//'',   //o - Equivalent does not exist in datePicker
+			'yy', //year (four digit)
+			'y',  //month name long
+		);
+		
+		return preg_replace( $php_format, $datepicker_format, preg_quote( $date_format ) );
+	}
 	
 }
