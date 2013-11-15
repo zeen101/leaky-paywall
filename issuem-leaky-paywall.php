@@ -23,7 +23,7 @@ if ( !defined( 'ISSUEM_STORE_URL' ) )
 define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.0.2' );
-define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.2' );
+define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
 define( 'ISSUEM_LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );
@@ -38,9 +38,9 @@ function issuem_leaky_paywall_plugins_loaded() {
 	
 	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 	if ( is_plugin_active( 'issuem/issuem.php' ) )
-		define( 'ISSUEM_ACTIVE', true );
+		define( 'ISSUEM_ACTIVE_LP', true );
 	else
-		define( 'ISSUEM_ACTIVE', false );
+		define( 'ISSUEM_ACTIVE_LP', false );
 
 	require_once( 'class.php' );
 
@@ -53,6 +53,7 @@ function issuem_leaky_paywall_plugins_loaded() {
 		
 		require_once( 'functions.php' );
 		require_once( 'shortcodes.php' );
+		require_once( 'subscriber-table.php' );
 			
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, ISSUEM_LEAKY_PAYWALL_REL_DIR . '/i18n/' );

@@ -2,7 +2,7 @@ var $leaky_paywall_settings = jQuery.noConflict();
 
 $leaky_paywall_settings(document).ready(function($) {
 	
-	$( 'input[name=recurring]' ).live( 'change', function() {
+	$( '#issuem_leaky_paywall_stripe_options input[name=recurring]' ).live( 'change', function() {
 		
 		if ( $( this ).is(':checked') ) {
 			
