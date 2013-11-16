@@ -1091,6 +1091,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						$expires = '';
 					else
 						$expires = mysql2date( $date_format, $subscriber->expires );
+						
 					?>
                     <form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
                     	<div style="display: table">
@@ -1103,9 +1104,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                     	<p>
                         <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
                         <select name="leaky-paywall-subscriber-status">
-                            <option value="active" <?php selected( 'active', $subscriber->payment_status, false ); ?>><?php _e( 'Active', 'issuem-leaky-paywall' ); ?></option>
-                            <option value="canceled <?php selected( 'canceled', $subscriber->payment_status, false ); ?>"><?php _e( 'Canceled', 'issuem-leaky-paywall' ); ?></option>
-                            <option value="deactivated <?php selected( 'deactivated', $subscriber->payment_status, false ); ?>"><?php _e( 'Deactivated', 'issuem-leaky-paywall' ); ?></option>
+                            <option value="active" <?php selected( 'active', $subscriber->payment_status ); ?>><?php _e( 'Active', 'issuem-leaky-paywall' ); ?></option>
+                            <option value="canceled" <?php selected( 'canceled', $subscriber->payment_status ); ?>><?php _e( 'Canceled', 'issuem-leaky-paywall' ); ?></option>
+                            <option value="deactivated" <?php selected( 'deactivated', $subscriber->payment_status ); ?>><?php _e( 'Deactivated', 'issuem-leaky-paywall' ); ?></option>
                         </select>
                         </p>
                         <?php do_action( 'update_leaky_paywall_subscriber_form', $subscriber ); ?>

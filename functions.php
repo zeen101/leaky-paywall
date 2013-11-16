@@ -467,6 +467,8 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 
 			}
 			
+			do_action( 'issuem_leaky_paywall_new_subscriber', $email, $insert, $customer, $args );
+			
 			return $wpdb->insert( $wpdb->prefix . 'issuem_leaky_paywall_subscribers',
 								$insert,
 								array(
@@ -554,6 +556,8 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 
 			}
 			
+			do_action( 'issuem_leaky_paywall_update_subscriber', $email, $update, $customer, $args);
+			
 			return $wpdb->update( $wpdb->prefix . 'issuem_leaky_paywall_subscribers',
 								$update,
 								array( 'email' => $email ),
@@ -600,6 +604,8 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber_column' ) ) {
 		if ( is_email( $email ) ) {
 			
 			$update = array( $column => $value );
+			
+			do_action( 'issuem_leaky_paywall_update_subscriber_column', $email, $column, $value );
 			
 			return $wpdb->update( $wpdb->prefix . 'issuem_leaky_paywall_subscribers',
 								$update,
