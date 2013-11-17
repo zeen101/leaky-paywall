@@ -53,7 +53,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
 										
 					// Initialized Stripe...
-					require_once('include/stripe/Stripe.php');
+					require_once('include/stripe/lib/Stripe.php');
 					
 					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 					Stripe::setApiKey( $secret_key );
