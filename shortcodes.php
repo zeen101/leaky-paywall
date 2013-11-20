@@ -235,7 +235,6 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							
 						}
 						
-						
 					} else {
 						
 						if ( 'on' === $settings['recurring'] && !empty( $plan_id ) ) {

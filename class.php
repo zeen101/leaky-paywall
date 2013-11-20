@@ -26,8 +26,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function __construct() {
 		
-			session_start(); //we're using sessios to track logins and subsribers
-			
 			$settings = $this->get_settings();
 		
 			add_action( 'admin_init', array( $this, 'upgrade' ) );
@@ -632,7 +630,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             
                         	<tr>
                                 <th><?php _e( 'Free Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="cookie_expireation" class="small-text" name="cookie_expireation" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> <?php _e( 'hours', 'issuem-leaky-paywal' ); ?></td>
+                                <td><input type="text" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> <?php _e( 'hours', 'issuem-leaky-paywal' ); ?></td>
                             </tr>
                             
                         	<tr>
