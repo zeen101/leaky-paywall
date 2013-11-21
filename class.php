@@ -26,6 +26,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function __construct() {
 		
+			session_start();
+		
 			$settings = $this->get_settings();
 		
 			add_action( 'admin_init', array( $this, 'upgrade' ) );
