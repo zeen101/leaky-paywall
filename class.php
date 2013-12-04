@@ -732,13 +732,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             </tr>
                             
                             <?php
-							if ( 'off' === $settings['recurring'] )
-								$hidden = 'style="display: none;"';
-							else
-								$hidden = '';
+							if ( 'off' === $settings['recurring'] ) {
+								$recurring_hidden = 'style="display: none;"';
+								$manual_hidden = '';
+							} else {
+								$recurring_hidden = '';
+								$manual_hidden = 'style="display: none;"';
+							}
 							?>
                         
-                        	<tr class="stripe_plan" <?php echo $hidden; ?>>
+                        	<tr class="stripe_plan" <?php echo $recurring_hidden; ?>>
                             	<th><?php _e( "Plan ID", 'issuem-leaky-paywall' ); ?></th>
                                 <td>
                                 	<input type="text" id="plan_id" class="regular-text" name="plan_id" value="<?php echo $settings['plan_id']; ?>" />
@@ -748,12 +751,12 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 </td>
                             </tr>
                             
-                        	<tr class="stripe_manual" <?php echo $hidden; ?>>
+                        	<tr class="stripe_manual" <?php echo $manual_hidden; ?>>
                                 <th><?php _e( 'Subscription Price', 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="text" id="price" class="small-text" name="price" value="<?php echo stripcslashes( $settings['price'] ); ?>" /></td>
                             </tr>
                             
-                        	<tr class="stripe_manual" <?php echo $hidden; ?>>
+                        	<tr class="stripe_manual" <?php echo $manual_hidden; ?>>
                                 <th><?php _e( 'Subscription Length', 'issuem-leaky-paywall' ); ?></th>
                                 <td><?php _e( 'For', 'issuem-leaky-paywall' ); ?> <input type="text" id="interval_count" class="small-text" name="interval_count" value="<?php echo stripcslashes( $settings['interval_count'] ); ?>" /> 
                                 <select id="interval" name="interval">
@@ -830,13 +833,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 <th><?php _e( 'Subscription Price', 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="text" id="price" class="small-text" name="price" value="<?php echo stripcslashes( $settings['price'] ); ?>" /></td>
                             </tr>
-                            
-                            <?php
-							if ( 'off' === $settings['recurring'] )
-								$hidden = 'style="display: none;"';
-							else
-								$hidden = '';
-							?>
                             
                         	<tr class="paypal_recurring">
                                 <th><?php _e( 'Subscription Length', 'issuem-leaky-paywall' ); ?></th>
