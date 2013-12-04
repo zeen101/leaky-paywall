@@ -102,6 +102,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		$defaults = array(
 			'plan_id'			=> $settings['plan_id'],
 			'price'				=> $settings['price'],
+			'recurring'			=> $settings['recurring'],
 			'interval_count'	=> $settings['interval_count'],
 			'interval'			=> $settings['interval'],
 			'description'		=> $settings['charge_description'],
@@ -135,6 +136,8 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
 			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
+			
+				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
 				
 				$customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] );
 												
@@ -159,6 +162,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 				$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
 				$results .= '<h1><a href="?logout">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
+				$results .= '</div>';
 				
 			} else {
 				

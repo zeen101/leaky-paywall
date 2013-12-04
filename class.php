@@ -1083,66 +1083,68 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                 ?>
 			   
 				<div id="leaky-paywall-subscriber-add-edit">
-                	<?php if ( !empty( $_GET['edit'] ) && $email = trim( urldecode( $email = $_GET['edit'] ) )
-						&& $subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email ) ) {
-					if ( '0000-00-00 00:00:00' === $subscriber->expires )
-						$expires = '';
-					else
-						$expires = mysql2date( $date_format, $subscriber->expires );
+                	<?php 
+                	$email = !empty( $_GET['edit'] ) ? trim( urldecode( $_GET['edit'] ) ) : '';
+
+                	if ( !empty( $email ) && $subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email ) ) {
+						if ( '0000-00-00 00:00:00' === $subscriber->expires )
+							$expires = '';
+						else
+							$expires = mysql2date( $date_format, $subscriber->expires );
 						
-					?>
-                    <form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
-                    	<div style="display: table">
-                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $subscriber->email; ?>" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $subscriber->email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
-                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo $subscriber->price; ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
-                    	<p>
-                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
-                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
-                        </p>
-                    	<p>
-                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
-                        <select name="leaky-paywall-subscriber-status">
-                            <option value="active" <?php selected( 'active', $subscriber->payment_status ); ?>><?php _e( 'Active', 'issuem-leaky-paywall' ); ?></option>
-                            <option value="canceled" <?php selected( 'canceled', $subscriber->payment_status ); ?>><?php _e( 'Canceled', 'issuem-leaky-paywall' ); ?></option>
-                            <option value="deactivated" <?php selected( 'deactivated', $subscriber->payment_status ); ?>><?php _e( 'Deactivated', 'issuem-leaky-paywall' ); ?></option>
-                        </select>
-                        </p>
-                        <?php do_action( 'update_leaky_paywall_subscriber_form', $subscriber ); ?>
-                        </div>
-                        <?php submit_button( 'Update Subscriber' ); ?>
-                        <p>
-                        <a href="<?php echo remove_query_arg( 'edit' ); ?>"><?php _e( 'Cancel', 'issuem-leaky-paywall' ); ?></a>
-                        </p>
-                        <?php wp_nonce_field( 'edit_subscriber', 'issuem_leaky_paywall_edit_subscriber' ); ?>
-                    </form>
+						?>
+	                    <form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
+	                    	<div style="display: table">
+	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $subscriber->email; ?>" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $subscriber->email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo $subscriber->price; ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+	                    	<p>
+	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
+	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
+	                        </p>
+	                    	<p>
+	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
+	                        <select name="leaky-paywall-subscriber-status">
+	                            <option value="active" <?php selected( 'active', $subscriber->payment_status ); ?>><?php _e( 'Active', 'issuem-leaky-paywall' ); ?></option>
+	                            <option value="canceled" <?php selected( 'canceled', $subscriber->payment_status ); ?>><?php _e( 'Canceled', 'issuem-leaky-paywall' ); ?></option>
+	                            <option value="deactivated" <?php selected( 'deactivated', $subscriber->payment_status ); ?>><?php _e( 'Deactivated', 'issuem-leaky-paywall' ); ?></option>
+	                        </select>
+	                        </p>
+	                        <?php do_action( 'update_leaky_paywall_subscriber_form', $subscriber ); ?>
+	                        </div>
+	                        <?php submit_button( 'Update Subscriber' ); ?>
+	                        <p>
+	                        <a href="<?php echo remove_query_arg( 'edit' ); ?>"><?php _e( 'Cancel', 'issuem-leaky-paywall' ); ?></a>
+	                        </p>
+	                        <?php wp_nonce_field( 'edit_subscriber', 'issuem_leaky_paywall_edit_subscriber' ); ?>
+						</form>
                     <?php } else { ?>
-                    <form id="leaky-paywall-susbcriber-add" name="leaky-paywall-subscriber-add" method="post">
-                    	<div style="display: table">
-                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p>
-                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value=""  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
-                    	<p>
-                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
-                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
-                        </p>
-                    	<p>
-                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
-                        <select name="leaky-paywall-subscriber-status">
-                            <option value="active"><?php _e( 'Active', 'issuem-leaky-paywall' ); ?></option>
-                            <option value="canceled"><?php _e( 'Canceled', 'issuem-leaky-paywall' ); ?></option>
-                            <option value="deactivated"><?php _e( 'Deactivated', 'issuem-leaky-paywall' ); ?></option>
-                        </select>
-                        </p>
-                        <?php do_action( 'add_leaky_paywall_subscriber_form' ); ?>
-                        </div>
-                        <?php submit_button( 'Add New Subscriber' ); ?>
-                        <?php wp_nonce_field( 'add_new_subscriber', 'issuem_leaky_paywall_add_subscriber' ); ?>
-                    </form>
-                    <form id="leaky-paywall-subscriber-bulk-add" name="leaky-paywall-subscriber-bulk-add" method="post">
-                    	<p><label for="leaky-paywall-subscriber-bulk-content" style="display:table-cell"><?php _e( 'Bulk Import', 'issuem-leaky-paywall' ); ?></label><textarea id="leaky-paywall-subscriber-bulk-add-content" name="leaky-paywall-subscriber-bulk-add-content"><?php echo join( ',', $headings ) . "\n"; ?></textarea></p>
-                    	<p class="description"><?php _e( 'Use double quotes " to enclose strings with commas', 'issuem-leaky-paywall' ); ?></p>
-                        <?php submit_button( 'Bulk Add Subscribers' ); ?>
-                        <?php wp_nonce_field( 'bulk_add_subscribers', 'issuem_leaky_paywall_bulk_add_subscribers' ); ?>
-                    </form>
+	                    <form id="leaky-paywall-susbcriber-add" name="leaky-paywall-subscriber-add" method="post">
+	                    	<div style="display: table">
+	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value=""  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+	                    	<p>
+	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
+	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
+	                        </p>
+	                    	<p>
+	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
+	                        <select name="leaky-paywall-subscriber-status">
+	                            <option value="active"><?php _e( 'Active', 'issuem-leaky-paywall' ); ?></option>
+	                            <option value="canceled"><?php _e( 'Canceled', 'issuem-leaky-paywall' ); ?></option>
+	                            <option value="deactivated"><?php _e( 'Deactivated', 'issuem-leaky-paywall' ); ?></option>
+	                        </select>
+	                        </p>
+	                        <?php do_action( 'add_leaky_paywall_subscriber_form' ); ?>
+	                        </div>
+	                        <?php submit_button( 'Add New Subscriber' ); ?>
+	                        <?php wp_nonce_field( 'add_new_subscriber', 'issuem_leaky_paywall_add_subscriber' ); ?>
+	                    </form>
+	                    <form id="leaky-paywall-subscriber-bulk-add" name="leaky-paywall-subscriber-bulk-add" method="post">
+	                    	<p><label for="leaky-paywall-subscriber-bulk-content" style="display:table-cell"><?php _e( 'Bulk Import', 'issuem-leaky-paywall' ); ?></label><textarea id="leaky-paywall-subscriber-bulk-add-content" name="leaky-paywall-subscriber-bulk-add-content"><?php echo join( ',', $headings ) . "\n"; ?></textarea></p>
+	                    	<p class="description"><?php _e( 'Use double quotes " to enclose strings with commas', 'issuem-leaky-paywall' ); ?></p>
+	                        <?php submit_button( 'Bulk Add Subscribers' ); ?>
+	                        <?php wp_nonce_field( 'bulk_add_subscribers', 'issuem_leaky_paywall_bulk_add_subscribers' ); ?>
+	                    </form>
                     <?php } ?>
 					<br class="clear">
 				</div>
