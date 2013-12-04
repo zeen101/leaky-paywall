@@ -102,7 +102,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 					if ( $settings['free_articles'] > count( $free_articles ) ) { 
 					
-						$free_articles[] = $post->ID;
+						if ( !in_array( $post->ID, $free_articles ) )
+							$free_articles[] = $post->ID;
 						
 					} else {
 					
@@ -116,6 +117,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					}
 					
 					setcookie( 'issuem_lp', maybe_serialize( $free_articles ), time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
+					$_COOKIE['issuem_lp'] = maybe_serialize( $free_articles );
 	
 				}
 	
@@ -192,7 +194,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		
 			$new_content = $content . $message;
 		
-			return apply_filters( 'issuem_leaky_paywal_subscriber_or_login_message', $new_content, $message, $content );
+			return apply_filters( 'issuem_leaky_paywall_subscriber_or_login_message', $new_content, $message, $content );
 			
 		}
 		
