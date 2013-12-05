@@ -20,7 +20,7 @@ Tags:
 if ( !defined( 'ISSUEM_STORE_URL' ) )
 	define( 'ISSUEM_STORE_URL',				'http://issuem.com' );
 	
-define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall' );
+define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
 define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.1.1' );
 define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );

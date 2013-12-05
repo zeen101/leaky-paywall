@@ -420,96 +420,87 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			$settings = $this->get_settings();
 			$settings_saved = false;
 			
-			if ( isset( $_REQUEST['update_issuem_leaky_paywall_settings'] )
-				|| isset( $_REQUEST['issuem_leaky_paywall_license_activate'] ) ) {
-				
-				if ( !empty( $_REQUEST['license_key'] ) ) {
+			if ( isset( $_REQUEST['update_issuem_leaky_paywall_settings'] ) ) {
 					
-					if ( $settings['license_key'] != $_REQUEST['license_key'] ) {
-						
-						$settings['license_key'] = $_REQUEST['license_key'];
-						unset( $settings['license_status'] );
-						
-					}
+				if ( !empty( $_REQUEST['license_key'] ) )
+					$settings['license_key'] = $_REQUEST['license_key'];
 					
-				}
-					
-				if ( isset( $_REQUEST['page_for_login'] ) )
+				if ( !empty( $_REQUEST['page_for_login'] ) )
 					$settings['page_for_login'] = $_REQUEST['page_for_login'];
 					
-				if ( isset( $_REQUEST['page_for_subscription'] ) )
+				if ( !empty( $_REQUEST['page_for_subscription'] ) )
 					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
 				
-				if ( isset( $_REQUEST['post_types'] ) )
+				if ( !empty( $_REQUEST['post_types'] ) )
 					$settings['post_types'] = $_REQUEST['post_types'];
 					
-				if ( isset( $_REQUEST['free_articles'] ) )
+				if ( !empty( $_REQUEST['free_articles'] ) )
 					$settings['free_articles'] = trim( $_REQUEST['free_articles'] );
 					
-				if ( isset( $_REQUEST['site_name'] ) )
+				if ( !empty( $_REQUEST['site_name'] ) )
 					$settings['site_name'] = trim( $_REQUEST['site_name'] );
 					
-				if ( isset( $_REQUEST['from_name'] ) )
+				if ( !empty( $_REQUEST['from_name'] ) )
 					$settings['from_name'] = trim( $_REQUEST['from_name'] );
 					
-				if ( isset( $_REQUEST['from_email'] ) )
+				if ( !empty( $_REQUEST['from_email'] ) )
 					$settings['from_email'] = trim( $_REQUEST['from_email'] );
 					
-				if ( isset( $_REQUEST['cookie_expiration'] ) )
+				if ( !empty( $_REQUEST['cookie_expiration'] ) )
 					$settings['cookie_expiration'] = trim( $_REQUEST['cookie_expiration'] );
 					
-				if ( isset( $_REQUEST['recurring'] ) )
+				if ( !empty( $_REQUEST['recurring'] ) )
 					$settings['recurring'] = $_REQUEST['recurring'];
 				else
 					$settings['recurring'] = 'off';
 					
-				if ( isset( $_REQUEST['plan_id'] ) )
+				if ( !empty( $_REQUEST['plan_id'] ) )
 					$settings['plan_id'] = trim( $_REQUEST['plan_id'] );
 					
-				if ( isset( $_REQUEST['price'] ) )
+				if ( !empty( $_REQUEST['price'] ) )
 					$settings['price'] = number_format( $_REQUEST['price'], 2, '.', '' );
 					
-				if ( isset( $_REQUEST['interval'] ) )
+				if ( !empty( $_REQUEST['interval'] ) )
 					$settings['interval'] = $_REQUEST['interval'];
 					
-				if ( isset( $_REQUEST['interval_count'] ) )
+				if ( !empty( $_REQUEST['interval_count'] ) )
 					$settings['interval_count'] = (int)$_REQUEST['interval_count'];
 					
-				if ( isset( $_REQUEST['charge_description'] ) )
+				if ( !empty( $_REQUEST['charge_description'] ) )
 					$settings['charge_description'] = trim( $_REQUEST['charge_description']);
 					
-				if ( isset( $_REQUEST['subscribe_login_message'] ) )
+				if ( !empty( $_REQUEST['subscribe_login_message'] ) )
 					$settings['subscribe_login_message'] = trim( $_REQUEST['subscribe_login_message']);
 					
-				if ( isset( $_REQUEST['css_style'] ) )
+				if ( !empty( $_REQUEST['css_style'] ) )
 					$settings['css_style'] = $_REQUEST['css_style'];
 					
-				if ( isset( $_REQUEST['test_mode'] ) )
+				if ( !empty( $_REQUEST['test_mode'] ) )
 					$settings['test_mode'] = $_REQUEST['test_mode'];
 				else
 					$settings['test_mode'] = 'off';
 					
-				if ( isset( $_REQUEST['payment_gateway'] ) )
+				if ( !empty( $_REQUEST['payment_gateway'] ) )
 					$settings['payment_gateway'] = $_REQUEST['payment_gateway'];
 				else
 					$settings['payment_gateway'] = 'stripe';
 					
-				if ( isset( $_REQUEST['live_secret_key'] ) )
+				if ( !empty( $_REQUEST['live_secret_key'] ) )
 					$settings['live_secret_key'] = trim( $_REQUEST['live_secret_key']);
 					
-				if ( isset( $_REQUEST['live_publishable_key'] ) )
+				if ( !empty( $_REQUEST['live_publishable_key'] ) )
 					$settings['live_publishable_key'] = trim( $_REQUEST['live_publishable_key']);
 					
-				if ( isset( $_REQUEST['test_secret_key'] ) )
+				if ( !empty( $_REQUEST['test_secret_key'] ) )
 					$settings['test_secret_key'] = trim( $_REQUEST['test_secret_key']);
 					
-				if ( isset( $_REQUEST['test_publishable_key'] ) )
+				if ( !empty( $_REQUEST['test_publishable_key'] ) )
 					$settings['test_publishable_key'] = trim( $_REQUEST['test_publishable_key'] );
 					
-				if ( isset( $_REQUEST['paypal_live_email'] ) )
+				if ( !empty( $_REQUEST['paypal_live_email'] ) )
 					$settings['paypal_live_email'] = trim( $_REQUEST['paypal_live_email']);
 					
-				if ( isset( $_REQUEST['paypal_sand_email'] ) )
+				if ( !empty( $_REQUEST['paypal_sand_email'] ) )
 					$settings['paypal_sand_email'] = trim( $_REQUEST['paypal_sand_email']);
 				
 				$this->update_settings( $settings );
