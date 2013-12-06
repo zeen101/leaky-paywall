@@ -166,9 +166,9 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 			} else {
 				
-				if ( 'stripe' === $settings['payment_gateway'] ) {
+				if ( 'stripe' === $payment_gateway ) {
 					
-					$price = number_format( $price, '2', '', '' ); //no decimals
+					$stripe_price = number_format( $price, '2', '', '' ); //no decimals
 					$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 				
 					if ( !empty( $_POST['stripeToken'] ) ) {
@@ -189,7 +189,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 									'card'  => $token,
 							);
 						
-							if ( 'on' === $settings['recurring'] && !empty( $plan_id ) ) {
+							if ( 'on' === $recurring && !empty( $plan_id ) ) {
 								
 								$customer_array['plan'] = $plan_id;	
 								
@@ -213,7 +213,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 								
 								$charge = Stripe_Charge::create(array(
 									'customer' 		=> $cu->id,
-									'amount'   		=> $price,
+									'amount'   		=> $stripe_price,
 									'currency' 		=> apply_filters( 'issuem_leaky_paywall_stripe_currency', 'usd' ), //currently Stripe only supports USD and CAD
 									'description'	=> $description,
 								));
@@ -241,11 +241,11 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						
 					} else {
 						
-						if ( 'on' === $settings['recurring'] && !empty( $plan_id ) ) {
+						if ( 'on' === $recurring && !empty( $plan_id ) ) {
 							
 							try {
 									
-								$stripe_plan = Stripe_Plan::retrieve( $settings['plan_id'] );
+								$stripe_plan = Stripe_Plan::retrieve( $plan_id );
 													
 								$results .= '<h2>' . sprintf( __( 'Subscribe for just $%s %s', 'issuem-leaky-paywall' ), number_format( (float)$stripe_plan->amount/100, 2 ), issuem_leaky_paywall::human_readable_interval( $stripe_plan->interval_count, $stripe_plan->interval ) ) . '</h2>';
 								
@@ -256,7 +256,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 								$results .= '<form action="" method="post">
 											  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 													  data-key="' . $publishable_key . '"
-													  data-plan="' . $settings['plan_id'] . '" 
+													  data-plan="' . $plan_id . '" 
 													  data-description="' . $description . '">
 											  </script>
 											</form>';
@@ -276,7 +276,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							$results .= '<form action="" method="post">
 										  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 												  data-key="' . $publishable_key . '"
-												  data-amount="' . $price . '" 
+												  data-amount="' . $stripe_price . '" 
 												  data-description="' . $description . '">
 										  </script>
 										</form>';
@@ -285,7 +285,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 					
 					}
 				
-				} else if ( 'paypal_standard' === $settings['payment_gateway'] ) {
+				} else if ( 'paypal_standard' === $payment_gateway ) {
 					
 					if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-return'] ) ) {
 						
@@ -319,11 +319,10 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 							try {
 				
-								$settings = get_issuem_leaky_paywall_settings();
 								$cu = new stdClass;
 								$cu->id = $transaction_id; //temporary, will be replaced with subscriber ID during IPN
 							
-								if ( number_format( $transaction_amount, '2', '', '' ) != number_format( $settings['price'], '2', '', '' ) )
+								if ( number_format( $transaction_amount, '2', '', '' ) != number_format( $price, '2', '', '' ) )
 									throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the cart total! %s | %s', 'issuem-leaky-paywall' ), $AMT, $transaction_object->total ) );
 									
 								switch( strtolower( $transaction_status ) ) {
@@ -376,7 +375,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						$mode = 'on' === $settings['test_mode'] ? 'sandbox' : '';
 						$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
 						
-						if ( 'on' === $settings['recurring'] ) {
+						if ( 'on' === $recurring ) {
 																					
 							$results .= '<h2>' . sprintf( __( 'Subscribe for just $%s %s', 'issuem-leaky-paywall' ), $price, issuem_leaky_paywall::human_readable_interval( $interval_count, $interval ) ) . '</h2>';
 								
