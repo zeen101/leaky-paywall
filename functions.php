@@ -788,7 +788,7 @@ if ( !function_exists( 'send_leaky_paywall_email' ) ) {
 		add_issuem_leaky_paywall_hash( $email, $login_hash );
 		
 		$message  = 'Log into ' . $settings['site_name']  . ' by opening this link:' . "\r\n";
-		$message .= $login_url . '?r=' . $login_hash . "\r\n";
+		$message .= add_query_arg( 'r', $login_hash, $login_url ) . "\r\n";
 		$message .= 'This link will expire after an hour and can only be used once. To log into multiple browsers, send a login request from each one.' . "\r\n";
 		$message .= " - " . $settings['site_name'] . "'s passwordless login system" . "\r\n";
 		
