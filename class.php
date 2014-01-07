@@ -40,11 +40,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 
-			if ( ISSUEM_ACTIVE_LP ) {
-				//Premium Plugin Filters
-				add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
-				add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
-			}
+			//Premium Plugin Filters
+			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
+			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 			
 			add_action( 'wp', array( $this, 'process_requests' ) );
 			
@@ -281,6 +279,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					return; // get out if we didn't click the Activate button
 				
 				$settings = $this->get_settings();
+				if ( !empty( $_POST['license_key'] ) )
+					$settings['license_key'] = $_POST['license_key'];
 		
 				// retrieve the license from the database
 				$license = trim( $settings['license_key'] );
@@ -529,7 +529,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             
                     <h2 style='margin-bottom: 10px;' ><?php _e( "IssueM's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
                     
-                    <?php if ( ISSUEM_ACTIVE_LP ) { ?>
                     <div id="license-key" class="postbox">
                     
                         <div class="handlediv" title="Click to toggle"><br /></div>
@@ -563,9 +562,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         </div>
                         
                     </div>
-                    
-                   	<?php } ?>
-                    
+                                        
 					<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
 
                     
@@ -1274,6 +1271,49 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 		}
 		
+		/**
+         * API Request sent and processed by the IssueM API
+         *
+         * @since 1.0.0
+         *
+         * @param array $args Arguments to send to the IssueM API
+         */
+        function issuem_api_request( $_action, $_data ) {
+
+                $api_params = array(
+                        'edd_action' 	=> 'get_version',
+                        'name' 			=> $_data['name'],
+                        'slug' 			=> $_data['slug'],
+                        'license' 		=> $_data['license'],
+                        'author' 		=> 'IssueM Development Team',
+                );
+
+                $request = wp_remote_post(
+                        ISSUEM_STORE_URL,
+                        array(
+                                'timeout' => 15,
+                                'sslverify' => false,
+                                'body' => $api_params
+                        )
+                );
+
+                if ( !is_wp_error( $request ) ) {
+
+                        $request = json_decode( wp_remote_retrieve_body( $request ) );
+
+                        if ( $request )
+                                $request->sections = maybe_unserialize( $request->sections );
+
+                        return $request;
+
+                } else {
+
+                        return false;
+
+                }
+
+        }
+		
 		function plugins_api( $_data, $_action = '', $_args = NULL ) {
 			
 			if ( ( $_action != 'plugin_information' ) || !isset( $_args->slug ) || ( $_args->slug != $this->plugin_slug ) ) 
@@ -1287,7 +1327,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'license'	=> $settings['license_key'],
 			);
 	
-			$api_response = issuem_api_request( 'plugin_information', $to_send );			
+			$api_response = $this->issuem_api_request( 'plugin_information', $to_send );			
 			if ( false !== $api_response ) 
 				$_data = $api_response;
 	
@@ -1311,7 +1351,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'license'	=> $settings['license_key'],
 			);
 	
-			$api_response = issuem_api_request( 'plugin_latest_version', $to_send );
+			$api_response = $this->issuem_api_request( 'plugin_latest_version', $to_send );
 			
 			if( false !== $api_response && is_object( $api_response ) )
 				if( version_compare( $api_response->new_version, $_transient_data->checked[$this->basename], '>' ) )
