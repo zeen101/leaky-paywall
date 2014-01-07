@@ -69,8 +69,9 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		
 		$this->items = $results;
 		
+		$args['number'] = 0;
 		$this->set_pagination_args( array(
-			'total_items' => count( $results ),
+			'total_items' => count( issuem_leaky_paywall_subscriber_query( $args ) ),
 			'per_page' => $users_per_page,
 		) );
 	}

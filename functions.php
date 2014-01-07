@@ -960,7 +960,12 @@ if ( !function_exists( 'issuem_leaky_paywall_subscriber_query' ) ){
 			}
 			
 			$offset = !empty( $args['offset'] ) ? absint( $args['offset'] ) : 0;
-			$limit =  !empty( $args['number'] ) ? absint( $args['number'] ) : 20;
+			$limit  =  isset( $args['number'] ) ? absint( $args['number'] ) : 20;
+			
+			if ( !empty( $limit ) )
+				$limit = "limit {$offset}, {$limit}";
+			else
+				$limit = '';
 			
 			$sql = "SELECT DISTINCT lps.* 
 						 FROM " . $wpdb->prefix . "issuem_leaky_paywall_subscribers as lps
@@ -968,9 +973,9 @@ if ( !function_exists( 'issuem_leaky_paywall_subscriber_query' ) ){
 						 {$where} 
 						 order by {$args['orderby']}
 						 {$order} 
-						 limit {$offset}, {$limit}
+						 {$limit}
 						";
-						
+
 			return $wpdb->get_results( $sql );
 
 		} else {

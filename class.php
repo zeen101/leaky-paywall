@@ -294,7 +294,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 				// Call the custom API.
 				$response = wp_remote_get( add_query_arg( $api_params, ISSUEM_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
-		
+
 				// make sure the response came back okay
 				if ( is_wp_error( $response ) )
 					return false;
@@ -1068,9 +1068,15 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				//Create an instance of our package class...
 				$subscriber_table = new IssueM_Leaky_Paywall_Subscriber_List_Table();
+				$pagenum = $subscriber_table->get_pagenum();
 				//Fetch, prepare, sort, and filter our data...
 				$subscriber_table->prepare_items();
-                
+                $total_pages = $subscriber_table->get_pagination_arg( 'total_pages' );
+		        if ( $pagenum > $total_pages && $total_pages > 0 ) {
+		                wp_redirect( add_query_arg( 'paged', $total_pages ) );
+		                exit;
+		        }
+		        
                 ?>
 			   
 				<div id="leaky-paywall-subscriber-add-edit">
