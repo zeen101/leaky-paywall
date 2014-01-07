@@ -3,7 +3,7 @@ Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
 Tested up to: 3.7
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 
 A premium leaky paywall add-on for IssueM. More info at http://issuem.com
 
@@ -30,6 +30,12 @@ You must have:
 * Like IssueM, Leaky Paywall is GPL
 
 == Changelog ==
+= 1.1.5 =
+* Removed issuem dependency for License Activated
+* Fixed license_key activation workflow
+* Fixed bug in member table pagination
+* Removing invalid file
+
 = 1.1.4 =
 * Fixed bug in login link generation for sites not using permalinks
 
