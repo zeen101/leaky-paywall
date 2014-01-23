@@ -345,8 +345,6 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 		$subscriber_id = !empty( $_REQUEST['subscr_id'] ) ? $_REQUEST['subscr_id'] : false;
 		$subscriber_id = !empty( $_REQUEST['recurring_payment_id'] ) ? $_REQUEST['recurring_payment_id'] : $subscriber_id;
 		
-		wp_mail( "lew@lewayotte.com", 'IPN' , print_r( $_REQUEST, true ) );
-		
 		if ( !empty( $_REQUEST['txn_type'] ) ) {
 			$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $_REQUEST['custom'] );
 			
