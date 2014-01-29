@@ -50,6 +50,20 @@ if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) {
 		global $post;
 		
 		$settings = get_issuem_leaky_paywall_settings();
+		
+		$defaults = array(
+			'heading'			=> __( 'Email address:', 'issuem-leaky-paywall' ),
+			'description' 		=> __( 'Check your email for a link to log in.', 'issuem-leaky-paywall' ),
+			'email_sent' 		=> __( 'Email sent. Please check your email for the login link.', 'issuem-leaky-paywall' ),
+			'error_msg' 		=> __( 'Error sending login email, please try again later.', 'issuem-leaky-paywall' ),
+			'missing_email_msg' => __( 'Please supply a valid email address.', 'issuem-leaky-paywall' ),
+		);
+	
+		// Merge defaults with passed atts
+		// Extract (make each array element its own PHP var
+		$args = shortcode_atts( $defaults, $atts );
+		extract( $args );
+		
 		$results = '';
 
 		if ( isset( $_REQUEST['submit-leaky-login'] ) ) {
@@ -57,25 +71,24 @@ if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) {
 			if ( isset( $_REQUEST['email'] ) && is_email( $_REQUEST['email'] ) ) {
 			
 				if ( send_leaky_paywall_email( $_REQUEST['email'] ) )
-					return '<h3>' . __( 'Email sent. Please check your email for the login link.', 'issuem-leaky-paywall' ) . '</h3>';
+					return '<h3>' . $email_sent . '</h3>';
 				else
-					$results .= '<h1 class="error">' . __( 'Error sending login email, please try again later.', 'issuem-leaky-paywall' ) . '</h1>';
-				
+					$results .= '<h1 class="error">' . $error_msg . '</h1>';
 				
 			} else {
 			
-				$results .= '<h1 class="error">' . __( 'Please supply a valid email address.', 'issuem-leaky-paywall' ) . '</h1>';
+				$results .= '<h1 class="error">' . $missing_email_msg . '</h1>';
 				
 			}
 			
 		}
 		
-		$results .= '<h2>' . __( 'Email address:', 'issuem-leaky-paywall' ) . '</h2>';
+		$results .= '<h2>' . $heading . '</h2>';
 		$results .= '<form action="" method="post">';
 		$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
 		$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'issuem-leaky-paywall' ) . '" />';
 		$results .= '</form>';
-		$results .= '<h3>' . __( 'Check your email for a link to log in.', 'issuem-leaky-paywall' ) . '</h3>';
+		$results .= '<h3>' . $description . '</h3>';
 	
 		
 		return $results;
@@ -96,14 +109,18 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 	function do_issuem_leaky_paywall_subscription( $atts ) {
 		
 		global $post;
+		static $shortcode_count = 0; //Tracking the number of times this shortcode appears on the page
+									 //So we don't display multiple instances for certain output
 		
 		$settings = get_issuem_leaky_paywall_settings();
 		
 		$defaults = array(
+			'login_heading' 	=> __( 'Enter your email address to start your subscription:', 'issuem-leaky-paywall' ),
+			'login_desc' 		=> __( 'Check your email for a link to start your subscription.', 'issuem-leaky-paywall' ),
 			'plan_id'			=> $settings['plan_id'],
 			'price'				=> $settings['price'],
 			'recurring'			=> $settings['recurring'],
-			'interval_count'	=> $settings['interval_count'],
+			'interval_count' 	=> $settings['interval_count'],
 			'interval'			=> $settings['interval'],
 			'description'		=> $settings['charge_description'],
 			'payment_gateway' 	=> $settings['payment_gateway'],
@@ -137,32 +154,36 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						
 			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
 			
-				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
+				if ( 0 === $shortcode_count ) {
 				
-				$customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] );
-												
-				switch( $expires ) {
+					$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
+					
+					$customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] );
+													
+					switch( $expires ) {
+					
+						case 'subscription':
+							$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
+							break;
+							
+						case 'unlimited':
+							$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
+							break;
+					
+						case 'canceled':
+							$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
+							break;
+							
+						default:
+							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer->payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+							
+					}
+					
+					$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
+					$results .= '<h1><a href="?logout">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
+					$results .= '</div>';
 				
-					case 'subscription':
-						$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
-						break;
-						
-					case 'unlimited':
-						$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
-						break;
-				
-					case 'canceled':
-						$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
-						break;
-						
-					default:
-						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer->payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
-						
 				}
-				
-				$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
-				$results .= '<h1><a href="?logout">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
-				$results .= '</div>';
 				
 			} else {
 				
@@ -424,12 +445,30 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						}
 					
 					}
-					
+
 				}
 				
-			}
+			} 
 			
+		} else {
+		
+			if ( 0 === $shortcode_count ) {
+				
+				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
+			
+				$args = array(
+					'heading' 		=> $login_heading,
+					'description' 	=> $login_desc,
+				);
+	
+				$results .= do_issuem_leaky_paywall_login( $args );
+				$results .= '</div>';
+			
+			}
+
 		}
+		
+		$shortcode_count++;
 				
 		return $results;
 		

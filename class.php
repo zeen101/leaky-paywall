@@ -46,6 +46,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			add_action( 'wp', array( $this, 'process_requests' ) );
 			
+			if ( 'on' === $settings['restrict_pdf_downloads'] )
+				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
+			
 			if ( 'stripe' === $settings['payment_gateway'] ) {
 				
 				if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
@@ -62,6 +65,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 			}
 			
+		}
+		
+		function issuem_pdf_attachment_url( $attachment_url, $attachment_id ) {
+			return add_query_arg( 'issuem-pdf-download', $attachment_id );
 		}
 		
 		/**
@@ -86,6 +93,25 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		function process_requests() {
 				
 			$settings = $this->get_settings();
+			
+			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
+				
+				if ( is_user_logged_in() || is_issuem_leaky_subscriber_logged_in() ) {
+				
+					issuem_leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
+				
+				} else {
+					
+					$output = '<h3>' . __( 'Unauthorize PDF Download', 'issuem-leaky-paywall' ) . '</h3>';
+		
+					$output .= '<p>' . sprintf( __( 'You must be <a href="%s">logged in</a> with a valid subscription to download Issue PDFs.', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
+					$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
+					
+					wp_die( $output );
+					
+				}
+				
+			}
 			
 			if ( is_singular( $settings['post_types'] ) ) {
 				
@@ -160,12 +186,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				}
 			
-				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
-						&& empty( $_SESSION['issuem_lp_hash'] ) && empty( $_SESSION['issuem_lp_email'] ) ) {
-													
-						wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
-				
-				}
+			//	if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
+			//			&& empty( $_SESSION['issuem_lp_hash'] ) && empty( $_SESSION['issuem_lp_email'] ) ) {
+			//			wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
+			//	}
 			
 			}
 			
@@ -388,6 +412,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'test_publishable_key'		=> '',
 				'paypal_live_email'			=> '',
 				'paypal_sand_email'			=> '',
+				'restrict_pdf_downloads' 	=> 'off',
 			);
 		
 			$defaults = apply_filters( 'issuem_leaky_paywall_default_settings', $defaults );
@@ -419,7 +444,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			// Get the user options
 			$settings = $this->get_settings();
 			$settings_saved = false;
-			
+
 			if ( isset( $_REQUEST['update_issuem_leaky_paywall_settings'] ) ) {
 					
 				if ( !empty( $_REQUEST['license_key'] ) )
@@ -434,7 +459,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( !empty( $_REQUEST['post_types'] ) )
 					$settings['post_types'] = $_REQUEST['post_types'];
 					
-				if ( !empty( $_REQUEST['free_articles'] ) )
+				if ( isset( $_REQUEST['free_articles'] ) )
 					$settings['free_articles'] = trim( $_REQUEST['free_articles'] );
 					
 				if ( !empty( $_REQUEST['site_name'] ) )
@@ -448,6 +473,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['cookie_expiration'] ) )
 					$settings['cookie_expiration'] = trim( $_REQUEST['cookie_expiration'] );
+					
+				if ( !empty( $_REQUEST['restrict_pdf_downloads'] ) )
+					$settings['restrict_pdf_downloads'] = $_REQUEST['restrict_pdf_downloads'];
+				else
+					$settings['restrict_pdf_downloads'] = 'off';
 					
 				if ( !empty( $_REQUEST['recurring'] ) )
 					$settings['recurring'] = $_REQUEST['recurring'];
@@ -525,7 +555,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             <div class="metabox-holder">	
             <div class="meta-box-sortables ui-sortable">
             
-                <form id="issuem" method="post" action="" enctype="multipart/form-data" encoding="multipart/form-data">
+                <form id="issuem" method="post" action="">
             
                     <h2 style='margin-bottom: 10px;' ><?php _e( "IssueM's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
                     
@@ -626,6 +656,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             </tr>
                             
                         	<tr>
+                                <th><?php _e( 'Restrict PDF Downloads?', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
+                            </tr>
+                            
+                        	<tr>
                                 <th><?php _e( 'Subscribe or Login Message', 'issuem-leaky-paywall' ); ?></th>
                                 <td>
                     				<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_login_message'] ); ?></textarea>
@@ -692,8 +727,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             
                         </table>
                         
-                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
-                                                  
                         <p class="submit">
                             <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
                         </p>
@@ -788,19 +821,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             </tr>
                             
                         </table>
-                        
-                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
-                                                  
-                        <p class="submit">
-                            <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-                        </p>
 
-                        </div>
-                        
-                    </div>
-                    
                     <?php } else if ( 'paypal_standard' === $settings['payment_gateway'] ) { ?>
-                    
                     
                     <div id="modules" class="postbox">
                     
@@ -856,6 +878,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             </tr>
                             
                         </table>
+
+                    <?php } ?>
                         
                         <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
                                                   
@@ -867,7 +891,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         
                     </div>
                     
-                    <?php } ?>
                     
                     <?php  do_action( 'issuem_leaky_paywall_settings_form', $settings ); ?>
                     
