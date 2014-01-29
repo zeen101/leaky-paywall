@@ -832,6 +832,37 @@ if ( !function_exists( 'issuem_leaky_paywall_hash' ) ) {
 	
 }
 
+if ( !function_exists( 'issuem_leaky_paywall_attempt_login' ) ) {
+
+	function issuem_leaky_paywall_attempt_login( $login_hash ) {
+
+		$_SESSION['issuem_lp_hash'] = $login_hash;
+
+		if ( false !== $email = get_issuem_leaky_paywall_email_from_hash( $login_hash ) ) {
+
+			$_SESSION['issuem_lp_email'] = $email;
+
+			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $email ) ) {
+
+				if ( $customer = get_issuem_leaky_paywall_subscriber_by_email( $email ) ) {
+
+					if ( 'active' === $customer->payment_status ) {
+
+						$_SESSION['issuem_lp_subscriber'] = $customer->hash;
+						setcookie( 'issuem_lp_subscriber', $_SESSION['issuem_lp_subscriber'], strtotime( apply_filters( 'issuem_leaky_paywall_logged_in_cookie_expiry', '+1 year' ) ), '/' );
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+}
+
 if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 
 	/**
@@ -843,13 +874,9 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 	 */
 	function is_issuem_leaky_subscriber_logged_in() {
 			
-		if ( !empty( $_SESSION['issuem_lp_subscriber'] ) ) {
-
-			setcookie( 'issuem_lp_subscriber', $_SESSION['issuem_lp_subscriber'], strtotime( apply_filters( 'issuem_leaky_paywall_logged_in_cookie_expiry', '+1 year' ) ), '/' );
-			
-		}
-		
 		if ( !empty( $_COOKIE['issuem_lp_subscriber'] ) ) {
+
+			$_SESSION['issuem_lp_subscriber'] = $_COOKIE['issuem_lp_subscriber'];
 			
 			if ( empty( $_SESSION['issuem_lp_email'] ) ) 
 				$_SESSION['issuem_lp_email'] = issuem_leaky_paywall_get_email_from_subscriber_hash( $_COOKIE['issuem_lp_subscriber'] );

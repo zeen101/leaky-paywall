@@ -180,8 +180,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 				if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) 
 					&& !empty( $_REQUEST['r'] ) ) {
+
+					$login_hash = $_REQUEST['r'];
+					issuem_leaky_paywall_attempt_login( $login_hash );
 				
-					$_SESSION['issuem_lp_hash'] = $_REQUEST['r'];
 					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
 					
 				}
