@@ -486,16 +486,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				else
 					$settings['recurring'] = 'off';
 					
-				if ( !empty( $_REQUEST['plan_id'] ) )
+				if ( isset( $_REQUEST['plan_id'] ) )
 					$settings['plan_id'] = trim( $_REQUEST['plan_id'] );
 					
-				if ( !empty( $_REQUEST['price'] ) )
+				if ( isset( $_REQUEST['price'] ) )
 					$settings['price'] = number_format( $_REQUEST['price'], 2, '.', '' );
 					
 				if ( !empty( $_REQUEST['interval'] ) )
 					$settings['interval'] = $_REQUEST['interval'];
 					
-				if ( !empty( $_REQUEST['interval_count'] ) )
+				if ( isset( $_REQUEST['interval_count'] ) )
 					$settings['interval_count'] = (int)$_REQUEST['interval_count'];
 					
 				if ( !empty( $_REQUEST['charge_description'] ) )
