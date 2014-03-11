@@ -159,10 +159,12 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 					switch( $expires ) {
 					
 						case 'subscription':
+							$_SESSION['issuem_lp_subscriber'] = $customer->hash;
 							$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
 							break;
 							
 						case 'unlimited':
+							$_SESSION['issuem_lp_subscriber'] = $customer->hash;
 							$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
 							break;
 					
@@ -171,6 +173,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							break;
 							
 						default:
+							$_SESSION['issuem_lp_subscriber'] = $customer->hash;
 							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer->payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
 							
 					}
