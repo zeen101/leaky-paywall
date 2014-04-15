@@ -26,7 +26,15 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function __construct() {
 		
-			session_start();
+			if ( function_exists( 'sessions_status' ) ) {
+				if ( PHP_SESSION_NONE === session_status() )
+					session_start();
+			} else if ( function_exists( 'session_id' ) ){
+				if ( '' === session_id() )
+					session_start();
+			} else {
+				session_start();
+			}
 		
 			$settings = $this->get_settings();
 		
@@ -54,7 +62,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
 										
 					// Initialized Stripe...
-					require_once('include/stripe/lib/Stripe.php');
+					if ( !class_exists( 'Stripe' ) )
+						require_once('include/stripe/lib/Stripe.php');
 					
 					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 					Stripe::setApiKey( $secret_key );
