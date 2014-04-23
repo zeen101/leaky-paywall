@@ -2,8 +2,8 @@
 Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
-Tested up to: 3.7
-Stable tag: 1.1.7
+Tested up to: 3.9
+Stable tag: 1.1.8
 
 A premium leaky paywall add-on for IssueM. More info at http://issuem.com
 
@@ -30,6 +30,11 @@ You must have:
 * Like IssueM, Leaky Paywall is GPL
 
 == Changelog ==
+= 1.1.8=
+* FFixing issue with non-recurring payments not adding to subscribers table
+* Verify Stripe class has not been initiated before including Stripe SDK
+* Verify PHP Session has not been initiated before starting a session
+
 = 1.1.7 =
 * Fixed bug causing some sites to not register logged in users
 * Fixed empty/isset bug
