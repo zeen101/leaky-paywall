@@ -426,7 +426,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							$results .= '<script 
 											data-env="' . $mode . '" 
 											data-callback="' . add_query_arg( 'issuem-leaky-paywall-paypal-standard-ipn', '1', get_site_url() . '/' ) . '" 
-											data-return="' . get_page_link( $settings['page_for_subscription'] ) . '"
+											data-return="' . add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) . '"
 											data-cancel_return="' . get_page_link( $settings['page_for_subscription'] ) . '" 
 											data-tax="0" 
 											data-shipping="0" 
