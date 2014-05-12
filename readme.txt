@@ -3,7 +3,7 @@ Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 1.1.8
+Stable tag: 1.2.0
 
 A premium leaky paywall add-on for IssueM. More info at http://issuem.com
 
@@ -30,6 +30,12 @@ You must have:
 * Like IssueM, Leaky Paywall is GPL
 
 == Changelog ==
+= 1.2.0 =
+* Added new function to verify login hashes
+* Moved login hash check inside of process_request function
+* Added check for subscriber session to add to cookie if cookie is empty
+* Set Stripe API version to latest version before they added multi-subscriptions (until we can handle it gracefully)
+
 = 1.1.8=
 * FFixing issue with non-recurring payments not adding to subscribers table
 * Verify Stripe class has not been initiated before including Stripe SDK
