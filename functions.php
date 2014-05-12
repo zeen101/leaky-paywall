@@ -115,7 +115,7 @@ if ( !function_exists( 'add_issuem_leaky_paywall_hash' ) ) {
 	
 }
 
-if ( !function_exists( 'verify_issuem_leaky_paywall_hash' ) ) {
+if ( !function_exists( 'verify_unique_issuem_leaky_paywall_hash' ) ) {
 
 	/**
 	 * Verifies hash is valid for login link
@@ -125,7 +125,7 @@ if ( !function_exists( 'verify_issuem_leaky_paywall_hash' ) ) {
 	 * @param string $hash of user "logging" in
 	 * @return mixed $wpdb var or false
 	 */
-	function verify_issuem_leaky_paywall_hash( $hash ) {
+	function verify_unique_issuem_leaky_paywall_hash( $hash ) {
 	
 		global $wpdb;
 		
@@ -134,6 +134,47 @@ if ( !function_exists( 'verify_issuem_leaky_paywall_hash' ) ) {
 			$query = 'SELECT count(*) FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_logins WHERE hash = %s';
 		
 			return $wpdb->get_var( $wpdb->prepare( $query, $hash ) );
+		
+		}
+		
+		return false;
+		
+	}
+	
+}
+
+if ( !function_exists( 'verify_issuem_leaky_paywall_hash' ) ) {
+
+	/**
+	 * Verifies hash is valid length and hasn't expired
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $hash of user "logging" in
+	 * @return mixed $wpdb var or false
+	 */
+	function verify_issuem_leaky_paywall_hash( $hash ) {
+		
+		global $wpdb;
+			
+		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
+				
+			$query = 'SELECT created FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_logins WHERE hash = %s';
+			
+			$row = $wpdb->get_row( $wpdb->prepare( $query, $hash ) );
+			
+			if ( !is_null( $row ) ) {
+					
+				if ( time() - strtotime( $row->created ) > ( 60 * 60 ) ) {
+					
+					kill_issuem_leaky_paywall_login_hash( $hash );
+					return false; //Hash is an hour old, therefore it's expired
+					
+				}
+			
+				return true; 
+				
+			}
 		
 		}
 		
@@ -159,19 +200,12 @@ if ( !function_exists( 'get_issuem_leaky_paywall_email_from_hash' ) ) {
 			
 		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
 				
-			$query = 'SELECT email, created FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_logins WHERE hash = %s';
+			$query = 'SELECT email FROM ' . $wpdb->prefix . 'issuem_leaky_paywall_logins WHERE hash = %s';
 			
 			$row = $wpdb->get_row( $wpdb->prepare( $query, $hash ) );
 			
 			if ( !is_null( $row ) ) {
-					
-				if ( time() - strtotime( $row->created ) > ( 60 * 60 ) ) {
-					
-					kill_issuem_leaky_paywall_login_hash( $hash );
-					return false; //Hash is an hour old, therefore it's expired
-					
-				}
-			
+								
 				return $row->email; 
 				
 			}
@@ -432,7 +466,7 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 					'hash'			  => $hash,
 					'email'			  => $email,
 					'subscriber_id'   => $customer->id,
-					'price'			  => number_format( $customer->subscription->plan->amount, '2', '.', '' ),
+					'price'			  => number_format( $customer->subscription->plan->amount / 100, '2', '.', '' ),
 					'description' 	  => $customer->subscription->plan->name,
 					'plan'		 	  => $customer->subscription->plan->id,
 					'created'		  => date( 'Y-m-d H:i:s', $customer->subscription->start ),
@@ -680,7 +714,7 @@ if ( !function_exists( 'issuem_leaky_paywall_cancellation_confirmation' ) ) {
 					
 						try {
 							
-							$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+							$secret_key = ( 'test' === $customer->mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 							
 							$expires = $customer->expires;
 														
@@ -823,7 +857,7 @@ if ( !function_exists( 'issuem_leaky_paywall_hash' ) ) {
 		
 		$hash = md5( md5( implode( $salt ) ) . md5( $str ) );
 		
-		while( verify_issuem_leaky_paywall_hash( $hash ) )
+		while( verify_unique_issuem_leaky_paywall_hash( $hash ) )
 			$hash = issuem_leaky_paywall_hash( $hash ); // I did this on purpose...
 			
 		return $hash; // doesn't have to be too secure, just want a pretty random and very unique string
@@ -873,6 +907,13 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 	 * @return bool true if logged in, else false
 	 */
 	function is_issuem_leaky_subscriber_logged_in() {
+	
+		if ( !empty( $_SESSION['issuem_lp_subscriber'] ) && empty( $_COOKIE['issuem_lp_subscriber'] ) ) {
+		
+			$_COOKIE['issuem_lp_subscriber'] = $_SESSION['issuem_lp_subscriber'];
+			setcookie( 'issuem_lp_subscriber', $_SESSION['issuem_lp_subscriber'], strtotime( apply_filters( 'issuem_leaky_paywall_logged_in_cookie_expiry', '+1 year' ) ), '/' );
+
+		}
 			
 		if ( !empty( $_COOKIE['issuem_lp_subscriber'] ) ) {
 

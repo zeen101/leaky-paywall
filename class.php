@@ -67,7 +67,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 					Stripe::setApiKey( $secret_key );
-				
+					Stripe::setApiVersion( '2013-12-03' ); //Last version before Stripe changed subscription model
+									
 				}
 			
 			} else if ( 'paypal_standard' === $settings['payment_gateway'] ) {
@@ -102,7 +103,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		function process_requests() {
 				
 			$settings = $this->get_settings();
-			
+						
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
 				if ( is_user_logged_in() || is_issuem_leaky_subscriber_logged_in() ) {
@@ -116,7 +117,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					$output .= '<p>' . sprintf( __( 'You must be <a href="%s">logged in</a> with a valid subscription to download Issue PDFs.', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
 					$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
 					
-					wp_die( $output );
+					wp_die( apply_filters( 'issuem_leaky_paywall_unauthorized_pdf_download_output', $output ) );
 					
 				}
 				
@@ -149,15 +150,22 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						
 					}
 					
-					setcookie( 'issuem_lp', maybe_serialize( $free_articles ), time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
-					$_COOKIE['issuem_lp'] = maybe_serialize( $free_articles );
+					$serialized_free_articles = maybe_serialize( $free_articles );
+					setcookie( 'issuem_lp', $serialized_free_articles, time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
+					$_COOKIE['issuem_lp'] = $serialized_free_articles;
 	
 				}
+				
+				return; //We don't need to process anything else after this
 	
 			}
 						
-			if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-ipn'] ) )
+			if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-ipn'] ) ) {
+			
 				issuem_process_paypal_standard_ipn();
+				return; //We don't need to process anything else after this
+				
+			}
 			
 			if ( isset( $_REQUEST['logout'] ) ) {
 						
@@ -166,6 +174,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				unset( $_SESSION['issuem_lp_subscriber'] );
 				setcookie( 'issuem_lp_subscriber', null, 0, '/' );
 				wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
+				return; //We don't need to process anything else after this
 				
 			}
 			
@@ -187,20 +196,37 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			} else {
 			
-				if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) 
-					&& !empty( $_REQUEST['r'] ) ) {
+				if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] )  && !empty( $_REQUEST['r'] ) ) {
 
 					$login_hash = $_REQUEST['r'];
-					issuem_leaky_paywall_attempt_login( $login_hash );
-				
-					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					if ( verify_issuem_leaky_paywall_hash( $login_hash ) ) {
+					
+						issuem_leaky_paywall_attempt_login( $login_hash );
+					
+						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+						
+					} else {
+					
+						$output = '<h3>' . __( 'Invalid or Expired Login Link', 'issuem-leaky-paywall' ) . '</h3>';
+
+						$output .= '<p>' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
+						$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
+						
+						wp_die( apply_filters( 'issuem_leaky_paywall_invalid_login_link', $output ) );
+
+					}
+					
+					return; //We don't need to process anything else after this
 					
 				}
 			
-			//	if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
-			//			&& empty( $_SESSION['issuem_lp_hash'] ) && empty( $_SESSION['issuem_lp_email'] ) ) {
-			//			wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
-			//	}
+				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
+						&& empty( $_SESSION['issuem_lp_hash'] ) && empty( $_SESSION['issuem_lp_email'] ) ) {
+						
+					wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
+					return; //We don't need to process anything else after this
+
+				}
 			
 			}
 			

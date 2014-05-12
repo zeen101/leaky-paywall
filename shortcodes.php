@@ -132,19 +132,6 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		extract( $args );
 		
 		$results = '';
-
-		if ( !empty( $_SESSION['issuem_lp_hash'] ) ) {
-		
-			$hash = $_SESSION['issuem_lp_hash'];
-			kill_issuem_leaky_paywall_login_hash( $hash );
-			
-			if ( empty( $_SESSION['issuem_lp_subscriber'] ) ) {
-			
-				$results .= '<h1 class="error">' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</h1>';	
-				
-			}
-			
-		}
 		
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
