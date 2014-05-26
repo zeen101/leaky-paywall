@@ -146,12 +146,12 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 					switch( $expires ) {
 					
 						case 'subscription':
-							$_SESSION['issuem_lp_subscriber'] = $customer->hash;
+							$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
 							$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
 							break;
 							
 						case 'unlimited':
-							$_SESSION['issuem_lp_subscriber'] = $customer->hash;
+							$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
 							$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
 							break;
 					
@@ -160,8 +160,8 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							break;
 							
 						default:
-							$_SESSION['issuem_lp_subscriber'] = $customer->hash;
-							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer->payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+							$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
+							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer['payment_gateway'] ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
 							
 					}
 					
@@ -185,7 +185,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 							$token = $_POST['stripeToken'];
 							
 							if ( $existing_customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] ) )
-								$cu = Stripe_Customer::retrieve( $existing_customer->subscriber_id );
+								$cu = Stripe_Customer::retrieve( $existing_customer['subscriber_id'] );
 								
 							if ( !empty( $cu ) )
 								if ( true === $cu->deleted )
