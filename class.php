@@ -135,39 +135,44 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			}
 			
 			if ( is_singular( $settings['post_types'] ) ) {
+			
+				//incase post_type is "page"
+				if ( !is_page( $settings['page_for_login'] ) && !is_page( $settings['page_for_subscription'] ) ) {
 				
-				if ( !current_user_can( 'manage_options' ) && !is_issuem_leaky_subscriber_logged_in() ) {
-					
-					global $post;
-				
-					$free_articles = array();
-					
-					if ( !empty( $_COOKIE['issuem_lp'] ) )
-						$free_articles = maybe_unserialize( $_COOKIE['issuem_lp'] );
-					
-					if ( $settings['free_articles'] > count( $free_articles ) ) { 
-					
-						if ( !in_array( $post->ID, $free_articles ) )
-							$free_articles[] = $post->ID;
+					if ( !current_user_can( 'manage_options' ) && !is_issuem_leaky_subscriber_logged_in() ) {
 						
-					} else {
+						global $post;
 					
-						if ( !in_array( $post->ID, $free_articles ) ) {
+						$free_articles = array();
+						
+						if ( !empty( $_COOKIE['issuem_lp'] ) )
+							$free_articles = maybe_unserialize( $_COOKIE['issuem_lp'] );
+						
+						if ( $settings['free_articles'] > count( $free_articles ) ) { 
+						
+							if ( !in_array( $post->ID, $free_articles ) )
+								$free_articles[] = $post->ID;
+							
+						} else {
+						
+							if ( !in_array( $post->ID, $free_articles ) ) {
+									
+								add_filter( 'the_content', array( $this, 'get_the_excerpt' ), 15 );
+								add_filter( 'the_content', array( $this, 'the_content_paywall' ), 15 );
 								
-							add_filter( 'the_content', array( $this, 'get_the_excerpt' ), 15 );
-							add_filter( 'the_content', array( $this, 'the_content_paywall' ), 15 );
+							}
 							
 						}
 						
+						$serialized_free_articles = maybe_serialize( $free_articles );
+						setcookie( 'issuem_lp', $serialized_free_articles, time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
+						$_COOKIE['issuem_lp'] = $serialized_free_articles;
+		
 					}
 					
-					$serialized_free_articles = maybe_serialize( $free_articles );
-					setcookie( 'issuem_lp', $serialized_free_articles, time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
-					$_COOKIE['issuem_lp'] = $serialized_free_articles;
-	
+					return; //We don't need to process anything else after this
+					
 				}
-				
-				return; //We don't need to process anything else after this
 	
 			}
 						
@@ -180,7 +185,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			if ( isset( $_REQUEST['logout'] ) ) {
 				
-				issuem_leaky_paywall_logout_process();
+				wp_logout();
 				wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
 				return; //We don't need to process anything else after this
 				
@@ -958,7 +963,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			$date_format = get_option( 'date_format' );
 			$jquery_date_format = issuem_leaky_paywall_jquery_datepicker_format( $date_format );
-			$headings = apply_filters( 'issuem_leaky_paywall_bulk_add_headings', array( 'email', 'price', 'expires', 'status' ) );
+			$headings = apply_filters( 'issuem_leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status' ) );
 			
 			$settings = get_issuem_leaky_paywall_settings();
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -976,8 +981,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 
 					}  else {
 						// process form data
-						if ( !empty( $_POST['leaky-paywall-subscriber-email'] ) && is_email( trim( rawurldecode( $_POST['leaky-paywall-subscriber-email'] ) ) ) ) {
+						if ( !empty( $_POST['leaky-paywall-subscriber-email'] ) && is_email( trim( rawurldecode( $_POST['leaky-paywall-subscriber-email'] ) ) ) 
+							&& !empty( $_POST['leaky-paywall-subscriber-login'] ) ) {
 							
+							$login = trim( rawurldecode( $_POST['leaky-paywall-subscriber-login'] ) );
 							$email = trim( rawurldecode( $_POST['leaky-paywall-subscriber-email'] ) );
 							$unique_hash = issuem_leaky_paywall_hash( $email );
 							if ( empty( $_POST['leaky-paywall-subscriber-expires'] ) )
@@ -998,7 +1005,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								'interval'        => 0,
 							);
 							
-							issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $args );
+							issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $args, $login );
 								
 							$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email );
 							do_action( 'add_leaky_paywall_subscriber', $subscriber );
@@ -1017,12 +1024,15 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					}  else {
 						// process form data
 						if ( !empty( $_POST['leaky-paywall-subscriber-email'] ) && is_email( trim( rawurldecode( $_POST['leaky-paywall-subscriber-email'] ) ) )
-							&& !empty( $_POST['leaky-paywall-subscriber-original-email'] ) && is_email( trim( rawurldecode( $_POST['leaky-paywall-subscriber-original-email'] ) ) ) ) {
+							&& !empty( $_POST['leaky-paywall-subscriber-original-email'] ) && is_email( trim( rawurldecode( $_POST['leaky-paywall-subscriber-original-email'] ) ) ) 
+							&& !empty( $_POST['leaky-paywall-subscriber-login'] ) && !empty( $_POST['leaky-paywall-subscriber-original-login'] ) ) {
 							
+							$orig_login = trim( rawurldecode( $_POST['leaky-paywall-subscriber-original-login'] ) );
 							$orig_email = trim( rawurldecode( $_POST['leaky-paywall-subscriber-original-email'] ) );
 							$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $orig_email );
 							
 							if ( !empty( $subscriber ) ) {
+								$new_login = trim( rawurldecode( $_POST['leaky-paywall-subscriber-login'] ) );
 								$new_email = trim( rawurldecode( $_POST['leaky-paywall-subscriber-email'] ) );
 								$price = trim( $_POST['leaky-paywall-subscriber-price'] );
 								$status = $_POST['leaky-paywall-subscriber-status'];
@@ -1044,6 +1054,17 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									$args['user_email'] = ( $orig_email === $new_email ) ? $orig_email : $new_email;
 									
 									$user_id = wp_update_user( $args );
+								}
+								
+								if ( $orig_login !== $new_login ) {
+									global $wpdb;
+									$wpdb->update( $wpdb->users,
+										array( 'user_login' => $new_login ), 
+										array( 'ID' => $subscriber['user_id'] ),
+										array( '%s' ), 
+										array( '%d' )
+									);
+									clean_user_cache( $subscriber['user_id'] );
 								}
 								
 				                update_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_' . $subscriber['hash'], $subscriber );
@@ -1071,7 +1092,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							$textarea = explode( "\n", $_POST['leaky-paywall-subscriber-bulk-add-content'] );
 							foreach( $textarea as $line ) {
 								if ( !empty( $line ) )
-									$imports[] = str_getcsv( trim( urldecode( stripslashes( $line ) ) ), ',', '"' );
+									$imports[] = str_getcsv( trim( rawurldecode( stripslashes( $line ) ) ), ',', '"' );
 							}
 							
 							$heading_line = array_shift( $imports );
@@ -1079,45 +1100,62 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							foreach( $headings as $heading ) {
 								if ( false !== $key = array_search( $heading, $heading_line ) )
 									$keys[$heading] = $key;
-									
 							}
 							
 							if ( !array_key_exists( 'email', $keys ) ) { //header line was not included (or modified)
 								$imports = array_unshift( $imports, $heading_line ); //so add the line back for processing
 								//assume these keys
-								$keys['email'] = 0;
-								$keys['price'] = 1;
-								$keys['expires'] = 2;
-								$keys['status'] = 3;
+								$keys['username'] = 0;
+								$keys['email'] = 1;
+								$keys['price'] = 2;
+								$keys['expires'] = 3;
+								$keys['status'] = 4;
 							}
 							
 							foreach( $imports as $import ) {
+								
+								$login = trim( $import[$keys['username']] );
+								if ( empty( $login ) ) {
+									$errors[] = sprintf( __( 'Invalid Username, line: %s', 'issuem-leaky-paywall' ), join( ',', $import ) );
+									continue;
+								}
 								
 								$email = trim( $import[$keys['email']] );
 								if ( empty( $email ) || !is_email( $email ) ) {
 									$errors[] = sprintf( __( 'Invalid Email, line: %s', 'issuem-leaky-paywall' ), join( ',', $import ) );
 									continue;
 								}
+								if ( empty( $import[$keys['price']] ) )
+									$price = 0;
+								else 
+									$price = trim( $import[$keys['price']] );
+								
 								$unique_hash = issuem_leaky_paywall_hash( $email );
+								
 								if ( empty( $import[$keys['expires']] ) )
 									$expires = 0;
 								else 
 									$expires = date( 'Y-m-d 23:59:59', strtotime( trim( $import[$keys['expires']] ) ) );
+									
+								if ( empty( $import[$keys['status']] ) )
+									$status = 'active';
+								else 
+									$status = trim( $import[$keys['status']] );
 								
 								$customer = new stdClass;
 								$customer->id = '';
 								
 								$args = array(
 									'subscriber_id'   => '',
-									'price'			  => trim( $import[$keys['price']] ),
+									'price'			  => $price,
 									'description'	  => __( 'Bulk Addition', 'issuem-leaky-paywall' ),
 									'expires'		  => $expires,
 									'payment_gateway' => 'manual',
-									'payment_status'  => trim( $import[$keys['status']] ),
+									'payment_status'  => $status,
 									'interval'        => 0,
 								);
 								
-								issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $args );
+								issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $args, $login );
 									
 								$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email );
 								do_action( 'bulk_add_leaky_paywall_subscriber', $subscriber, $keys, $import );
@@ -1135,7 +1173,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							
 						} else {
 						
-							echo '<div class="error settings-error" id="setting-error-missing_email"><p><strong>' . __( 'You must include a valid email address.', 'issuem-leaky-paywall' ) . '</strong></p></div>';
+							echo '<div class="error settings-error" id="setting-error-bulk-content"><p><strong>' . __( 'No valid content supplied for bulk upload.', 'issuem-leaky-paywall' ) . '</strong></p></div>';
 							
 						}
 					
@@ -1149,8 +1187,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				$subscriber_table->prepare_items();
                 $total_pages = $subscriber_table->get_pagination_arg( 'total_pages' );
 		        if ( $pagenum > $total_pages && $total_pages > 0 ) {
-		                wp_redirect( add_query_arg( 'paged', $total_pages ) );
-		                exit;
+	                wp_redirect( add_query_arg( 'paged', $total_pages ) );
+	                exit;
 		        }
 		        
                 ?>
@@ -1161,6 +1199,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             		$user = get_user_by( 'email', $email );
 
                 	if ( !empty( $email ) && !empty( $user ) && $subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email ) ) {
+                	
+                		$login = $user->user_login;
                 		
 						if ( '0000-00-00 00:00:00' === $subscriber['expires'] )
 							$expires = '';
@@ -1170,6 +1210,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						?>
 	                    <form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
 	                    	<div style="display: table">
+	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-original-login" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo $subscriber['price']; ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
@@ -1195,6 +1236,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                     <?php } else { ?>
 	                    <form id="leaky-paywall-susbcriber-add" name="leaky-paywall-subscriber-add" method="post">
 	                    	<div style="display: table">
+	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="" name="leaky-paywall-subscriber-login" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value=""  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
@@ -1410,8 +1452,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                     //the user doesn't already exist
                     //create a new user with their email address as their username
                     //grab the ID for later
+                    $parts = explode( '@', $subscriber->email );
                     $userdata = array(
-					    'user_login' => $subscriber->email,
+					    'user_login' => $parts[0],
 					    'user_email' => $subscriber->email,
 					    'user_pass'  => wp_generate_password(),
 					);
@@ -1472,20 +1515,29 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		
 			global $hook_suffix;
 			
-			if ( current_user_can( 'manage_options' ) ) {
-				if ( 'admin_page_leaky-paywall-update' !== $hook_suffix && 'leaky-paywall_page_leaky-paywall-update' !== $hook_suffix ) {
-									
-					$manual_update_version = get_option( 'leaky_paywall_manual_update_version' );
+			$settings = $this->get_settings();
+			
+			if ( isset( $settings['version'] ) )
+				$old_version = $settings['version'];
+			else
+				$old_version = 0;
+				
+			if ( !empty( $old_version ) ) { //new installs shouldn't see this notice
+				if ( current_user_can( 'manage_options' ) ) {
+					if ( 'admin_page_leaky-paywall-update' !== $hook_suffix && 'leaky-paywall_page_leaky-paywall-update' !== $hook_suffix ) {
 										
-					if ( version_compare( $manual_update_version, '2.0.0', '<' ) ) {
-						?>
-						<div id="leaky-paywall-2-0-0-update-nag" class="update-nag">
-							<?php
-							$update_link    = add_query_arg( array( 'page' => 'leaky-paywall-update' ), admin_url( 'admin.php' ) );
-							printf( __( 'You must update the Leaky Paywall Database to version 2 to continue using this plugin... %s', 'issuem-leaky-paywall' ), '<a class="btn" href="' . $update_link . '">' . __( 'Update Now', 'issuem-leaky-paywall' ) . '</a>' );
+						$manual_update_version = get_option( 'leaky_paywall_manual_update_version' );
+											
+						if ( version_compare( $manual_update_version, '2.0.0', '<' ) ) {
 							?>
-						</div>
-						<?php
+							<div id="leaky-paywall-2-0-0-update-nag" class="update-nag">
+								<?php
+								$update_link    = add_query_arg( array( 'page' => 'leaky-paywall-update' ), admin_url( 'admin.php' ) );
+								printf( __( 'You must update the Leaky Paywall Database to version 2 to continue using this plugin... %s', 'issuem-leaky-paywall' ), '<a class="btn" href="' . $update_link . '">' . __( 'Update Now', 'issuem-leaky-paywall' ) . '</a>' );
+								?>
+							</div>
+							<?php
+						}
 					}
 				}
 			}

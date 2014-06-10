@@ -221,7 +221,7 @@ if ( !function_exists( 'issuem_leaky_paywall_has_user_paid' ) ) {
 							if ( !empty( $cu->deleted ) && true === $cu->deleted )
 								return false;
 						
-						if ( !empty( $customer['plan'] ) ) {
+						if ( !empty( $customer['lplan'] ) ) {
 										
 							if ( isset( $cu->subscription ) ) {
 								
@@ -419,9 +419,10 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 	 * @param string $email address of user "logged" in
 	 * @param object $customer Stripe object
 	 * @param array $args Arguments passed from type of subscriber
+	 * @param string $login optional login name to use instead of email address
 	 * @return mixed $wpdb insert ID or false
 	 */
-	function issuem_leaky_paywall_new_subscriber( $hash, $email, $customer, $args ) {
+	function issuem_leaky_paywall_new_subscriber( $hash, $email, $customer, $args, $login='' ) {
 		
 		if ( is_email( $email ) ) {
 			
@@ -437,8 +438,12 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 				//the user doesn't already exist
 				//create a new user with their email address as their username
 				//grab the ID for later
-				$userdata = array(
-					'user_login' => $email,
+				if ( empty( $login ) ) {
+					$parts = explode( '@', $email );
+					$login = $parts[0];
+				}
+                $userdata = array(
+				    'user_login' => $login,
 					'user_email' => $email,
 					'user_pass'  => wp_generate_password(),
 				);
@@ -530,8 +535,9 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 				//the user doesn't already exist
 				//create a new user with their email address as their username
 				//grab the ID for later
-				$userdata = array(
-					'user_login' => $email,
+                $parts = explode( '@', $email );
+                $userdata = array(
+				    'user_login' => $parts[0],
 					'user_email' => $email,
 					'user_pass'  => wp_generate_password(),
 				);
@@ -959,7 +965,7 @@ if ( !function_exists( 'issuem_leaky_paywall_logout_process' ) ) {
 		unset( $_SESSION['issuem_lp_subscriber'] );
 		setcookie( 'issuem_lp_subscriber', null, 0, '/' );
 	}
-	add_action( 'wp_logout', 'issuem_leaky_paywall_logout_process' ); //hook into the WP logout process too
+	add_action( 'wp_logout', 'issuem_leaky_paywall_logout_process' ); //hook into the WP logout process
 }
 
 if ( !function_exists( 'issuem_leaky_paywall_server_pdf_download' ) ) {
