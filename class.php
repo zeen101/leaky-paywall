@@ -157,8 +157,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						
 							if ( !in_array( $post->ID, $free_articles ) ) {
 									
-								add_filter( 'the_content', array( $this, 'get_the_excerpt' ), 15 );
-								add_filter( 'the_content', array( $this, 'the_content_paywall' ), 15 );
+								add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 								
 							}
 							
@@ -245,20 +244,17 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 		}
 		
-		function get_the_excerpt( $content ) {
-		
-			global $post;
-			
-			remove_filter( 'the_content', array( $this, 'get_the_excerpt' ), 15 );
-			add_filter( 'excerpt_more', '__return_false' );
-			
-			return apply_filters( 'get_the_excerpt', $post->post_excerpt );
-			
-		}
-		
 		function the_content_paywall( $content ) {
 		
-			$settings = $this->get_settings();
+			$settings = $this->get_settings();	
+					
+			add_filter( 'excerpt_more', '__return_false' );
+			
+			//Remove the_content filter for get_the_excerpt calls
+			remove_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+			$content = get_the_excerpt();
+			add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+			//Add the_content filter back for futhre the_content calls
 			
 			$message  = '<div id="leaky_paywall_message">';
 			$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
