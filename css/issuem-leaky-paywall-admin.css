@@ -1,16 +1,31 @@
 /* CSS Document */
+
+table.leaky-paywall-table,
 body.leaky-paywall_page_leaky-paywall-subscribers table {
-	width:100%;
+	width: 100%;
 }
 
+table.issuem-leaky-paywall-subscription-level-row-table {
+	border: 1px solid #eee;
+	margin-bottom: 20px;
+}
+
+table.leaky-paywall-table tr th, table.leaky-paywall-table tr td,
 body.leaky-paywall_page_leaky-paywall-subscribers table tr th,body.leaky-paywall_page_leaky-paywall-subscribers table tr td {
 	vertical-align:top;
-	padding-bottom:25px;
+	padding-bottom:10px;
 }
 
+table.leaky-paywall-table tr th,
 body.leaky-paywall_page_leaky-paywall-subscribers table tr th {
 	padding-top:5px;
 	width:200px;
+}
+
+table.leaky-paywall-table .issuem_leaky_paywall_subscription_level_row_table {
+	border: 1px solid #eee;
+	padding-top: 20px;
+	margin-bottom: 20px;
 }
 
 body.leaky-paywall_page_leaky-paywall-subscribers p.search-box {
@@ -46,6 +61,23 @@ div#leaky-paywall-subscriber-add-edit form#leaky-paywall-subscriber-bulk-add {
 form#leaky-paywall-subscriber-bulk-add textarea {
 	width:400px;
 	height:200px;
+}
+
+span.delete-x {
+	display: inline-block;
+    color: #bbb;
+    font-size: 14px;
+    line-height: 1.3em;
+    margin-right: 12px;
+    margin-top: 18px;
+    text-align: center;
+    text-decoration: none;
+    width: 20px;
+    height: 20px;
+}
+
+span.delete-x:hover {
+    cursor: pointer;
 }
 
 /** -----------------------------------------------------:[ datepicker ]:---------- */

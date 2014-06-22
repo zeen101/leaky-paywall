@@ -853,6 +853,18 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 			
 			if ( empty( $_SESSION['issuem_lp_email'] ) ) 
 				$_SESSION['issuem_lp_email'] = issuem_leaky_paywall_get_email_from_subscriber_hash( $_COOKIE['issuem_lp_subscriber'] );
+				
+			if ( !is_user_logged_in() ) {
+				//For the off-chance a user gets automatically logged out of WordPress, but remains logged in via Leaky Paywall...
+	
+				if ( $customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] ) ) {
+
+					wp_set_current_user( $customer['user_id'] );
+					wp_set_auth_cookie( $customer['user_id'] );
+				
+				}
+			
+			}
 			
 			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) )
 				return true;
@@ -863,6 +875,38 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 		
 	}
 	
+}
+
+if ( !function_exists( 'issuem_leaky_paywall_susbscriber_restrictions' ) ) {
+	
+	/**
+	 * Returns current user's subscription restrictions
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array subscriber's subscription restrictions
+	 */
+	function issuem_leaky_paywall_susbscriber_restrictions() {
+	
+		if ( is_issuem_leaky_subscriber_logged_in() ) {
+			
+			if ( $customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] ) ) {
+			
+				$settings = get_issuem_leaky_paywall_settings();
+				$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+				$restriction_level = get_user_meta( $customer['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+				
+				if ( !empty( $settings['levels'][$restriction_level] ) )
+					return $settings['levels'][$restriction_level];
+			
+			}
+			
+		}
+		
+		return false;
+		
+	}
 }
 
 if ( !function_exists( 'issuem_leaky_paywall_get_email_from_subscriber_hash' ) ){
@@ -1042,6 +1086,256 @@ if ( !function_exists( 'issuem_leaky_paywall_server_pdf_download' ) ) {
 	        }
 	    }
 	}
+}
+
+if ( !function_exists( 'build_issuem_leaky_paywall_subscription_levels_row' ) ) {
+
+	/**
+	 * @since 1.0.0
+	 *
+	 * @return mixed Value set for the issuem options.
+	 */
+	function build_issuem_leaky_paywall_subscription_levels_row( $level=array(), $row_key='' ) {
+	
+		if ( empty( $level ) ) {
+			$level = array(
+				'label' 				=> '',
+				'price' 				=> '',
+				'interval_count' 		=> 1,
+				'interval' 				=> 'month',
+				'recurring' 			=> 'off',
+				'plan_id' 				=> '',
+				'post_types' => array(
+					array(
+						'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+						'allowed' 		=> 'unlimited',
+						'allowed_value' => -1
+					)
+				)
+			);
+		}
+    	
+    	if ( empty( $level['recurring'] ) )
+    		$level['recurring'] = 'off';
+		
+		$return  = '<table class="issuem-leaky-paywall-subscription-level-row-table leaky-paywall-table">';
+		$return .= '<tr>';
+		$return .= '<th><label for="level-name-' . $row_key . '">' . __( 'Subscription Name', 'issuem-leaky-paywall' ) . '</label></th>';
+		$return .= '<td>';
+		$return .= '<input id="level-name-' . $row_key . '" type="text" name="levels[' . $row_key . '][label]" value="' . htmlspecialchars( stripcslashes( $level['label'] ) ) . '" />';
+		$return .= '<span class="delete-x delete-subscription-level">&times;</span>';
+		$return .= '</td>';
+		$return .= '</tr>';
+		    
+		$return .= '<tr>';		
+		$return .= '<th><label for="level-recurring-' . $row_key . '">' . __( 'Recurring?', 'issuem-leaky-paywall' ) . '</label></th>';
+		$return .= '<td><input id="level-recurring-' . $row_key . '" class="stripe-recurring" type="checkbox" name="levels[' . $row_key . '][recurring]" value="' . checked( 'on', $level['recurring'], false ) . '" /></td>';
+		$return .= '</tr>';	
+						
+		$return .= '<tr>';	
+		$return .= '<th><label for="level-price-' . $row_key . '">' . __( 'Subscription Price', 'issuem-leaky-paywall' ) . '</label></th>';
+		$return .= '<td><input id="level-price-' . $row_key . '" type="text" class="small-text" name="levels[' . $row_key . '][price]" value="' . stripcslashes( $level['price'] ) . '" /></td>';	
+		$return .= '</tr>';	
+				
+		$return .= '<tr>';	
+		$return .= '<th><label for="level-interval-count-' . $row_key . '">' . __( 'Subscription Length', 'issuem-leaky-paywall' ) . '</label></th>';
+		$return .= '<td>';
+		$return .= __( 'For', 'issuem-leaky-paywall' ) . ' <input id="level-interval-count-' . $row_key . '" type="text" class="small-text" name="levels[' . $row_key . '][interval_count]" value="' . stripcslashes( $level['interval_count'] ) . '" />';	
+		$return .= '<select id="interval" name="levels[' . $row_key . '][interval]">';
+        $return .= '  <option value="day" ' . selected( 'day' === $level['interval'], true, false ) . '>' . __( 'Day(s)', 'issuem-leaky-paywall' ) . '</option>';
+        $return .= '  <option value="week" ' . selected( 'week' === $level['interval'], true, false ) . '>' . __( 'Week(s)', 'issuem-leaky-paywall' ) . '</option>';
+        $return .= '  <option value="month" ' . selected( 'month' === $level['interval'], true, false ) . '>' . __( 'Month(s)', 'issuem-leaky-paywall' ) . '</option>';
+        $return .= '  <option value="year" ' . selected( 'year' === $level['interval'], true, false ) . '>' . __( 'Year(s)', 'issuem-leaky-paywall' ) . '</option>';
+        $return .= '</select>';
+        $return .= '<p class="description">' . __( 'Enter 0 for unlimited access.', 'issuem-leaky-paywall' ) . '</p>';
+        $return .= '</td>';
+		$return .= '</tr>';
+        		
+		$return .= '<tr>';
+		$return .= '<th>' . __( 'Access Options', 'issuem-leaky-paywall' ) . '</th>';
+		$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-post-types">';
+		$last_key = -1;
+		if ( !empty( $level['post_types'] ) ) {
+			foreach( $level['post_types'] as $select_post_key => $select_post_type ) {
+				$return .= build_issuem_leaky_paywall_subscription_row_post_type( $select_post_type, $select_post_key, $row_key );
+				$last_key = $select_post_key;
+			}
+		}
+		$return .= '</td>';
+		$return .= '</tr>';
+		
+		$return .= '<tr>';
+		$return .= '<th>&nbsp;</th>';
+		$return .= '<td>';
+        $return .= '<script type="text/javascript" charset="utf-8">';
+        $return .= '    var issuem_leaky_paywall_subscription_row_' . $row_key . '_last_post_type_key = ' . $last_key;
+        $return .= '</script>';
+		$return .= '<p><input data-row-key="' . $row_key . '" class="button-secondary" id="add-subscription-row-post-type" class="add-new-issuem-leaky-paywall-row-post-type" type="submit" name="add_issuem_leaky_paywall_subscription_row_post_type" value="' . __( 'Add New Post Type', 'issuem-leaky-paywall' ) . '" /></p>';
+		$return .= '</td>';
+		$return .= '</tr>';
+		
+		$return .= '</table>';
+		
+		return $return;
+		
+	}
+	
+}
+ 
+if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_ajax' ) ) {
+
+	/**
+	 * AJAX Wrapper
+	 *
+	 * @since 1.0.0
+	 */
+	function build_issuem_leaky_paywall_subscription_row_ajax() {
+		if ( isset( $_REQUEST['row-key'] ) )
+			die( build_issuem_leaky_paywall_subscription_levels_row( array(), $_REQUEST['row-key'] ) );
+		else
+			die();
+	}
+	add_action( 'wp_ajax_issuem-leaky-paywall-add-new-subscription-row', 'build_issuem_leaky_paywall_subscription_row_ajax' );
+	
+}
+ 
+if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_post_type' ) ) {
+
+	/**
+	 * @since 1.0.0
+	 *
+	 * @return mixed Value set for the issuem options.
+	 */
+	function build_issuem_leaky_paywall_subscription_row_post_type( $select_post_type=array(), $select_post_key='', $row_key='' ) {
+
+		if ( empty( $select_post_type ) ) {
+			$select_post_type = array(
+				'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+				'allowed' 		=> 'unlimited',
+				'allowed_value' => -1
+			);
+		}
+		
+		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
+		$post_types = get_post_types( array(), 'objects' );
+
+		$return  = '<div class="issuem-leaky-paywall-row-post-type">';
+		$return .= '<label>' . __( 'Post Type', 'issuem-leaky-paywall' ) . '</label>';
+		$return .= '<select name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
+		
+		foreach ( $post_types as $post_type ) {
+			
+			if ( in_array( $post_type->name, $hidden_post_types ) ) 
+				continue;
+				
+			$return .= '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . $post_type->name . '</option>';
+		
+        }
+		$return .= '</select>';
+		
+		$return .= '<select class="allowed_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed]">';						
+			$return .= '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited Access', 'issuem-leaky-paywall' ) . '</option>';
+			$return .= '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limited Access', 'issuem-leaky-paywall' ) . '</option>';
+		$return .= '</select>';
+			
+		if ( 'unlimited' == $select_post_type['allowed'] ) {
+			$allowed_value_input_style = 'display: none;';
+		} else {
+			$allowed_value_input_style = '';
+		}
+			    
+		$return .= '<input type="text" class="allowed_value small-text" style="' . $allowed_value_input_style . '" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" />';
+				
+		$return .= '<span class="delete-x delete-post-type-row">&times;</span>';
+		$return .= '</div>';
+		
+		return $return;
+		
+	}
+	
+}
+ 
+if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_post_type_ajax' ) ) {
+
+	/**
+	 * AJAX Wrapper
+	 *
+	 * @since 1.0.0
+	 */
+	function build_issuem_leaky_paywall_subscription_row_post_type_ajax() {
+	
+		if ( isset( $_REQUEST['select-post-key'] ) && isset( $_REQUEST['row-key'] ) )
+			die( build_issuem_leaky_paywall_subscription_row_post_type( array(), $_REQUEST['select-post-key'], $_REQUEST['row-key'] ) );
+		else
+			die();
+	}
+	add_action( 'wp_ajax_issuem-leaky-paywall-add-new-subscription-row-post-type', 'build_issuem_leaky_paywall_subscription_row_post_type_ajax' );
+	
+}
+
+if ( !function_exists( 'build_issuem_leaky_paywall_default_restriction_row' ) ) {
+
+	/**
+	 * @since 1.0.0
+	 *
+	 * @return mixed Value set for the issuem options.
+	 */
+	function build_issuem_leaky_paywall_default_restriction_row( $restriction=array(), $row_key='' ) {
+
+		if ( empty( $restriction ) ) {
+			$restriction = array(
+				'post_type' 	=> '',
+				'allowed_value' => '0',
+			);
+		}
+    	
+		$return  = '<tr class="issuem-leaky-paywall-restriction-row">';
+		$return .= '<th><label for="restriction-post-type-' . $row_key . '">' . __( 'Restriction', 'issuem-leaky-paywall' ) . '</label></th>';
+		
+		$return .= '<td>';
+		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
+		$post_types = get_post_types( array(), 'objects' );
+	    $return .= '<label for="restriction-post-type-' . $row_key . '">' . __( 'Number of', 'issuem-leaky-paywall' ) . '</label> ';
+		$return .= '<select id="restriction-post-type-' . $row_key . '" name="restrictions[post_types][' . $row_key . '][post_type]">';
+		foreach ( $post_types as $post_type ) {
+		
+			if ( in_array( $post_type->name, $hidden_post_types ) ) 
+				continue;
+			
+			$return .= '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $restriction['post_type'], false ) . '>' . $post_type->name . 's' . '</option>';
+		
+		}
+		$return .= '</select> ';
+		
+	    $return .= '<label for="restriction-allowed-' . $row_key . '">' . __( 'allowed:', 'issuem-leaky-paywall' ) . '</label> ';
+		$return .= '<input id="restriction-allowed-' . $row_key . '" type="text" class="small-text" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" />';
+
+		$return .= '<span class="delete-x delete-restriction-row">&times;</span>';
+		$return .= '</td>';
+		$return .= '</tr>';
+		
+		return $return;
+		
+	}
+	
+}
+ 
+if ( !function_exists( 'build_issuem_leaky_paywall_default_restriction_row_ajax' ) ) {
+
+	/**
+	 * AJAX Wrapper
+	 *
+	 * @since 1.0.0
+	 */
+	function build_issuem_leaky_paywall_default_restriction_row_ajax() {
+	
+		if ( isset( $_REQUEST['row-key'] ) )
+			die( build_issuem_leaky_paywall_default_restriction_row( array(), $_REQUEST['row-key'] ) );
+		else
+			die();
+	}
+	add_action( 'wp_ajax_issuem-leaky-paywall-add-new-restriction-row', 'build_issuem_leaky_paywall_default_restriction_row_ajax' );
+	
 }
 
 if ( !function_exists( 'wp_print_r' ) ) { 

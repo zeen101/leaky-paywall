@@ -109,8 +109,6 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 	function do_issuem_leaky_paywall_subscription( $atts ) {
 		
 		global $post;
-		static $shortcode_count = 0; //Tracking the number of times this shortcode appears on the page
-									 //So we don't display multiple instances for certain output
 		
 		$settings = get_issuem_leaky_paywall_settings();
 		
@@ -136,40 +134,36 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
 			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
-			
-				if ( 0 === $shortcode_count ) {
+						
+				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
 				
-					$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
-					
-					$customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] );
+				$customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] );
 
-					switch( $expires ) {
-					
-						case 'subscription':
-							$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
-							$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
-							break;
-							
-						case 'unlimited':
-							$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
-							$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
-							break;
-					
-						case 'canceled':
-							$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
-							break;
-							
-						default:
-							$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
-							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer['payment_gateway'] ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
-							
-					}
-					
-					$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
-					$results .= '<h1><a href="?logout">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
-					$results .= '</div>';
+				switch( $expires ) {
 				
+					case 'subscription':
+						$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
+						$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
+						break;
+						
+					case 'unlimited':
+						$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
+						$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
+						break;
+				
+					case 'canceled':
+						$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
+						break;
+						
+					default:
+						$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
+						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer['payment_gateway'] ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+						
 				}
+				
+				$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
+				$results .= '<h1><a href="?logout">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
+				$results .= '</div>';
 				
 			} else {
 				
@@ -436,25 +430,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 			} 
 			
-		} else {
-		
-			if ( 0 === $shortcode_count ) {
-				
-				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
-			
-				$args = array(
-					'heading' 		=> $login_heading,
-					'description' 	=> $login_desc,
-				);
-	
-				$results .= do_issuem_leaky_paywall_login( $args );
-				$results .= '</div>';
-			
-			}
-
 		}
-		
-		$shortcode_count++;
 				
 		return $results;
 		

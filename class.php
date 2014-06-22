@@ -59,7 +59,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
 			
-			if ( 'stripe' === $settings['payment_gateway'] ) {
+			if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
 				
 				if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
 										
@@ -73,8 +73,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									
 				}
 			
-			} else if ( 'paypal_standard' === $settings['payment_gateway'] ) {
-				
 			}
 			
 		}
@@ -93,20 +91,13 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 * @uses do_action() To call 'pigeonpack_admin_menu' for future addons
 		 */
 		function admin_menu() {
-		
-			$settings = $this->get_settings();
-			
+					
 			add_menu_page( __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), ISSUEM_LEAKY_PAYWALL_URL . '/images/issuem-16x16.png' );
 			
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'issuem-leaky-paywall' ), __( 'Settings', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ) );
 			
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'issuem-leaky-paywall' ), __( 'Subscribers', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
-						
-			if ( isset( $settings['version'] ) )
-				$old_version = $settings['version'];
-			else
-				$old_version = 0;
-			
+									
 			add_submenu_page( false, __( 'Update', 'issuem-leaky-paywall' ), __( 'Update', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
 			
 		}
@@ -117,7 +108,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
-				if ( !current_user_can( 'manage_options' ) || is_issuem_leaky_subscriber_logged_in() ) {
+				//Admins or subscribed users can download PDFs
+				if ( current_user_can( 'manage_options' ) || is_issuem_leaky_subscriber_logged_in() ) {
 				
 					issuem_leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 				
@@ -134,42 +126,80 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 			}
 			
-			if ( is_singular( $settings['post_types'] ) ) {
+			if ( is_single() ) {
 			
-				//incase post_type is "page"
-				if ( !is_page( $settings['page_for_login'] ) && !is_page( $settings['page_for_subscription'] ) ) {
+				if ( !current_user_can( 'manage_options' ) ) { //Admins can see it all
 				
-					if ( !current_user_can( 'manage_options' ) && !is_issuem_leaky_subscriber_logged_in() ) {
-						
-						global $post;
+					// We don't ever want to block the login, subscription
+					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'] ) ) ) {
 					
-						$free_articles = array();
+						global $post;
+						$post_type_id = '';
+						$restricted_post_type = '';
+						$restrictions = false;
+						$is_restricted = false;
 						
-						if ( !empty( $_COOKIE['issuem_lp'] ) )
-							$free_articles = maybe_unserialize( $_COOKIE['issuem_lp'] );
+						$restrictions = issuem_leaky_paywall_susbscriber_restrictions();
 						
-						if ( $settings['free_articles'] > count( $free_articles ) ) { 
+						if ( empty( $restrictions ) )
+							$restrictions = $settings['restrictions']; //default restrictions
 						
-							if ( !in_array( $post->ID, $free_articles ) )
-								$free_articles[] = $post->ID;
+						if ( !empty( $restrictions['post_types'] ) ) {
 							
-						} else {
-						
-							if ( !in_array( $post->ID, $free_articles ) ) {
+							foreach( $restrictions['post_types'] as $key => $restriction ) {
+								
+								if ( is_singular( $restriction['post_type'] ) ) {
+								
+									if ( 0 <= $restriction['allowed_value'] 
+										|| !get_post_meta( $post->ID, '_issuem_leaky_paywall_always_allow', true ) ) {
 									
-								add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										$post_type_id = $key;
+										$restricted_post_type = $restriction['post_type'];
+										$is_restricted = true;
+										break;
+										
+									}
+									
+								}
 								
 							}
+
+						}
+						
+						if ( $is_restricted ) {
+								
+							global $post;
+							
+							if ( !empty( $_COOKIE['issuem_lp'] ) )
+								$available_content = maybe_unserialize( stripslashes( $_COOKIE['issuem_lp'] ) );
+							
+							if ( empty( $available_content[$restricted_post_type] ) )
+								$available_content[$restricted_post_type] = array();
+							
+							if ( $restrictions['post_types'][$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
+							
+								if ( !in_array( $post->ID, $available_content[$restricted_post_type] ) )
+									$available_content[$restricted_post_type][] = $post->ID;
+								
+							} else {
+							
+								if ( !in_array( $post->ID, $available_content[$restricted_post_type] ) ) {
+										
+									add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+									
+								}
+								
+							}
+														
+							$serialized_available_content = maybe_serialize( $available_content );
+							setcookie( 'issuem_lp', $serialized_available_content, time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
+							$_COOKIE['issuem_lp'] = $serialized_available_content;
+							
+							return; //We don't need to process anything else after this
 							
 						}
 						
-						$serialized_free_articles = maybe_serialize( $free_articles );
-						setcookie( 'issuem_lp', $serialized_free_articles, time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
-						$_COOKIE['issuem_lp'] = $serialized_free_articles;
-		
 					}
-					
-					return; //We don't need to process anything else after this
 					
 				}
 	
@@ -214,13 +244,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					if ( verify_issuem_leaky_paywall_hash( $login_hash ) ) {
 					
 						issuem_leaky_paywall_attempt_login( $login_hash );
-					
 						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
 						
 					} else {
 					
 						$output = '<h3>' . __( 'Invalid or Expired Login Link', 'issuem-leaky-paywall' ) . '</h3>';
-
 						$output .= '<p>' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
 						$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
 						
@@ -257,7 +285,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			//Add the_content filter back for futhre the_content calls
 			
 			$message  = '<div id="leaky_paywall_message">';
-			$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			if ( !is_issuem_leaky_subscriber_logged_in() ) {
+				$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			} else {
+				$message .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
+			}
 			$message .= '</div>';
 		
 			$new_content = $content . $message;
@@ -270,12 +302,14 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	
 			$settings = $this->get_settings();
 			
-			if ( 0 === $settings['page_for_login'] )
-				$login_url = get_bloginfo( 'wpurl' ) . '/?login';
+			if ( 0 === $settings['page_for_subscription'] )
+				$subscription_url = get_bloginfo( 'wpurl' ) . '/?subscription'; //CHANGEME -- I don't really know what this is suppose to do...
 			else
-				$login_url = get_page_link( $settings['page_for_login'] );
+				$subscription_url = get_page_link( $settings['page_for_subscription'] );
 				
-			$message = str_ireplace( '{{SUBSCRIBE_LOGIN_URL}}', $login_url, $message );
+			$message = str_ireplace( '{{SUBSCRIBE_LOGIN_URL}}', $subscription_url, $message );
+			
+			//Deprecated
 			$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
 			$message = str_ireplace( '{{LENGTH}}', $this->human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
 			
@@ -439,18 +473,13 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'post_types'				=> ISSUEM_ACTIVE_LP ? array( 'article' ) : array( 'post' ),
 				'free_articles'				=> 2,
 				'cookie_expiration'			=> 24,
-				'subscribe_login_message'	=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this article. Subscriptions include access to the website and <strong>all back issues</strong>.', 'issuem-leaky-paywall' ),
+				'subscribe_login_message'	=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
+				'subscribe_upgrade_message'	=> __( 'You must <a href="{{SUBSCRIBE_LOGIN_URL}}">upgrade your account</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
 				'css_style'					=> 'default',
 				'site_name'					=> get_option( 'blogname' ),
 				'from_name'					=> get_option( 'blogname' ),
 				'from_email'				=> get_option( 'admin_email' ),
-				'price'						=> '1.99',
-				'interval_count'			=> 1,
-				'interval'					=> 'month',
-				'recurring'					=> 'off',
-				'plan_id'					=> '',
-				'charge_description'		=> __( 'Magazine Subscription', 'issuem-leaky-paywall' ),
-				'payment_gateway'			=> 'stripe',
+				'payment_gateway'			=> array( 'stripe' ),
 				'test_mode'					=> 'off',
 				'live_secret_key'			=> '',
 				'live_publishable_key'		=> '',
@@ -459,6 +488,35 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'paypal_live_email'			=> '',
 				'paypal_sand_email'			=> '',
 				'restrict_pdf_downloads' 	=> 'off',
+				'restrictions' 	=> array(
+					'post_types' => array(
+						'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+						'allowed_value' => 2,
+					)
+				),
+				'levels'				=> array(
+					'0' => array(
+						'label' 				=> __( 'Magazine Subscription', 'issuem-leaky-paywall' ),
+						'price' 				=> '',
+						'interval_count' 		=> 1,
+						'interval' 				=> 'month',
+						'recurring' 			=> 'off',
+						'plan_id' 				=> '',
+						'post_types' => array(
+							array(
+								'post_type' 	=> 'post',
+								'allowed'		=> 'limited',
+								'allowed_value' => 5,
+							),
+							array(
+								'post_type' 	=> 'article',
+								'allowed'		=> 'limited',
+								'allowed_value' => 10,
+							),
+						),
+					)
+				),
+
 			);
 		
 			$defaults = apply_filters( 'issuem_leaky_paywall_default_settings', $defaults );
@@ -525,28 +583,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				else
 					$settings['restrict_pdf_downloads'] = 'off';
 					
-				if ( !empty( $_REQUEST['recurring'] ) )
-					$settings['recurring'] = $_REQUEST['recurring'];
-				else
-					$settings['recurring'] = 'off';
-					
-				if ( isset( $_REQUEST['plan_id'] ) )
-					$settings['plan_id'] = trim( $_REQUEST['plan_id'] );
-					
-				if ( isset( $_REQUEST['price'] ) )
-					$settings['price'] = number_format( $_REQUEST['price'], 2, '.', '' );
-					
-				if ( !empty( $_REQUEST['interval'] ) )
-					$settings['interval'] = $_REQUEST['interval'];
-					
-				if ( isset( $_REQUEST['interval_count'] ) )
-					$settings['interval_count'] = (int)$_REQUEST['interval_count'];
-					
-				if ( !empty( $_REQUEST['charge_description'] ) )
-					$settings['charge_description'] = trim( $_REQUEST['charge_description']);
-					
 				if ( !empty( $_REQUEST['subscribe_login_message'] ) )
 					$settings['subscribe_login_message'] = trim( $_REQUEST['subscribe_login_message']);
+					
+				if ( !empty( $_REQUEST['subscribe_upgrade_message'] ) )
+					$settings['subscribe_upgrade_message'] = trim( $_REQUEST['subscribe_upgrade_message']);
 					
 				if ( !empty( $_REQUEST['css_style'] ) )
 					$settings['css_style'] = $_REQUEST['css_style'];
@@ -559,7 +600,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( !empty( $_REQUEST['payment_gateway'] ) )
 					$settings['payment_gateway'] = $_REQUEST['payment_gateway'];
 				else
-					$settings['payment_gateway'] = 'stripe';
+					$settings['payment_gateway'] = array( 'stripe' );
 					
 				if ( !empty( $_REQUEST['live_secret_key'] ) )
 					$settings['live_secret_key'] = trim( $_REQUEST['live_secret_key']);
@@ -578,6 +619,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['paypal_sand_email'] ) )
 					$settings['paypal_sand_email'] = trim( $_REQUEST['paypal_sand_email']);
+					
+				if ( !empty( $_REQUEST['restrictions'] ) )
+					$settings['restrictions'] = $_REQUEST['restrictions'];
+				else
+					$settings['restrictions'] = array();
+					
+				if ( !empty( $_REQUEST['levels'] ) )
+					$settings['levels'] = $_REQUEST['levels'];
+				else
+					$settings['levels'] = array();
 				
 				$this->update_settings( $settings );
 				$settings_saved = true;
@@ -613,7 +664,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         
                         <div class="inside">
                         
-                        <table id="issuem_license_key">
+                        <table id="issuem_license_key" class="leaky-paywall-table">
                         	<tr>
                                 <th rowspan="1"> <?php _e( 'License Key', 'issuem-leaky-paywall' ); ?></th>
                                 <td class="leenkme_plugin_name">
@@ -650,7 +701,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         
                         <div class="inside">
                         
-                        <table id="issuem_leaky_paywall_administrator_options">
+                        <table id="issuem_leaky_paywall_administrator_options" class="leaky-paywall-table">
                         
                         	<tr>
                                 <th><?php _e( 'Page for Log In', 'issuem-leaky-paywall' ); ?></th>
@@ -668,50 +719,22 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 </td>
                             </tr>
                             
-                            <?php 
-							$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
-							$post_types = get_post_types( array(), 'objects' );
-							?>
-                            
-                        	<tr>
-                                <th><?php _e( 'Leaky Post Types', 'leaky-paywall' ); ?></th>
-                                <td>
-								<select name="post_types[]" multiple="multiple">
-                                <?php
-								foreach ( $post_types as $post_type ) {
-									
-									if ( in_array( $post_type->name, $hidden_post_types ) ) 
-										continue;
-										
-									echo '<option value="' . $post_type->name . '" ' . selected( in_array( $post_type->name, $settings['post_types'] ) ) . '>' . $post_type->name . '</option>';
-								
-                                }
-                                ?>
-                                </select>
-                                </td>
-                            </tr>
-                            
-                        	<tr>
-                                <th><?php _e( 'Number of Free Articles?', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="free_articles" class="small-text" name="free_articles" value="<?php echo htmlspecialchars( stripcslashes( $settings['free_articles'] ) ); ?>" /></td>
-                            </tr>
-                            
-                        	<tr>
-                                <th><?php _e( 'Free Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> <?php _e( 'hours', 'issuem-leaky-paywal' ); ?></td>
-                            </tr>
-                            
-                        	<tr>
-                                <th><?php _e( 'Restrict PDF Downloads?', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
-                            </tr>
-                            
                         	<tr>
                                 <th><?php _e( 'Subscribe or Login Message', 'issuem-leaky-paywall' ); ?></th>
                                 <td>
                     				<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_login_message'] ); ?></textarea>
                                     <p class="description">
-                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}}, {{PRICE}}, {{LENGTH}}", 'issuem-leaky-paywall' ); ?>
+                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Upgrade Message', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                    				<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_upgrade_message'] ); ?></textarea>
+                                    <p class="description">
+                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
                                     </p>
                                 </td>
                             </tr>
@@ -722,16 +745,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								<select id='css_style' name='css_style'>
 									<option value='default' <?php selected( 'default', $settings['css_style'] ); ?> ><?php _e( 'Default', 'issuem-leaky-paywall' ); ?></option>
 									<option value='none' <?php selected( 'none', $settings['css_style'] ); ?> ><?php _e( 'None', 'issuem-leaky-paywall' ); ?></option>
-								</select>
-                                </td>
-                            </tr>
-                        
-                        	<tr>
-                                <th><?php _e( 'Payment Gateway', 'issuem-leaky-paywall' ); ?></th>
-                                <td>
-								<select id='payment_gateway' name='payment_gateway'>
-									<option value='stripe' <?php selected( 'stripe', $settings['payment_gateway'] ); ?> ><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></option>
-									<option value='paypal_standard' <?php selected( 'paypal_standard', $settings['payment_gateway'] ); ?> ><?php _e( 'PayPal Standard', 'issuem-leaky-paywall' ); ?></option>
 								</select>
                                 </td>
                             </tr>
@@ -754,7 +767,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         
                         <div class="inside">
                         
-                        <table id="issuem_leaky_paywall_administrator_options">
+                        <table id="issuem_leaky_paywall_administrator_options" class="leaky-paywall-table">
                         
                         	<tr>
                                 <th><?php _e( 'Site Name', 'issuem-leaky-paywall' ); ?></th>
@@ -780,71 +793,43 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         </div>
                         
                     </div>
-                    
-                    <?php if ( 'stripe' === $settings['payment_gateway'] ) { ?>
-                    
+                                        
                     <div id="modules" class="postbox">
                     
                         <div class="handlediv" title="Click to toggle"><br /></div>
                         
-                        <h3 class="hndle"><span><?php _e( 'Stripe Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+                        <h3 class="hndle"><span><?php _e( 'Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
                         
                         <div class="inside">
                         
-                        <table id="issuem_leaky_paywall_stripe_options">
-                            
-                            <tr>
-                            	<th><?php _e( "Recurring?", 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="checkbox" id="recurring" name="recurring" <?php checked( 'on', $settings['recurring'] ); ?> /></td>
-                            </tr>
-                            
-                            <?php
-							if ( 'off' === $settings['recurring'] ) {
-								$recurring_hidden = 'style="display: none;"';
-								$manual_hidden = '';
-							} else {
-								$recurring_hidden = '';
-								$manual_hidden = 'style="display: none;"';
-							}
-							?>
-                        
-                        	<tr class="stripe_plan" <?php echo $recurring_hidden; ?>>
-                            	<th><?php _e( "Plan ID", 'issuem-leaky-paywall' ); ?></th>
-                                <td>
-                                	<input type="text" id="plan_id" class="regular-text" name="plan_id" value="<?php echo $settings['plan_id']; ?>" />
-                                    <p class="description">
-                                        <?php _e( 'To setup recurring payments, you must setup a Plan in the Stripe dashboard.<br />Then copy/paste the plan ID into these settings.', 'issuem-leaky-paywall' ); ?>
-                                    </p>
-                                </td>
-                            </tr>
-                            
-                        	<tr class="stripe_manual" <?php echo $manual_hidden; ?>>
-                                <th><?php _e( 'Subscription Price', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="price" class="small-text" name="price" value="<?php echo stripcslashes( $settings['price'] ); ?>" /></td>
-                            </tr>
-                            
-                        	<tr class="stripe_manual" <?php echo $manual_hidden; ?>>
-                                <th><?php _e( 'Subscription Length', 'issuem-leaky-paywall' ); ?></th>
-                                <td><?php _e( 'For', 'issuem-leaky-paywall' ); ?> <input type="text" id="interval_count" class="small-text" name="interval_count" value="<?php echo stripcslashes( $settings['interval_count'] ); ?>" /> 
-                                <select id="interval" name="interval">
-                                	<option value="day" <?php selected( 'day' === $settings['interval'] ); ?>><?php _e( 'Day(s)', 'issuem-leaky-paywall' ); ?></option>
-                                	<option value="week" <?php selected( 'week' === $settings['interval'] ); ?>><?php _e( 'Week(s)', 'issuem-leaky-paywall' ); ?></option>
-                                	<option value="month" <?php selected( 'month' === $settings['interval'] ); ?> ><?php _e( 'Month(s)', 'issuem-leaky-paywall' ); ?></option>
-                                	<option value="year" <?php selected( 'year' === $settings['interval'] ); ?> ><?php _e( 'Year(s)', 'issuem-leaky-paywall' ); ?></option>
-                                </select>
-                                <p class="description"><?php _e( 'Enter 0 for unlimited access.', 'issuem-leaky-paywall' ); ?></p>
-                                </td>
-                            </tr>
+                        <table id="issuem_leaky_paywall_stripe_options" class="leaky-paywall-table">
                         
                         	<tr>
-                                <th><?php _e( 'Charge Description', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="charge_description" class="regular-text" name="charge_description" value="<?php echo htmlspecialchars( stripcslashes( $settings['charge_description'] ) ); ?>" /></td>
+                                <th><?php _e( 'Enabled Gateways', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+									<p>
+										<input id="enable-stripe" type="checkbox" name="payment_gateway[]" value="stripe" <?php checked( in_array( 'stripe', $settings['payment_gateway'] ) ); ?> /> <label for="enable-stripe"><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></label>
+									</p>
+									<p>
+									<input id="enable-paypal-standard" type="checkbox" name="payment_gateway[]"  value='paypal_standard' <?php checked( in_array( 'paypal_standard', $settings['payment_gateway'] ) ); ?> /> <label for="enable-paypal-standard"><?php _e( 'PayPal Standard', 'issuem-leaky-paywall' ); ?></label>
+									</p>
+                                </td>
                             </tr>
-                            
+                                                        
                             <tr>
                             	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
                             </tr>
+                            
+                        </table>
+                        
+                        <?php
+                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
+                        ?>
+                        
+                        <table id="issuem_leaky_paywall_stripe_options" class="leaky-paywall-table">
+                        
+	                        <tr><td colspan="2"><h3><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
                             
                         	<tr>
                                 <th><?php _e( 'Live Secret Key', 'issuem-leaky-paywall' ); ?></th>
@@ -868,51 +853,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             
                         </table>
 
-                    <?php } else if ( 'paypal_standard' === $settings['payment_gateway'] ) { ?>
+                    <?php } ?>
                     
-                    <div id="modules" class="postbox">
-                    
-                        <div class="handlediv" title="Click to toggle"><br /></div>
+                    <?php
+                    if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) { 
+                    ?>
+                                            
+                        <table id="issuem_leaky_paywall_paypal_options" class="leaky-paywall-table">
                         
-                        <h3 class="hndle"><span><?php _e( 'PayPal Standard Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <tr><td colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
                         
-                        <div class="inside">
-                        
-                        <table id="issuem_leaky_paywall_paypal_options">
-                            
-                            <tr>
-                            	<th><?php _e( "Recurring?", 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="checkbox" id="recurring" name="recurring" <?php checked( 'on', $settings['recurring'] ); ?> /></td>
-                            </tr>
-                            
-                        	<tr class="subscription_price">
-                                <th><?php _e( 'Subscription Price', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="price" class="small-text" name="price" value="<?php echo stripcslashes( $settings['price'] ); ?>" /></td>
-                            </tr>
-                            
-                        	<tr class="paypal_recurring">
-                                <th><?php _e( 'Subscription Length', 'issuem-leaky-paywall' ); ?></th>
-                                <td><?php _e( 'For', 'issuem-leaky-paywall' ); ?> <input type="text" id="interval_count" class="small-text" name="interval_count" value="<?php echo stripcslashes( $settings['interval_count'] ); ?>" /> 
-                                <select id="interval" name="interval">
-                                	<option value="day" <?php selected( 'day' === $settings['interval'] ); ?>><?php _e( 'Day(s)', 'issuem-leaky-paywall' ); ?></option>
-                                	<option value="week" <?php selected( 'week' === $settings['interval'] ); ?>><?php _e( 'Week(s)', 'issuem-leaky-paywall' ); ?></option>
-                                	<option value="month" <?php selected( 'month' === $settings['interval'] ); ?> ><?php _e( 'Month(s)', 'issuem-leaky-paywall' ); ?></option>
-                                	<option value="year" <?php selected( 'year' === $settings['interval'] ); ?> ><?php _e( 'Year(s)', 'issuem-leaky-paywall' ); ?></option>
-                                </select>
-                                <p class="description"><?php _e( 'Enter 0 for unlimited access.', 'issuem-leaky-paywall' ); ?></p>
-                                </td>
-                            </tr>
-                        
-                        	<tr>
-                                <th><?php _e( 'Charge Description', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="charge_description" class="regular-text" name="charge_description" value="<?php echo htmlspecialchars( stripcslashes( $settings['charge_description'] ) ); ?>" /></td>
-                            </tr>
-                            
-                            <tr>
-                            	<th><?php _e( "Sandbox Mode?", 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
-                            </tr>
-                            
                         	<tr>
                                 <th><?php _e( 'PayPal Email', 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_email'] ) ); ?>" /></td>
@@ -929,6 +879,102 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         
                         <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
                                                   
+                        <p class="submit">
+                            <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+
+                        </div>
+                        
+                    </div>
+                    
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Content Restriction', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+                        
+                        <table id="issuem_leaky_paywall_default_restriction_options" class="leaky-paywall-table">
+                        	                            
+                        	<tr>
+                                <th><?php _e( 'Free Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="text" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> <?php _e( 'hours', 'issuem-leaky-paywal' ); ?></td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Restrict PDF Downloads?', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
+                            </tr>
+                            
+                        	<?php 
+                        	$last_key = -1;
+                        	if ( !empty( $settings['restrictions']['post_types'] ) ) {
+                        	
+	                        	foreach( $settings['restrictions']['post_types'] as $key => $restriction ) {
+	                        	
+	                        		echo build_issuem_leaky_paywall_default_restriction_row( $restriction, $key );
+	                        		$last_key = $key;
+	                        		
+	                        	}
+	                        	
+                        	}
+                        	?>
+                            
+                        </table>
+                    
+				        <script type="text/javascript" charset="utf-8">
+				            var issuem_leaky_paywall_restriction_row_key = <?php echo $last_key; ?>;
+				        </script>
+                    	
+                    	<p>
+                       		<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_issuem_leaky_paywall_restriction_row" value="<?php _e( 'Add New Restricted Content', 'issuem-leaky-paywall-multilevel' ); ?>" />
+                    	</p>
+
+                        <p class="submit">
+                            <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+                        
+                        </div>
+                        
+                    </div>
+                                        
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Subscription Levels', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+                    
+                        <table id="issuem_leaky_paywall_subscription_level_options" class="leaky-paywall-table">
+
+							<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
+                        	<?php 
+                        	$last_key = -1;
+                        	if ( !empty( $settings['levels'] ) ) {
+                        	
+	                        	foreach( $settings['levels'] as $key => $level ) {
+	                        	
+	                        		echo build_issuem_leaky_paywall_subscription_levels_row( $level, $key );
+	                        		$last_key = $key;
+	                        		
+	                        	} 
+	                        	
+                        	}
+                        	?>
+							</td></tr>
+
+                        </table>
+
+				        <script type="text/javascript" charset="utf-8">
+				            var issuem_leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;
+				        </script>
+                        
+                        <p>
+	                        <input class="button-secondary" id="add-subscription-row" class="add-new-issuem-leaky-paywall-subscription-row" type="submit" name="add_issuem_leaky_paywall_row" value="<?php _e( 'Add New Level', 'issuem-leaky-paywall-multilevel' ); ?>" />
+                        </p>
+
                         <p class="submit">
                             <input class="button-primary" type="submit" name="update_issuem_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
                         </p>
@@ -1291,6 +1337,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					<?php
 					
 					$manual_update_version = get_option( 'leaky_paywall_manual_update_version' );
+					$manual_update_version = '1.2.0'; //CHANGEME
 										
 					if ( version_compare( $manual_update_version, '2.0.0', '<' ) )
 						$this->update_2_0_0();
@@ -1329,101 +1376,14 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				$old_db_version = $settings['db_version'];
 			else
 				$old_db_version = 0;
-			
-			if ( version_compare( $old_db_version, '1.0.0', '<' ) )
-				$this->init_db_table();
-			
-			if ( version_compare( $old_db_version, '1.0.3', '<' ) )
-				$this->update_db_1_0_3();
-			
-			if ( version_compare( $old_db_version, '1.0.4', '<' ) )
-				$this->update_db_1_0_4();
-
+						
 			$settings['version'] = ISSUEM_LEAKY_PAYWALL_VERSION;
 			$settings['db_version'] = ISSUEM_LEAKY_PAYWALL_DB_VERSION;
 			
 			$this->update_settings( $settings );
 			
 		}
-		
-		function init_db_table() {
-			
-			global $wpdb;
-			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-			
-			$table_name = $wpdb->prefix . 'issuem_leaky_paywall_subscribers';
-
-			//available subscriber status = pending, unsubscribed, subscribed, bounced
-			//Max Email Length is 254 http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
-			$sql = "CREATE TABLE $table_name (
-				hash        VARCHAR(64)   NOT NULL,
-				email       VARCHAR(254)  NOT NULL,
-				stripe_id   VARCHAR(64)   NOT NULL,
-				price       VARCHAR(8),
-				description VARCHAR(254),
-				plan        VARCHAR(64),
-				created     DATETIME      NOT NULL,
-				expires     DATETIME      NOT NULL,
-				stripe_mode VARCHAR(4),
-				UNIQUE KEY hash (hash)
-			);";
-			
-			dbDelta( $sql );
-			
-			$table_name = $wpdb->prefix . 'issuem_leaky_paywall_logins';
-
-			//available subscriber status = pending, unsubscribed, subscribed, bounced
-			//Max Email Length is 254 http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
-			$sql = "CREATE TABLE $table_name (
-				hash    VARCHAR(64)  NOT NULL,
-				email   VARCHAR(254) NOT NULL,
-				created DATETIME     NOT NULL,
-				expires DATETIME     NOT NULL,
-				UNIQUE KEY hash (hash)
-			);";
-			
-			dbDelta( $sql );
-			
-		}
-		
-		function update_db_1_0_3() {
-			
-			global $wpdb;
-			
-			$table_name = $wpdb->prefix . 'issuem_leaky_paywall_subscribers';
-			$wpdb->query( 'ALTER TABLE ' . $table_name . ' CHANGE stripe_id subscriber_id VARCHAR(64);' );
-			$wpdb->query( 'ALTER TABLE ' . $table_name . ' CHANGE stripe_mode mode VARCHAR(4);' );
-			
-		}
-		
-		function update_db_1_0_4() {
-			
-			global $wpdb;
-			
-			$table_name = $wpdb->prefix . 'issuem_leaky_paywall_subscribers';
-
-			//available subscriber status = pending, unsubscribed, subscribed, bounced
-			//Max Email Length is 254 http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
-			$sql = "CREATE TABLE $table_name (
-				hash            VARCHAR(64)   NOT NULL, 
-				email           VARCHAR(254)  NOT NULL, 
-				subscriber_id   VARCHAR(64)   NOT NULL, 
-				price           VARCHAR(8), 
-				description     VARCHAR(254), 
-				plan            VARCHAR(64), 
-				created         DATETIME      NOT NULL, 
-				expires         DATETIME      NOT NULL, 
-				mode            VARCHAR(4), 
-				payment_gateway VARCHAR(32)   DEFAULT 'stripe',
-				payment_status  VARCHAR(32),
-				UNIQUE KEY hash (hash) 
-			);";
-			
-			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-			dbDelta( $sql );
-			
-		}
-		
+				
 		function update_2_0_0() {
 			global $wpdb;
 						
@@ -1460,20 +1420,21 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                 if ( !empty( $user_id ) ) {
 	                //now we want to set the Leaky Paywall subscriber meta
 	                $user_meta = array(
-	                	'user_id'         => $user_id,
-	                	'hash'            => $subscriber->hash,
-	                	'subscriber_id'   => $subscriber->subscriber_id,
-	                	'price'           => $subscriber->price,
-	                	'description'     => $subscriber->description,
-	                	'plan'            => $subscriber->plan,
-	                	'created'         => $subscriber->created,
-	                	'expires'         => $subscriber->expires,
-	                	'payment_gateway' => $subscriber->payment_gateway,
-	                	'payment_status'  => $subscriber->payment_status,
+	                	'user_id' 			=> $user_id,
+	                	'hash' 				=> $subscriber->hash,
+	                	'subscriber_id' 	=> $subscriber->subscriber_id,
+	                	'price' 			=> $subscriber->price,
+	                	'description' 		=> $subscriber->description,
+	                	'plan' 				=> $subscriber->plan,
+	                	'created' 			=> $subscriber->created,
+	                	'expires' 			=> $subscriber->expires,
+	                	'payment_gateway' 	=> $subscriber->payment_gateway,
+	                	'payment_status' 	=> $subscriber->payment_status,
 	                );
 	                
 	                update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_hash', $subscriber->hash );
 	                update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_' . $subscriber->hash, $user_meta );
+	                update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_level_id', '0' ); //Default level ID
 	                
 	                echo __( 'completed.', 'issuem-leaky-paywall' );
                 } else {
@@ -1487,7 +1448,55 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             
             if ( empty( $subscribers ) || 5 > count( $subscribers ) ) {
             
-                echo '<p>' . __( 'All done!' ) . '</p>';
+                echo '<p>' . __( 'Finished Migrating Subscribers!', 'issuem-leaky-paywall' ) . '</p>';
+                echo '<p>' . __( 'Updating Settings...', 'issuem-leaky-paywall' ) . '</p>';
+                
+                $settings = $this->get_settings();
+                
+                if ( !is_array( $settings['payment_gateway'] ) )
+                	$settings['payment_gateway'] = array( $settings['payment_gateway'] );
+				
+				if ( !empty( $settings['post_types'] ) ) {
+					foreach ( $settings['post_types'] as $post_type ) {
+						
+						$restriction[] = array(
+							'post_type' 	=> $post_type,
+							'allowed_value' => $settings['free_articles'],
+						);
+						
+					}
+				}
+                $settings['restrictions']['post_types'] = $restriction;
+
+				if ( !empty( $settings['post_types'] ) ) {
+					foreach ( $settings['post_types'] as $post_type ) {
+						
+						$allow_post_types[] = array(
+							'post_type' 	=> $post_type,
+							'allowed'		=> 'unlimited',
+							'allowed_value' => -1,
+						);
+						
+					}
+				} else {
+					$allow_post_types = array();
+				}
+				
+				$settings['levels'] = array(
+					'0' => array(
+						'label' 				=> $settings['charge_description'],
+						'price' 				=> $settings['price'],
+						'recurring' 			=> $settings['recurring'],
+						'interval_count' 		=> $settings['interval_count'],
+						'interval' 				=> $settings['interval'],
+						'plan_id' 				=> $settings['plan_id'],
+						'post_types' 			=> $allow_post_types,
+					)
+				);
+                
+				$this->update_settings( $settings );
+
+                echo '<p>' . __( 'All Done!', 'issuem-leaky-paywall' ) . '</p>';
 				update_option( 'leaky_paywall_manual_update_version', '2.0.0' );
                 return;
                 
@@ -1523,6 +1532,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					if ( 'admin_page_leaky-paywall-update' !== $hook_suffix && 'leaky-paywall_page_leaky-paywall-update' !== $hook_suffix ) {
 										
 						$manual_update_version = get_option( 'leaky_paywall_manual_update_version' );
+						$manual_update_version = '1.2.0'; //CHANGEME
 											
 						if ( version_compare( $manual_update_version, '2.0.0', '<' ) ) {
 							?>

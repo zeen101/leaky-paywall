@@ -84,6 +84,7 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$users_columns = array(
 			'wp_user_login' => __( 'WordPress Username', 'issuem-leaky-paywall' ),
 			'email'         => __( 'E-mail', 'issuem-leaky-paywall' ),
+			'level_id' 		=> __( 'Level ID', 'issuem-leaky-paywall' ),
 			'susbcriber_id' => __( 'Subscriber ID', 'issuem-leaky-paywall' ),
 			'price'         => __( 'Price', 'issuem-leaky-paywall' ),
 			'plan'          => __( 'Plan', 'issuem-leaky-paywall' ),
@@ -100,6 +101,8 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$sortable_columns = array(
 			'wp_user_login' => array( 'wp_user_login', false ),
 			'email'         => array( 'email', false ),
+			'level_id' 		=> array( 'level_id', false ),
+			'susbcriber_id' => array( 'susbcriber_id', false ),
 			'price'         => array( 'price', false ),
 			'plan'          => array( 'plan', false ),
 			'expires'       => array( 'expires', false ),
@@ -113,11 +116,13 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 	function display_rows() {
 		global $current_site;
+		$settings = get_issuem_leaky_paywall_settings();
 
 		$alt = '';
 		foreach ( $this->items as $user ) {
 			$alt = ( 'alternate' == $alt ) ? '' : 'alternate';
 			$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $user->user_email );
+			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 			?>
 			<tr class="<?php echo $alt; ?>">
 			<?php
@@ -148,6 +153,17 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							<?php echo $avatar; ?><strong><a href="<?php echo $edit_link; ?>" class="edit"><?php echo $user->user_email; ?></a></strong>
 						</td>
 					<?php
+					break;
+					
+					case 'level_id':
+						$level_id = get_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+						if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
+							$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
+						} else {
+							$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
+						}
+							
+						echo '<td $attributes>' . $level_name . '</td>';
 					break;
 					
 					case 'susbcriber_id':
