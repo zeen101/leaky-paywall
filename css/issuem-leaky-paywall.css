@@ -20,3 +20,50 @@
     border-color: rgba(255, 255, 255, 0.5);
     color: #FBFBFB;
 }
+
+.leaky_paywall_subscription_options {
+	display: inline-table;
+	border-spacing: 15px;
+}
+
+.leaky_paywall_subscription_option {
+	display: table-cell;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding: 15px;
+	margin-left: 5px;
+	margin-right: 5px;
+    border: 2px solid #000000;
+    -webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+    box-shadow: 0 0 20px #888888;
+    width: 160px;
+	font-size: 16px;
+    line-height: 26px;
+    text-align: center;
+}
+
+.leaky_paywall_subscription_option.current-level {
+    border: 2px solid #007711;
+    box-shadow: 0 0 20px #3e8e51;
+}
+
+.leaky_paywall_subscription_current_level {
+    border: 2px solid #007711;
+	background: #3e8e51;
+    -webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.leaky_paywall_subscription_option h3, .leaky_paywall_subscription_allowed_content {
+	border-bottom: 1px solid #aaaaaa;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+
+.leaky-paywall-payment-button {
+	display: inline-block;
+	margin: 5px;
+}

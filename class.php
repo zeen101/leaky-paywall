@@ -211,6 +211,13 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				return; //We don't need to process anything else after this
 				
 			}
+						
+			if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-webhook'] ) ) {
+			
+				issuem_process_stripe_webhook();
+				return; //We don't need to process anything else after this
+				
+			}
 			
 			if ( isset( $_REQUEST['logout'] ) ) {
 				
@@ -259,15 +266,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					return; //We don't need to process anything else after this
 					
 				}
-			
-				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
-						&& empty( $_SESSION['issuem_lp_hash'] ) && empty( $_SESSION['issuem_lp_email'] ) ) {
 						
-					wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
-					return; //We don't need to process anything else after this
-
-				}
-			
 			}
 			
 		}
@@ -325,7 +324,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			if ( 1 < $interval_count )
 				$interval .= 's';
 			
-			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
+			if ( 1 == $interval_count )
+				return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval;
+			else
+				return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
 			
 		}
 		
@@ -1050,6 +1052,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $args, $login );
 								
 							$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email );
+							update_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', $_POST['leaky-paywall-subscriber-level-id'] );
+							
 							do_action( 'add_leaky_paywall_subscriber', $subscriber );
 							
 						} else {
@@ -1110,6 +1114,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								}
 								
 				                update_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_' . $subscriber['hash'], $subscriber );
+								update_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', $_POST['leaky-paywall-subscriber-level-id'] );
+								
 								do_action( 'update_leaky_paywall_subscriber', $subscriber );
 							}
 							
@@ -1152,6 +1158,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								$keys['price'] = 2;
 								$keys['expires'] = 3;
 								$keys['status'] = 4;
+								$keys['level-id'] = 5;
 							}
 							
 							foreach( $imports as $import ) {
@@ -1183,6 +1190,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									$status = 'active';
 								else 
 									$status = trim( $import[$keys['status']] );
+									
+								if ( empty( $import[$keys['level-id']] ) )
+									$level_id = '';
+								else 
+									$level_id = trim( $import[$keys['level-id']] );
 								
 								$customer = new stdClass;
 								$customer->id = '';
@@ -1200,8 +1212,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $args, $login );
 									
 								$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email );
+								update_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', $level_id );
+
 								do_action( 'bulk_add_leaky_paywall_subscriber', $subscriber, $keys, $import );
-									
+								
 							}
 							
 							if ( !empty( $errors ) ) {
@@ -1243,6 +1257,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                 	if ( !empty( $email ) && !empty( $user ) && $subscriber = get_issuem_leaky_paywall_subscriber_by_email( $email ) ) {
                 	
                 		$login = $user->user_login;
+                		$subscriber_level_id = get_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', true );
                 		
 						if ( '0000-00-00 00:00:00' === $subscriber['expires'] )
 							$expires = '';
@@ -1258,6 +1273,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
+	                        </p>
+	                    	<p>
+	                        <label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php _e( 'Subscription Level', 'issuem-leaky-paywall' ); ?></label>
+	                        <select name="leaky-paywall-subscriber-level-id">
+	                        <?php
+	                        foreach( $settings['levels'] as $key => $level ) {
+		                        echo '<option value="' . $key .'" ' . selected( $key, $subscriber_level_id, true ) . '>' . $level['label'] . '</option>';
+	                        }
+	                        ?>
+	                        </select>
 	                        </p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
@@ -1284,6 +1309,16 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
+	                        </p>
+	                    	<p>
+	                        <label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php _e( 'Subscription Level', 'issuem-leaky-paywall' ); ?></label>
+	                        <select name="leaky-paywall-subscriber-level-id">
+	                        <?php
+	                        foreach( $settings['levels'] as $key => $level ) {
+		                        echo '<option value="' . $key .'">' . $level['label'] . '</option>';
+	                        }
+	                        ?>
+	                        </select>
 	                        </p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'issuem-leaky-paywall' ); ?></label>
