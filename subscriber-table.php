@@ -121,8 +121,9 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$alt = '';
 		foreach ( $this->items as $user ) {
 			$alt = ( 'alternate' == $alt ) ? '' : 'alternate';
-			$subscriber = get_issuem_leaky_paywall_subscriber_by_email( $user->user_email );
+			$user = get_user_by( 'email', $user->user_email );
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
 			?>
 			<tr class="<?php echo $alt; ?>">
 			<?php
@@ -156,61 +157,61 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 					
 					case 'level_id':
-						$level_id = get_user_meta( $subscriber['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+						$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
 						if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
 							$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
 						} else {
 							$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
 						}
 							
-						echo '<td $attributes>' . $level_name . '</td>';
+						echo "<td $attributes>" . $level_name . '</td>';
 					break;
 					
 					case 'susbcriber_id':
-						echo '<td $attributes>' . $subscriber['subscriber_id'] . '</td>';
+						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true ) . '</td>';
 					break;
 
 					case 'plan':
-						if ( empty( $subscriber['plan'] ) ) {
+						$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
+						if ( empty( $plan ) ) {
 							$plan = __( 'Non-Recurring', 'issuem-leaky-paywall' );	
-						} else if ( 'paypal_standard' === $subscriber['payment_gateway'] ) {
+						} else if ( 'paypal_standard' === $payment_gateway ) {
 							$plan = sprintf( __( 'Recurring every %s', 'issuem-leaky-paywall' ), str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $subscriber['plan'] ) );
-						} else {
-							$plan = $subscriber['plan'];	
 						}
 						
-						echo "<td $attributes>$plan</td>";
+						echo "<td $attributes>" . $plan . '</td>';
 					break;
 
 					case 'price':
-						echo '<td $attributes>' . $subscriber['price'] . '</td>';
+						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ) . '</td>';
 					break;
 
 					case 'expires':
-						if ( empty( $subscriber['expires'] ) || '0000-00-00 00:00:00' === $subscriber['expires'] ) {
-							if ( 'manual' === $subscriber['payment_gateway'] )
+						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
+						if ( empty( $subscriber['expires'] ) || '0000-00-00 00:00:00' === $expires ) {
+							if ( 'manual' === $payment_gateway )
 								$expires = __( 'Never', 'issuem-leaky-paywall' );
-							else if ( 'stripe' === $subscriber['payment_gateway'] )
+							else if ( 'stripe' === $payment_gateway )
 								$expires = __( 'Determined by Stripe', 'issuem-leaky-paywall' );
 						} else {
 							$date_format = get_option( 'date_format' );
-							$expires = mysql2date( $date_format, $subscriber['expires'] );
+							$expires = mysql2date( $date_format, $expires );
 						}
 						
 						echo "<td $attributes>" . $expires . "</td>";
 					break;
 
 					case 'gateway':
-						echo "<td $attributes>" . issuem_translate_payment_gateway_slug_to_name( $subscriber['payment_gateway'] ) . "</td>";
+						echo "<td $attributes>" . issuem_translate_payment_gateway_slug_to_name( $payment_gateway ) . "</td>";
 					break;
 
 					case 'status':
-						echo '<td $attributes>' . $subscriber['payment_status'] . '</td>';
+						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) . '</td>';
 					break;
 
 					default:
 						echo "<td $attributes>";
-						echo apply_filters( 'manage_leaky_paywall_susbcribers_custom_column', '', $column_name, $subscriber['hash'] );
+						echo apply_filters( 'manage_leaky_paywall_susbcribers_custom_column', '', $column_name, get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true ) );
 						echo "</td>";
 					break;
 				}

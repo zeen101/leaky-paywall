@@ -29,6 +29,20 @@ define( 'ISSUEM_LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );
 define( 'ISSUEM_LEAKY_PAYWALL_REL_DIR',		dirname( ISSUEM_LEAKY_PAYWALL_BASENAME ) );
 
+if ( !defined( 'PAYPAL_LIVE_URL' ) )
+	define( 'PAYPAL_LIVE_URL', 'https://www.paypal.com/' );
+if ( !defined( 'PAYPAL_SANDBOX_URL' ) )
+	define( 'PAYPAL_SANDBOX_URL', 'https://www.sandbox.paypal.com/' );
+if ( !defined( 'PAYPAL_PAYMENT_SANDBOX_URL' ) )
+
+	define( 'PAYPAL_PAYMENT_SANDBOX_URL', 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
+if ( !defined( 'PAYPAL_PAYMENT_LIVE_URL' ) )
+	define( 'PAYPAL_PAYMENT_LIVE_URL', 'https://www.paypal.com/cgi-bin/webscr' );
+if ( !defined( 'PAYPAL_NVP_API_SANDBOX_URL' ) )
+	define( 'PAYPAL_NVP_API_SANDBOX_URL', 'https://api-3t.sandbox.paypal.com/nvp' );
+if ( !defined( 'PAYPAL_NVP_API_LIVE_URL' ) )
+	define( 'PAYPAL_NVP_API_LIVE_URL', 'https://api-3t.paypal.com/nvp' );
+
 /**
  * Instantiate Pigeon Pack class, require helper files
  *

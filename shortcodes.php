@@ -111,6 +111,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		global $post;
 		
 		$settings = get_issuem_leaky_paywall_settings();
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
 		$defaults = array(
 			'login_heading' 	=> __( 'Enter your email address to start your subscription:', 'issuem-leaky-paywall' ),
@@ -138,17 +139,18 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						
 				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
 				
-				$customer = get_issuem_leaky_paywall_subscriber_by_email( $_SESSION['issuem_lp_email'] );
-				
+				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
+				$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
+				if ( !empty( $hash ) )
+					$_SESSION['issuem_lp_subscriber'] = $hash;
+					
 				switch( $expires ) {
 				
 					case 'subscription':
-						$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
 						$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
 						break;
 						
 					case 'unlimited':
-						$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
 						$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
 						break;
 				
@@ -157,13 +159,12 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						break;
 						
 					default:
-						$_SESSION['issuem_lp_subscriber'] = $customer['hash'];
 						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer['payment_gateway'] ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
 						
 				}
 				
 				$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
-				$results .= '<h1><a href="?logout">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
+				$results .= '<h1><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
 				$results .= '</div>';
 				
 			}
