@@ -1137,17 +1137,18 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_levels_row' ) ) 
 	
 		if ( empty( $level ) ) {
 			$level = array(
-				'label' 				=> '',
-				'price' 				=> '',
-				'interval_count' 		=> 1,
-				'interval' 				=> 'month',
-				'recurring' 			=> 'off',
-				'plan_id' 				=> '',
+				'label' 					=> '',
+				'price' 					=> '',
+				'subscription_length_type' 	=> 'unlimited',
+				'interval_count' 			=> 1,
+				'interval' 					=> 'month',
+				'recurring' 				=> 'off',
+				'plan_id' 					=> '',
 				'post_types' => array(
 					array(
-						'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
-						'allowed' 		=> 'unlimited',
-						'allowed_value' => -1
+						'post_type' 		=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+						'allowed' 			=> 'unlimited',
+						'allowed_value' 	=> -1
 					)
 				)
 			);
@@ -1178,14 +1179,27 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_levels_row' ) ) 
 		$return .= '<tr>';	
 		$return .= '<th><label for="level-interval-count-' . $row_key . '">' . __( 'Subscription Length', 'issuem-leaky-paywall' ) . '</label></th>';
 		$return .= '<td>';
-		$return .= __( 'For', 'issuem-leaky-paywall' ) . ' <input id="level-interval-count-' . $row_key . '" type="text" class="small-text" name="levels[' . $row_key . '][interval_count]" value="' . stripcslashes( $level['interval_count'] ) . '" />';	
+
+		$return .= '<select class="subscription_length_type" name="levels[' . $row_key . '][subscription_length_type]">';						
+			$return .= '<option value="unlimited" ' . selected( 'unlimited', $level['subscription_length_type'], false ) . '>' . __( 'Forever', 'issuem-leaky-paywall' ) . '</option>';
+			$return .= '<option value="limited" ' . selected( 'limited', $level['subscription_length_type'], false ) . '>' . __( 'Limited for...', 'issuem-leaky-paywall' ) . '</option>';
+		$return .= '</select>';
+			
+		if ( 'unlimited' == $level['subscription_length_type'] ) {
+			$subscription_length_input_style = 'display: none;';
+		} else {
+			$subscription_length_input_style = '';
+		}
+
+		$return .= '<div class="interval_div" style="' . $subscription_length_input_style . '">';
+		$return .= '<input id="level-interval-count-' . $row_key . '" type="text" class="interval_count small-text" name="levels[' . $row_key . '][interval_count]" value="' . stripcslashes( $level['interval_count'] ) . '" />';	
 		$return .= '<select id="interval" name="levels[' . $row_key . '][interval]">';
         $return .= '  <option value="day" ' . selected( 'day' === $level['interval'], true, false ) . '>' . __( 'Day(s)', 'issuem-leaky-paywall' ) . '</option>';
         $return .= '  <option value="week" ' . selected( 'week' === $level['interval'], true, false ) . '>' . __( 'Week(s)', 'issuem-leaky-paywall' ) . '</option>';
         $return .= '  <option value="month" ' . selected( 'month' === $level['interval'], true, false ) . '>' . __( 'Month(s)', 'issuem-leaky-paywall' ) . '</option>';
         $return .= '  <option value="year" ' . selected( 'year' === $level['interval'], true, false ) . '>' . __( 'Year(s)', 'issuem-leaky-paywall' ) . '</option>';
         $return .= '</select>';
-        $return .= '<p class="description">' . __( 'Enter 0 for unlimited access.', 'issuem-leaky-paywall' ) . '</p>';
+        $return .= '</div>';
         $return .= '</td>';
 		$return .= '</tr>';
         		
@@ -1258,7 +1272,22 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_post_type' )
 		$post_types = get_post_types( array(), 'objects' );
 
 		$return  = '<div class="issuem-leaky-paywall-row-post-type">';
-		$return .= '<label>' . __( 'Post Type', 'issuem-leaky-paywall' ) . '</label>';
+		
+		$return .= '<select class="allowed_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed]">';						
+			$return .= '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited', 'issuem-leaky-paywall' ) . '</option>';
+			$return .= '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limit to...', 'issuem-leaky-paywall' ) . '</option>';
+		$return .= '</select>';
+			
+		if ( 'unlimited' == $select_post_type['allowed'] ) {
+			$allowed_value_input_style = 'display: none;';
+		} else {
+			$allowed_value_input_style = '';
+		}
+			    
+		$return .= '<div class="allowed_value" style="' . $allowed_value_input_style . '">';
+		$return .= '<input type="text" class="small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'issuem-leaky-paywall' ) . '" />';
+		$return .= '</div>';
+		
 		$return .= '<select name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
 		
 		foreach ( $post_types as $post_type ) {
@@ -1270,21 +1299,9 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_post_type' )
 		
         }
 		$return .= '</select>';
-		
-		$return .= '<select class="allowed_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed]">';						
-			$return .= '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited Access', 'issuem-leaky-paywall' ) . '</option>';
-			$return .= '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limited Access', 'issuem-leaky-paywall' ) . '</option>';
-		$return .= '</select>';
-			
-		if ( 'unlimited' == $select_post_type['allowed'] ) {
-			$allowed_value_input_style = 'display: none;';
-		} else {
-			$allowed_value_input_style = '';
-		}
-			    
-		$return .= '<input type="text" class="allowed_value small-text" style="' . $allowed_value_input_style . '" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" />';
 				
 		$return .= '<span class="delete-x delete-post-type-row">&times;</span>';
+		
 		$return .= '</div>';
 		
 		return $return;
@@ -1661,11 +1678,12 @@ if ( !function_exists( 'issuem_leaky_paywall_subscription_options' ) ) {
 		
 		$settings = get_issuem_leaky_paywall_settings();
 		$current_level_id = issuem_leaky_paywall_susbscriber_current_level_id();
-		
+
 		$results = apply_filters( 'issuem_leaky_paywall_subscription_options', '' );
 		//If someone wants to completely override this, they can with the above filter
 		if ( empty( $results ) ) {
 		
+			$has_allowed_value = false;
 			$results .= '<h2>' . __( 'Subscription Options', 'issuem-leaky-paywall' ) . '</h2>';
 			
 			$results .= '<div class="leaky-paywall-payment-form"></div>';
@@ -1687,7 +1705,6 @@ if ( !function_exists( 'issuem_leaky_paywall_subscription_options' ) ) {
 					$results .= '<h3>' . stripslashes( $level['label'] ) . '</h3>';
 					
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
-					$has_allowed_value = false;
 					foreach( $level['post_types'] as $post_type ) {
 					
 						$post_type_obj = get_post_type_object( $post_type['post_type'] );

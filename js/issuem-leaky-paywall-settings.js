@@ -40,6 +40,18 @@ $leaky_paywall_settings(document).ready(function($) {
         });
 	});
 	
+	$( 'select.subscription_length_type' ).live( 'change', function( event ) {
+		var parent = $( this ).parent();
+		if ( 'unlimited' == $( this ).val() ) {
+			$( '.interval_count', parent ).data( 'prev-value', $( '.interval_count', parent ).val() )
+			$( '.interval_div', parent ).hide();
+			$( '.interval_count', parent ).val( '0' );
+		} else {
+			$( '.interval_count', parent ).val( $( '.interval_count', parent ).data( 'prev-value' ) );
+			$( '.interval_div', parent ).show();
+		}
+	});
+	
 	$( 'select.allowed_type' ).live( 'change', function( event ) {
 		var parent = $( this ).parent();
 		if ( 'unlimited' == $( this ).val() ) {

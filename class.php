@@ -539,24 +539,25 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						'allowed_value' => 2,
 					)
 				),
-				'levels'				=> array(
+				'levels' => array(
 					'0' => array(
-						'label' 				=> __( 'Magazine Subscription', 'issuem-leaky-paywall' ),
-						'price' 				=> '',
-						'interval_count' 		=> 1,
-						'interval' 				=> 'month',
-						'recurring' 			=> 'off',
-						'plan_id' 				=> '',
+						'label' 					=> __( 'Magazine Subscription', 'issuem-leaky-paywall' ),
+						'price' 					=> '',
+						'subscription_length_type' 	=> 'limited',
+						'interval_count' 			=> 1,
+						'interval' 					=> 'month',
+						'recurring' 				=> 'off',
+						'plan_id' 					=> '',
 						'post_types' => array(
 							array(
-								'post_type' 	=> 'post',
-								'allowed'		=> 'limited',
-								'allowed_value' => 5,
+								'post_type' 		=> 'post',
+								'allowed'			=> 'limited',
+								'allowed_value' 	=> 5,
 							),
 							array(
-								'post_type' 	=> 'article',
-								'allowed'		=> 'limited',
-								'allowed_value' => 10,
+								'post_type' 		=> 'article',
+								'allowed'			=> 'limited',
+								'allowed_value' 	=> 10,
 							),
 						),
 					)
@@ -1575,13 +1576,14 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 				$settings['levels'] = array(
 					'0' => array(
-						'label' 				=> $settings['charge_description'],
-						'price' 				=> $settings['price'],
-						'recurring' 			=> $settings['recurring'],
-						'interval_count' 		=> $settings['interval_count'],
-						'interval' 				=> $settings['interval'],
-						'plan_id' 				=> $settings['plan_id'],
-						'post_types' 			=> $allow_post_types,
+						'label' 					=> $settings['charge_description'],
+						'price' 					=> $settings['price'],
+						'recurring' 				=> $settings['recurring'],
+						'subscription_length_type' 	=> empty( $settings['interval_count'] ) ? 'unlimited' : 'limited',
+						'interval_count' 			=> $settings['interval_count'],
+						'interval' 					=> $settings['interval'],
+						'plan_id' 					=> $settings['plan_id'],
+						'post_types' 				=> $allow_post_types,
 					)
 				);
                 

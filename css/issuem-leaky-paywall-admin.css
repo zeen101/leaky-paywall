@@ -5,6 +5,11 @@ body.leaky-paywall_page_leaky-paywall-subscribers table {
 	width: 100%;
 }
 
+table.leaky-paywall-table input.small-text,
+body.leaky-paywall_page_leaky-paywall-subscribers table input.small-text {
+	height: 28px;
+}
+
 table.issuem-leaky-paywall-subscription-level-row-table {
 	border: 1px solid #eee;
 	margin-bottom: 20px;
@@ -56,6 +61,11 @@ div#leaky-paywall-subscriber-add-edit form#leaky-paywall-subscriber-bulk-add {
     margin-left: 150px;
     max-width: 500px;
     position: relative;
+}
+
+div.interval_div,
+div.allowed_value {
+	display: inline-block;
 }
 
 form#leaky-paywall-subscriber-bulk-add textarea {
