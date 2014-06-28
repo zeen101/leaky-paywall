@@ -171,8 +171,8 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 
 					case 'plan':
-						if ( empty( $user->plan ) ) {
-							$plan = "not recurring";	
+						if ( empty( $subscriber['plan'] ) ) {
+							$plan = __( 'Non-Recurring', 'issuem-leaky-paywall' );	
 						} else if ( 'paypal_standard' === $subscriber['payment_gateway'] ) {
 							$plan = sprintf( __( 'Recurring every %s', 'issuem-leaky-paywall' ), str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $subscriber['plan'] ) );
 						} else {

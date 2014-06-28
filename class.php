@@ -54,6 +54,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
 			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 			
+			add_action( 'init', array( $this, 'process_init' ) );
 			add_action( 'wp', array( $this, 'process_requests' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
@@ -99,6 +100,35 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'issuem-leaky-paywall' ), __( 'Subscribers', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 									
 			add_submenu_page( false, __( 'Update', 'issuem-leaky-paywall' ), __( 'Update', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
+			
+		}
+		
+		function process_init() {
+			
+			issuem_leaky_paywall_maybe_process_payment();
+			//issuem_leaky_paywall_maybe_process_webhooks();
+						
+			if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-ipn'] ) ) {
+			
+				issuem_process_paypal_standard_ipn();
+				return; //We don't need to process anything else after this
+				
+			}
+						
+			if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-webhook'] ) ) {
+			
+				issuem_process_stripe_webhook();
+				return; //We don't need to process anything else after this
+				
+			}
+			
+			if ( isset( $_REQUEST['logout'] ) ) {
+				
+				wp_logout();
+				wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
+				return; //We don't need to process anything else after this
+				
+			}
 			
 		}
 		
@@ -170,16 +200,49 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								
 							global $post;
 							
+							switch ( $settings['cookie_expiration_interval'] ) {
+								case 'hour':
+									$multiplier = 60 * 60; //seconds in an hour
+									break;
+								case 'day':
+									$multiplier = 60 * 60 * 24; //seconds in a day
+									break;
+								case 'week':
+									$multiplier = 60 * 60 * 24 * 7; //seconds in a week
+									break;
+								case 'month':
+									$multiplier = 60 * 60 * 24 * 7 * 4; //seconds in a month (4 weeks)
+									break;
+								case 'year':
+									$multiplier = 60 * 60 * 24 * 7 * 52; //seconds in a year (52 weeks)
+									break;
+							}
+							$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
+							
 							if ( !empty( $_COOKIE['issuem_lp'] ) )
 								$available_content = maybe_unserialize( stripslashes( $_COOKIE['issuem_lp'] ) );
 							
 							if ( empty( $available_content[$restricted_post_type] ) )
-								$available_content[$restricted_post_type] = array();
+								$available_content[$restricted_post_type] = array();							
+						
+							foreach ( $available_content[$restricted_post_type] as $key => $restriction ) {
+								
+								if ( time() < $restriction || 7200 > $restriction ) { 
+									//this post view has expired
+									//Or it is very old and based on the post ID rather than the expiration time
+									unset( $available_content[$restricted_post_type][$key] );
+									
+								}
+								
+							}
 							
 							if ( $restrictions['post_types'][$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
 							
-								if ( !in_array( $post->ID, $available_content[$restricted_post_type] ) )
-									$available_content[$restricted_post_type][] = $post->ID;
+								if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
+									
+									$available_content[$restricted_post_type][$post->ID] = $expiration;
+								
+								}
 								
 							} else {
 							
@@ -190,9 +253,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								}
 								
 							}
-														
+							
 							$serialized_available_content = maybe_serialize( $available_content );
-							setcookie( 'issuem_lp', $serialized_available_content, time() + ( $settings['cookie_expiration'] * 60 * 60 ), '/' );
+							setcookie( 'issuem_lp', $serialized_available_content, $expiration, '/' );
 							$_COOKIE['issuem_lp'] = $serialized_available_content;
 							
 							return; //We don't need to process anything else after this
@@ -203,28 +266,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				}
 	
-			}
-						
-			if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-ipn'] ) ) {
-			
-				issuem_process_paypal_standard_ipn();
-				return; //We don't need to process anything else after this
-				
-			}
-						
-			if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-webhook'] ) ) {
-			
-				issuem_process_stripe_webhook();
-				return; //We don't need to process anything else after this
-				
-			}
-			
-			if ( isset( $_REQUEST['logout'] ) ) {
-				
-				wp_logout();
-				wp_safe_redirect( get_page_link( $settings['page_for_login'] ) );
-				return; //We don't need to process anything else after this
-				
 			}
 			
 			if ( is_issuem_leaky_subscriber_logged_in() ) {
@@ -372,6 +413,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		function frontend_scripts() {
 			
 			wp_enqueue_style( 'issuem-leaky-paywall', ISSUEM_LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+
 			
 		}
 		
@@ -468,28 +510,29 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		function get_settings() {
 			
 			$defaults = array( 
-				'license_key'				=> '',
-				'license_status'			=> '',
-				'page_for_login'			=> 0,
-				'page_for_subscription'		=> 0,
-				'post_types'				=> ISSUEM_ACTIVE_LP ? array( 'article' ) : array( 'post' ),
-				'free_articles'				=> 2,
-				'cookie_expiration'			=> 24,
-				'subscribe_login_message'	=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
-				'subscribe_upgrade_message'	=> __( 'You must <a href="{{SUBSCRIBE_LOGIN_URL}}">upgrade your account</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
-				'css_style'					=> 'default',
-				'site_name'					=> get_option( 'blogname' ),
-				'from_name'					=> get_option( 'blogname' ),
-				'from_email'				=> get_option( 'admin_email' ),
-				'payment_gateway'			=> array( 'stripe' ),
-				'test_mode'					=> 'off',
-				'live_secret_key'			=> '',
-				'live_publishable_key'		=> '',
-				'test_secret_key'			=> '',
-				'test_publishable_key'		=> '',
-				'paypal_live_email'			=> '',
-				'paypal_sand_email'			=> '',
-				'restrict_pdf_downloads' 	=> 'off',
+				'license_key'					=> '',
+				'license_status'				=> '',
+				'page_for_login'				=> 0,
+				'page_for_subscription'			=> 0,
+				'post_types'					=> ISSUEM_ACTIVE_LP ? array( 'article' ) : array( 'post' ),
+				'free_articles'					=> 2,
+				'cookie_expiration' 			=> 24,
+				'cookie_expiration_interval' 	=> 'day',
+				'subscribe_login_message'		=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
+				'subscribe_upgrade_message'		=> __( 'You must <a href="{{SUBSCRIBE_LOGIN_URL}}">upgrade your account</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
+				'css_style'						=> 'default',
+				'site_name'						=> get_option( 'blogname' ),
+				'from_name'						=> get_option( 'blogname' ),
+				'from_email'					=> get_option( 'admin_email' ),
+				'payment_gateway'				=> array( 'stripe' ),
+				'test_mode'						=> 'off',
+				'live_secret_key'				=> '',
+				'live_publishable_key'			=> '',
+				'test_secret_key'				=> '',
+				'test_publishable_key'			=> '',
+				'paypal_live_email'				=> '',
+				'paypal_sand_email'				=> '',
+				'restrict_pdf_downloads' 		=> 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
 						'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
@@ -579,6 +622,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['cookie_expiration'] ) )
 					$settings['cookie_expiration'] = trim( $_REQUEST['cookie_expiration'] );
+					
+				if ( !empty( $_REQUEST['cookie_expiration_interval'] ) )
+					$settings['cookie_expiration_interval'] = trim( $_REQUEST['cookie_expiration_interval'] );
 					
 				if ( !empty( $_REQUEST['restrict_pdf_downloads'] ) )
 					$settings['restrict_pdf_downloads'] = $_REQUEST['restrict_pdf_downloads'];
@@ -900,8 +946,18 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         <table id="issuem_leaky_paywall_default_restriction_options" class="leaky-paywall-table">
                         	                            
                         	<tr>
-                                <th><?php _e( 'Free Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> <?php _e( 'hours', 'issuem-leaky-paywal' ); ?></td>
+                                <th><?php _e( 'Limited Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> 
+                                	<select id="cookie_expiration_interval" name="cookie_expiration_interval">
+                                		<option value="hour" <?php selected( 'hour', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Hour(s)', 'issuem-leaky-paywall' ); ?></option>
+                                		<option value="day" <?php selected( 'day', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Day(s)', 'issuem-leaky-paywall' ); ?></option>
+                                		<option value="week" <?php selected( 'week', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Week(s)', 'issuem-leaky-paywall' ); ?></option>
+                                		<option value="month" <?php selected( 'month', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Month(s)', 'issuem-leaky-paywall' ); ?></option>
+                                		<option value="year" <?php selected( 'year', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Year(s)', 'issuem-leaky-paywall' ); ?></option>
+                                	</select>
+                                	<p class="description"><?php _e( 'How do you describe this?', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
                             </tr>
                             
                         	<tr>

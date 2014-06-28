@@ -44,6 +44,8 @@
     text-align: center;
 }
 
+.leaky-paywall-payment-form { display: none; }
+
 .leaky_paywall_subscription_option.current-level {
     border: 2px solid #007711;
     box-shadow: 0 0 20px #3e8e51;
@@ -61,6 +63,13 @@
 	border-bottom: 1px solid #aaaaaa;
 	padding-bottom: 5px;
 	margin-bottom: 5px;
+}
+
+.leaky_paywall_subscription_limit_details {
+	display: block;
+	width: 100%;
+	margin-top	30px;
+	color: #666;
 }
 
 .leaky-paywall-payment-button {
