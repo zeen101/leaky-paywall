@@ -913,13 +913,19 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	                        <tr><td colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
                         
                         	<tr>
-                                <th><?php _e( 'PayPal Email', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_email'] ) ); ?>" /></td>
+                                <th><?php _e( 'Merchant ID', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_email'] ) ); ?>" />
+                                	<p class="description"><?php _e( 'Use PayPal Email Address in lieu of Merchant ID', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
                             </tr>
                             
                         	<tr>
-                                <th><?php _e( 'PayPal Sandbox Email', 'issuem-leaky-paywall' ); ?></th>
-                                <td><input type="text" id="paypal_sand_email" class="regular-text" name="paypal_sand_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_email'] ) ); ?>" /></td>
+                                <th><?php _e( 'Sandbox Merchant ID', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_sand_email" class="regular-text" name="paypal_sand_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_email'] ) ); ?>" />
+                                	<p class="description"><?php _e( 'Use PayPal Sandbox Email Address in lieu of Merchant ID', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
                             </tr>
                             
                         </table>

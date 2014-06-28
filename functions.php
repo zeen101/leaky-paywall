@@ -630,6 +630,8 @@ if ( !function_exists( 'issuem_leaky_paywall_update_subscriber' ) ) {
 if ( !function_exists( 'issuem_translate_payment_gateway_slug_to_name' ) ) {
 	
 	function issuem_translate_payment_gateway_slug_to_name( $slug ) {
+	
+		$return = 'Unknown';
 		
 		switch( $slug ) {
 		
@@ -1436,7 +1438,7 @@ if ( !function_exists( 'issuem_leaky_paywall_maybe_process_payment' ) ) {
 		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-return'] ) )
 			return issuem_leaky_paywall_process_stripe_payment();
 		
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-return'] ) )
+		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-return'] ) )
 			return issuem_leaky_paywall_process_paypal_payment();
 			
 		return apply_filters( 'issuem_leaky_paywall_maybe_process_payment', false );
@@ -1579,6 +1581,8 @@ if ( !function_exists( 'issuem_leaky_paywall_process_paypal_payment' ) ) {
 	function issuem_leaky_paywall_process_paypal_payment() {
 		
 		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-return'] ) ) {
+		
+			wp_print_r( $_REQUEST );
 						
 			if ( !empty( $_REQUEST['tx'] ) ) //if PDT is enabled
 				$transaction_id = $_REQUEST['tx'];
@@ -1609,6 +1613,9 @@ if ( !function_exists( 'issuem_leaky_paywall_process_paypal_payment' ) ) {
 			if ( !empty( $transaction_id ) && !empty( $transaction_amount ) && !empty( $transaction_status ) ) {
 	
 				try {
+				
+					//if ( empty( $_SESSION['issuem_lp_email'] ) )
+					//	$_SESSION['issuem_lp_email'] = $_POST['stripeEmail'];
 	
 					$cu = new stdClass;
 					$cu->id = $transaction_id; //temporary, will be replaced with subscriber ID during IPN
