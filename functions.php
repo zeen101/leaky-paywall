@@ -461,6 +461,12 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 					$parts = explode( '@', $email );
 					$login = $parts[0];
 				}
+				
+				//Avoid collisions
+				while ( $user = get_user_by( 'login', $login ) ) { 
+					$login = $user->user_login . '_' . substr( uniqid(), 5 );
+				} 
+				
                 $userdata = array(
 				    'user_login' => $login,
 					'user_email' => $email,
@@ -469,51 +475,55 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 				$user_id = wp_insert_user( $userdata ) ;
 			}
 			
-			if ( isset( $customer->subscription ) ) { //only stripe
-			
-				$meta = array(
-					'user_id'         => $user_id,
-					'hash'			  => $hash,
-					'subscriber_id'   => $customer->id,
-					'price'			  => number_format( $customer->subscription->plan->amount / 100, '2', '.', '' ),
-					'description' 	  => $customer->subscription->plan->name,
-					'plan'		 	  => $customer->subscription->plan->id,
-					'created'		  => date( 'Y-m-d H:i:s', $customer->subscription->start ),
-					'expires'		  => $expires,
-					'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
-					'payment_gateway' => 'stripe',
-					'payment_status'  => $args['payment_status'],
-				);		
-						
-			} else {
+			if ( !empty( $user_id ) ) {
 				
-				if ( 0 !== $args['interval'] )
-					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $args['interval_count'] . ' ' . $args['interval'] ) ); //we're generous, give them the whole day!
-				else if ( !empty( $args['expires'] ) )
-					$expires = $args['expires'];
+				if ( isset( $customer->subscription ) ) { //only stripe
 				
-				$meta = array(
-					'user_id'         => $user_id,
-					'hash'			  => $hash,
-					'subscriber_id'   => $customer->id,
-					'price'			  => $args['price'],
-					'description'	  => $args['description'],
-					'plan'			  => '',
-					'created'		  => date( 'Y-m-d H:i:s' ),
-					'expires'		  => $expires,
-					'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
-					'payment_gateway' => $args['payment_gateway'],
-					'payment_status'  => $args['payment_status'],
-				);
-
+					$meta = array(
+						'user_id'         => $user_id,
+						'hash'			  => $hash,
+						'subscriber_id'   => $customer->id,
+						'price'			  => number_format( $customer->subscription->plan->amount / 100, '2', '.', '' ),
+						'description' 	  => $customer->subscription->plan->name,
+						'plan'		 	  => $customer->subscription->plan->id,
+						'created'		  => date( 'Y-m-d H:i:s', $customer->subscription->start ),
+						'expires'		  => $expires,
+						'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
+						'payment_gateway' => 'stripe',
+						'payment_status'  => $args['payment_status'],
+					);		
+							
+				} else {
+					
+					if ( 0 !== $args['interval'] )
+						$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $args['interval_count'] . ' ' . $args['interval'] ) ); //we're generous, give them the whole day!
+					else if ( !empty( $args['expires'] ) )
+						$expires = $args['expires'];
+					
+					$meta = array(
+						'user_id'         => $user_id,
+						'hash'			  => $hash,
+						'subscriber_id'   => $customer->id,
+						'price'			  => $args['price'],
+						'description'	  => $args['description'],
+						'plan'			  => '',
+						'created'		  => date( 'Y-m-d H:i:s' ),
+						'expires'		  => $expires,
+						'mode'			  => 'off' === $settings['test_mode'] ? 'live' : 'test',
+						'payment_gateway' => $args['payment_gateway'],
+						'payment_status'  => $args['payment_status'],
+					);
+	
+				}
+				
+				$meta = apply_filters( 'issuem_leaky_paywall_new_subscriber_meta', $meta, $email, $customer, $args );
+	
+	            update_user_meta( $user_id, '_issuem_leaky_paywall_' . $meta['mode'] . '_hash', $hash );
+	            update_user_meta( $user_id, '_issuem_leaky_paywall_' . $meta['mode'] . '_' . $hash, $meta );
+				
+				do_action( 'issuem_leaky_paywall_new_subscriber', $email, $meta, $customer, $args );
+				
 			}
-			
-			$meta = apply_filters( 'issuem_leaky_paywall_new_subscriber_meta', $meta, $email, $customer, $args );
-
-            update_user_meta( $user_id, '_issuem_leaky_paywall_' . $meta['mode'] . '_hash', $hash );
-            update_user_meta( $user_id, '_issuem_leaky_paywall_' . $meta['mode'] . '_' . $hash, $meta );
-			
-			do_action( 'issuem_leaky_paywall_new_subscriber', $email, $meta, $customer, $args );
 		
 		}
 		
