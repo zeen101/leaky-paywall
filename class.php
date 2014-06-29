@@ -190,7 +190,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									
 									case 'only':
 										if ( !in_array( $level_id, $visibility['only_visible'] ) ) {
-											add_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
+											add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 											return;
 										}
 										break;
@@ -203,7 +203,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									
 									case 'onlyalways':
 										if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
-											add_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
+											add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 											return;
 										} else {
 											$is_restricted = false;
@@ -314,6 +314,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] )  && !empty( $_REQUEST['r'] ) ) {
 
 					$login_hash = $_REQUEST['r'];
+					
 					if ( verify_issuem_leaky_paywall_hash( $login_hash ) ) {
 					
 						issuem_leaky_paywall_attempt_login( $login_hash );
@@ -321,7 +322,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						
 					} else {
 					
-						$output = '<h3>' . __( 'Invalid or Expired Login Link', 'issuem-leaky-paywall' ) . '</h3>';
+						$output  = '<h3>' . __( 'Invalid or Expired Login Link', 'issuem-leaky-paywall' ) . '</h3>';
 						$output .= '<p>' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
 						$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
 						
@@ -362,34 +363,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			return apply_filters( 'issuem_leaky_paywall_subscriber_or_login_message', $new_content, $message, $content );
 			
 		}
-		
-		function the_content_not_visible_paywall( $content ) {
-			
-			global $post;
-			$settings = $this->get_settings();	
-					
-			add_filter( 'excerpt_more', '__return_false' );
-			
-			//Remove the_content filter for get_the_excerpt calls
-			remove_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
-			$content = get_the_excerpt();
-			add_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
-			//Add the_content filter back for futhre the_content calls
-			
-			$message  = '<div id="leaky_paywall_message">';
-			if ( !is_issuem_leaky_subscriber_logged_in() ) {
-				$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
-			} else {
-				$message .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
-			}
-			$message .= '</div>';
-		
-			$new_content = $content . $message;
-		
-			return apply_filters( 'issuem_leaky_paywall_subscriber_or_login_message', $new_content, $message, $content );
-			
-		}
-		
+				
 		function replace_variables( $message ) {
 	
 			$settings = $this->get_settings();

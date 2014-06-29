@@ -929,27 +929,24 @@ if ( !function_exists( 'issuem_leaky_paywall_attempt_login' ) ) {
 		if ( false !== $email = get_issuem_leaky_paywall_email_from_login_hash( $login_hash ) ) {
 
 			$_SESSION['issuem_lp_email'] = $email;
+		
+			if ( $user = get_user_by( 'email', $email ) ) {
 
-			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $email ) ) {
+				$settings = get_issuem_leaky_paywall_settings();
+				$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+				$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
+				$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
 
-				if ( $user = get_user_by( 'email', $email ) ) {
+				if ( 'active' === $payment_status ) {
 
-					$settings = get_issuem_leaky_paywall_settings();
-					$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-					$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
-					$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
-
-					if ( 'active' === $payment_status ) {
-
-						$_SESSION['issuem_lp_subscriber'] = $hash;
-						setcookie( 'issuem_lp_subscriber', $_SESSION['issuem_lp_subscriber'], strtotime( apply_filters( 'issuem_leaky_paywall_logged_in_cookie_expiry', '+1 year' ) ), '/' );
-						delete_transient( '_lpl_' . $login_hash ); //one time use
-						wp_set_current_user( $user->ID );
-						wp_set_auth_cookie( $user->ID );
-						
-					}
-
+					$_SESSION['issuem_lp_subscriber'] = $hash;
+					setcookie( 'issuem_lp_subscriber', $_SESSION['issuem_lp_subscriber'], strtotime( apply_filters( 'issuem_leaky_paywall_logged_in_cookie_expiry', '+1 year' ) ), '/' );
+					
 				}
+				
+				delete_transient( '_lpl_' . $login_hash ); //one time use
+				wp_set_current_user( $user->ID );
+				wp_set_auth_cookie( $user->ID );
 
 			}
 
@@ -1005,7 +1002,7 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 			
 			}
 			
-			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) )
+			if ( false !== issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) )
 				return true;
 			
 		}

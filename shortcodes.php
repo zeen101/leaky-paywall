@@ -137,7 +137,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
 			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
-						
+			
 			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
 				
 				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
@@ -170,15 +170,14 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 				$results .= '<p>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</p>';
 				
+				$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
+				$results .= '</div>';
+				
 			} else {
 				
-				$results .= '<p>' . __( 'Your account is no longer active.', 'issuem-leaky-paywall' ) . '</p>';
 				$show_subscription_options = true;
 				
 			}
-			
-			$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
-			$results .= '</div>';
 			
 		}			
 			
