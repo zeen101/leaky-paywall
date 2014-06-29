@@ -112,6 +112,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		
 		$settings = get_issuem_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$show_subscription_options = true;
 		
 		$defaults = array(
 			'login_heading' 	=> __( 'Enter your email address to start your subscription:', 'issuem-leaky-paywall' ),
@@ -135,12 +136,15 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
-			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
+			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
 						
-				$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
+			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
 				
 				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
 				$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$show_subscription_options = false;
+				
 				if ( !empty( $hash ) )
 					$_SESSION['issuem_lp_subscriber'] = $hash;
 					
@@ -156,21 +160,30 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				
 					case 'canceled':
 						$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
+						$show_subscription_options = true;
 						break;
 						
 					default:
-						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $customer['payment_gateway'] ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
 						
 				}
 				
-				$results .= '<h3>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</h3>';
-				$results .= '<h1><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></h1>';
-				$results .= '</div>';
+				$results .= '<p>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</p>';
+				
+			} else {
+				
+				$results .= '<p>' . __( 'Your account is no longer active.', 'issuem-leaky-paywall' ) . '</p>';
+				$show_subscription_options = true;
 				
 			}
 			
-		} else {			
-				
+			$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
+			$results .= '</div>';
+			
+		}			
+			
+		if ( $show_subscription_options ) {
+		
 			//Once we enable Upgrades, we want to move this outside of the ELSE Block;
 			$results .= issuem_leaky_paywall_subscription_options();
 		

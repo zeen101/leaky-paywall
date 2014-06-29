@@ -117,7 +117,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			$settings = $this->get_settings();
 			
 			issuem_leaky_paywall_maybe_process_payment();
-			issuem_leaky_paywall_maybe_process_webhooks();
+			if ( issuem_leaky_paywall_maybe_process_webhooks() )
+				die(); //no point in loading the whole page for webhooks
 								
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
@@ -163,8 +164,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								
 								if ( is_singular( $restriction['post_type'] ) ) {
 								
-									if ( 0 <= $restriction['allowed_value'] 
-										|| !get_post_meta( $post->ID, '_issuem_leaky_paywall_always_allow', true ) ) {
+									if ( 0 <= $restriction['allowed_value'] ) {
 									
 										$post_type_id = $key;
 										$restricted_post_type = $restriction['post_type'];
@@ -177,6 +177,44 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								
 							}
 
+						}
+						
+						if ( $is_restricted ) {
+							
+							$level_id = issuem_leaky_paywall_susbscriber_current_level_id();
+							$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
+														
+							if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+								
+								switch( $visibility['visibility_type'] ) {
+									
+									case 'only':
+										if ( !in_array( $level_id, $visibility['only_visible'] ) ) {
+											add_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
+											return;
+										}
+										break;
+										
+									case 'always':
+										if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
+											$is_restricted = false;
+										}
+										break;
+									
+									case 'onlyalways':
+										if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
+											add_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
+											return;
+										} else {
+											$is_restricted = false;
+										}
+										break;
+									
+									
+								}
+								
+							}
+						
 						}
 						
 						if ( $is_restricted ) {
@@ -218,23 +256,27 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								}
 								
 							}
-																						
-							if ( $restrictions['post_types'][$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
-							
-								if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
-									
-									$available_content[$restricted_post_type][$post->ID] = $expiration;
+														
+							if( -1 != $restrictions['post_types'][$post_type_id]['allowed_value'] ) { //-1 means unlimited
+																							
+								if ( $restrictions['post_types'][$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
 								
-								}
-								
-							} else {
-							
-								if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
+									if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
 										
-									add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										$available_content[$restricted_post_type][$post->ID] = $expiration;
+									
+									}
+									
+								} else {
+								
+									if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
+											
+										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										
+									}
 									
 								}
-								
+							
 							}
 							
 							$serialized_available_content = maybe_serialize( $available_content );
@@ -321,6 +363,33 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 		}
 		
+		function the_content_not_visible_paywall( $content ) {
+			
+			global $post;
+			$settings = $this->get_settings();	
+					
+			add_filter( 'excerpt_more', '__return_false' );
+			
+			//Remove the_content filter for get_the_excerpt calls
+			remove_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
+			$content = get_the_excerpt();
+			add_filter( 'the_content', array( $this, 'the_content_not_visible_paywall' ), 999 );
+			//Add the_content filter back for futhre the_content calls
+			
+			$message  = '<div id="leaky_paywall_message">';
+			if ( !is_issuem_leaky_subscriber_logged_in() ) {
+				$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			} else {
+				$message .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
+			}
+			$message .= '</div>';
+		
+			$new_content = $content . $message;
+		
+			return apply_filters( 'issuem_leaky_paywall_subscriber_or_login_message', $new_content, $message, $content );
+			
+		}
+		
 		function replace_variables( $message ) {
 	
 			$settings = $this->get_settings();
@@ -367,6 +436,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
 				wp_enqueue_style( 'issuem_leaky_paywall_admin_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+				
+			if ( 'post.php' === $hook_suffix )
+				wp_enqueue_style( 'issuem_leaky_paywall_post_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
 			
 		}
 	
@@ -384,6 +456,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
 				wp_enqueue_script( 'issuem_leaky_paywall_subscribers_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), ISSUEM_LEAKY_PAYWALL_VERSION );
+				
+			if ( 'post.php' === $hook_suffix )
+				wp_enqueue_script( 'issuem_leaky_paywall_post_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
 				
 			
 		}
@@ -897,6 +972,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ); ?>" /></td>
                             </tr>
                             
+                            <tr>
+                            	<th><?php _e( 'Live Webhooks', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-stripe-live-webhook', '1', get_site_url() . '/' ); ?></p></td>
+                            </tr>
+                            
                         	<tr>
                                 <th><?php _e( 'Test Secret Key', 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ); ?>" /></td>
@@ -905,6 +985,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                         	<tr>
                                 <th><?php _e( 'Test Publishable Key', 'issuem-leaky-paywall' ); ?></th>
                                 <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ); ?>" /></td>
+                            </tr>
+                            
+                            <tr>
+                            	<th><?php _e( 'Test Webhooks', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-stripe-test-webhook', '1', get_site_url() . '/' ); ?></p></td>
                             </tr>
                             
                         </table>
@@ -949,6 +1034,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 </td>
                             </tr>
                             
+                            <tr>
+                            	<th><?php _e( 'Live IPN', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-live-ipn', '1', get_site_url() . '/' ); ?></p></td>
+                            </tr>
+                            
                         	<tr>
                                 <th><?php _e( 'Sandbox Merchant ID', 'issuem-leaky-paywall' ); ?></th>
                                 <td>
@@ -977,6 +1067,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                                 <td>
                                 	<input type="text" id="paypal_sand_api_secret" class="regular-text" name="paypal_sand_api_secret" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_api_secret'] ) ); ?>" />
                                 </td>
+                            </tr>
+                            
+                            <tr>
+                            	<th><?php _e( 'Live IPN', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-test-ipn', '1', get_site_url() . '/' ); ?></p></td>
                             </tr>
                             
                         </table>

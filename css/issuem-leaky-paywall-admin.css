@@ -64,7 +64,7 @@ div#leaky-paywall-subscriber-add-edit form#leaky-paywall-subscriber-bulk-add {
 }
 
 div.interval_div,
-div.allowed_value {
+div.allowed_value_div {
 	display: inline-block;
 }
 

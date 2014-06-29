@@ -79,6 +79,63 @@ if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_hash' ) ) {
 	
 }
 
+if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_subscriber_id' ) ) {
+	
+	function get_issuem_leaky_paywall_subscriber_by_subscriber_id( $subscriber_id, $mode = false ) {
+		
+		if ( empty( $mode ) ) {
+			$settings = get_issuem_leaky_paywall_settings();
+			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		}
+		
+		$args = array(
+			'meta_key'   => '_issuem_leaky_paywall_' . $mode . '_subscriber_id',
+			'meta_value' => $subscriber_id,
+		);
+		$users = get_users( $args );
+	
+		if ( !empty( $users ) ) {
+			foreach ( $users as $user ) {
+				return $user;
+			}
+		}
+		
+		return false;
+		
+	}
+	
+}
+
+if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_subscriber_email' ) ) {
+	
+	function get_issuem_leaky_paywall_subscriber_by_subscriber_email( $subscriber_email, $mode = false ) {
+		
+		if ( is_email( $subscriber_email ) ) {
+			
+			if ( empty( $mode ) ) {
+				$settings = get_issuem_leaky_paywall_settings();
+				$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			}
+			
+			$args = array(
+				'meta_key'   => '_issuem_leaky_paywall_' . $mode . '_$subscriber_email',
+				'meta_value' => $subscriber_email,
+			);
+			$users = get_users( $args );
+		
+			if ( !empty( $users ) ) {
+				foreach ( $users as $user ) {
+					return $user;
+				}
+			}
+		}
+		
+		return false;
+		
+	}
+	
+}
+
 if ( !function_exists( 'add_issuem_leaky_paywall_hash' ) ) {
 
 	/**
@@ -194,8 +251,9 @@ if ( !function_exists( 'issuem_leaky_paywall_has_user_paid' ) ) {
 					
 					$settings = get_issuem_leaky_paywall_settings();
 					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-					$expires = $customer['expires'];
+					$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );;
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+					$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
 					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true );
 					$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
 					
@@ -320,11 +378,68 @@ if ( !function_exists( 'issuem_leaky_paywall_has_user_paid' ) ) {
 	
 }
 
-if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_subscriber_id' ) ) {
+if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
 	
-	function get_issuem_leaky_paywall_subscriber_by_subscriber_id( $subscriber_id ) {
+	function issuem_process_stripe_webhook( $mode = 'live' ) {
 		
+	    $body = @file_get_contents('php://input');
+	    $stripe_event = json_decode( $body );
+    		
+	    if ( isset( $stripe_event->type ) ) {
+	
+			$stripe_object = $stripe_event->data->object;
 		
+			if ( !empty( $stripe_object->customer ) )
+				$user = get_issuem_leaky_paywall_subscriber_by_subscriber_id( $stripe_object->customer, $mode );				
+		
+			if ( !empty( $user ) ) {
+		
+				//https://stripe.com/docs/api#event_types
+				switch( $stripe_event->type ) {
+		
+					case 'charge.succeeded' :
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'active' );
+						break;
+					case 'charge.failed' :
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
+						break;
+					case 'charge.refunded' :
+						if ( $stripe_object->refunded )
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
+						else
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
+						break;
+					case 'charge.dispute.created' :
+					case 'charge.dispute.updated' :
+					case 'charge.dispute.closed' :
+						break;
+					case 'customer.deleted' :
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'canceled' );
+						break;
+						
+					case 'invoice.payment_succeeded' :
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'active' );
+						break;
+						
+					case 'invoice.payment_failed' :
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
+						break;
+						
+					case 'customer.subscription.created' :
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'active' );
+						break;
+						
+					case 'customer.subscription.deleted' :
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'canceled' );
+						break;
+						
+		
+				};
+				
+			}
+				
+	    }
+
 		
 	}
 	
@@ -339,26 +454,23 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 	 *
 	 * @param array $request
 	 */
-	function issuem_process_paypal_standard_ipn() {
-		
-		$settings = get_issuem_leaky_paywall_settings();
-		
-		$f = fopen( 'paypal-ipn.txt', 'a' );
-		fwrite( $f, print_r( $_REQUEST, true ) );
-		fclose( $f );
-		
+	function issuem_process_paypal_standard_ipn( $mode = 'live' ) {
+						
 		$subscriber_id = !empty( $_REQUEST['subscr_id'] ) ? $_REQUEST['subscr_id'] : false;
 		$subscriber_id = !empty( $_REQUEST['recurring_payment_id'] ) ? $_REQUEST['recurring_payment_id'] : $subscriber_id;
 		
 		if ( !empty( $_REQUEST['txn_type'] ) ) {
 		
-			$user = get_user_by( 'email', $_REQUEST['payer_email'] );
-			if ( empty( $subcriber ) )
-				$subscriber = get_issuem_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['txn_id'] );
-			if ( empty( $subcriber ) )
-				$subscriber = get_issuem_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['subscr_id'] );
+			if ( !empty( $_REQUEST['payer_email'] ) )
+				$user = get_user_by( 'email', $_REQUEST['payer_email'] );
+			if ( empty( $user ) && !empty( $_REQUEST['payer_email'] ) )
+				$user = get_issuem_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['payer_email'], $mode );	
+			if ( empty( $user ) && !empty( $_REQUEST['txn_id'] ) )
+				$user = get_issuem_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['txn_id'], $mode );				
+			if ( empty( $user ) && !empty( $_REQUEST['subscr_id'] ))
+				$user = get_issuem_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['subscr_id'], $mode );
 			
-			if ( !empty( $subscriber ) ) {
+			if ( !empty( $user ) ) {
 				
 				switch( $_REQUEST['txn_type'] ) {
 				
@@ -366,37 +478,36 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						switch( strtolower( $_REQUEST['payment_status'] ) ) {
 						
 							case 'completed' :
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'active' );
+								break;
 							case 'reversed' :
-								$subscriber['payment_status'] = strtolower( $_REQUEST['payment_status'] );
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
 								break;			
 						}
 						break;
 						
 					case 'subscr_signup':
-						$period = $_REQUEST['period3'];
-						$subscriber['plan'] = strtoupper( $period );
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', $_REQUEST['subscr_id'] );
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', strtoupper( $_REQUEST['period3'] ) );
 						break;
 						
 					case 'subscr_payment':
-						if ( $_REQUEST['txn_id'] === $subscriber['subscriber_id'] )
-							$subscriber['subscriber_id'] = $_REQUEST['subscr_id'];
+						$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', $_REQUEST['subscr_id'] );
 							
-						if ( !empty( $subscriber['plan'] ) ) {// @todo
-							$new_expiration = date( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $subscriber['plan'] ), strtotime( $_REQUEST['payment_date'] ) ) );
-							switch( strtolower( $_REQUEST['payment_status'] ) ) {
-								case 'completed' :
-									$subscriber['expires'] = $new_expiration;
-									break;
-							}
+						$new_expiration = date( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ), strtotime( $_REQUEST['payment_date'] ) ) );
+						switch( strtolower( $_REQUEST['payment_status'] ) ) {
+							case 'completed' :
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', $new_expiration );
+								break;
 						}
 						break;
 						
 					case 'subscr_cancel':
-						$subscriber['payment_status'] = 'canceled';
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'canceled' );
 						break;
 						
-					case 'subscr_eot':
-						$subscriber['payment_status'] = 'expired';
+					case 'subscr_eot':						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'expired' );
 						break;
 					
 				}
@@ -408,6 +519,8 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 			}
 			
 		}
+		
+		return true;
 		
 	}
 	
@@ -671,7 +784,7 @@ if ( !function_exists( 'issuem_leaky_paywall_cancellation_confirmation' ) ) {
 				
 				if ( $user = get_issuem_leaky_paywall_subscriber_by_hash( $_COOKIE['issuem_lp_subscriber'] ) ) {
 				
-					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
+					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
 					
 					if ( 'stripe' === $payment_gateway ) {
 					
@@ -857,7 +970,7 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 	 */
 	function is_issuem_leaky_subscriber_logged_in() {
 		
-		if ( is_user_logged_in() && empty( $_SESSION['issuem_lp_subscriber'] ) ) {
+		if ( is_user_logged_in() ) {
 			$settings = get_issuem_leaky_paywall_settings();
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 			$user_id = get_current_user_id();
@@ -877,9 +990,9 @@ if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 
 			$_SESSION['issuem_lp_subscriber'] = $_COOKIE['issuem_lp_subscriber'];
 			
-			if ( empty( $_SESSION['issuem_lp_email'] ) ) 
+			if ( empty( $_SESSION['issuem_lp_email'] ) )
 				$_SESSION['issuem_lp_email'] = issuem_leaky_paywall_get_email_from_subscriber_hash( $_COOKIE['issuem_lp_subscriber'] );
-				
+						
 			if ( !is_user_logged_in() ) {
 				//For the off-chance a user gets automatically logged out of WordPress, but remains logged in via Leaky Paywall...
 	
@@ -977,7 +1090,7 @@ if ( !function_exists( 'issuem_leaky_paywall_get_email_from_subscriber_hash' ) )
 				'meta_value' => $hash,
 			);
 			$users = get_users( $args );
-		
+			
 			if ( !empty( $users ) ) {
 				foreach ( $users as $user ) {
 					//should really only be one
@@ -1292,8 +1405,8 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_post_type' )
 			$allowed_value_input_style = '';
 		}
 			    
-		$return .= '<div class="allowed_value" style="' . $allowed_value_input_style . '">';
-		$return .= '<input type="text" class="small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'issuem-leaky-paywall' ) . '" />';
+		$return .= '<div class="allowed_value_div" style="' . $allowed_value_input_style . '">';
+		$return .= '<input type="text" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'issuem-leaky-paywall' ) . '" />';
 		$return .= '</div>';
 		
 		$return .= '<select name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
@@ -1427,9 +1540,6 @@ if ( !function_exists( 'wp_print_r' ) ) {
 if ( !function_exists( 'issuem_leaky_paywall_maybe_process_payment' ) ) {
 	
 	function issuem_leaky_paywall_maybe_process_payment() {
-		
-		$settings = get_issuem_leaky_paywall_settings();
-		$results = '';
 				
 		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-return'] ) )
 			return issuem_leaky_paywall_process_stripe_payment();
@@ -1439,8 +1549,6 @@ if ( !function_exists( 'issuem_leaky_paywall_maybe_process_payment' ) ) {
 			
 		return apply_filters( 'issuem_leaky_paywall_maybe_process_payment', false );
 		
-		return $results;
-		
 	}
 	
 }
@@ -1448,22 +1556,20 @@ if ( !function_exists( 'issuem_leaky_paywall_maybe_process_payment' ) ) {
 if ( !function_exists( 'issuem_leaky_paywall_maybe_process_webhooks' ) ) {
 	
 	function issuem_leaky_paywall_maybe_process_webhooks() {
-			
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-ipn'] ) ) {
-		
-			issuem_process_paypal_standard_ipn();
-			return; //We don't need to process anything else after this
-			
-		}
 					
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-webhook'] ) ) {
-		
-			issuem_process_stripe_webhook();
-			return; //We don't need to process anything else after this
+		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-live-webhook'] ) )
+			return issuem_process_stripe_webhook( 'live' );
 			
-		}
+		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-test-webhook'] ) )
+			return issuem_process_stripe_webhook( 'test' );
+			
+		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-live-ipn'] ) )
+			return issuem_process_paypal_standard_ipn( 'live' );
+			
+		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-test-ipn'] ) )
+			return issuem_process_paypal_standard_ipn( 'test' );
 		
-		do_action( 'issuem_leaky_paywall_maybe_process_webhooks' );
+		return apply_filters( 'issuem_leaky_paywall_maybe_process_webhooks', false );
 		
 	}
 	
@@ -1552,7 +1658,9 @@ if ( !function_exists( 'issuem_leaky_paywall_process_stripe_payment' ) ) {
 				$unique_hash = issuem_leaky_paywall_hash( $_SESSION['issuem_lp_email'] );
 				
 				$args = array(
+					'level_id'			=> $_POST['custom'],
 					'subscriber_id' 	=> $cu->id,
+					'subscriber_email' 	=> $_POST['stripeEmail'],
 					'price' 			=> $level['price'],
 					'description' 		=> $level['label'],
 					'payment_gateway' 	=> 'stripe',
@@ -1562,21 +1670,10 @@ if ( !function_exists( 'issuem_leaky_paywall_process_stripe_payment' ) ) {
 					'plan' 				=> !empty( $customer_array['plan'] ) ? $customer_array['plan'] : '',
 				);
 					
-				if ( !empty( $existing_customer ) ) {
-				
+				if ( !empty( $existing_customer ) )
 					issuem_leaky_paywall_update_subscriber( $unique_hash, $_SESSION['issuem_lp_email'], $cu, $args ); //if the email already exists, we want to update the subscriber, not create a new one
-					
-					update_user_meta( $existing_customer['user_id'], '_issuem_leaky_paywall_' . $mode . '_level_id', $_POST['custom'] );
-
-				} else {
-				
+				else
 					issuem_leaky_paywall_new_subscriber( $unique_hash, $_SESSION['issuem_lp_email'], $cu, $args );
-					
-					$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
-					update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', $_POST['custom'] );
-
-				
-				}
 					
 				$_SESSION['issuem_lp_subscriber'] = $unique_hash;
 				
@@ -1691,7 +1788,9 @@ if ( !function_exists( 'issuem_leaky_paywall_process_paypal_payment' ) ) {
 							throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
 	
 						$args = array(
+							'level_id' 			=> $response_array['CUSTOM'],
 							'subscriber_id' 	=> $cu->id,
+							'subscriber_email' 	=> $response_array['EMAIL'],
 							'price' 			=> $level['price'],
 							'description' 		=> $level['label'],
 							'payment_gateway' 	=> 'paypal_standard',
@@ -1699,21 +1798,15 @@ if ( !function_exists( 'issuem_leaky_paywall_process_paypal_payment' ) ) {
 							'interval' 			=> $level['interval'],
 							'interval_count' 	=> $level['interval_count'],
 						);
+						
+						//Mimic PayPal's Plan...
+						if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
+							$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
 	
-						if ( $user = get_user_by( 'email', $_SESSION['issuem_lp_email'] ) ) {
-						
+						if ( $user = get_user_by( 'email', $_SESSION['issuem_lp_email'] ) )
 							issuem_leaky_paywall_update_subscriber( $unique_hash, $_SESSION['issuem_lp_email'], $cu, $args ); //if the email already exists, we want to update the subscriber, not create a new one
-							
-							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', $response_array['CUSTOM'] );
-							
-						} else {
-						
+						else
 							issuem_leaky_paywall_new_subscriber( $unique_hash, $_SESSION['issuem_lp_email'], $cu, $args );
-							
-							$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
-							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', $response_array['CUSTOM'] );
-							
-						}
 						
 					} else {
 						
@@ -1948,7 +2041,7 @@ if ( !function_exists( 'issuem_leaky_paywall_pay_with_paypal_standard' ) ) {
 																					
 			$results .= '<script src="' . ISSUEM_LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
 							data-env="' . esc_js( $mode ) . '" 
-							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-ipn', '1', get_site_url() . '/' ) ) . '"
+							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '"
 							data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
 							data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" 
 							data-src="1" 
@@ -1967,7 +2060,7 @@ if ( !function_exists( 'issuem_leaky_paywall_pay_with_paypal_standard' ) ) {
 						
 			$results .= '<script src="' . ISSUEM_LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
 							data-env="' . esc_js( $mode ) . '" 
-							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-ipn', '1', get_site_url() . '/' ) ) . '" 
+							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '" 
 							data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
 							data-cancel_return="' . esc_js( get_page_link( $settings['page_for_subscription'] ) ) . '" 
 							data-tax="0" 

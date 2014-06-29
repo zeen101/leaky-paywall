@@ -1,0 +1,3 @@
+select#issuem-leaky-paywall-visibility-type, select#issuem-leaky-paywall-only-visible, select#issuem-leaky-paywall-always-visible, select#issuem-leaky-paywall-only-always-visible {
+	width: 100%;
+}

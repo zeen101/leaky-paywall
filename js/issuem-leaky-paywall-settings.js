@@ -45,7 +45,7 @@ $leaky_paywall_settings(document).ready(function($) {
 		if ( 'unlimited' == $( this ).val() ) {
 			$( '.interval_count', parent ).data( 'prev-value', $( '.interval_count', parent ).val() )
 			$( '.interval_div', parent ).hide();
-			$( '.interval_count', parent ).val( '0' );
+			$( '.interval_count', parent ).val( '-1' );
 		} else {
 			$( '.interval_count', parent ).val( $( '.interval_count', parent ).data( 'prev-value' ) );
 			$( '.interval_div', parent ).show();
@@ -55,17 +55,17 @@ $leaky_paywall_settings(document).ready(function($) {
 	$( 'select.allowed_type' ).live( 'change', function( event ) {
 		var parent = $( this ).parent();
 		if ( 'unlimited' == $( this ).val() ) {
+			console.log( 'here' );
 			$( '.allowed_value', parent ).data( 'prev-value', $( '.allowed_value', parent ).val() )
-			$( '.allowed_value', parent ).hide();
+			$( '.allowed_value_div', parent ).hide();
 			$( '.allowed_value', parent ).val( '-1' );
 		} else {
 			$( '.allowed_value', parent ).val( $( '.allowed_value', parent ).data( 'prev-value' ) );
-			$( '.allowed_value', parent ).show();
+			$( '.allowed_value_div', parent ).show();
 		}
 	});
 		
 	$( '.delete-restriction-row' ).live( 'click', function ( event ) {
-		console.log('here');
 		event.preventDefault();
 		var parent = $( this ).parents( '.issuem-leaky-paywall-restriction-row' );
 		parent.slideUp( 'normal', function() { $( this ).remove(); } );

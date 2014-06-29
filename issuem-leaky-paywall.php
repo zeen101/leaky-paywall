@@ -62,12 +62,12 @@ function issuem_leaky_paywall_plugins_loaded() {
 	if ( class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		
 		global $dl_pluginissuem_leaky_paywall;
-		
 		$dl_pluginissuem_leaky_paywall = new IssueM_Leaky_Paywall();
 		
 		require_once( 'functions.php' );
 		require_once( 'shortcodes.php' );
 		require_once( 'subscriber-table.php' );
+		require_once( 'metaboxes.php' );
 			
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, ISSUEM_LEAKY_PAYWALL_REL_DIR . '/i18n/' );
