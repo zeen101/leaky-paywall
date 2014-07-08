@@ -507,7 +507,8 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'canceled' );
 						break;
 						
-					case 'subscr_eot':						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'expired' );
+					case 'subscr_eot':
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'expired' );
 						break;
 					
 				}
@@ -1031,7 +1032,7 @@ if ( !function_exists( 'issuem_leaky_paywall_subscriber_restrictions' ) ) {
 				return $settings['levels'][$restriction_level];
 			
 		}
-		return false;
+		return $settings['restrictions']; //defaults
 		
 	}
 }

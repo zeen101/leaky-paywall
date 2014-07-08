@@ -150,7 +150,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 						global $post;
 						$post_type_id = '';
 						$restricted_post_type = '';
-						$restrictions = false;
 						$is_restricted = false;
 						
 						$restrictions = issuem_leaky_paywall_subscriber_restrictions();
@@ -183,7 +182,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							
 							$level_id = issuem_leaky_paywall_susbscriber_current_level_id();
 							$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-														
+							
 							if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
 								
 								switch( $visibility['visibility_type'] ) {
