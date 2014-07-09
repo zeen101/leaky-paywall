@@ -1753,7 +1753,6 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					if ( 'admin_page_leaky-paywall-update' !== $hook_suffix && 'leaky-paywall_page_leaky-paywall-update' !== $hook_suffix ) {
 										
 						$manual_update_version = get_option( 'leaky_paywall_manual_update_version' );
-						$manual_update_version = '1.2.0'; //CHANGEME
 											
 						if ( version_compare( $manual_update_version, '2.0.0', '<' ) ) {
 							?>
