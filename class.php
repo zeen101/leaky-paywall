@@ -140,7 +140,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				
 			}
 			
-			if ( is_single() ) {
+			if ( is_singular() ) {
 			
 				if ( !current_user_can( 'manage_options' ) ) { //Admins can see it all
 				
@@ -177,43 +177,39 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							}
 
 						}
+					
+						$level_id = issuem_leaky_paywall_susbscriber_current_level_id();
+						$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
 						
-						if ( $is_restricted ) {
-							
-							$level_id = issuem_leaky_paywall_susbscriber_current_level_id();
-							$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-							
-							if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+						if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+													
+							switch( $visibility['visibility_type'] ) {
 								
-								switch( $visibility['visibility_type'] ) {
+								case 'only':
+									if ( !in_array( $level_id, $visibility['only_visible'], true ) ) {
+										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										return;
+									}
+									break;
 									
-									case 'only':
-										if ( !in_array( $level_id, $visibility['only_visible'] ) ) {
-											add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-											return;
-										}
-										break;
-										
-									case 'always':
-										if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
-											$is_restricted = false;
-										}
-										break;
-									
-									case 'onlyalways':
-										if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
-											add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-											return;
-										} else {
-											$is_restricted = false;
-										}
-										break;
-									
-									
-								}
+								case 'always':
+									if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
+										$is_restricted = false;
+									}
+									break;
+								
+								case 'onlyalways':
+									if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
+										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										return;
+									} else {
+										$is_restricted = false;
+									}
+									break;
+								
 								
 							}
-						
+							
 						}
 						
 						if ( $is_restricted ) {
@@ -410,7 +406,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
 				wp_enqueue_style( 'issuem_leaky_paywall_admin_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
 				
-			if ( 'post.php' === $hook_suffix )
+			if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix )
 				wp_enqueue_style( 'issuem_leaky_paywall_post_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
 			
 		}
@@ -430,7 +426,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
 				wp_enqueue_script( 'issuem_leaky_paywall_subscribers_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), ISSUEM_LEAKY_PAYWALL_VERSION );
 				
-			if ( 'post.php' === $hook_suffix )
+			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix )
 				wp_enqueue_script( 'issuem_leaky_paywall_post_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
 				
 			
