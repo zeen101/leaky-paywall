@@ -1185,7 +1185,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			$date_format = get_option( 'date_format' );
 			$jquery_date_format = issuem_leaky_paywall_jquery_datepicker_format( $date_format );
-			$headings = apply_filters( 'issuem_leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status' ) );
+			$headings = apply_filters( 'issuem_leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id' ) );
 			
 			$settings = get_issuem_leaky_paywall_settings();
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -1366,11 +1366,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								else 
 									$status = trim( $import[$keys['status']] );
 									
-								if ( empty( $import[$keys['level-id']] ) )
-									$level_id = '';
-								else 
+								if ( isset( $import[$keys['level-id']] ) )
 									$level_id = trim( $import[$keys['level-id']] );
-								
+								else 
+									$level_id = '';
+															
 								$customer = new stdClass;
 								$customer->id = '';
 								

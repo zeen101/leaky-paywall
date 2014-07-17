@@ -50,14 +50,17 @@ if ( !function_exists( 'get_issuem_leaky_paywall_subscriber_by_hash' ) ) {
 	 * @since 1.0.0
 	 *
 	 * @param string $hash of user "logged" in
+	 * @param bool $mode Optional argument to override mode
 	 * @return mixed $wpdb row object or false
 	 */
-	function get_issuem_leaky_paywall_subscriber_by_hash( $hash ) {
+	function get_issuem_leaky_paywall_subscriber_by_hash( $hash, $mode = false ) {
 
 		if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
 			
-			$settings = get_issuem_leaky_paywall_settings();
-			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			if ( empty( $mode ) ) {
+				$settings = get_issuem_leaky_paywall_settings();
+				$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+			}
 			
 			$args = array(
 				'meta_key'   => '_issuem_leaky_paywall_' . $mode . '_hash',
