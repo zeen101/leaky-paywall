@@ -76,3 +76,7 @@
 	display: inline-block;
 	margin: 5px;
 }
+
+.paypal-description {
+	font-size: .8em;
+}

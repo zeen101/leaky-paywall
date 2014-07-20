@@ -1894,8 +1894,12 @@ if ( !function_exists( 'issuem_leaky_paywall_subscription_options' ) ) {
 							if ( in_array( 'stripe', $settings['payment_gateway'] ) )
 								$payment_options .= issuem_leaky_paywall_pay_with_stripe( $level, $key );
 							
-							if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) )
+							if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) {
+								if ( !empty( $payment_options ) )
+									$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
+
 								$payment_options .= issuem_leaky_paywall_pay_with_paypal_standard( $level, $key );
+							}
 							
 							$results .= apply_filters( 'issuem_leaky_paywall_subscription_options_payment_options', $payment_options, $level );
 						} else {
