@@ -584,44 +584,25 @@ if ( !function_exists( 'issuem_leaky_paywall_new_subscriber' ) ) {
 			}
 			
 			if ( !empty( $user_id ) ) {
+								
+				if ( 0 !== $meta_args['interval'] )
+					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
+				else if ( !empty( $meta_args['expires'] ) )
+					$expires = $meta_args['expires'];
 				
-				if ( isset( $customer->subscription ) ) { //only stripe
-						
-					$meta = array(
-						'level_id' 			=> $meta_args['level_id'],
-						'hash' 				=> $hash,
-						'subscriber_id' 	=> $customer->id,
-						'price' 			=> number_format( $customer->subscription->plan->amount / 100, '2', '.', '' ),
-						'description' 		=> $customer->subscription->plan->name,
-						'plan' 				=> $customer->subscription->plan->id,
-						'created' 			=> date( 'Y-m-d H:i:s', $customer->subscription->start ),
-						'expires' 			=> $expires,
-						'payment_gateway' 	=> 'stripe',
-						'payment_status' 	=> $meta_args['payment_status'],
-					);		
-							
-				} else {
-					
-					if ( 0 !== $meta_args['interval'] )
-						$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
-					else if ( !empty( $meta_args['expires'] ) )
-						$expires = $meta_args['expires'];
-					
-					$meta = array(
-						'level_id' 			=> $meta_args['level_id'],
-						'hash' 				=> $hash,
-						'subscriber_id' 	=> $customer->id,
-						'price' 			=> $meta_args['price'],
-						'description' 		=> $meta_args['description'],
-						'plan' 				=> '',
-						'created' 			=> date( 'Y-m-d H:i:s' ),
-						'expires' 			=> $expires,
-						'payment_gateway' 	=> $meta_args['payment_gateway'],
-						'payment_status' 	=> $meta_args['payment_status'],
-					);
-	
-				}
-				
+				$meta = array(
+					'level_id' 			=> $meta_args['level_id'],
+					'hash' 				=> $hash,
+					'subscriber_id' 	=> $customer->id,
+					'price' 			=> $meta_args['price'],
+					'description' 		=> $meta_args['description'],
+					'plan' 				=> $meta_args['plan'],
+					'created' 			=> date( 'Y-m-d H:i:s' ),
+					'expires' 			=> $expires,
+					'payment_gateway' 	=> $meta_args['payment_gateway'],
+					'payment_status' 	=> $meta_args['payment_status'],
+				);
+			
 				$meta = apply_filters( 'issuem_leaky_paywall_new_subscriber_meta', $meta, $email, $customer );
 			
 				foreach( $meta as $key => $value ) {

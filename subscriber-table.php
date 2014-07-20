@@ -188,7 +188,7 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 					case 'expires':
 						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
-						if ( empty( $subscriber['expires'] ) || '0000-00-00 00:00:00' === $expires ) {
+						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 							if ( 'manual' === $payment_gateway )
 								$expires = __( 'Never', 'issuem-leaky-paywall' );
 							else if ( 'stripe' === $payment_gateway )

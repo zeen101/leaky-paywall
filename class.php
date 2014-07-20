@@ -1229,6 +1229,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								'payment_gateway' 	=> 'manual',
 								'payment_status' 	=> $_POST['leaky-paywall-subscriber-status'],
 								'interval' 			=> 0,
+								'plan'				=> '',
 							);
 							
 							$user_id = issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $meta, $login );
@@ -1386,6 +1387,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									'payment_gateway' 	=> 'manual',
 									'payment_status' 	=> $status,
 									'interval' 			=> 0,
+									'plan'				=> '',
 								);
 								
 								$user_id = issuem_leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $meta, $login );
