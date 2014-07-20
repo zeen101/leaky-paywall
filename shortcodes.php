@@ -112,7 +112,6 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		
 		$settings = get_issuem_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-		$show_subscription_options = true;
 		
 		$defaults = array(
 			'login_heading' 	=> __( 'Enter your email address to start your subscription:', 'issuem-leaky-paywall' ),
@@ -137,7 +136,7 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
 			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
-			
+						
 			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
 				
 				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
@@ -173,20 +172,13 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 				$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
 				$results .= '</div>';
 				
-			} else {
-				
-				$show_subscription_options = true;
-				
+				$show_upgrade_options = true;
+								
 			}
 			
 		}			
 			
-		if ( $show_subscription_options ) {
-		
-			//Once we enable Upgrades, we want to move this outside of the ELSE Block;
-			$results .= issuem_leaky_paywall_subscription_options();
-		
-		}
+		$results .= issuem_leaky_paywall_subscription_options();
 				
 		return $results;
 		

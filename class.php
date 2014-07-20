@@ -69,7 +69,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 					
 					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 					Stripe::setApiKey( $secret_key );
-					Stripe::setApiVersion( '2013-12-03' ); //Last version before Stripe changed subscription model
+					Stripe::setApiVersion( '2014-06-17' ); //Last version before Stripe changed subscription model
 									
 				}
 			
@@ -117,6 +117,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			$settings = $this->get_settings();
 			
 			issuem_leaky_paywall_maybe_process_payment();
+			
 			if ( issuem_leaky_paywall_maybe_process_webhooks() )
 				die(); //no point in loading the whole page for webhooks
 								
@@ -212,6 +213,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							
 						}
 						
+						$is_restricted = apply_filters( 'issuem_leaky_paywall_filter_is_restricted', $is_restricted, $restrictions );
+						
 						if ( $is_restricted ) {
 								
 							global $post;
@@ -278,9 +281,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 							setcookie( 'issuem_lp', $serialized_available_content, $expiration, '/' );
 							$_COOKIE['issuem_lp'] = $serialized_available_content;
 							
-							return; //We don't need to process anything else after this
-							
 						}
+						
+						return; //We don't need to process anything else after this
 						
 					}
 					
@@ -355,11 +358,11 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		
 			$new_content = $content . $message;
 		
-			return apply_filters( 'issuem_leaky_paywall_subscriber_or_login_message', $new_content, $message, $content );
+			return apply_filters( 'issuem_leaky_paywall_subscribe_or_login_message', $new_content, $message, $content );
 			
 		}
 				
-		function replace_variables( $message ) {
+		public function replace_variables( $message ) {
 	
 			$settings = $this->get_settings();
 			
