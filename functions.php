@@ -1687,7 +1687,6 @@ if ( !function_exists( 'issuem_leaky_paywall_process_stripe_payment' ) ) {
 				
 			} catch ( Exception $e ) {
 				
-				wp_print_r( $e );
 				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
 				
 			}
