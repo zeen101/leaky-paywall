@@ -2049,13 +2049,13 @@ if ( !function_exists( 'issuem_leaky_paywall_pay_with_paypal_standard' ) ) {
 		
 		$results = '';
 		$settings = get_issuem_leaky_paywall_settings();
-		$mode = 'on' === $settings['test_mode'] ? 'sandbox' : '';
-		$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
-		
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$paypal_sandbox = 'off' === $settings['test_mode'] ? '' : 'sandbox';
+		$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];		
 		if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 																					
 			$results .= '<script src="' . ISSUEM_LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
-							data-env="' . esc_js( $mode ) . '" 
+							data-env="' . esc_js( $paypal_sandbox ) . '" 
 							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '"
 							data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
 							data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" 
@@ -2074,7 +2074,7 @@ if ( !function_exists( 'issuem_leaky_paywall_pay_with_paypal_standard' ) ) {
 		} else {
 						
 			$results .= '<script src="' . ISSUEM_LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
-							data-env="' . esc_js( $mode ) . '" 
+							data-env="' . esc_js( $paypal_sandbox ) . '" 
 							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '" 
 							data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
 							data-cancel_return="' . esc_js( get_page_link( $settings['page_for_subscription'] ) ) . '" 

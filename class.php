@@ -1042,7 +1042,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                             </tr>
                             
                             <tr>
-                            	<th><?php _e( 'Live IPN', 'issuem-leaky-paywall' ); ?></th>
+                            	<th><?php _e( 'Sandbox IPN', 'issuem-leaky-paywall' ); ?></th>
                             	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-test-ipn', '1', get_site_url() . '/' ); ?></p></td>
                             </tr>
                             
