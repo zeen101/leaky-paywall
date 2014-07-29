@@ -8,17 +8,17 @@
  
 /*
 Plugin Name: IssueM's Leaky Paywall
-Plugin URI: http://issuem.com/
+Plugin URI: http://leakypw.com/
 Description: A premium leaky paywall add-on for WordPress and IssueM.
 Author: IssueM Development Team
 Version: 1.2.0
-Author URI: http://issuem.com/
+Author URI: http://leakypw.com/
 Tags:
 */
 
 //Define global variables...
-if ( !defined( 'ISSUEM_STORE_URL' ) )
-	define( 'ISSUEM_STORE_URL',				'http://issuem.com' );
+if ( !defined( 'ZEEN101_STORE_URL' ) )
+	define( 'ZEEN101_STORE_URL',			'http://zeen101.com' );
 	
 define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );

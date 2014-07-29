@@ -474,7 +474,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				);
 				
 				// Call the custom API.
-				$response = wp_remote_get( add_query_arg( $api_params, ISSUEM_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+				$response = wp_remote_get( add_query_arg( $api_params, ZEEN101_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
 
 				// make sure the response came back okay
 				if ( is_wp_error( $response ) )
@@ -513,7 +513,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				);
 				
 				// Call the custom API.
-				$response = wp_remote_get( add_query_arg( $api_params, ISSUEM_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+				$response = wp_remote_get( add_query_arg( $api_params, ZEEN101_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
 		
 				// make sure the response came back okay
 				if ( is_wp_error( $response ) )
@@ -1454,7 +1454,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	                    <form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
 	                    	<div style="display: table">
 	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-original-login" /></p>
-	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ); ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
@@ -1490,7 +1490,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	                    <form id="leaky-paywall-susbcriber-add" name="leaky-paywall-subscriber-add" method="post">
 	                    	<div style="display: table">
 	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="" name="leaky-paywall-subscriber-login" /></p>
-	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@issuem.com" name="leaky-paywall-subscriber-email" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value=""  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
@@ -1804,7 +1804,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                 );
 
                 $request = wp_remote_post(
-                        ISSUEM_STORE_URL,
+                        ZEEN101_STORE_URL,
                         array(
                                 'timeout' => 15,
                                 'sslverify' => false,
