@@ -189,6 +189,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								case 'only':
 									if ( !in_array( $level_id, $visibility['only_visible'], true ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										do_action( 'issuem_leaky_paywall_is_restricted_content' );
 										return;
 									}
 									break;
@@ -202,6 +203,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 								case 'onlyalways':
 									if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										do_action( 'issuem_leaky_paywall_is_restricted_content' );
 										return;
 									} else {
 										$is_restricted = false;
@@ -270,6 +272,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 									if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
 											
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+										do_action( 'issuem_leaky_paywall_is_restricted_content' );
 										
 									}
 									
