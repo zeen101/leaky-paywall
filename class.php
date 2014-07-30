@@ -180,7 +180,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						}
 					
 						$level_id = leaky_paywall_susbscriber_current_level_id();
-						$visibility = get_post_meta( $post->ID, '_leaky_paywall_visibility', true );
+						$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
 						
 						if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
 													
@@ -1271,12 +1271,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								else 
 									$expires = date( 'Y-m-d 23:59:59', strtotime( trim( urldecode( $_POST['leaky-paywall-subscriber-expires'] ) ) ) );
 									
-								if ( $price !== get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_price' ) )
-									update_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_price', $price );
-								if ( $expires !== get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_expires' ) )
-									update_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_expires', $price );
-								if ( $status !== get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_payment_status' ) )
-									update_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_payment_status', $price );
+								if ( $price !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' ) )
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', $price );
+								if ( $expires !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' ) )
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', $price );
+								if ( $status !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' ) )
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', $price );
 								
 								if ( $orig_email !== $new_email ) {
 									$args = array( 'ID' => $user->ID );
@@ -1296,7 +1296,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									clean_user_cache( $user->ID );
 								}
 								
-								update_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_level_id', $_POST['leaky-paywall-subscriber-level-id'] );
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', $_POST['leaky-paywall-subscriber-level-id'] );
 								
 								do_action( 'update_leaky_paywall_subscriber', $user->ID );
 							}
@@ -1441,10 +1441,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                 	if ( !empty( $email ) && !empty( $user ) ) {
                 	
                 		$login = $user->user_login;
-                		$subscriber_level_id = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_level_id', true );
-                		$payment_status = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_payment_status', true );
+                		$subscriber_level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+                		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
                 		
-                		$expires = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_expires', true );
+                		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
 						if ( '0000-00-00 00:00:00' === $expires )
 							$expires = '';
 						else
@@ -1455,7 +1455,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<div style="display: table">
 	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-original-login" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
-	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_price', true ); ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ); ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
@@ -1656,7 +1656,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                
 	                foreach( $meta as $key => $value ) {
 		
-						update_user_meta( $user_id, '_leaky_paywall_' . $subscriber->mode . '_' . $key, $value );
+						update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_' . $key, $value );
 						
 					}
 	                

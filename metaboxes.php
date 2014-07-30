@@ -34,7 +34,7 @@ if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
 	function leaky_paywall_content_visibility( $post ) {
 	
 		$settings = get_leaky_paywall_settings();
-		$visibility = get_post_meta( $post->ID, '_leaky_paywall_visibility', true );
+		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
 		if ( empty( $visibility ) ) {
 			$visibility = array(
 				'visibility_type' 		=> 'default',
@@ -190,11 +190,11 @@ if ( !function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 			
 			}
 			
-			update_post_meta( $post_id, '_leaky_paywall_visibility', $visibility );
+			update_post_meta( $post_id, '_issuem_leaky_paywall_visibility', $visibility );
 			
 		} else {
 			
-			delete_post_meta( $post_id, '_leaky_paywall_visibility' );
+			delete_post_meta( $post_id, '_issuem_leaky_paywall_visibility' );
 			
 		}
 

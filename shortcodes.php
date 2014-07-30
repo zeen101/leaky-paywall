@@ -140,8 +140,8 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 			if ( false !== $expires = leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
 				
 				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
-				$hash = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_hash', true );
-				$payment_gateway = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
 				$show_subscription_options = false;
 				
 				if ( !empty( $hash ) )
