@@ -1,15 +1,15 @@
-=== IssueM - Leaky Paywall ===
+=== Leaky Paywall for WordPress ===
 Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 1.2.0
+Stable tag: 2.0.0
 
-A premium leaky paywall add-on for IssueM. More info at http://issuem.com
+A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
 == Description ==
 
-A premium leaky paywall add-on for IssueM. More info at http://issuem.com
+A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
 == Installation ==
 
@@ -18,18 +18,43 @@ A premium leaky paywall add-on for IssueM. More info at http://issuem.com
 
 == Frequently Asked Questions ==
 
-= What are the minimum requirements for IssueM's Leaky Paywall? =
+= What are the minimum requirements for zeen101's Leaky Paywall? =
 
 You must have:
 
 * WordPress 3.3 or later
 * PHP 5
 
-= How is IssueM's Leaky Paywall Licensed? =
+= How is zeen101's Leaky Paywall Licensed? =
 
-* Like IssueM, Leaky Paywall is GPL
+* Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+= 2.0.0 =
+* Fixing save meta box bug
+* Updating IssueM references to point to zeen101
+* Fixed bug in visibility saving for custom post types, added new action for bbpress functionality
+* Fixing PayPal Sandbox bug
+* Adding Pay with PayPal text to subscription options
+* Few subscriber table bugs, new subscriber update
+* Removing debug output for testing
+* Updating Stripe API, enabling subscription upgrades through Stripe
+* Fixing bulk import with level-id, Adding mode arg to get subscriber by hash function
+* Fixing bug in single() test during processing, and per-post visibility, and enqueueing scripts properly on new content
+* Removing testing line for updater
+* Removing some duplicate code, and return default restrictions if no subscriber ID is set
+* Modified output for overridden pages, changed how issuem_leaky_paywall_attempt_login attempst to log in users, moved around text for non-valid accounts when logging in and needing to subscribe still
+* Adding metabox to all available post types to override leaky paywall defaults
+* Migrated all users to use WP user meta for all LP meta, debuging new cookie setup too
+* Recommend Merchant ID over PayPal Email address, fixed a paypal PDT bug
+* Extra security when creating usernames in WP
+* Re-organize the Settings page a bit, add some better UI
+* Adding details to subscription options to explain expiration, added GUI for updating cookie expiration, moved functions to a hook that happens sooner to prevent cookie warnings, fixed bug in susbcriber table (everyone listed as no-plan), setup better stripe and paypal processing
+* Adding multilevel Integration
+* Modified how the excerpt and paywall content is output and fixed a bug caused by 3rd party plugins calling content/excerpt functions in WP
+* Do not block login and subscription pages if page type is being blocked. Adds ability to modify usernames and sets usernaes based on front of email, not whole email
+* Completely modified LP to use WordPress Users Table... added migration functionality to move existing users to WP Users table, modified all functions to use WordPRess Users and Meta Tables and functions.
+
 = 1.2.0 =
 * Added new function to verify login hashes
 * Moved login hash check inside of process_request function
@@ -88,7 +113,7 @@ You must have:
 * Added extra live/test mode SELECT query checks
 
 = 1.0.2 =
-* Extended IssueM's Leaky Paywall add-on to work without IssueM
+* Extended zeen101's Leaky Paywall add-on to work without IssueM
 * Fixed a few typos
 * Fixed bug with using the same email address in Live or Test mode with Stripe.
 
@@ -102,7 +127,7 @@ You must have:
 
 == License ==
 
-IssueM - Leaky Paywall
+Leaky Paywall for WordPress
 Copyright (C) 2011 The Complete Website, LLC.
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
