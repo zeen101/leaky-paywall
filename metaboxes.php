@@ -6,9 +6,9 @@
  * @since 2.0.0
  */
 
-if ( !function_exists( 'issuem_leaky_paywall_general_metaboxes' ) ) {
+if ( !function_exists( 'leaky_paywall_general_metaboxes' ) ) {
 
-	function issuem_leaky_paywall_general_metaboxes() {
+	function leaky_paywall_general_metaboxes() {
 	
 		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
 		$post_types = get_post_types( array(), 'objects' );
@@ -18,23 +18,23 @@ if ( !function_exists( 'issuem_leaky_paywall_general_metaboxes' ) ) {
 			if ( in_array( $post_type->name, $hidden_post_types ) ) 
 				continue;
 				
-			add_meta_box( 'issuem_leaky_paywall_content_visibility', __( 'Leaky Paywall Visibility', 'issuem-leaky-paywall' ), 'issuem_leaky_paywall_content_visibility', $post_type->name, 'side' );
+			add_meta_box( 'leaky_paywall_content_visibility', __( 'Leaky Paywall Visibility', 'issuem-leaky-paywall' ), 'leaky_paywall_content_visibility', $post_type->name, 'side' );
 		
 		}
 		
-		do_action( 'issuem_leaky_paywall_general_metaboxes' );
+		do_action( 'leaky_paywall_general_metaboxes' );
 		
 	}
-	add_action( 'add_meta_boxes', 'issuem_leaky_paywall_general_metaboxes' );
+	add_action( 'add_meta_boxes', 'leaky_paywall_general_metaboxes' );
 
 }
 
-if ( !function_exists( 'issuem_leaky_paywall_content_visibility' ) ) {
+if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
 
-	function issuem_leaky_paywall_content_visibility( $post ) {
+	function leaky_paywall_content_visibility( $post ) {
 	
-		$settings = get_issuem_leaky_paywall_settings();
-		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
+		$settings = get_leaky_paywall_settings();
+		$visibility = get_post_meta( $post->ID, '_leaky_paywall_visibility', true );
 		if ( empty( $visibility ) ) {
 			$visibility = array(
 				'visibility_type' 		=> 'default',
@@ -98,15 +98,15 @@ if ( !function_exists( 'issuem_leaky_paywall_content_visibility' ) ) {
 		 echo '<p class="description">' . sprintf( __( '"Always" means that the selected subscription levels can see this %s, even if they have reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
 		 echo '<p class="description">' . sprintf( __( '"Only and Always" means that only the selected subscription levels can see this %s, even if they have reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
 
-		wp_nonce_field( 'issuem_leaky_paywall_content_visibility_meta_box', 'issuem_leaky_paywall_content_visibility_meta_box_nonce' );
+		wp_nonce_field( 'leaky_paywall_content_visibility_meta_box', 'leaky_paywall_content_visibility_meta_box_nonce' );
 	
 	}
 
 }
 
-if ( !function_exists( 'save_issuem_leaky_paywall_content_visibility' ) ) {
+if ( !function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 
-	function save_issuem_leaky_paywall_content_visibility( $post_id ) {
+	function save_leaky_paywall_content_visibility( $post_id ) {
 	
 		/*
 		 * We need to verify this came from our screen and with proper authorization,
@@ -114,12 +114,12 @@ if ( !function_exists( 'save_issuem_leaky_paywall_content_visibility' ) ) {
 		 */
 	
 		// Check if our nonce is set.
-		if ( ! isset( $_POST['issuem_leaky_paywall_content_visibility_meta_box_nonce'] ) ) {
+		if ( ! isset( $_POST['leaky_paywall_content_visibility_meta_box_nonce'] ) ) {
 			return;
 		}
 	
 		// Verify that the nonce is valid.
-		if ( ! wp_verify_nonce( $_POST['issuem_leaky_paywall_content_visibility_meta_box_nonce'], 'issuem_leaky_paywall_content_visibility_meta_box' ) ) {
+		if ( ! wp_verify_nonce( $_POST['leaky_paywall_content_visibility_meta_box_nonce'], 'leaky_paywall_content_visibility_meta_box' ) ) {
 			return;
 		}
 	
@@ -190,15 +190,15 @@ if ( !function_exists( 'save_issuem_leaky_paywall_content_visibility' ) ) {
 			
 			}
 			
-			update_post_meta( $post_id, '_issuem_leaky_paywall_visibility', $visibility );
+			update_post_meta( $post_id, '_leaky_paywall_visibility', $visibility );
 			
 		} else {
 			
-			delete_post_meta( $post_id, '_issuem_leaky_paywall_visibility' );
+			delete_post_meta( $post_id, '_leaky_paywall_visibility' );
 			
 		}
 
 	}
-	add_action( 'save_post', 'save_issuem_leaky_paywall_content_visibility' );
+	add_action( 'save_post', 'save_leaky_paywall_content_visibility' );
 	
 }

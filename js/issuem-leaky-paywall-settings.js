@@ -6,10 +6,10 @@ $leaky_paywall_settings(document).ready(function($) {
 		event.preventDefault();
         var data = {
             'action': 'issuem-leaky-paywall-add-new-restriction-row',
-            'row-key': ++issuem_leaky_paywall_restriction_row_key,
+            'row-key': ++leaky_paywall_restriction_row_key,
         }
         $.post( ajaxurl, data, function( response ) {
-            $( 'table#issuem_leaky_paywall_default_restriction_options' ).append( response );
+            $( 'table#leaky_paywall_default_restriction_options' ).append( response );
         });
 	});
 	
@@ -17,7 +17,7 @@ $leaky_paywall_settings(document).ready(function($) {
 		event.preventDefault();
         var data = {
             'action': 'issuem-leaky-paywall-add-new-subscription-row',
-            'row-key': ++issuem_leaky_paywall_subscription_levels_row_key,
+            'row-key': ++leaky_paywall_subscription_levels_row_key,
         }
         $.post( ajaxurl, data, function( response ) {
             $( 'td#issuem-leaky-paywall-subscription-level-rows' ).append( response );
@@ -27,7 +27,7 @@ $leaky_paywall_settings(document).ready(function($) {
 	$( 'input#add-subscription-row-post-type' ).live( 'click', function( event ) {
 		event.preventDefault();
 		var row_key = $( this ).data( 'row-key' );
-		var select_post_key = 'issuem_leaky_paywall_subscription_row_' + row_key + '_last_post_type_key';
+		var select_post_key = 'leaky_paywall_subscription_row_' + row_key + '_last_post_type_key';
         var data = {
             'action': 'issuem-leaky-paywall-add-new-subscription-row-post-type',
             'select-post-key': ++window[select_post_key],

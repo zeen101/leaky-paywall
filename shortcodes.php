@@ -27,7 +27,7 @@ if ( !function_exists( 'issuem_do_leaky_paywall_shortcode_wp_enqueue_scripts' ) 
 			
 			case 'default' :
 			default : 
-				wp_enqueue_style( 'issuem_leaky_paywall_style', IM_URL . '/css/issuem-leaky-paywall.css', '', LP_VERSION );
+				wp_enqueue_style( 'leaky_paywall_style', IM_URL . '/css/issuem-leaky-paywall.css', '', LP_VERSION );
 				break;
 				
 		}
@@ -37,7 +37,7 @@ if ( !function_exists( 'issuem_do_leaky_paywall_shortcode_wp_enqueue_scripts' ) 
 
 }
 
-if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) { 
+if ( !function_exists( 'do_leaky_paywall_login' ) ) { 
 
 	/**
 	 * Shortcode for zeen101's Leaky Paywall
@@ -45,11 +45,11 @@ if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) {
 	 *
 	 * @since 1.0.0
 	 */
-	function do_issuem_leaky_paywall_login( $atts ) {
+	function do_leaky_paywall_login( $atts ) {
 		
 		global $post;
 		
-		$settings = get_issuem_leaky_paywall_settings();
+		$settings = get_leaky_paywall_settings();
 		
 		$defaults = array(
 			'heading'			=> __( 'Email address:', 'issuem-leaky-paywall' ),
@@ -94,11 +94,11 @@ if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) {
 		return $results;
 		
 	}
-	add_shortcode( 'leaky_paywall_login', 'do_issuem_leaky_paywall_login' );
+	add_shortcode( 'leaky_paywall_login', 'do_leaky_paywall_login' );
 	
 }
 
-if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) { 
+if ( !function_exists( 'do_leaky_paywall_subscription' ) ) { 
 
 	/**
 	 * Shortcode for zeen101's Leaky Paywall
@@ -106,11 +106,11 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 	 *
 	 * @since 1.0.0
 	 */
-	function do_issuem_leaky_paywall_subscription( $atts ) {
+	function do_leaky_paywall_subscription( $atts ) {
 		
 		global $post;
 		
-		$settings = get_issuem_leaky_paywall_settings();
+		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
 		$defaults = array(
@@ -137,11 +137,11 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 						
 			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
 						
-			if ( false !== $expires = issuem_leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
+			if ( false !== $expires = leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
 				
 				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
-				$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$hash = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_hash', true );
+				$payment_gateway = get_user_meta( $user->ID, '_leaky_paywall_' . $mode . '_payment_gateway', true );
 				$show_subscription_options = false;
 				
 				if ( !empty( $hash ) )
@@ -178,11 +178,11 @@ if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) {
 			
 		}			
 			
-		$results .= issuem_leaky_paywall_subscription_options();
+		$results .= leaky_paywall_subscription_options();
 				
 		return $results;
 		
 	}
-	add_shortcode( 'leaky_paywall_subscription', 'do_issuem_leaky_paywall_subscription' );
+	add_shortcode( 'leaky_paywall_subscription', 'do_leaky_paywall_subscription' );
 	
 }

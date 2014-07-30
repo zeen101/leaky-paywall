@@ -48,7 +48,7 @@ if ( !defined( 'PAYPAL_NVP_API_LIVE_URL' ) )
  *
  * @since 1.0.0
  */
-function issuem_leaky_paywall_plugins_loaded() {
+function leaky_paywall_plugins_loaded() {
 	
 	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 	if ( is_plugin_active( 'issuem/issuem.php' ) )
@@ -75,4 +75,4 @@ function issuem_leaky_paywall_plugins_loaded() {
 	}
 
 }
-add_action( 'plugins_loaded', 'issuem_leaky_paywall_plugins_loaded', 4815162342 ); //wait for the plugins to be loaded before init
+add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); //wait for the plugins to be loaded before init
