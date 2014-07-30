@@ -163,7 +163,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 						break;
 						
 					default:
-						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), issuem_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
 						
 				}
 				

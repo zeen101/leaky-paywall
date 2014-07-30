@@ -11,9 +11,9 @@
  *
  * @since 1.0.0
  */
-if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
+if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	
-	class IssueM_Leaky_Paywall {
+	class Leaky_Paywall {
 		
 		private $plugin_name	= LEAKY_PAYWALL_NAME;
 		private $plugin_slug	= LEAKY_PAYWALL_SLUG;
@@ -1421,7 +1421,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
                 }
 					
 				//Create an instance of our package class...
-				$subscriber_table = new IssueM_Leaky_Paywall_Subscriber_List_Table();
+				$subscriber_table = new Leaky_Paywall_Subscriber_List_Table();
 				$pagenum = $subscriber_table->get_pagenum();
 				//Fetch, prepare, sort, and filter our data...
 				$subscriber_table->prepare_items();

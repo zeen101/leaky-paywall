@@ -59,10 +59,10 @@ function leaky_paywall_plugins_loaded() {
 	require_once( 'class.php' );
 
 	// Instantiate the Pigeon Pack class
-	if ( class_exists( 'IssueM_Leaky_Paywall' ) ) {
+	if ( class_exists( 'Leaky_Paywall' ) ) {
 		
 		global $leaky_paywall;
-		$leaky_paywall = new IssueM_Leaky_Paywall();
+		$leaky_paywall = new Leaky_Paywall();
 		
 		require_once( 'functions.php' );
 		require_once( 'shortcodes.php' );

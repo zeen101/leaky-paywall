@@ -695,9 +695,9 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 	
 }
 
-if ( !function_exists( 'issuem_translate_payment_gateway_slug_to_name' ) ) {
+if ( !function_exists( 'leaky_paywall_translate_payment_gateway_slug_to_name' ) ) {
 	
-	function issuem_translate_payment_gateway_slug_to_name( $slug ) {
+	function leaky_paywall_translate_payment_gateway_slug_to_name( $slug ) {
 	
 		$return = 'Unknown';
 		
@@ -717,7 +717,7 @@ if ( !function_exists( 'issuem_translate_payment_gateway_slug_to_name' ) ) {
 			
 		}
 		
-		return apply_filters( 'issuem_translate_payment_gateway_slug_to_name', $return, $slug );
+		return apply_filters( 'leaky_paywall_translate_payment_gateway_slug_to_name', $return, $slug );
 		
 	}
 	

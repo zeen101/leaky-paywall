@@ -8,7 +8,7 @@
 if( !class_exists( 'WP_List_Table' ) )
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 
-class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
+class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	
 	function ajax_user_can() {
 		return current_user_can( 'manage_network_users' );
@@ -202,7 +202,7 @@ class IssueM_Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 
 					case 'gateway':
-						echo "<td $attributes>" . issuem_translate_payment_gateway_slug_to_name( $payment_gateway ) . "</td>";
+						echo "<td $attributes>" . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . "</td>";
 					break;
 
 					case 'status':
