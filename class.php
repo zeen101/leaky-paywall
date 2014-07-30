@@ -1,8 +1,8 @@
 <?php
 /**
- * Registers IssueM's Leaky Paywall class
+ * Registers zeen101's Leaky Paywall class
  *
- * @package IssueM's Leaky Paywall
+ * @package zeen101's Leaky Paywall
  * @since 1.0.0
  */
 
@@ -15,9 +15,9 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 	
 	class IssueM_Leaky_Paywall {
 		
-		private $plugin_name	= ISSUEM_LEAKY_PAYWALL_NAME;
-		private $plugin_slug	= ISSUEM_LEAKY_PAYWALL_SLUG;
-		private $basename		= ISSUEM_LEAKY_PAYWALL_BASENAME;
+		private $plugin_name	= LEAKY_PAYWALL_NAME;
+		private $plugin_slug	= LEAKY_PAYWALL_SLUG;
+		private $basename		= LEAKY_PAYWALL_BASENAME;
 		
 		/**
 		 * Class constructor, puts things in motion
@@ -102,7 +102,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function admin_menu() {
 					
-			add_menu_page( __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), ISSUEM_LEAKY_PAYWALL_URL . '/images/issuem-16x16.png' );
+			add_menu_page( __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/issuem-16x16.png' );
 			
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'issuem-leaky-paywall' ), __( 'Settings', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ) );
 			
@@ -410,10 +410,10 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
-				wp_enqueue_style( 'issuem_leaky_paywall_admin_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+				wp_enqueue_style( 'issuem_leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 				
 			if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix )
-				wp_enqueue_style( 'issuem_leaky_paywall_post_style', ISSUEM_LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+				wp_enqueue_style( 'issuem_leaky_paywall_post_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', LEAKY_PAYWALL_VERSION );
 			
 		}
 	
@@ -426,14 +426,14 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
-				wp_enqueue_script( 'issuem_leaky_paywall_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
+				wp_enqueue_script( 'issuem_leaky_paywall_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 				
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
-				wp_enqueue_script( 'issuem_leaky_paywall_subscribers_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), ISSUEM_LEAKY_PAYWALL_VERSION );
+				wp_enqueue_script( 'issuem_leaky_paywall_subscribers_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION );
 				
 			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix )
-				wp_enqueue_script( 'issuem_leaky_paywall_post_js', ISSUEM_LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), ISSUEM_LEAKY_PAYWALL_VERSION );
+				wp_enqueue_script( 'issuem_leaky_paywall_post_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 				
 			
 		}
@@ -445,7 +445,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		 */
 		function frontend_scripts() {
 			
-			wp_enqueue_style( 'issuem-leaky-paywall', ISSUEM_LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', ISSUEM_LEAKY_PAYWALL_VERSION );
+			wp_enqueue_style( 'issuem-leaky-paywall', LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', LEAKY_PAYWALL_VERSION );
 
 			
 		}
@@ -536,7 +536,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		}
 		
 		/**
-		 * Get IssueM's Leaky Paywall options
+		 * Get zeen101's Leaky Paywall options
 		 *
 		 * @since 1.0.0
 		 */
@@ -547,7 +547,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'license_status'				=> '',
 				'page_for_login'				=> 0,
 				'page_for_subscription'			=> 0,
-				'post_types'					=> ISSUEM_ACTIVE_LP ? array( 'article' ) : array( 'post' ),
+				'post_types'					=> ACTIVE_LP ? array( 'article' ) : array( 'post' ),
 				'free_articles'					=> 2,
 				'cookie_expiration' 			=> 24,
 				'cookie_expiration_interval' 	=> 'day',
@@ -574,7 +574,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 				'restrict_pdf_downloads' 		=> 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
-						'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+						'post_type' 	=> ACTIVE_LP ? 'article' : 'post',
 						'allowed_value' => 2,
 					)
 				),
@@ -613,7 +613,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		}
 		
 		/**
-		 * Update IssueM's Leaky Paywall options
+		 * Update zeen101's Leaky Paywall options
 		 *
 		 * @since 1.0.0
 		 */
@@ -746,7 +746,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			if ( $settings_saved ) {
 				
 				// update settings notification ?>
-				<div class="updated"><p><strong><?php _e( "IssueM's Leaky Paywall Settings Updated.", 'issuem-leaky-paywall' );?></strong></p></div>
+				<div class="updated"><p><strong><?php _e( "zeen101's Leaky Paywall Settings Updated.", 'issuem-leaky-paywall' );?></strong></p></div>
 				<?php
 				
 			}
@@ -760,7 +760,7 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
             
                 <form id="issuem" method="post" action="">
             
-                    <h2 style='margin-bottom: 10px;' ><?php _e( "IssueM's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
+                    <h2 style='margin-bottom: 10px;' ><?php _e( "zeen101's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
                     
                     <div id="license-key" class="postbox">
                     
@@ -1598,8 +1598,8 @@ if ( ! class_exists( 'IssueM_Leaky_Paywall' ) ) {
 			else
 				$old_db_version = 0;
 						
-			$settings['version'] = ISSUEM_LEAKY_PAYWALL_VERSION;
-			$settings['db_version'] = ISSUEM_LEAKY_PAYWALL_DB_VERSION;
+			$settings['version'] = LEAKY_PAYWALL_VERSION;
+			$settings['db_version'] = LEAKY_PAYWALL_DB_VERSION;
 			
 			$this->update_settings( $settings );
 			

@@ -2,7 +2,7 @@
 /**
  * Random metaboxes
  *
- * @package IssueM's Leaky Paywall
+ * @package zeen101's Leaky Paywall
  * @since 2.0.0
  */
 

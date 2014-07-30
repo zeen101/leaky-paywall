@@ -1,13 +1,13 @@
 <?php
 /**
- * Main PHP file used to for initial calls to IssueM's Leak Paywall classes and functions.
+ * Main PHP file used to for initial calls to zeen101's Leak Paywall classes and functions.
  *
- * @package IssueM's Leak Paywall
+ * @package zeen101's Leak Paywall
  * @since 1.0.0
  */
  
 /*
-Plugin Name: IssueM's Leaky Paywall
+Plugin Name: Leaky Paywall
 Plugin URI: http://leakypw.com/
 Description: A premium leaky paywall add-on for WordPress and IssueM.
 Author: IssueM Development Team
@@ -20,14 +20,14 @@ Tags:
 if ( !defined( 'ZEEN101_STORE_URL' ) )
 	define( 'ZEEN101_STORE_URL',			'http://zeen101.com' );
 	
-define( 'ISSUEM_LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
-define( 'ISSUEM_LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
-define( 'ISSUEM_LEAKY_PAYWALL_VERSION',		'1.2.0' );
-define( 'ISSUEM_LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
-define( 'ISSUEM_LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
-define( 'ISSUEM_LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
-define( 'ISSUEM_LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );
-define( 'ISSUEM_LEAKY_PAYWALL_REL_DIR',		dirname( ISSUEM_LEAKY_PAYWALL_BASENAME ) );
+define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
+define( 'LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
+define( 'LEAKY_PAYWALL_VERSION',		'1.2.0' );
+define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
+define( 'LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
+define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
+define( 'LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );
+define( 'LEAKY_PAYWALL_REL_DIR',		dirname( LEAKY_PAYWALL_BASENAME ) );
 
 if ( !defined( 'PAYPAL_LIVE_URL' ) )
 	define( 'PAYPAL_LIVE_URL', 'https://www.paypal.com/' );
@@ -52,17 +52,17 @@ function issuem_leaky_paywall_plugins_loaded() {
 	
 	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 	if ( is_plugin_active( 'issuem/issuem.php' ) )
-		define( 'ISSUEM_ACTIVE_LP', true );
+		define( 'ACTIVE_LP', true );
 	else
-		define( 'ISSUEM_ACTIVE_LP', false );
+		define( 'ACTIVE_LP', false );
 
 	require_once( 'class.php' );
 
 	// Instantiate the Pigeon Pack class
 	if ( class_exists( 'IssueM_Leaky_Paywall' ) ) {
 		
-		global $dl_pluginissuem_leaky_paywall;
-		$dl_pluginissuem_leaky_paywall = new IssueM_Leaky_Paywall();
+		global $leaky_paywall;
+		$leaky_paywall = new IssueM_Leaky_Paywall();
 		
 		require_once( 'functions.php' );
 		require_once( 'shortcodes.php' );
@@ -70,7 +70,7 @@ function issuem_leaky_paywall_plugins_loaded() {
 		require_once( 'metaboxes.php' );
 			
 		//Internationalization
-		load_plugin_textdomain( 'issuem-leaky-paywall', false, ISSUEM_LEAKY_PAYWALL_REL_DIR . '/i18n/' );
+		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
 			
 	}
 

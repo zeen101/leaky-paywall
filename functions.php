@@ -1,13 +1,13 @@
 <?php
 /**
- * @package IssueM's Leaky Paywall
+ * @package zeen101's Leaky Paywall
  * @since 1.0.0
  */
  
 if ( !function_exists( 'get_issuem_leaky_paywall_settings' ) ) {
 
 	/**
-	 * Helper function to get IssueM's Leaky Paywall settings for current site
+	 * Helper function to get zeen101's Leaky Paywall settings for current site
 	 *
 	 * @since 1.0.0
 	 *
@@ -15,9 +15,9 @@ if ( !function_exists( 'get_issuem_leaky_paywall_settings' ) ) {
 	 */
 	function get_issuem_leaky_paywall_settings() {
 	
-		global $dl_pluginissuem_leaky_paywall;
+		global $leaky_paywall;
 		
-		return $dl_pluginissuem_leaky_paywall->get_settings();
+		return $leaky_paywall->get_settings();
 		
 	}
 	
@@ -26,7 +26,7 @@ if ( !function_exists( 'get_issuem_leaky_paywall_settings' ) ) {
 if ( !function_exists( 'update_issuem_leaky_paywall_settings' ) ) {
 
 	/**
-	 * Helper function to save IssueM's Leaky Paywall settings for current site
+	 * Helper function to save zeen101's Leaky Paywall settings for current site
 	 *
 	 * @since 1.0.0
 	 *
@@ -34,9 +34,9 @@ if ( !function_exists( 'update_issuem_leaky_paywall_settings' ) ) {
 	 */
 	function update_issuem_leaky_paywall_settings( $settings ) {
 	
-		global $dl_pluginissuem_leaky_paywall;
+		global $leaky_paywall;
 		
-		return $dl_pluginissuem_leaky_paywall->update_settings( $settings );
+		return $leaky_paywall->update_settings( $settings );
 		
 	}
 	
@@ -1239,7 +1239,7 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_levels_row' ) ) 
 				'plan_id' 					=> '',
 				'post_types' => array(
 					array(
-						'post_type' 		=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+						'post_type' 		=> ACTIVE_LP ? 'article' : 'post',
 						'allowed' 			=> 'unlimited',
 						'allowed_value' 	=> -1
 					)
@@ -1357,7 +1357,7 @@ if ( !function_exists( 'build_issuem_leaky_paywall_subscription_row_post_type' )
 
 		if ( empty( $select_post_type ) ) {
 			$select_post_type = array(
-				'post_type' 	=> ISSUEM_ACTIVE_LP ? 'article' : 'post',
+				'post_type' 	=> ACTIVE_LP ? 'article' : 'post',
 				'allowed' 		=> 'unlimited',
 				'allowed_value' => -1
 			);
@@ -2054,7 +2054,7 @@ if ( !function_exists( 'issuem_leaky_paywall_pay_with_paypal_standard' ) ) {
 		$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];		
 		if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 																					
-			$results .= '<script src="' . ISSUEM_LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
+			$results .= '<script src="' . LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
 							data-env="' . esc_js( $paypal_sandbox ) . '" 
 							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '"
 							data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
@@ -2073,7 +2073,7 @@ if ( !function_exists( 'issuem_leaky_paywall_pay_with_paypal_standard' ) ) {
 												
 		} else {
 						
-			$results .= '<script src="' . ISSUEM_LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
+			$results .= '<script src="' . LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
 							data-env="' . esc_js( $paypal_sandbox ) . '" 
 							data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '" 
 							data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"

@@ -1,6 +1,6 @@
 <?php
 /**
- * @package IssueM's Leaky Paywall
+ * @package zeen101's Leaky Paywall
  * @since 1.0.0
  */
 
@@ -27,7 +27,7 @@ if ( !function_exists( 'issuem_do_leaky_paywall_shortcode_wp_enqueue_scripts' ) 
 			
 			case 'default' :
 			default : 
-				wp_enqueue_style( 'issuem_leaky_paywall_style', IM_URL . '/css/issuem-leaky-paywall.css', '', ISSUEM_LP_VERSION );
+				wp_enqueue_style( 'issuem_leaky_paywall_style', IM_URL . '/css/issuem-leaky-paywall.css', '', LP_VERSION );
 				break;
 				
 		}
@@ -40,8 +40,8 @@ if ( !function_exists( 'issuem_do_leaky_paywall_shortcode_wp_enqueue_scripts' ) 
 if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) { 
 
 	/**
-	 * Shortcode for IssueM's Leaky Paywall
-	 * Prints out the IssueM's Leaky Paywall
+	 * Shortcode for zeen101's Leaky Paywall
+	 * Prints out the zeen101's Leaky Paywall
 	 *
 	 * @since 1.0.0
 	 */
@@ -101,8 +101,8 @@ if ( !function_exists( 'do_issuem_leaky_paywall_login' ) ) {
 if ( !function_exists( 'do_issuem_leaky_paywall_subscription' ) ) { 
 
 	/**
-	 * Shortcode for IssueM's Leaky Paywall
-	 * Prints out the IssueM's Leaky Paywall
+	 * Shortcode for zeen101's Leaky Paywall
+	 * Prints out the zeen101's Leaky Paywall
 	 *
 	 * @since 1.0.0
 	 */
