@@ -1084,7 +1084,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                                 		<option value="month" <?php selected( 'month', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Month(s)', 'issuem-leaky-paywall' ); ?></option>
                                 		<option value="year" <?php selected( 'year', $settings['cookie_expiration_interval'] ); ?>><?php _e( 'Year(s)', 'issuem-leaky-paywall' ); ?></option>
                                 	</select>
-                                	<p class="description"><?php _e( 'How do you describe this?', 'issuem-leaky-paywall' ); ?></p>
+                                	<p class="description"><?php _e( 'Choose length of time when a visitor can once again read your articles/posts (up to the # of articles allowed).', 'issuem-leaky-paywall' ); ?></p>
                                 </td>
                             </tr>
                             
@@ -1800,7 +1800,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                         'name' 			=> $_data['name'],
                         'slug' 			=> $_data['slug'],
                         'license' 		=> $_data['license'],
-                        'author' 		=> 'IssueM Development Team',
+                        'author' 		=> 'zeen101 Development Team',
                 );
 
                 $request = wp_remote_post(
