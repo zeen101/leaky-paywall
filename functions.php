@@ -1870,15 +1870,15 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						}
 							
 					}
-					$results .= apply_filters( 'leaky_paywall_subscription_options_allowed_content', $allowed_content, $level );
+					$results .= apply_filters( 'leaky_paywall_subscription_options_allowed_content', $allowed_content, $key, $level );
 					$results .= '</div>';
 									
 					$results .= '<div class="leaky_paywall_subscription_price">';
 					$results .= '<p>';
 					if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] )
-						$results .= '<strong>' . sprintf( __( '$%s %s (recurring)', 'issuem-leaky-paywall' ), number_format( $level['price'], 2 ), issuem_leaky_paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+						$results .= '<strong>' . sprintf( __( '$%s %s (recurring)', 'issuem-leaky-paywall' ), number_format( $level['price'], 2 ), Leaky_Paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 					else
-						$results .= '<strong>' . sprintf( __( '$%s %s', 'issuem-leaky-paywall' ), number_format( $level['price'], 2 ), issuem_leaky_paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+						$results .= '<strong>' . sprintf( __( '$%s %s', 'issuem-leaky-paywall' ), number_format( $level['price'], 2 ), Leaky_Paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 					
 					if ( !empty( $level['trial_period'] ) ) {
 						$results .= '<span class="leaky-paywall-trial-period">' . sprintf( __( 'Free for the first %s day(s)', 'issuem-leaky-paywall' ), $level['trial_period'] ) . '</span>';
@@ -1939,7 +1939,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				if ( $has_allowed_value ) {
 
 					$results .= '<div class="leaky_paywall_subscription_limit_details">';
-					$results .= '*' . ucfirst( issuem_leaky_paywall::human_readable_interval( $settings['cookie_expiration'], $settings['cookie_expiration_interval'] ) );
+					$results .= '*' . ucfirst( Leaky_Paywall::human_readable_interval( $settings['cookie_expiration'], $settings['cookie_expiration_interval'] ) );
 					$results .= '</div>';
 				
 				}
