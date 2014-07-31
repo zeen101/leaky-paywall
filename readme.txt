@@ -3,7 +3,7 @@ Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 
 A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
@@ -30,6 +30,9 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+= 2.0.1 =
+* Fixing bug in calling Leaky Paywall class method
+
 = 2.0.0 =
 * Fixing save meta box bug
 * Updating IssueM references to point to zeen101
