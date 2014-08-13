@@ -1096,18 +1096,35 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 			
 			if ( !empty( $args['search'] ) ) {
-				$args['meta_query'] = array(
-					'relation' => 'AND',
-					array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_hash',
-						'compare' => 'EXISTS',
-					),
-					array(
-						'value'   => $args['search'],
-						'compare' => 'LIKE',
-					),
-				);
-				unset( $args['search'] );
+			
+				if ( is_email( $args['search'] ) ) {
+					
+					$args['meta_query'] = array(
+						array(
+							'key'     => '_issuem_leaky_paywall_' . $mode . '_hash',
+							'compare' => 'EXISTS',
+						),
+					);
+					$args['search'] = $args['search'];
+					$args['search_columns'] = array( 'user_login', 'user_email' );
+					
+				} else {
+						
+					$args['meta_query'] = array(
+						'relation' => 'AND',
+						array(
+							'key'     => '_issuem_leaky_paywall_' . $mode . '_hash',
+							'compare' => 'EXISTS',
+						),
+						array(
+							'value'   => $args['search'],
+							'compare' => 'LIKE',
+						),
+					);
+					unset( $args['search'] );
+					
+				}
+			
 			} else {
 				$args['meta_query'] = array(
 					array(
