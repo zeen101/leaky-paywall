@@ -3,7 +3,7 @@ Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 
 A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
@@ -30,6 +30,10 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+= 2.0.2 =
+* Added ability to add/edit subscribers manually with correct Payment Gateway information
+* Added better search capabilities for email addresses
+
 = 2.0.1 =
 * Fixing bug in calling Leaky Paywall class method
 

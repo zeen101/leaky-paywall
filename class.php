@@ -124,7 +124,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
 				//Admins or subscribed users can download PDFs
-				if ( current_user_can( 'manage_options' ) || is_issuem_leaky_subscriber_logged_in() ) {
+				if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || is_issuem_leaky_subscriber_logged_in() ) {
 				
 					leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 				
@@ -143,7 +143,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			if ( is_singular() ) {
 			
-				if ( !current_user_can( 'manage_options' ) ) { //Admins can see it all
+				if ( !current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) { //Admins can see it all
 				
 					// We don't ever want to block the login, subscription
 					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'] ) ) ) {

@@ -521,8 +521,52 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 				}
 				
 			} else {
-			
-				error_log( sprintf( __( 'Unable to find PayPal subscriber: %s', 'issuem-leaky-paywall' ), maybe_serialize( $_REQUEST ) ) );
+
+				//If the user doesn't exist, but we're getting a PayPal IPN for it, we probably need to create it.
+				//But we need to make sure it's coming from PayPal!			    $payload = array_reverse( $_REQUEST, true ); 
+			    $payload['cmd'] = '_notify-validate'; 
+			    $payload = array_reverse( $payload, true ); 
+
+				$paypal_api_url = !empty( $_REQUEST['test_ipn'] ) ? PAYPAL_PAYMENT_SANDBOX_URL : PAYPAL_PAYMENT_LIVE_URL;
+				$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload ) );
+				$body = wp_remote_retrieve_body( $response );
+				
+				if ( 'VERIFIED' === $body ) {
+					$args = array();
+					$cu = new stdClass;
+					$level = get_leaky_paywall_subscription_level( $_REQUEST['custom'] );
+
+					if ( 'web_accept' === $_REQUEST['txn_type'] ) {
+						$cu->id = $_REQUEST['txn_id']; //temporary, will be replaced with subscriber ID during IPN
+					} else if ( 'subscr_signup' === $_REQUEST['txn_type'] ) {
+						$cu->id = $_REQUEST['subscr_id']; //temporary, will be replaced with subscriber ID during IPN
+					}
+					
+					if ( !empty( $cu->id ) ) {
+						$args = array(
+							'level_id' 			=> $_REQUEST['custom'],
+							'subscriber_id' 	=> $cu->id,
+							'subscriber_email' 	=> $_REQUEST['payer_email'],
+							'price' 			=> $level['price'],
+							'description' 		=> $level['label'],
+							'payment_gateway' 	=> 'paypal_standard',
+							'payment_status' 	=> 'active',
+							'interval' 			=> $level['interval'],
+							'interval_count' 	=> $level['interval_count'],
+						);
+
+						//Mimic PayPal's Plan...
+						if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
+							$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
+						
+						$unique_hash = leaky_paywall_hash( $_REQUEST['payer_email'] );
+						leaky_paywall_new_subscriber( $unique_hash, $_REQUEST['payer_email'], $cu, $args );
+					}
+				} else {
+					
+					error_log( sprintf( __( 'Unable to find PayPal subscriber and invalid IPN sent: %s', 'issuem-leaky-paywall' ), maybe_serialize( $_REQUEST ) ) );
+					
+				}
 				
 			}
 			
