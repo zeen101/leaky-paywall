@@ -1277,11 +1277,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								if ( $price !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ) )
 									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', $price );
 								if ( $expires !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true ) )
-									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', $price );
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', $expires );
 								if ( $status !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) )
-									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', $price );
-								if ( $status !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) )
-									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', $price );
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', $status );
 								if ( $payment_gateway !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true ) )
 									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', $payment_gateway );
 								if ( $subscriber_id !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true ) )
