@@ -1,0 +1,871 @@
+# Copyright (C) 2014 Leaky Paywall
+# This file is distributed under the same license as the Leaky Paywall package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Leaky Paywall 2.0.1\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/issuem-leaky-"
+"paywall\n"
+"POT-Creation-Date: 2014-08-27 13:54:32+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
+"Last-Translator: ZEEN101 <INFO@ZEEN101.COM>\n"
+"Language-Team: ZEEN101 <INFO@ZEEN101.COM>\n"
+
+#. #-#-#-#-#  issuem-leaky-paywall.pot (Leaky Paywall 2.0.1)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: class.php:105
+msgid "Leaky Paywall"
+msgstr ""
+
+#: class.php:107
+msgid "Settings"
+msgstr ""
+
+#: class.php:109
+msgid "Subscribers"
+msgstr ""
+
+#: class.php:111
+msgid "Update"
+msgstr ""
+
+#: class.php:133
+msgid "Unauthorize PDF Download"
+msgstr ""
+
+#: class.php:135
+msgid ""
+"You must be <a href=\"%s\">logged in</a> with a valid subscription to "
+"download Issue PDFs."
+msgstr ""
+
+#: class.php:136 class.php:328
+msgid "back to %s"
+msgstr ""
+
+#: class.php:326
+msgid "Invalid or Expired Login Link"
+msgstr ""
+
+#: class.php:327
+msgid ""
+"Sorry, this login link is invalid or has expired. <a href=\"%s\">Try again?</"
+"a>"
+msgstr ""
+
+#: class.php:390
+msgid "for life"
+msgstr ""
+
+#: class.php:396 class.php:398
+msgid "every"
+msgstr ""
+
+#: class.php:554
+msgid ""
+"<a href=\"{{SUBSCRIBE_LOGIN_URL}}\">Subscribe or log in</a> to read the rest "
+"of this content."
+msgstr ""
+
+#: class.php:555
+msgid ""
+"You must <a href=\"{{SUBSCRIBE_LOGIN_URL}}\">upgrade your account</a> to "
+"read the rest of this content."
+msgstr ""
+
+#: class.php:583
+msgid "Magazine Subscription"
+msgstr ""
+
+#: class.php:749
+msgid "zeen101's Leaky Paywall Settings Updated."
+msgstr ""
+
+#: class.php:763
+msgid "zeen101's Leaky Paywall Settings"
+msgstr ""
+
+#: class.php:769 class.php:775
+msgid "License Key"
+msgstr ""
+
+#: class.php:781
+msgid "active"
+msgstr ""
+
+#: class.php:782
+msgid "Deactivate License"
+msgstr ""
+
+#: class.php:784
+msgid "Activate License"
+msgstr ""
+
+#: class.php:792 class.php:861 class.php:896 class.php:1059 class.php:1121
+#: class.php:1165
+msgid "Save Settings"
+msgstr ""
+
+#: class.php:806
+msgid "Leaky Paywall Options"
+msgstr ""
+
+#: class.php:813
+msgid "Page for Log In"
+msgstr ""
+
+#: class.php:815 class.php:823
+msgid "&mdash; Select &mdash;"
+msgstr ""
+
+#: class.php:816
+msgid "Add this shortcode to your Log In page: %s"
+msgstr ""
+
+#: class.php:821
+msgid "Page for Subscription"
+msgstr ""
+
+#: class.php:824
+msgid "Add this shortcode to your Subscription page: %s"
+msgstr ""
+
+#: class.php:829
+msgid "Subscribe or Login Message"
+msgstr ""
+
+#: class.php:833 class.php:843
+msgid "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}}"
+msgstr ""
+
+#: class.php:839
+msgid "Upgrade Message"
+msgstr ""
+
+#: class.php:849
+msgid "CSS Style"
+msgstr ""
+
+#: class.php:852
+msgid "Default"
+msgstr ""
+
+#: class.php:853
+msgid "None"
+msgstr ""
+
+#: class.php:872
+msgid "Leaky Paywall Email Settings"
+msgstr ""
+
+#: class.php:879
+msgid "Site Name"
+msgstr ""
+
+#: class.php:884
+msgid "From Name"
+msgstr ""
+
+#: class.php:889
+msgid "From Email"
+msgstr ""
+
+#: class.php:907
+msgid "Payment Gateway Settings"
+msgstr ""
+
+#: class.php:914
+msgid "Enabled Gateways"
+msgstr ""
+
+#: class.php:917 class.php:1492 class.php:1539
+msgid "Stripe"
+msgstr ""
+
+#: class.php:920
+msgid "PayPal Standard"
+msgstr ""
+
+#: class.php:926
+msgid "Test Mode?"
+msgstr ""
+
+#: class.php:938
+msgid "Stripe Settings"
+msgstr ""
+
+#: class.php:941
+msgid "Live Secret Key"
+msgstr ""
+
+#: class.php:946
+msgid "Live Publishable Key"
+msgstr ""
+
+#: class.php:951
+msgid "Live Webhooks"
+msgstr ""
+
+#: class.php:956
+msgid "Test Secret Key"
+msgstr ""
+
+#: class.php:961
+msgid "Test Publishable Key"
+msgstr ""
+
+#: class.php:966
+msgid "Test Webhooks"
+msgstr ""
+
+#: class.php:980
+msgid "PayPal Standard Settings"
+msgstr ""
+
+#: class.php:983
+msgid "Merchant ID"
+msgstr ""
+
+#: class.php:986
+msgid "Use PayPal Email Address in lieu of Merchant ID"
+msgstr ""
+
+#: class.php:991
+msgid "API Username"
+msgstr ""
+
+#: class.php:994 class.php:1029
+msgid ""
+"At PayPal, see: Profile &rarr; My Selling Tools &rarr; API Access &rarr; "
+"Update &rarr; View API Signature (or Request API Credentials)."
+msgstr ""
+
+#: class.php:999
+msgid "API Password"
+msgstr ""
+
+#: class.php:1006
+msgid "API Signature"
+msgstr ""
+
+#: class.php:1013
+msgid "Live IPN"
+msgstr ""
+
+#: class.php:1018
+msgid "Sandbox Merchant ID"
+msgstr ""
+
+#: class.php:1021
+msgid "Use PayPal Sandbox Email Address in lieu of Merchant ID"
+msgstr ""
+
+#: class.php:1026
+msgid "Sandbox API Username"
+msgstr ""
+
+#: class.php:1034
+msgid "Sandbox API Password"
+msgstr ""
+
+#: class.php:1041
+msgid "Sandbox API Signature"
+msgstr ""
+
+#: class.php:1048
+msgid "Sandbox IPN"
+msgstr ""
+
+#: class.php:1070
+msgid "Content Restriction"
+msgstr ""
+
+#: class.php:1077
+msgid "Limited Article Cookie Expiration"
+msgstr ""
+
+#: class.php:1081
+msgid "Hour(s)"
+msgstr ""
+
+#: class.php:1082 functions.php:1351
+msgid "Day(s)"
+msgstr ""
+
+#: class.php:1083 functions.php:1352
+msgid "Week(s)"
+msgstr ""
+
+#: class.php:1084 functions.php:1353
+msgid "Month(s)"
+msgstr ""
+
+#: class.php:1085 functions.php:1354
+msgid "Year(s)"
+msgstr ""
+
+#: class.php:1087
+msgid ""
+"Choose length of time when a visitor can once again read your articles/posts "
+"(up to the # of articles allowed)."
+msgstr ""
+
+#: class.php:1092
+msgid "Restrict PDF Downloads?"
+msgstr ""
+
+#: class.php:1117
+msgid "Add New Restricted Content"
+msgstr ""
+
+#: class.php:1132
+msgid "Subscription Levels"
+msgstr ""
+
+#: class.php:1161
+msgid "Add New Level"
+msgstr ""
+
+#: class.php:1203
+msgid "Leaky Paywall Subscribers"
+msgstr ""
+
+#: class.php:1208 class.php:1252
+msgid ""
+"Unable to verify security token. Subscriber not added. Please try again."
+msgstr ""
+
+#: class.php:1231
+msgid "Manual Addition"
+msgstr ""
+
+#: class.php:1245 class.php:1313
+msgid "You must include a valid email address."
+msgstr ""
+
+#: class.php:1320
+msgid ""
+"Unable to verify security token. Subscribers not added. Please try again."
+msgstr ""
+
+#: class.php:1357
+msgid "Invalid Username, line: %s"
+msgstr ""
+
+#: class.php:1363
+msgid "Invalid Email, line: %s"
+msgstr ""
+
+#: class.php:1395
+msgid "Bulk Addition"
+msgstr ""
+
+#: class.php:1423
+msgid "No valid content supplied for bulk upload."
+msgstr ""
+
+#: class.php:1464 class.php:1511
+msgid "Username (required)"
+msgstr ""
+
+#: class.php:1465 class.php:1512
+msgid "Email Address (required)"
+msgstr ""
+
+#: class.php:1466 class.php:1513
+msgid "Price Paid"
+msgstr ""
+
+#: class.php:1468 class.php:1515 subscriber-table.php:91
+msgid "Expires"
+msgstr ""
+
+#: class.php:1472 class.php:1519
+msgid "Subscription Level"
+msgstr ""
+
+#: class.php:1482 class.php:1529 subscriber-table.php:93
+msgid "Status"
+msgstr ""
+
+#: class.php:1484 class.php:1531
+msgid "Active"
+msgstr ""
+
+#: class.php:1485 class.php:1532
+msgid "Canceled"
+msgstr ""
+
+#: class.php:1486 class.php:1533
+msgid "Deactivated"
+msgstr ""
+
+#: class.php:1490 class.php:1537
+msgid "Payment Method"
+msgstr ""
+
+#: class.php:1493 class.php:1540
+msgid "PayPal"
+msgstr ""
+
+#: class.php:1494 class.php:1541
+msgid "Manual"
+msgstr ""
+
+#: class.php:1498 class.php:1545 subscriber-table.php:88
+msgid "Subscriber ID"
+msgstr ""
+
+#: class.php:1504
+msgid "Cancel"
+msgstr ""
+
+#: class.php:1553
+msgid "Bulk Import"
+msgstr ""
+
+#: class.php:1554
+msgid "Use double quotes \" to enclose strings with commas"
+msgstr ""
+
+#: class.php:1567
+msgid "Search Subscribers"
+msgstr ""
+
+#: class.php:1586
+msgid "Leaky Paywall Updater"
+msgstr ""
+
+#: class.php:1641
+msgid "Version 2.0.0 Update Process"
+msgstr ""
+
+#: class.php:1642
+msgid ""
+"We have decided to use the WordPress Users table to instead of maintaining "
+"our own subscribers table. This process will copy all existing leaky paywall "
+"subscriber data to individual WordPress users."
+msgstr ""
+
+#: class.php:1652
+msgid "Copying user data for %s (%s mode user)..."
+msgstr ""
+
+#: class.php:1693
+msgid "completed."
+msgstr ""
+
+#: class.php:1695
+msgid "skipping."
+msgstr ""
+
+#: class.php:1705
+msgid "Finished Migrating Subscribers!"
+msgstr ""
+
+#: class.php:1706
+msgid "Updating Settings..."
+msgstr ""
+
+#: class.php:1754
+msgid "All Done!"
+msgstr ""
+
+#: class.php:1760
+msgid ""
+"If your browser doesn&#8217;t start loading the next page automatically, "
+"click this link:"
+msgstr ""
+
+#: class.php:1760
+msgid "Next Subscribers"
+msgstr ""
+
+#: class.php:1796
+msgid ""
+"You must update the Leaky Paywall Database to version 2 to continue using "
+"this plugin... %s"
+msgstr ""
+
+#: class.php:1796
+msgid "Update Now"
+msgstr ""
+
+#: class.php:1812
+msgid ""
+"You must complete your PayPal setup to continue using the Leaky Paywall "
+"Plugin. %s."
+msgstr ""
+
+#: class.php:1812
+msgid "Complete Your Setup Now"
+msgstr ""
+
+#: functions.php:372 functions.php:843 functions.php:1732 functions.php:1872
+#: functions.php:2084
+msgid "Error processing request: %s"
+msgstr ""
+
+#: functions.php:567
+msgid "Unable to find PayPal subscriber and invalid IPN sent: %s"
+msgstr ""
+
+#: functions.php:759
+msgid "Manually Added"
+msgstr ""
+
+#: functions.php:788
+msgid "Cancel Subscription"
+msgstr ""
+
+#: functions.php:790
+msgid ""
+"Cancellations take effect at the end of your billing cycle, and we can’t "
+"give partial refunds for unused time in the billing cycle. If you still wish "
+"to cancel now, you may proceed, or you can come back later."
+msgstr ""
+
+#: functions.php:791
+msgid ""
+" Thank you for the time you’ve spent subscribed to %s. We hope you’ll return "
+"someday. "
+msgstr ""
+
+#: functions.php:792
+msgid "Yes, cancel my subscription!"
+msgstr ""
+
+#: functions.php:792
+msgid "No, get me outta here!"
+msgstr ""
+
+#: functions.php:815
+msgid ""
+"Unable to find valid Stripe customer ID to unsubscribe. Please contact "
+"support"
+msgstr ""
+
+#: functions.php:826
+msgid ""
+"Your subscription has been successfully canceled. You will continue to have "
+"access to %s until the end of your billing cycle. Thank you for the time you "
+"have spent subscribed to our site and we hope you will return soon!"
+msgstr ""
+
+#: functions.php:835
+msgid ""
+"ERROR: An error occured when trying to unsubscribe you from your account, "
+"please try again. If you continue to have trouble, please contact us. Thank "
+"you."
+msgstr ""
+
+#: functions.php:839
+msgid "Return to %s..."
+msgstr ""
+
+#: functions.php:851
+msgid ""
+"You must cancel your account through PayPal. Please click this unsubscribe "
+"button to complete the cancellation process."
+msgstr ""
+
+#: functions.php:1264 functions.php:1272
+msgid "Error Downloading PDF"
+msgstr ""
+
+#: functions.php:1266
+msgid "Download Error: Invalid response: %s"
+msgstr ""
+
+#: functions.php:1267 functions.php:1275
+msgid "Home"
+msgstr ""
+
+#: functions.php:1274
+msgid "Download Error: %s"
+msgstr ""
+
+#: functions.php:1316
+msgid "Subscription Name"
+msgstr ""
+
+#: functions.php:1324
+msgid "Recurring?"
+msgstr ""
+
+#: functions.php:1329
+msgid "Subscription Price"
+msgstr ""
+
+#: functions.php:1334
+msgid "Subscription Length"
+msgstr ""
+
+#: functions.php:1338
+msgid "Forever"
+msgstr ""
+
+#: functions.php:1339
+msgid "Limited for..."
+msgstr ""
+
+#: functions.php:1361
+msgid "Access Options"
+msgstr ""
+
+#: functions.php:1379
+msgid "Add New Post Type"
+msgstr ""
+
+#: functions.php:1433
+msgid "Unlimited"
+msgstr ""
+
+#: functions.php:1434
+msgid "Limit to..."
+msgstr ""
+
+#: functions.php:1444
+msgid "#"
+msgstr ""
+
+#: functions.php:1504
+msgid "Restriction"
+msgstr ""
+
+#: functions.php:1509
+msgid "Number of"
+msgstr ""
+
+#: functions.php:1521
+msgid "allowed:"
+msgstr ""
+
+#: functions.php:1789
+msgid "Error: PayPal denied this payment."
+msgstr ""
+
+#: functions.php:1792
+msgid "Error: Payment failed."
+msgstr ""
+
+#: functions.php:1833
+msgid "Error: Transaction IDs do not match! %s, %s"
+msgstr ""
+
+#: functions.php:1836
+msgid ""
+"Error: Amount charged is not the same as the subscription total! %s | %s"
+msgstr ""
+
+#: functions.php:1898
+msgid "Subscription Options"
+msgstr ""
+
+#: functions.php:1925
+msgid "Access %s %s*"
+msgstr ""
+
+#: functions.php:1929
+msgid "Unlimited %s"
+msgstr ""
+
+#: functions.php:1940
+msgid "$%s %s (recurring)"
+msgstr ""
+
+#: functions.php:1942
+msgid "$%s %s"
+msgstr ""
+
+#: functions.php:1945
+msgid "Free for the first %s day(s)"
+msgstr ""
+
+#: functions.php:1960
+msgid "or pay with PayPal"
+msgstr ""
+
+#: functions.php:1991
+msgid "Current Subscription"
+msgstr ""
+
+#: functions.php:2068
+msgid "Unable to create Plan in Stripe - %s"
+msgstr ""
+
+#: metaboxes.php:21
+msgid "Leaky Paywall Visibility"
+msgstr ""
+
+#: metaboxes.php:47
+msgid "This %s should..."
+msgstr ""
+
+#: metaboxes.php:50
+msgid "obey Leaky Paywall's defaults."
+msgstr ""
+
+#: metaboxes.php:51
+msgid "only be visible to..."
+msgstr ""
+
+#: metaboxes.php:52
+msgid "always be visible to..."
+msgstr ""
+
+#: metaboxes.php:53
+msgid "only and always be visible to..."
+msgstr ""
+
+#: metaboxes.php:76
+msgid "Everyone"
+msgstr ""
+
+#: metaboxes.php:96
+msgid "Hint:"
+msgstr ""
+
+#: metaboxes.php:97
+msgid ""
+"\"Only\" means that only the selected subscription levels can see this %s, "
+"if they have not reached their %s limit."
+msgstr ""
+
+#: metaboxes.php:98
+msgid ""
+"\"Always\" means that the selected subscription levels can see this %s, even "
+"if they have reached their %s limit."
+msgstr ""
+
+#: metaboxes.php:99
+msgid ""
+"\"Only and Always\" means that only the selected subscription levels can see "
+"this %s, even if they have reached their %s limit."
+msgstr ""
+
+#: shortcodes.php:55
+msgid "Email address:"
+msgstr ""
+
+#: shortcodes.php:56
+msgid "Check your email for a link to log in."
+msgstr ""
+
+#: shortcodes.php:57
+msgid "Email sent. Please check your email for the login link."
+msgstr ""
+
+#: shortcodes.php:58
+msgid "Error sending login email, please try again later."
+msgstr ""
+
+#: shortcodes.php:59
+msgid "Please supply a valid email address."
+msgstr ""
+
+#: shortcodes.php:89
+msgid "Send Login Email"
+msgstr ""
+
+#: shortcodes.php:117
+msgid "Enter your email address to start your subscription:"
+msgstr ""
+
+#: shortcodes.php:118
+msgid "Check your email for a link to start your subscription."
+msgstr ""
+
+#: shortcodes.php:153
+msgid ""
+"Your subscription will automatically renew until you <a href=\"%s\">cancel</"
+"a>."
+msgstr ""
+
+#: shortcodes.php:157
+msgid "You are a lifetime subscriber!"
+msgstr ""
+
+#: shortcodes.php:161
+msgid ""
+"Your subscription has been canceled. You will continue to have access to %s "
+"until the end of your billing cycle. Thank you for the time you have spent "
+"subscribed to our site and we hope you will return soon!"
+msgstr ""
+
+#: shortcodes.php:166
+msgid "You are subscribed via %s until %s."
+msgstr ""
+
+#: shortcodes.php:170
+msgid "Thank you very much for subscribing."
+msgstr ""
+
+#: shortcodes.php:172
+msgid "Log Out"
+msgstr ""
+
+#: subscriber-table.php:80
+msgid "No Leaky Paywall subscribers found."
+msgstr ""
+
+#: subscriber-table.php:85
+msgid "WordPress Username"
+msgstr ""
+
+#: subscriber-table.php:86
+msgid "E-mail"
+msgstr ""
+
+#: subscriber-table.php:87
+msgid "Level ID"
+msgstr ""
+
+#: subscriber-table.php:89
+msgid "Price"
+msgstr ""
+
+#: subscriber-table.php:90
+msgid "Plan"
+msgstr ""
+
+#: subscriber-table.php:92
+msgid "Gateway"
+msgstr ""
+
+#: subscriber-table.php:162
+msgid "Undefined"
+msgstr ""
+
+#: subscriber-table.php:177
+msgid "Non-Recurring"
+msgstr ""
+
+#: subscriber-table.php:179
+msgid "Recurring every %s"
+msgstr ""
+
+#: subscriber-table.php:193
+msgid "Never"
+msgstr ""
+
+#: subscriber-table.php:195
+msgid "Determined by Stripe"
+msgstr ""
+
+#. #-#-#-#-#  issuem-leaky-paywall.pot (Leaky Paywall 2.0.1)  #-#-#-#-#
+#. Plugin URI of the plugin/theme
+#. #-#-#-#-#  issuem-leaky-paywall.pot (Leaky Paywall 2.0.1)  #-#-#-#-#
+#. Author URI of the plugin/theme
+msgid "http://leakypw.com/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "A premium leaky paywall add-on for WordPress and IssueM."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "IssueM Development Team"
+msgstr ""
