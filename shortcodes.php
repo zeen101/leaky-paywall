@@ -65,31 +65,43 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 		extract( $args );
 		
 		$results = '';
-
-		if ( isset( $_REQUEST['submit-leaky-login'] ) ) {
-			
-			if ( isset( $_REQUEST['email'] ) && is_email( $_REQUEST['email'] ) ) {
-			
-				if ( send_leaky_paywall_email( $_REQUEST['email'] ) )
-					return '<h3>' . $email_sent . '</h3>';
-				else
-					$results .= '<h1 class="error">' . $error_msg . '</h1>';
+		
+		if ( 'passwordless' === $settings['login_method'] ) {
+	
+			if ( isset( $_REQUEST['submit-leaky-login'] ) ) {
 				
-			} else {
-			
-				$results .= '<h1 class="error">' . $missing_email_msg . '</h1>';
+				if ( isset( $_REQUEST['email'] ) && is_email( $_REQUEST['email'] ) ) {
+				
+					if ( send_leaky_paywall_email( $_REQUEST['email'] ) )
+						return '<h3>' . $email_sent . '</h3>';
+					else
+						$results .= '<h1 class="error">' . $error_msg . '</h1>';
+					
+				} else {
+				
+					$results .= '<h1 class="error">' . $missing_email_msg . '</h1>';
+					
+				}
 				
 			}
 			
-		}
-		
-		$results .= '<h2>' . $heading . '</h2>';
-		$results .= '<form action="" method="post">';
-		$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
-		$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'issuem-leaky-paywall' ) . '" />';
-		$results .= '</form>';
-		$results .= '<h3>' . $description . '</h3>';
+			$results .= '<h2>' . $heading . '</h2>';
+			$results .= '<form action="" method="post">';
+			$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
+			$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'issuem-leaky-paywall' ) . '" />';
+			$results .= '</form>';
+			$results .= '<h3>' . $description . '</h3>';
 	
+		} else { //traditional
+		
+			add_action( 'login_form_bottom', 'leaky_paywall_add_lost_password_link' );
+			$args = array(
+				'echo' => false,
+				'redirect' => get_page_link( $settings['page_for_subscription'] ),
+			);
+			$results .= wp_login_form( $args );
+		
+		}
 		
 		return $results;
 		

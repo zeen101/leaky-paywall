@@ -54,7 +54,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
 			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 			
-			add_action( 'wp', array( $this, 'process_requests' ) );
+			add_action( 'wp_loaded', array( $this, 'process_requests' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
@@ -547,6 +547,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'license_status'				=> '',
 				'page_for_login'				=> 0,
 				'page_for_subscription'			=> 0,
+				'login_method'					=> 'traditional', //default over passwordless
 				'post_types'					=> ACTIVE_LP ? array( 'article' ) : array( 'post' ),
 				'free_articles'					=> 2,
 				'cookie_expiration' 			=> 24,
@@ -644,6 +645,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['page_for_subscription'] ) )
 					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
+					
+				if ( !empty( $_REQUEST['login_method'] ) )
+					$settings['login_method'] = $_REQUEST['login_method'];
 				
 				if ( !empty( $_REQUEST['post_types'] ) )
 					$settings['post_types'] = $_REQUEST['post_types'];
@@ -822,6 +826,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                                 <td>
 								<?php echo wp_dropdown_pages( array( 'name' => 'page_for_subscription', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_subscription'] ) ); ?>
                                 <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
+                                </td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Login Method', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+								<select id='login_method' name='login_method'>
+									<option value='traditional' <?php selected( 'traditional', $settings['login_method'] ); ?> ><?php _e( 'Traditional', 'issuem-leaky-paywall' ); ?></option>
+									<option value='passwordless' <?php selected( 'passwordlress', $settings['login_method'] ); ?> ><?php _e( 'Passwordless', 'issuem-leaky-paywall' ); ?></option>
+								</select>
+                                <p class="description"><?php printf( __( 'Traditional allows users to log in with a username and password. Passwordless authenticates the user via a secure link sent to their email.', 'issuem-leaky-paywall' ) ); ?></p>
                                 </td>
                             </tr>
                             
@@ -1191,7 +1206,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			$date_format = get_option( 'date_format' );
 			$jquery_date_format = leaky_paywall_jquery_datepicker_format( $date_format );
-			$headings = apply_filters( 'leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id' ) );
+			$headings = apply_filters( 'leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id', 'subscriber-id' ) );
 			
 			$settings = get_leaky_paywall_settings();
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -1222,11 +1237,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							else 
 								$expires = date( 'Y-m-d 23:59:59', strtotime( trim( urldecode( $_POST['leaky-paywall-subscriber-expires'] ) ) ) );
 							
-							$customer = new stdClass;
-							$customer->id = $subscriber_id;
-							
 							$meta = array(
 								'level_id' 			=> $_POST['leaky-paywall-subscriber-level-id'],
+								'subscriber_id'		=> $subscriber_id,
 								'price' 			=> trim( $_POST['leaky-paywall-subscriber-price'] ),
 								'description' 		=> __( 'Manual Addition', 'issuem-leaky-paywall' ),
 								'expires' 			=> $expires,
@@ -1236,7 +1249,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								'plan'				=> '',
 							);
 							
-							$user_id = leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $meta, $login );
+							$user_id = leaky_paywall_new_subscriber( $unique_hash, $email, $subscriber_id, $meta, $login );
 							
 							do_action( 'add_leaky_paywall_subscriber', $user_id );
 							
@@ -1348,6 +1361,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								$keys['expires'] = 3;
 								$keys['status'] = 4;
 								$keys['level-id'] = 5;
+								$keys['subscriber-id'] = 6;
 							}
 							
 							foreach( $imports as $import ) {
@@ -1385,12 +1399,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								else 
 									$level_id = '';
 															
-								$customer = new stdClass;
-								$customer->id = '';
-								
 								$meta = array(
 									'level_id'			=> $level_id,
-									'subscriber_id' 	=> '',
+									'subscriber_id' 	=> $subscriber_id,
 									'price' 			=> $price,
 									'description' 		=> __( 'Bulk Addition', 'issuem-leaky-paywall' ),
 									'expires' 			=> $expires,
@@ -1400,12 +1411,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									'plan'				=> '',
 								);
 								
-								$user_id = leaky_paywall_new_subscriber( $unique_hash, $email, $customer, $meta, $login );
+								$user_id = leaky_paywall_new_subscriber( $unique_hash, $email, '', $meta, $login );
 								
 								if ( !empty( $user_id ) )
 									do_action( 'bulk_add_leaky_paywall_subscriber', $user_id, $keys, $import );
 								else
-									do_action( 'bulk_add_leaky_paywall_subscriber_failed', $keys, $import, $unique_hash, $email, $customer, $meta, $login );
+									do_action( 'bulk_add_leaky_paywall_subscriber_failed', $keys, $import, $unique_hash, $email, $meta, $login );
 								
 							}
 							
