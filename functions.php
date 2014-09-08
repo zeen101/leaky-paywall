@@ -1227,6 +1227,10 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 					),
 				);
 			}
+			
+			if ( !empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] )
+				unset( $args['meta_query'] );
+			
 			$users = get_users( $args );
 			return $users;
 
