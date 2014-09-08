@@ -828,13 +828,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                                 <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
                                 </td>
                             </tr>
-                            
                         	<tr>
                                 <th><?php _e( 'Login Method', 'issuem-leaky-paywall' ); ?></th>
                                 <td>
 								<select id='login_method' name='login_method'>
 									<option value='traditional' <?php selected( 'traditional', $settings['login_method'] ); ?> ><?php _e( 'Traditional', 'issuem-leaky-paywall' ); ?></option>
-									<option value='passwordless' <?php selected( 'passwordlress', $settings['login_method'] ); ?> ><?php _e( 'Passwordless', 'issuem-leaky-paywall' ); ?></option>
+									<option value='passwordless' <?php selected( 'passwordless', $settings['login_method'] ); ?> ><?php _e( 'Passwordless', 'issuem-leaky-paywall' ); ?></option>
 								</select>
                                 <p class="description"><?php printf( __( 'Traditional allows users to log in with a username and password. Passwordless authenticates the user via a secure link sent to their email.', 'issuem-leaky-paywall' ) ); ?></p>
                                 </td>
@@ -1638,6 +1637,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$old_db_version = $settings['db_version'];
 			else
 				$old_db_version = 0;
+				
+			if ( 0 !== $old_version && version_compare( $old_version, '2.0.2', '<' ) )
+				$this->update_2_0_2();
 						
 			$settings['version'] = LEAKY_PAYWALL_VERSION;
 			$settings['db_version'] = LEAKY_PAYWALL_DB_VERSION;
@@ -1780,6 +1782,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	            
             }
 
+		}
+		
+		function update_2_0_2() {
+			$settings = $this->get_settings();
+			$settings['login_method'] = 'passwordless';
+			$this->update_settings( $settings );	
+			$settings = $this->get_settings();
 		}
 		
 		function update_notices() {
