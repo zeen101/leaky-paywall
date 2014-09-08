@@ -462,8 +462,6 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 	 * @param array $request
 	 */
 	function issuem_process_paypal_standard_ipn( $mode = 'live' ) {
-						
-		wp_mail( 'lew@lewayotte.com', 'ipn', print_r( $_REQUEST, true ) );
 	    
 	    $payload['cmd'] = '_notify-validate';
 	    foreach( $_POST as $key => $value ) {
@@ -600,13 +598,11 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					//WordPress user exists
 					$args['subscriber_email'] = $user->user_email;
 					$unique_hash = leaky_paywall_hash( $args['subscriber_email'] );
-					wp_mail( 'lew@lewayotte.com', 'leaky_paywall_update_subscriber', print_r( $unique_hash, true ) . print_r( $args['subscriber_email'], true ) . print_r( $args['subscr_id'], true ) . print_r(  $args, true ) );
 					leaky_paywall_update_subscriber( $unique_hash, $args['subscriber_email'], $args['subscr_id'], $args );
 				} else {
 					//Need to create a new user
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
 					$unique_hash = leaky_paywall_hash( $args['subscriber_email'] );
-					wp_mail( 'lew@lewayotte.com', 'leaky_paywall_new_subscriber', print_r( $unique_hash, true ) . print_r( $args['subscriber_email'], true ) . print_r( $args['subscr_id'], true ) . print_r(  $args, true ) );
 					leaky_paywall_new_subscriber( $unique_hash, $args['subscriber_email'], $args['subscr_id'], $args );
 				}
 				
@@ -1894,7 +1890,7 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 							throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
 	
 						$args = array(
-							'level_id' 			=> $response_array['CUSTOM'],
+							'level_id' 			=> $response_array['L_NUMBER0'],
 							'subscriber_id' 	=> $customer_id,
 							'subscriber_email' 	=> $_SESSION['issuem_lp_email'],
 							'price' 			=> $level['price'],

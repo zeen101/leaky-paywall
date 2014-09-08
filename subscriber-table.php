@@ -117,14 +117,14 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	function user_views() {
 		$user_type = !empty( $_GET['user-type'] ) ? $_GET['user-type'] : 'lpsubs';
 	
-		echo '<div class="alignleft actions bulkactions">';
+		echo '<div class="alignleft actions">';
 		echo '<label for="user-type-selector" class="screen-reader-text">' . __( 'Select User Type' ) . '</label>';
 		echo '<select name="user-type" id="user-type-selector">';
 		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . __( 'Leaky Paywall Subscribers' ) . '</option>';
 		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . __( 'All WordPress Users' ) . '</option>';
 		echo '</select>';
 
-		submit_button( __( 'Apply' ) );
+		submit_button( __( 'Apply' ), 'primary', false, false );
 		echo '</div>';
 	}
 

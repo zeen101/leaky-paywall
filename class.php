@@ -1574,8 +1574,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					<!-- For plugins, we also need to ensure that the form posts back to our current page -->
 					<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
 					<!-- Now we can render the completed list table -->
-					<?php $subscriber_table->user_views(); ?>
-					<?php $subscriber_table->search_box( __( 'Search Subscribers' ), 'issuem-leaky-paywall' ); ?>
+					<div class="tablenav top">
+						<?php $subscriber_table->user_views(); ?>
+						<?php $subscriber_table->search_box( __( 'Search Subscribers' ), 'issuem-leaky-paywall' ); ?>
+					</div>
 					<?php $subscriber_table->display(); ?>
 				</form>
 			   
