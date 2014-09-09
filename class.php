@@ -54,7 +54,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
 			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 			
-			add_action( 'wp_loaded', array( $this, 'process_requests' ) );
+			add_action( 'wp', array( $this, 'process_requests' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
