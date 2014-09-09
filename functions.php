@@ -337,6 +337,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 							
 						switch( $payment_status ) {
 						
+							case 'Active':
 							case 'active':
 							case 'refunded':
 							case 'refund':

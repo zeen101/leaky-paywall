@@ -1391,7 +1391,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								if ( empty( $import[$keys['status']] ) )
 									$status = 'active';
 								else 
-									$status = trim( $import[$keys['status']] );
+									$status = strtolower( trim( $import[$keys['status']] ) );
 									
 								if ( isset( $import[$keys['level-id']] ) )
 									$level_id = trim( $import[$keys['level-id']] );
