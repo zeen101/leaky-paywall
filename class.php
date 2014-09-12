@@ -1499,9 +1499,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <p>
 	                        <label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php _e( 'Payment Method', 'issuem-leaky-paywall' ); ?></label>
 	                        <select name="leaky-paywall-subscriber-payment-gateway">
+	                            <option value="manual" <?php selected( 'manual', $payment_gateway ); ?>><?php _e( 'Manual', 'issuem-leaky-paywall' ); ?></option>
 	                            <option value="stripe" <?php selected( 'stripe', $payment_gateway ); ?>><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></option>
 	                            <option value="paypal_standard" <?php selected( 'paypal_standard', $payment_gateway ); ?>><?php _e( 'PayPal', 'issuem-leaky-paywall' ); ?></option>
-	                            <option value="manual" <?php selected( 'manual', $payment_gateway ); ?>><?php _e( 'Manual', 'issuem-leaky-paywall' ); ?></option>
 	                        </select>
 	                        </p>
 	                    	<p>
@@ -1546,9 +1546,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php _e( 'Payment Method', 'issuem-leaky-paywall' ); ?></label>
 	                        <select name="leaky-paywall-subscriber-payment-gateway">
+	                            <option value="manual"><?php _e( 'Manual', 'issuem-leaky-paywall' ); ?></option>
 	                            <option value="stripe"><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></option>
 	                            <option value="paypal_standard"><?php _e( 'PayPal', 'issuem-leaky-paywall' ); ?></option>
-	                            <option value="manual"><?php _e( 'Manual', 'issuem-leaky-paywall' ); ?></option>
 	                        </select>
 	                        </p>
 	                    	<p>
