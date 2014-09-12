@@ -375,6 +375,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$subscription_url = get_page_link( $settings['page_for_subscription'] );
 				
 			$message = str_ireplace( '{{SUBSCRIBE_LOGIN_URL}}', $subscription_url, $message );
+			$message = str_ireplace( '{{SUBSCRIBE_URL}}', $subscription_url, $message );
+			
+			if ( 0 === $settings['page_for_login'] )
+				$login_url = get_bloginfo( 'wpurl' ) . '/?login'; //CHANGEME -- I don't really know what this is suppose to do...
+			else
+				$login_url = get_page_link( $settings['page_for_login'] );
+				
+			$message = str_ireplace( '{{LOGIN_URL}}', $login_url, $message );
 			
 			//Deprecated
 			$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
@@ -552,8 +560,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'free_articles'					=> 2,
 				'cookie_expiration' 			=> 24,
 				'cookie_expiration_interval' 	=> 'day',
-				'subscribe_login_message'		=> __( '<a href="{{SUBSCRIBE_LOGIN_URL}}">Subscribe or log in</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
-				'subscribe_upgrade_message'		=> __( 'You must <a href="{{SUBSCRIBE_LOGIN_URL}}">upgrade your account</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
+				'subscribe_login_message'		=> __( '<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
+				'subscribe_upgrade_message'		=> __( 'You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
 				'css_style'						=> 'default',
 				'site_name'						=> get_option( 'blogname' ),
 				'from_name'						=> get_option( 'blogname' ),
@@ -844,7 +852,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                                 <td>
                     				<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_login_message'] ); ?></textarea>
                                     <p class="description">
-                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
+                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}} {{SUBSCRIBE_URL}}  {{LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
                                     </p>
                                 </td>
                             </tr>
@@ -854,7 +862,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                                 <td>
                     				<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_upgrade_message'] ); ?></textarea>
                                     <p class="description">
-                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
+                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}} {{SUBSCRIBE_URL}}", 'issuem-leaky-paywall' ); ?>
                                     </p>
                                 </td>
                             </tr>
