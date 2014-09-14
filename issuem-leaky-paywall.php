@@ -11,23 +11,23 @@ Plugin Name: Leaky Paywall
 Plugin URI: http://leakypw.com/
 Description: A premium leaky paywall add-on for WordPress and IssueM.
 Author: IssueM Development Team
-Version: 2.0.1
+Version: 2.0.2
 Author URI: http://leakypw.com/
 Tags:
 */
 
 //Define global variables...
 if ( !defined( 'ZEEN101_STORE_URL' ) )
-	define( 'ZEEN101_STORE_URL',			'http://zeen101.com' );
+	define( 'ZEEN101_STORE_URL',	'http://zeen101.com' );
 	
 define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION',		'2.0.1' );
+define( 'LEAKY_PAYWALL_VERSION',	'2.0.2' );
 define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
-define( 'LEAKY_PAYWALL_URL',			plugin_dir_url( __FILE__ ) );
+define( 'LEAKY_PAYWALL_URL',		plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
 define( 'LEAKY_PAYWALL_BASENAME',	plugin_basename( __FILE__ ) );
-define( 'LEAKY_PAYWALL_REL_DIR',		dirname( LEAKY_PAYWALL_BASENAME ) );
+define( 'LEAKY_PAYWALL_REL_DIR',	dirname( LEAKY_PAYWALL_BASENAME ) );
 
 if ( !defined( 'PAYPAL_LIVE_URL' ) )
 	define( 'PAYPAL_LIVE_URL', 'https://www.paypal.com/' );

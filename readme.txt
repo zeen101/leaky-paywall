@@ -2,7 +2,7 @@
 Contributors: layotte
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
-Tested up to: 3.9
+Tested up to: 4.0
 Stable tag: 2.0.2
 
 A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
@@ -31,8 +31,19 @@ You must have:
 
 == Changelog ==
 = 2.0.2 =
+* Better error reporting for payment processing
+* Separated subscribe and login url replacement arguments
+* Manual payment method is default option on subscriber table form now
+* Force lowercase for status during bulk imports
+* Switching back from wp_loaded to wp action hook
+* Adding some styling, fixed bug in return variables for PayPal
+* Adding options to show all WP users in subscriber table
+* Setup update script to ensure previous versions installed stay on 'passwordless' login method, while new insta
+* PayPal updates, to work better for people without PayPal accounts
+* Adding language files
 * Added ability to add/edit subscribers manually with correct Payment Gateway information
 * Added better search capabilities for email addresses
+* Added filter to change which roles get access to content without being a subscriber, preliminary work for PayP
 
 = 2.0.1 =
 * Fixing bug in calling Leaky Paywall class method
