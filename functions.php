@@ -575,6 +575,25 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						}
 						return true; //We don't need to process anymore
 						
+					case 'recurring_payment_suspended_due_to_max_failed_payment':
+						if ( isset( $_REQUEST['recurring_payment_id'] ) ) { //subscr_payment
+							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['recurring_payment_id'], $mode );
+							if ( !empty( $user ) && 0 !== $user->ID )
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
+						} 
+						return true; //We don't need to process anymore
+						
+					case 'recurring_payment_suspended':
+						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
+							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
+							if ( !empty( $user ) && 0 !== $user->ID )
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'suspended' );
+						} else if ( isset( $_REQUEST['recurring_payment_id'] ) ) { //subscr_payment
+							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['recurring_payment_id'], $mode );
+							if ( !empty( $user ) && 0 !== $user->ID )
+								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'suspended' );
+						} 
+						return true; //We don't need to process anymore
 				}
 			
 				if ( !empty( $_REQUEST['custom'] ) && is_email( $_REQUEST['custom'] ) ) {
