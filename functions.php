@@ -477,7 +477,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 			if ( !empty( $_REQUEST['txn_type'] ) ) {
 
 				$args= array(
-					'level_id' 			=> $_REQUEST['item_number'], //should be universal for all PayPal IPNs we're capturing
+					'level_id' 			=> isset( $_REQUEST['item_number'] ) ? $_REQUEST['item_number'] : $_REQUEST['custom'], //should be universal for all PayPal IPNs we're capturing
 					'description' 		=> $_REQUEST['item_name'], //should be universal for all PayPal IPNs we're capturing
 					'payment_gateway' 	=> 'paypal_standard',
 				);
@@ -535,7 +535,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 							$args['price'] = $_REQUEST['payment_gross'];
 						}
 						
-						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
+						if ( !empty( $_REQUEST['subscr_id'] ) ) { //subscr_payment
 							$args['subscr_id'] = $_REQUEST['subscr_id'];
 						}
 						
@@ -1188,7 +1188,9 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 			
 			if ( !empty( $args['search'] ) ) {
 			
-				if ( is_email( $args['search'] ) ) {
+				$search = trim( $args['search'] );
+			
+				if ( is_email( $search ) ) {
 					
 					$args['meta_query'] = array(
 						array(
@@ -1196,7 +1198,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 							'compare' => 'EXISTS',
 						),
 					);
-					$args['search'] = $args['search'];
+					$args['search'] = $search;
 					$args['search_columns'] = array( 'user_login', 'user_email' );
 					
 				} else {
@@ -1208,7 +1210,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 							'compare' => 'EXISTS',
 						),
 						array(
-							'value'   => $args['search'],
+							'value'   => $search,
 							'compare' => 'LIKE',
 						),
 					);
@@ -1667,7 +1669,7 @@ if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 		
 		$settings = get_leaky_paywall_settings();
 		
-		if ( !empty( $settings['levels'][$level_id] ) ) 
+		if ( isset( $settings['levels'][$level_id] ) ) 
 			return $settings['levels'][$level_id];
 		
 		return false;
