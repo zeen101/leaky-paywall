@@ -1139,7 +1139,9 @@ if ( !function_exists( 'leaky_paywall_susbscriber_current_level_id' ) ) {
 				$settings = get_leaky_paywall_settings();
 				$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
-				return get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
+				return $level_id;
 			
 			}
 			
@@ -1688,6 +1690,7 @@ if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 		
 		$settings = get_leaky_paywall_settings();
 		
+		$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 		if ( isset( $settings['levels'][$level_id] ) ) 
 			return $settings['levels'][$level_id];
 		

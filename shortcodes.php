@@ -147,14 +147,17 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 				
 		if ( !empty( $_SESSION['issuem_lp_email'] ) ) {
 						
+			$results .= apply_filters( 'leaky_paywall_subscriber_info_start', '' );
+			
 			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
 						
 			if ( false !== $expires = leaky_paywall_has_user_paid( $_SESSION['issuem_lp_email'] ) ) {
+						
+				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
 				
 				$user = get_user_by( 'email', $_SESSION['issuem_lp_email'] );
 				$hash = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true );
 				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
-				$show_subscription_options = false;
 				
 				if ( !empty( $hash ) )
 					$_SESSION['issuem_lp_subscriber'] = $hash;
@@ -171,7 +174,6 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 				
 					case 'canceled':
 						$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
-						$show_subscription_options = true;
 						break;
 						
 					default:
@@ -179,14 +181,15 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 						
 				}
 				
-				$results .= '<p>' . __( 'Thank you very much for subscribing.', 'issuem-leaky-paywall' ) . '</p>';
+				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_end', '' );
 				
 				$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
-				$results .= '</div>';
-				
-				$show_upgrade_options = true;
 								
 			}
+			
+			$results .= '</div>';
+			
+			$results .= apply_filters( 'leaky_paywall_subscriber_info_end', '' );
 			
 		}			
 			
