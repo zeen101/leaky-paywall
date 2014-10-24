@@ -204,7 +204,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									
 								case 'always':
 									if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
-										$is_restricted = false;
+										return; //always visible, don't need process anymore
 									}
 									break;
 								
@@ -213,8 +213,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else {
-										$is_restricted = false;
+									} else if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
+										return; //always visible, don't need process anymore
 									}
 									break;
 								
@@ -223,11 +223,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							
 						}
 						
-						$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions );
+						$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
 						
 						if ( $is_restricted ) {
-								
-							global $post;
 							
 							switch ( $settings['cookie_expiration_interval'] ) {
 								case 'hour':
