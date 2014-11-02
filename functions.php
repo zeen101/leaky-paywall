@@ -249,132 +249,126 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		if ( is_email( $email ) ) {
 			
 			if ( $user = get_user_by( 'email', $email ) ) {
-		
-				try {
-					
-					$settings = get_leaky_paywall_settings();
-					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-					$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );;
-					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
-					$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
-					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true );
-					$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
-					
-					if ( 'stripe' === $payment_gateway ) {
-								
-						$cu = Stripe_Customer::retrieve( $subscriber_id );
-
-						if ( !empty( $cu ) )
-							if ( !empty( $cu->deleted ) && true === $cu->deleted )
-								return false;
 						
-						if ( !empty( $plan ) ) {
-										
-							if ( isset( $cu->subscriptions ) ) {
-										
-								$subscriptions = $cu->subscriptions->all( 'limit=1' );
-
-								foreach( $subscriptions->data as $susbcription ) {
-									if ( 'active' === $susbcription->status )
-										return 'subscription';
-								}
-						
-							}
+				$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );;
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
+				$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true );
+				$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
+				
+				if ( 'stripe' === $payment_gateway ) {
 							
+					$cu = Stripe_Customer::retrieve( $subscriber_id );
+
+					if ( !empty( $cu ) )
+						if ( !empty( $cu->deleted ) && true === $cu->deleted )
 							return false;
-							
-						}
-						
-						$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
-												
-						if ( '0000-00-00 00:00:00' !== $expires ) {
-							
-							if ( strtotime( $expires ) > time() )
-								if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
-									return $expires;
-							else
-								return false;
-									
-						} else {
-						
-							return 'unlimited';
-							
-						}
 					
-					} else if ( 'paypal_standard' === $payment_gateway ) {
-						
-						if ( '0000-00-00 00:00:00' === $expires )
-							return 'unlimited';
-						
-						if ( !empty( $plan ) && 'active' == $payment_status )
-							return 'subscription';
-							
-						switch( $payment_status ) {
-						
-							case 'active':
-							case 'refunded':
-							case 'refund':
-								if ( strtotime( $expires ) > time() )
-									return $expires;
-								else
-									return false;
-								break;
-							case 'canceled':
-								return 'canceled';
-							case 'reversed':
-							case 'buyer_complaint':
-							case 'denied' :
-							case 'expired' :
-							case 'failed' :
-							case 'voided' :
-							case 'deactivated' :
-								return false;
-								break;
-							
-						}
-						
-					} else if ( 'manual' === $payment_gateway ) {
-							
-						switch( $payment_status ) {
-						
-							case 'Active':
-							case 'active':
-							case 'refunded':
-							case 'refund':
-								if ( $expires === '0000-00-00 00:00:00' )
-									return 'unlimited';
+					if ( !empty( $plan ) ) {
 									
-								if ( strtotime( $expires ) > time() )
-									return $expires;
-								else
-									return false;
-								break;
-							case 'canceled':
-								if ( $expires === '0000-00-00 00:00:00' )
-									return false;
-								else
-									return 'canceled';
-							case 'reversed':
-							case 'buyer_complaint':
-							case 'denied' :
-							case 'expired' :
-							case 'failed' :
-							case 'voided' :
-							case 'deactivated' :
-								return false;
-								break;
-							
+						if ( isset( $cu->subscriptions ) ) {
+									
+							$subscriptions = $cu->subscriptions->all( 'limit=1' );
+
+							foreach( $subscriptions->data as $susbcription ) {
+								if ( 'active' === $susbcription->status )
+									return 'subscription';
+							}
+					
 						}
+						
+						return false;
 						
 					}
 					
-				} catch ( Exception $e ) {
+					$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
+											
+					if ( '0000-00-00 00:00:00' !== $expires ) {
+						
+						if ( strtotime( $expires ) > time() )
+							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
+								return $expires;
+						else
+							return false;
+								
+					} else {
+					
+						return 'unlimited';
+						
+					}
 				
-					echo '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>'; 
+				} else if ( 'paypal_standard' === $payment_gateway ) {
+					
+					if ( '0000-00-00 00:00:00' === $expires )
+						return 'unlimited';
+					
+					if ( !empty( $plan ) && 'active' == $payment_status )
+						return 'subscription';
+						
+					switch( $payment_status ) {
+					
+						case 'active':
+						case 'refunded':
+						case 'refund':
+							if ( strtotime( $expires ) > time() )
+								return $expires;
+							else
+								return false;
+							break;
+						case 'cancelled':
+						case 'canceled':
+							return 'canceled';
+						case 'reversed':
+						case 'buyer_complaint':
+						case 'denied' :
+						case 'expired' :
+						case 'failed' :
+						case 'voided' :
+						case 'deactivated' :
+							return false;
+							break;
+						
+					}
+					
+				} else if ( 'manual' === $payment_gateway ) {
+						
+					switch( $payment_status ) {
+					
+						case 'Active':
+						case 'active':
+						case 'refunded':
+						case 'refund':
+							if ( $expires === '0000-00-00 00:00:00' )
+								return 'unlimited';
+								
+							if ( strtotime( $expires ) > time() )
+								return $expires;
+							else
+								return false;
+							break;
+						case 'cancelled':
+						case 'canceled':
+							if ( $expires === '0000-00-00 00:00:00' )
+								return false;
+							else
+								return 'canceled';
+						case 'reversed':
+						case 'buyer_complaint':
+						case 'denied' :
+						case 'expired' :
+						case 'failed' :
+						case 'voided' :
+						case 'deactivated' :
+							return false;
+							break;
+						
+					}
+					
+				} else {
+					
+					return apply_filters( 'leaky_paywall_has_user_paid', false, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires );
 					
 				}
-				
-				return false;
 									
 			}
 			
@@ -431,6 +425,11 @@ if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
 						
 					case 'invoice.payment_failed' :
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', 'deactivated' );
+						break;
+					
+					case 'customer.subscription.updated' :
+						$expires = date( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
+						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', $expires );
 						break;
 						
 					case 'customer.subscription.created' :

@@ -213,7 +213,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
+									} else if ( in_array( $level_id, $visibility['only_always_visible'] ) ) {
 										return; //always visible, don't need process anymore
 									}
 									break;
