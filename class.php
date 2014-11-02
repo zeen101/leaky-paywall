@@ -443,8 +443,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				wp_enqueue_script( 'leaky_paywall_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 				
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
-				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
+				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
 				wp_enqueue_script( 'leaky_paywall_subscribers_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION );
+				wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
+			}
 				
 			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix )
 				wp_enqueue_script( 'leaky_paywall_post_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
