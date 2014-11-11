@@ -2333,3 +2333,16 @@ if ( !function_exists( 'leaky_paywall_add_lost_password_link' ) ) {
 	}
 
 }
+
+if ( !function_exists( 'leaky_paywall_payment_gateways' ) ) {
+	
+	function leaky_paywall_payment_gateways() {
+		$gateways = array(
+			'manual' 			=> __( 'Manual', 'issuem-leaky-paywall' ),
+			'stripe' 			=> __( 'Stripe', 'issuem-leaky-paywall' ),
+			'paypal_standard' 	=> __( 'PayPal Standard', 'issuem-leaky-paywall' ),
+		);
+		return apply_filters( 'leaky_paywall_subscriber_payment_gateways', $gateways );
+	}
+
+}

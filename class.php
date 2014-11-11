@@ -1514,10 +1514,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </p>
 	                        <p>
 	                        <label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php _e( 'Payment Method', 'issuem-leaky-paywall' ); ?></label>
+	                        <?php $payment_gateways = leaky_paywall_payment_gateways(); ?>
 	                        <select name="leaky-paywall-subscriber-payment-gateway">
-	                            <option value="manual" <?php selected( 'manual', $payment_gateway ); ?>><?php _e( 'Manual', 'issuem-leaky-paywall' ); ?></option>
-	                            <option value="stripe" <?php selected( 'stripe', $payment_gateway ); ?>><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></option>
-	                            <option value="paypal_standard" <?php selected( 'paypal_standard', $payment_gateway ); ?>><?php _e( 'PayPal', 'issuem-leaky-paywall' ); ?></option>
+		                        <?php foreach( $payment_gateways as $key => $gateway ) {
+	                            	echo '<option value="' . $key . '" ' . selected( $key, $payment_gateway, false ) . '>' . $gateway . '</option>';
+		                        }
+								echo apply_filters( 'leaky_paywall_subscriber_payment_gateway_select_option', '' );
+								?>
 	                        </select>
 	                        </p>
 	                    	<p>
