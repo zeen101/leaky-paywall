@@ -128,11 +128,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			if ( leaky_paywall_maybe_process_webhooks() )
 				die(); //no point in loading the whole page for webhooks
+
+			$subscriber_logged_in = is_issuem_leaky_subscriber_logged_in();
 								
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
 				//Admins or subscribed users can download PDFs
-				if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || is_issuem_leaky_subscriber_logged_in() ) {
+				if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $subscriber_logged_in ) {
 				
 					leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 				
@@ -300,7 +302,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	
 			}
 			
-			if ( is_issuem_leaky_subscriber_logged_in() ) {
+			if ( $subscriber_logged_in ) {
 						
 				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
 					&& isset( $_REQUEST['cancel'] ) ) {
