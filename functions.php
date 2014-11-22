@@ -2019,7 +2019,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 									
 					$results .= '<div class="leaky_paywall_subscription_price">';
 					$results .= '<p>';
-					if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
+					if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
 						$results .= '<strong>' . sprintf( __( '$%s %s (recurring)', 'issuem-leaky-paywall' ), number_format( $level['price'], 2 ), Leaky_Paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 						$results .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 					} else {
