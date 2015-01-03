@@ -186,6 +186,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true ) . '</td>';
 					break;
 
+					case 'price':
+						echo "<td $attributes>" . number_format( (float)get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ), '2' ) . '</td>';
+					break;
+
 					case 'plan':
 						$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
 						if ( empty( $plan ) ) {
@@ -197,17 +201,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						echo "<td $attributes>" . $plan . '</td>';
 					break;
 
-					case 'price':
-						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ) . '</td>';
-					break;
-
 					case 'expires':
 						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							if ( 'manual' === $payment_gateway )
-								$expires = __( 'Never', 'issuem-leaky-paywall' );
-							else if ( 'stripe' === $payment_gateway )
-								$expires = __( 'Determined by Stripe', 'issuem-leaky-paywall' );
+							$expires = __( 'Never', 'issuem-leaky-paywall' );
 						} else {
 							$date_format = get_option( 'date_format' );
 							$expires = mysql2date( $date_format, $expires );

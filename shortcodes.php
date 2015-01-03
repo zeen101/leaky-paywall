@@ -122,6 +122,9 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 		
 		global $post;
 		
+		if ( isset( $_REQUEST['issuem-leaky-paywall-free-return'] ) )
+			return leaky_paywall_free_registration_form();
+		
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		

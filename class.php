@@ -130,7 +130,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				die(); //no point in loading the whole page for webhooks
 
 			$subscriber_logged_in = is_issuem_leaky_subscriber_logged_in();
-								
+											
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
 				//Admins or subscribed users can download PDFs
@@ -753,10 +753,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				else
 					$settings['restrictions'] = array();
 					
-				if ( !empty( $_REQUEST['levels'] ) )
+				if ( !empty( $_REQUEST['levels'] ) ) {
 					$settings['levels'] = $_REQUEST['levels'];
-				else
+				} else {
 					$settings['levels'] = array();
+				}
 				
 				$this->update_settings( $settings );
 				$settings_saved = true;
