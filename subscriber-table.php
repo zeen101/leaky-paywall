@@ -222,9 +222,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 
 					default:
-						echo "<td $attributes>";
-						echo apply_filters( 'manage_leaky_paywall_susbcribers_custom_column', '', $column_name, get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_hash', true ), $user->ID );
-						echo "</td>";
+						echo "<td $attributes>&nbsp;</td>";
 					break;
 				}
 			endforeach

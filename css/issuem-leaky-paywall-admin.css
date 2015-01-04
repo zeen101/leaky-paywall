@@ -89,3 +89,7 @@ span.delete-x {
 span.delete-x:hover {
     cursor: pointer;
 }
+
+select.select_level_post_type, select.select_level_site {
+	width: 100px;	
+}

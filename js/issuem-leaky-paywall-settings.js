@@ -9,7 +9,7 @@ $leaky_paywall_settings(document).ready(function($) {
             'row-key': ++leaky_paywall_restriction_row_key,
         }
         $.post( ajaxurl, data, function( response ) {
-            $( 'table#leaky_paywall_default_restriction_options' ).append( response );
+            $( 'tr#issuem-leaky-paywall-restriction-rows td' ).append( response );
         });
 	});
 	

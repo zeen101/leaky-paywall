@@ -49,6 +49,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 					
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+			add_action( 'network_admin_menu', array( $this, 'network_admin_menu' ) );
 
 			//Premium Plugin Filters
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
@@ -105,11 +106,23 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_menu_page( __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/issuem-16x16.png' );
 			
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'issuem-leaky-paywall' ), __( 'Settings', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ) );
-			
+						
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'issuem-leaky-paywall' ), __( 'Subscribers', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 									
 			add_submenu_page( false, __( 'Update', 'issuem-leaky-paywall' ), __( 'Update', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
 			
+		}
+		
+		function network_admin_menu() {
+			
+			add_menu_page( __( 'Leaky Paywall', 'issuem-leaky-paywall' ), __( 'Leaky Paywall', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'network_settings_page' ), LEAKY_PAYWALL_URL . '/images/issuem-16x16.png' );
+			
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'issuem-leaky-paywall' ), __( 'Settings', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'network_settings_page' ) );
+						
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'issuem-leaky-paywall' ), __( 'Subscribers', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
+									
+			add_submenu_page( false, __( 'Update', 'issuem-leaky-paywall' ), __( 'Update', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
+
 		}
 				
 		function process_requests() {
@@ -129,12 +142,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( leaky_paywall_maybe_process_webhooks() )
 				die(); //no point in loading the whole page for webhooks
 
-			$subscriber_logged_in = is_issuem_leaky_subscriber_logged_in();
+			$has_subscriber_paid = leaky_paywall_has_user_paid();
 											
 			if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
 				
 				//Admins or subscribed users can download PDFs
-				if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $subscriber_logged_in ) {
+				if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $has_subscriber_paid ) {
 				
 					leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 				
@@ -189,7 +202,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 						}
 					
-						$level_id = leaky_paywall_susbscriber_current_level_id();
+						$level_id = leaky_paywall_subscriber_current_level_id();
 						$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
 						
 						if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
@@ -302,7 +315,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	
 			}
 			
-			if ( $subscriber_logged_in ) {
+			if ( $has_subscriber_paid ) {
 						
 				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
 					&& isset( $_REQUEST['cancel'] ) ) {
@@ -324,7 +337,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					$login_hash = $_REQUEST['r'];
 					
-					if ( verify_leaky_paywall_hash( $login_hash ) ) {
+					if ( verify_leaky_paywall_login_hash( $login_hash ) ) {
 					
 						leaky_paywall_attempt_login( $login_hash );
 						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
@@ -360,7 +373,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			//Add the_content filter back for futhre the_content calls
 			
 			$message  = '<div id="leaky_paywall_message">';
-			if ( !is_issuem_leaky_subscriber_logged_in() ) {
+			if ( !is_user_logged_in() ) {
 				$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
 			} else {
 				$message .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
@@ -1126,29 +1139,41 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                                 <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
                             </tr>
                             
-                        	<?php 
-                        	$last_key = -1;
-                        	if ( !empty( $settings['restrictions']['post_types'] ) ) {
-                        	
-	                        	foreach( $settings['restrictions']['post_types'] as $key => $restriction ) {
+							<tr id="issuem-leaky-paywall-restriction-rows">
+								<th>
+									<label for="restriction-post-type-' . $row_key . '"><?php _e( 'Restrictions', 'issuem-leaky-paywall' ); ?></label>
+								</th>
+								<td>
+	                        	<?php 
+	                        	$last_key = -1;
+	                        	if ( !empty( $settings['restrictions']['post_types'] ) ) {
 	                        	
-	                        		echo build_leaky_paywall_default_restriction_row( $restriction, $key );
-	                        		$last_key = $key;
-	                        		
+		                        	foreach( $settings['restrictions']['post_types'] as $key => $restriction ) {
+		                        	
+		                        		echo build_leaky_paywall_default_restriction_row( $restriction, $key );
+		                        		$last_key = $key;
+		                        		
+		                        	}
+		                        	
 	                        	}
-	                        	
-                        	}
-                        	?>
+	                        	?>
+		                        </td>
+	                        </tr>
+                    
+							<tr>
+								<th>&nbsp;</th>
+								<td>
+							        <script type="text/javascript" charset="utf-8">
+							            var leaky_paywall_restriction_row_key = <?php echo $last_key; ?>;
+							        </script>
+									<p class="description"><?php _e( 'By default all content is allowed.', 'issuem-leaky-paywall' ); ?></p>
+			                    	<p>
+			                       		<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_leaky_paywall_restriction_row" value="<?php _e( 'Add New Restricted Content', 'issuem-leaky-paywall-multilevel' ); ?>" />
+			                    	</p>
+		                        </td>
+	                        </tr>
                             
                         </table>
-                    
-				        <script type="text/javascript" charset="utf-8">
-				            var leaky_paywall_restriction_row_key = <?php echo $last_key; ?>;
-				        </script>
-                    	
-                    	<p>
-                       		<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_leaky_paywall_restriction_row" value="<?php _e( 'Add New Restricted Content', 'issuem-leaky-paywall-multilevel' ); ?>" />
-                    	</p>
 
                         <p class="submit">
                             <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
@@ -1166,6 +1191,366 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                         
                         <div class="inside">
                     
+                        <table id="leaky_paywall_subscription_level_options" class="leaky-paywall-table">
+
+							<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
+                        	<?php 
+                        	$last_key = -1;
+                        	if ( !empty( $settings['levels'] ) ) {
+                        	
+	                        	foreach( $settings['levels'] as $key => $level ) {
+	                        	
+	                        		echo build_leaky_paywall_subscription_levels_row( $level, $key );
+	                        		$last_key = $key;
+	                        		
+	                        	} 
+	                        	
+                        	}
+                        	?>
+							</td></tr>
+
+                        </table>
+
+				        <script type="text/javascript" charset="utf-8">
+				            var leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;
+				        </script>
+                        
+                        <p>
+	                        <input class="button-secondary" id="add-subscription-row" class="add-new-issuem-leaky-paywall-subscription-row" type="submit" name="add_leaky_paywall_row" value="<?php _e( 'Add New Level', 'issuem-leaky-paywall-multilevel' ); ?>" />
+                        </p>
+
+                        <p class="submit">
+                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+
+                        </div>
+                        
+                    </div>
+                    
+                    
+                    <?php  do_action( 'leaky_paywall_settings_form', $settings ); ?>
+                    
+                </form>
+                
+            </div>
+            </div>
+            </div>
+			</div>
+			<?php
+			
+		}
+		
+		/**
+		 * Create and Display IssueM settings page
+		 *
+		 * @since 1.0.0
+		 */
+		function network_settings_page() {
+			
+			// Get the user options
+			$settings = $this->get_settings();
+			$settings_saved = false;
+
+			if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) ) {
+									
+				if ( !empty( $_REQUEST['test_mode'] ) )
+					$settings['test_mode'] = $_REQUEST['test_mode'];
+				else
+					$settings['test_mode'] = 'off';
+					
+				if ( !empty( $_REQUEST['payment_gateway'] ) )
+					$settings['payment_gateway'] = $_REQUEST['payment_gateway'];
+				else
+					$settings['payment_gateway'] = array( 'stripe' );
+					
+				if ( !empty( $_REQUEST['live_secret_key'] ) )
+					$settings['live_secret_key'] = trim( $_REQUEST['live_secret_key']);
+					
+				if ( !empty( $_REQUEST['live_publishable_key'] ) )
+					$settings['live_publishable_key'] = trim( $_REQUEST['live_publishable_key']);
+					
+				if ( !empty( $_REQUEST['test_secret_key'] ) )
+					$settings['test_secret_key'] = trim( $_REQUEST['test_secret_key']);
+					
+				if ( !empty( $_REQUEST['test_publishable_key'] ) )
+					$settings['test_publishable_key'] = trim( $_REQUEST['test_publishable_key'] );
+					
+				if ( !empty( $_REQUEST['paypal_live_email'] ) )
+					$settings['paypal_live_email'] = trim( $_REQUEST['paypal_live_email']);
+					
+				if ( !empty( $_REQUEST['paypal_live_api_username'] ) )
+					$settings['paypal_live_api_username'] = trim( $_REQUEST['paypal_live_api_username']);
+					
+				if ( !empty( $_REQUEST['paypal_live_api_password'] ) )
+					$settings['paypal_live_api_password'] = trim( $_REQUEST['paypal_live_api_password']);
+					
+				if ( !empty( $_REQUEST['paypal_live_api_secret'] ) )
+					$settings['paypal_live_api_secret'] = trim( $_REQUEST['paypal_live_api_secret']);
+					
+				if ( !empty( $_REQUEST['paypal_sand_email'] ) )
+					$settings['paypal_sand_email'] = trim( $_REQUEST['paypal_sand_email']);
+					
+				if ( !empty( $_REQUEST['paypal_sand_api_username'] ) )
+					$settings['paypal_sand_api_username'] = trim( $_REQUEST['paypal_sand_api_username']);
+					
+				if ( !empty( $_REQUEST['paypal_sand_api_password'] ) )
+					$settings['paypal_sand_api_password'] = trim( $_REQUEST['paypal_sand_api_password']);
+					
+				if ( !empty( $_REQUEST['paypal_sand_api_secret'] ) )
+					$settings['paypal_sand_api_secret'] = trim( $_REQUEST['paypal_sand_api_secret']);
+										
+				if ( !empty( $_REQUEST['levels'] ) ) {
+					$settings['levels'] = $_REQUEST['levels'];
+				} else {
+					$settings['levels'] = array();
+				}
+				
+				$this->update_settings( $settings );
+				$settings_saved = true;
+				
+				do_action( 'leaky_paywall_update_settings', $settings );
+				
+			}
+			
+			if ( $settings_saved ) {
+				
+				// update settings notification ?>
+				<div class="updated"><p><strong><?php _e( "zeen101's Leaky Paywall Settings Updated.", 'issuem-leaky-paywall' );?></strong></p></div>
+				<?php
+				
+			}
+			
+			// Display HTML form for the options below
+			?>
+			<div class=wrap>
+            <div style="width:70%;" class="postbox-container">
+            <div class="metabox-holder">	
+            <div class="meta-box-sortables ui-sortable">
+            
+                <form id="issuem" method="post" action="">
+            
+                    <h2 style='margin-bottom: 10px;' ><?php _e( "zeen101's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
+                                                            
+					<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+                    
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Leaky Paywall Options', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+
+						<h3><?php _e( 'These settings are set on each individual WordPress site.', 'issuem-leaky-paywall' ); ?></h3>                        
+
+                        </div>
+                        
+                    </div>
+                    
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Leaky Paywall Email Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+                        
+						<h3><?php _e( 'These settings are set on each individual WordPress site.', 'issuem-leaky-paywall' ); ?></h3>                        
+
+                        </div>
+                        
+                    </div>
+                                        
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+	                        
+						<h3><?php _e( 'These settings are the same settings as the primary WordPress Site.', 'issuem-leaky-paywall' ); ?></h3>                        
+                        
+                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table">
+                        
+                        	<tr>
+                                <th><?php _e( 'Enabled Gateways', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+									<p>
+										<input id="enable-stripe" type="checkbox" name="payment_gateway[]" value="stripe" <?php checked( in_array( 'stripe', $settings['payment_gateway'] ) ); ?> /> <label for="enable-stripe"><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></label>
+									</p>
+									<p>
+									<input id="enable-paypal-standard" type="checkbox" name="payment_gateway[]"  value='paypal_standard' <?php checked( in_array( 'paypal_standard', $settings['payment_gateway'] ) ); ?> /> <label for="enable-paypal-standard"><?php _e( 'PayPal Standard', 'issuem-leaky-paywall' ); ?></label>
+									</p>
+                                </td>
+                            </tr>
+                                                        
+                            <tr>
+                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
+                            </tr>
+                            
+                        </table>
+                        
+                        <?php
+                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
+                        ?>
+                        
+                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table">
+                        
+	                        <tr><td colspan="2"><h3><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Live Secret Key', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ); ?>" /></td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Live Publishable Key', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ); ?>" /></td>
+                            </tr>
+                            
+                            <tr>
+                            	<th><?php _e( 'Live Webhooks', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-stripe-live-webhook', '1', get_site_url() . '/' ); ?></p></td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Test Secret Key', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ); ?>" /></td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Test Publishable Key', 'issuem-leaky-paywall' ); ?></th>
+                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ); ?>" /></td>
+                            </tr>
+                            
+                            <tr>
+                            	<th><?php _e( 'Test Webhooks', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-stripe-test-webhook', '1', get_site_url() . '/' ); ?></p></td>
+                            </tr>
+                            
+                        </table>
+
+                    <?php } ?>
+                    
+                    <?php
+                    if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) { 
+                    ?>
+                                            
+                        <table id="leaky_paywall_paypal_options" class="leaky-paywall-table">
+                        
+	                        <tr><td colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
+                        
+                        	<tr>
+                                <th><?php _e( 'Merchant ID', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_email'] ) ); ?>" />
+                                	<p class="description"><?php _e( 'Use PayPal Email Address in lieu of Merchant ID', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
+                            </tr>
+                        
+                        	<tr>
+                                <th><?php _e( 'API Username', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_live_api_username" class="regular-text" name="paypal_live_api_username" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_api_username'] ) ); ?>" />
+                                	<p class="description"><?php _e( 'At PayPal, see: Profile &rarr; My Selling Tools &rarr; API Access &rarr; Update &rarr; View API Signature (or Request API Credentials).', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
+                            </tr>
+                        
+                        	<tr>
+                                <th><?php _e( 'API Password', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_live_api_password" class="regular-text" name="paypal_live_api_password" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_api_password'] ) ); ?>" />
+                                </td>
+                            </tr>
+                        
+                        	<tr>
+                                <th><?php _e( 'API Signature', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_live_api_secret" class="regular-text" name="paypal_live_api_secret" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_api_secret'] ) ); ?>" />
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                            	<th><?php _e( 'Live IPN', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-live-ipn', '1', get_site_url() . '/' ); ?></p></td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Sandbox Merchant ID', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_sand_email" class="regular-text" name="paypal_sand_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_email'] ) ); ?>" />
+                                	<p class="description"><?php _e( 'Use PayPal Sandbox Email Address in lieu of Merchant ID', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Sandbox API Username', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_sand_api_username" class="regular-text" name="paypal_sand_api_username" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_api_username'] ) ); ?>" />
+                                	<p class="description"><?php _e( 'At PayPal, see: Profile &rarr; My Selling Tools &rarr; API Access &rarr; Update &rarr; View API Signature (or Request API Credentials).', 'issuem-leaky-paywall' ); ?></p>
+                                </td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Sandbox API Password', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_sand_api_password" class="regular-text" name="paypal_sand_api_password" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_api_password'] ) ); ?>" />
+                                </td>
+                            </tr>
+                            
+                        	<tr>
+                                <th><?php _e( 'Sandbox API Signature', 'issuem-leaky-paywall' ); ?></th>
+                                <td>
+                                	<input type="text" id="paypal_sand_api_secret" class="regular-text" name="paypal_sand_api_secret" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_api_secret'] ) ); ?>" />
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                            	<th><?php _e( 'Sandbox IPN', 'issuem-leaky-paywall' ); ?></th>
+                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-test-ipn', '1', get_site_url() . '/' ); ?></p></td>
+                            </tr>
+                            
+                        </table>
+
+                    <?php } ?>
+                        
+                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+                                                  
+                        <p class="submit">
+                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+
+                        </div>
+                        
+                    </div>
+                    
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Content Restriction', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+                        
+						<h3><?php _e( 'These settings are set on each individual WordPress site.', 'issuem-leaky-paywall' ); ?></h3>                        
+                        
+                        </div>
+                        
+                    </div>
+                                        
+                    <div id="modules" class="postbox">
+                    
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        
+                        <h3 class="hndle"><span><?php _e( 'Subscription Levels', 'issuem-leaky-paywall' ); ?></span></h3>
+                        
+                        <div class="inside">
+	                        
+						<h3><?php _e( 'These settings are the same settings as the primary WordPress Site.', 'issuem-leaky-paywall' ); ?></h3>
+                        <p class="description"><?php printf( __( 'However you must use this shortcode on your Subscription page for each site: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_multisite_subscription]' ); ?></p>
+                                              
                         <table id="leaky_paywall_subscription_level_options" class="leaky-paywall-table">
 
 							<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
@@ -1249,7 +1634,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							$email = trim( rawurldecode( $_POST['leaky-paywall-subscriber-email'] ) );
 							$payment_gateway = trim( rawurldecode( $_POST['leaky-paywall-subscriber-payment-gateway'] ) );
 							$subscriber_id = trim( rawurldecode( $_POST['leaky-paywall-subscriber-id'] ) );
-							$unique_hash = leaky_paywall_hash( $email );
 							if ( empty( $_POST['leaky-paywall-subscriber-expires'] ) )
 								$expires = 0;
 							else 
@@ -1267,7 +1651,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								'plan'				=> '',
 							);
 							
-							$user_id = leaky_paywall_new_subscriber( $unique_hash, $email, $subscriber_id, $meta, $login );
+							$user_id = leaky_paywall_new_subscriber( $email, $subscriber_id, $meta, $login );
 							
 							do_action( 'add_leaky_paywall_subscriber', $user_id );
 							
@@ -1400,8 +1784,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								else 
 									$price = trim( $import[$keys['price']] );
 								
-								$unique_hash = leaky_paywall_hash( $email );
-								
 								if ( empty( $import[$keys['expires']] ) )
 									$expires = 0;
 								else 
@@ -1429,12 +1811,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									'plan'				=> '',
 								);
 								
-								$user_id = leaky_paywall_new_subscriber( $unique_hash, $email, '', $meta, $login );
+								$user_id = leaky_paywall_new_subscriber( $email, '', $meta, $login );
 								
 								if ( !empty( $user_id ) )
 									do_action( 'bulk_add_leaky_paywall_subscriber', $user_id, $keys, $import );
 								else
-									do_action( 'bulk_add_leaky_paywall_subscriber_failed', $keys, $import, $unique_hash, $email, $meta, $login );
+									do_action( 'bulk_add_leaky_paywall_subscriber_failed', $keys, $import, $email, $meta, $login );
 								
 							}
 							
@@ -1711,7 +2093,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                //now we want to set the Leaky Paywall subscriber meta
 	                $meta = array(
 	                	'level_id'			=> 0,
-	                	'hash' 				=> $subscriber->hash,
 	                	'subscriber_id' 	=> $subscriber->subscriber_id,
 	                	'price' 			=> $subscriber->price,
 	                	'description' 		=> $subscriber->description,
