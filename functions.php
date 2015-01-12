@@ -1049,7 +1049,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 	}
 }
 
-if ( !function_exists( 'leaky_paywall_susbscriber_current_level_id' ) ) {
+if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 	
 	/**
 	 * Returns current user's subscription restrictions
@@ -1058,7 +1058,7 @@ if ( !function_exists( 'leaky_paywall_susbscriber_current_level_id' ) ) {
 	 *
 	 * @return array subscriber's subscription restrictions
 	 */
-	function leaky_paywall_susbscriber_current_level_id() {
+	function leaky_paywall_subscriber_current_level_id() {
 	
 		if ( leaky_paywall_has_user_paid() ) {
 			
@@ -1441,10 +1441,17 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type_ajax' ) )
 	 */
 	function build_leaky_paywall_subscription_row_post_type_ajax() {
 	
-		if ( isset( $_REQUEST['select-post-key'] ) && isset( $_REQUEST['row-key'] ) )
+		if ( isset( $_REQUEST['select-post-key'] ) && isset( $_REQUEST['row-key'] ) ) {
+			
+			if ( is_multisite() && preg_match( '#^' . network_admin_url() . '#i', $_SERVER['HTTP_REFERER'] ) ) {
+				if ( !defined( 'WP_NETWORK_ADMIN' ) ) {
+					define( 'WP_NETWORK_ADMIN', true );
+				}
+			}
+			
 			die( build_leaky_paywall_subscription_row_post_type( array(), $_REQUEST['select-post-key'], $_REQUEST['row-key'] ) );
-		else
-			die();
+		}
+		die();
 	}
 	add_action( 'wp_ajax_issuem-leaky-paywall-add-new-subscription-row-post-type', 'build_leaky_paywall_subscription_row_post_type_ajax' );
 	
@@ -2018,7 +2025,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 	function leaky_paywall_subscription_options() {
 		
 		$settings = get_leaky_paywall_settings();
-		$current_level_id = leaky_paywall_susbscriber_current_level_id();
+		$current_level_id = leaky_paywall_subscriber_current_level_id();
 
 		$results = apply_filters( 'leaky_paywall_subscription_options', '' );
 		//If someone wants to completely override this, they can with the above filter
