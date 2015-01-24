@@ -1635,7 +1635,8 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array );
 			
 				if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && !empty( $level['plan_id'] ) ) {
-					
+				
+					$customer_array['plan'] = $level['plan_id'];
 					if ( !empty( $cu ) ) {
 						$subscriptions = $cu->subscriptions->all( 'limit=1' );
 						
@@ -1650,16 +1651,16 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 						}
 						
 					} else {
-						$customer_array['plan'] = $level['plan_id'];
 						$cu = Stripe_Customer::create( $customer_array );
 					}
 					
 				} else {
 					
-					if ( empty( $cu ) )
+					if ( empty( $cu ) ) {
 						$cu = Stripe_Customer::create( $customer_array );
-					else
+					} else {
 						$cu->cards->create( array( 'card' => $token ) );
+					}
 					
 					$charge_array['customer'] 	 = $cu->id;
 					$charge_array['amount']      = $amount;
@@ -1685,11 +1686,11 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				);
 					
 				if ( !empty( $existing_customer ) ) {
-					leaky_paywall_update_subscriber( $_POST['stripeEmail'], $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
+					$value = leaky_paywall_update_subscriber( $_POST['stripeEmail'], $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 				} else {
-					leaky_paywall_new_subscriber( $_POST['stripeEmail'], $customer_id, $args );
+					$value = leaky_paywall_new_subscriber( $_POST['stripeEmail'], $customer_id, $args );
 				}
-
+				
 				return true;
 				
 			} catch ( Exception $e ) {

@@ -280,9 +280,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 	 */
 	function do_leaky_paywall_profile( $atts ) {
 		
-		global $lew;
-		$lew = true;
-		
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
@@ -304,9 +301,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			
 			//Your Subscription
 			$results .= '<h2>' . __( 'Your Subscription', 'issuem-leaky-paywall' ) . '</h2>';
-			
-			$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
-			
+
+			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
+						
 			$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
 			
 			$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
@@ -343,6 +340,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			$results .= '	<td>' . $expires . '</td>';
 			$results .= '</tbody>';
 			$results .= '</table>';
+			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_end', '' );
 			
 			//Your Mobile Devices
 			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
@@ -352,8 +350,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					
 				$results .= '<h2>' . __( 'Your Mobile Devices', 'issuem-leaky-paywall' ) . '</h2>';
 				$results .= '<p>' . __( 'To generate a token for the mobile app, click the "Add New Mobile Device" button below.', 'issuem-leaky-paywall' ) . '</p>';
-				
+				$results .= apply_filters( 'leaky_paywall_profile_your_mobile_devices_start', '' );
 				$results .= $unipress_api->leaky_paywall_subscriber_info_paid_subscriber_end( '' );
+				$results .= apply_filters( 'leaky_paywall_profile_your_mobile_devices_end', '' );
 				
 			}
 			
@@ -413,11 +412,12 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				}
 				
 			}
+			$results .= apply_filters( 'leaky_paywall_profile_your_profile_start', '' );
 			$results .= '<form id="leaky-paywall-profile" action="" method="post">';
 			
 			$results .= '<p>';
 			$results .= '<label class="lp-field-label" for="leaky-paywall-username">' . __( 'Username', 'issuem-leaky-paywall' ) . '</label>';
-			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . $user->user_login . '" />';
+			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . $user->user_login . '" disabled="disabled" readonly="readonly" />';
 			$results .= '</p>';
 			
 			$results .= '<p>';
@@ -443,8 +443,153 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			
 			$results .= wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true, false );
 			
-			$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="Update Profile Information"  /></p>'; 
+			$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Update Profile Information', 'issuem-leaky-paywall' ) . '"  /></p>'; 
 			$results .= '</form>';
+			$results .= apply_filters( 'leaky_paywall_profile_your_profile_end', '' );
+			
+			//Your Payment Information
+			$results .= '<h2>' . __( 'Your Payment Information', 'issuem-leaky-paywall' ) . '</h2>';
+			if ( !empty( $_POST['leaky-paywall-profile-stripe-cc-update-nonce'] ) ) {
+				
+				if ( wp_verify_nonce( $_POST['leaky-paywall-profile-stripe-cc-update-nonce'], 'leaky-paywall-profile-stripe-cc-update' ) ) {
+					
+					try {
+						
+						$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
+						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true );
+														
+						$cu = Stripe_Customer::retrieve( $subscriber_id );
+						if ( !empty( $cu ) )
+							if ( true === $cu->deleted )
+								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
+								
+						if ( empty( $_POST['stripe-cc-number'] ) ) {
+							throw new Exception( __( 'Credit Card Number Required', 'issuem-leaky-paywall' ) );
+						}	
+						if ( empty( $_POST['stripe-cc-exp-month'] ) ) {
+							throw new Exception( __( 'Credit Card Expiration Month Required', 'issuem-leaky-paywall' ) );
+						}	
+						if ( empty( $_POST['stripe-cc-exp-year'] ) ) {
+							throw new Exception( __( 'Credit Card Expiration Year Required', 'issuem-leaky-paywall' ) );
+						}	
+						if ( empty( $_POST['stripe-cc-cvc'] ) ) {
+							throw new Exception( __( 'Credit Card Security Code (CVC) Required', 'issuem-leaky-paywall' ) );
+						}	
+						if ( empty( $_POST['stripe-cc-name'] ) ) {
+							throw new Exception( __( "Credit Card Cardholder's Name Required", 'issuem-leaky-paywall' ) );
+						}
+														
+						$subscriptions = $cu->subscriptions->all( 'limit=1' );
+
+						foreach( $subscriptions->data as $susbcription ) {
+							$sub = $cu->subscriptions->retrieve( $susbcription->id );
+							$sub->card = array(
+								'number' 	=> $_POST['stripe-cc-number'],
+								'exp_month' => $_POST['stripe-cc-exp-month'],
+								'exp_year' 	=> $_POST['stripe-cc-exp-year'],
+								'cvc' 		=> $_POST['stripe-cc-cvc'],
+								'name' 		=> $_POST['stripe-cc-name'],
+							);
+							$sub->save();
+						}
+						
+						$results .= '<p>' . __( 'Your credit card has been successfully updated.', 'issuem-leaky-paywall' ) . '</p>';
+						
+					} catch ( Exception $e ) {
+					
+						$results = '<h1>' . sprintf( __( 'Error updating Credit Card information: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
+						
+					}
+					
+				}
+				
+			}
+			$results .= apply_filters( 'leaky_paywall_profile_your_payment_info_start', '' );
+			
+			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
+						
+			if ( false !== $expires = leaky_paywall_has_user_paid() ) {
+						
+				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
+				
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				
+				switch( $expires ) {
+				
+					case 'subscription':
+						$results .= '<p>';
+						$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
+						$results .= '</p>';
+						break;
+						
+					case 'unlimited':
+						$results .= '<p>';
+						$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
+						$results .= '</p>';
+						break;
+				
+					case 'canceled':
+						$results .= '<p>';
+						$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
+						$results .= '</p>';
+						break;
+						
+					default:
+						$results .= '<p>';
+						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+						$results .= '</p>';
+						
+				}
+				
+				if ( 'subscription' === $expires ) {
+					switch( $payment_gateway ) {
+						
+						case 'stripe':
+							$results .= '<h3>' . __( 'Update Credit Card', 'issuem-leaky-paywall' ) . '</h3>';
+							$results .= '<form id="leaky-paywall-update-credit-card" action="" method="post">';
+							
+							$results .= '<p>';
+							$results .= '<label class="lp-field-label" for="leaky-paywall-cc-number">' . __( 'Card Number', 'issuem-leaky-paywall' ) . '</label>';
+							$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-number" name="stripe-cc-number" value="" placeholder="4242 4242 4242 4242" />';
+							$results .= '</p>';
+	
+							$results .= '<p>';
+							$results .= '<label class="lp-field-label" for="leaky-paywall-cc-expiration">' . __( 'Expiration Date', 'issuem-leaky-paywall' ) . '</label>';
+							$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-exp-month" name="stripe-cc-exp-month" value="" placeholder="' . date_i18n( 'm', strtotime( '+1 Month' ) ) . '" />';
+							$results .= '&nbsp;/&nbsp;';
+							$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-exp-year" name="stripe-cc-exp-year" value="" placeholder="' . date_i18n( 'Y', strtotime( '+1 Year' ) ) . '" />';
+							$results .= '</p>';
+	
+							$results .= '<p>';
+							$results .= '<label class="lp-field-label" for="leaky-paywall-cc-cvc">' . __( 'Security Code (CVC)', 'issuem-leaky-paywall' ) . '</label>';
+							$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-cvc" name="stripe-cc-cvc" value="" placeholder="777" />';
+							$results .= '</p>';
+	
+							$results .= '<p>';
+							$results .= '<label class="lp-field-label" for="leaky-paywall-cc-name">' . __( "Cardholder's Name", 'issuem-leaky-paywall' ) . '</label>';
+							$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-name" name="stripe-cc-name" value="" placeholder="John Doe" />';
+							$results .= '</p>';
+	
+							
+							$results .= wp_nonce_field( 'leaky-paywall-profile-stripe-cc-update', 'leaky-paywall-profile-stripe-cc-update-nonce', true, false );
+							
+							$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Update Credit Card Information', 'issuem-leaky-paywall' ) . '"  /></p>'; 
+							$results .= '</form>';
+							break;
+							
+						case 'paypal-standard':
+						default:
+							$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
+							$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+							$results .= '<p>' . __( "You can update your payment details through PayPal's website.", 'issuem-leaky-paywall' ) . '</p>';
+							$results .= '<p><a href="' . $paypal_url . '"><img src="https://www.paypalobjects.com/webstatic/en_US/btn/btn_pponly_142x27.png" border="0"></a></p>';
+							break;
+					}
+				}
+				
+			}
+			$results .= apply_filters( 'leaky_paywall_profile_your_payment_info_end', '' );
 			
 		} else {
 			

@@ -124,7 +124,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					'back_link' => true,
 				);		
 				wp_die( $response, '', $args );
-				
 			}
 			
 			if ( leaky_paywall_maybe_process_webhooks() )
