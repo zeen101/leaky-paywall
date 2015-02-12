@@ -1661,10 +1661,12 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 					} else {
 						$cu->cards->create( array( 'card' => $token ) );
 					}
-					
+
+					$currency = $settings['leaky_paywall_currency'];
+
 					$charge_array['customer'] 	 = $cu->id;
 					$charge_array['amount']      = $amount;
-					$charge_array['currency']    = apply_filters( 'leaky_paywall_stripe_currency', 'usd' );
+					$charge_array['currency']    = apply_filters( 'leaky_paywall_stripe_currency', $currency );
 					$charge_array['description'] = $level['label'];
 					
 					$charge = Stripe_Charge::create( $charge_array );
