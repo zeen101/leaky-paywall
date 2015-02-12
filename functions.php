@@ -2290,6 +2290,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_paypal_standard' ) ) {
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		$paypal_sandbox = 'off' === $settings['test_mode'] ? '' : 'sandbox';
 		$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+		$currency = $settings['leaky_paywall_currency'];
 		$current_user = wp_get_current_user();
 		if ( 0 !== $current_user->ID ) {
 			$user_email = $current_user->user_email;
@@ -2306,7 +2307,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_paypal_standard' ) ) {
 							data-src="1" 
 							data-period="' . esc_js( strtoupper( substr( $level['interval'], 0, 1 ) ) ) . '" 
 							data-recurrence="' . esc_js( $level['interval_count'] ) . '" 
-							data-currency="' . esc_js( apply_filters( 'leaky_paywall_paypal_currency', 'USD' ) ) . '" 
+							data-currency="' . esc_js( apply_filters( 'leaky_paywall_paypal_currency', $currency ) ) . '" 
 							data-amount="' . esc_js( $level['price'] ) . '" 
 							data-name="' . esc_js( $level['label'] ) . '" 
 							data-number="' . esc_js( $level_id ) . '"
@@ -2325,7 +2326,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_paypal_standard' ) ) {
 							data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" 
 							data-tax="0" 
 							data-shipping="0" 
-							data-currency="' . esc_js( apply_filters( 'leaky_paywall_paypal_currency', 'USD' ) ) . '" 
+							data-currency="' . esc_js( apply_filters( 'leaky_paywall_paypal_currency', $currency ) ) . '" 
 							data-amount="' . esc_js( $level['price'] ) . '" 
 							data-quantity="1" 
 							data-name="' . esc_js( $level['label'] ) . '" 
