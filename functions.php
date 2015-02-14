@@ -223,53 +223,59 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			}
 		}
 		
-		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );;
+		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
 		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
 		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
 		$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true );
 		$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
 						
 		if ( 'stripe' === $payment_gateway ) {
-					
-			$cu = Stripe_Customer::retrieve( $subscriber_id );
-
-			if ( !empty( $cu ) )
-				if ( !empty( $cu->deleted ) && true === $cu->deleted )
-					return false;
 			
-			if ( !empty( $plan ) ) {
-							
-				if ( isset( $cu->subscriptions ) ) {
-							
-					$subscriptions = $cu->subscriptions->all( 'limit=1' );
-
-					foreach( $subscriptions->data as $susbcription ) {
-						if ( 'active' === $susbcription->status )
-							return 'subscription';
+			try {
+				$cu = Stripe_Customer::retrieve( $subscriber_id );
+	
+				if ( !empty( $cu ) )
+					if ( !empty( $cu->deleted ) && true === $cu->deleted )
+						return false;
+				
+				if ( !empty( $plan ) ) {
+								
+					if ( isset( $cu->subscriptions ) ) {
+								
+						$subscriptions = $cu->subscriptions->all( 'limit=1' );
+	
+						foreach( $subscriptions->data as $susbcription ) {
+							if ( 'active' === $susbcription->status )
+								return 'subscription';
+						}
+				
 					}
-			
+					
+					return false;
+					
 				}
 				
-				return false;
+				$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
+										
+				if ( '0000-00-00 00:00:00' !== $expires ) {
+					
+					if ( strtotime( $expires ) > time() )
+						if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
+							return $expires;
+					else
+						return false;
+							
+				} else {
+				
+					return 'unlimited';
+					
+				}
+			} catch ( Exception $e ) {
+			
+				$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
 				
 			}
 			
-			$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
-									
-			if ( '0000-00-00 00:00:00' !== $expires ) {
-				
-				if ( strtotime( $expires ) > time() )
-					if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
-						return $expires;
-				else
-					return false;
-						
-			} else {
-			
-				return 'unlimited';
-				
-			}
-		
 		} else if ( 'paypal_standard' === $payment_gateway ) {
 			
 			if ( '0000-00-00 00:00:00' === $expires )
@@ -432,7 +438,7 @@ if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
 						break;
 					
 					case 'customer.subscription.updated' :
-						$expires = date( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
+						$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
 						update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', $expires );
 						break;
 						
@@ -524,7 +530,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						
 						if ( isset( $_REQUEST['period3'] ) ) {
 							$args['plan'] = $_REQUEST['period3'];
-							$new_expiration = date( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $args['plan'] ), strtotime( $_REQUEST['subscr_date'] ) ) );
+							$new_expiration = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $args['plan'] ), strtotime( $_REQUEST['subscr_date'] ) ) );
 							$args['expires'] = $new_expiration;
 						}
 						
@@ -553,11 +559,11 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 							&& ( $plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true ) )
 							&& 'completed' === strtolower( $_REQUEST['payment_status'] ) ) {
 							$args['plan'] = $plan;
-							$new_expiration = date( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ), strtotime( $_REQUEST['payment_date'] ) ) );
+							$new_expiration = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ), strtotime( $_REQUEST['payment_date'] ) ) );
 							$args['expires'] = $new_expiration;
 						} else {
 							$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
-							$new_expiration = date( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $args['plan'] ), strtotime( $_REQUEST['payment_date'] ) ) );
+							$new_expiration = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $args['plan'] ), strtotime( $_REQUEST['payment_date'] ) ) );
 							$args['expires'] = $new_expiration;
 						}
 						break;
@@ -696,7 +702,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			if ( !empty( $user_id ) ) {
 								
 				if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
-					$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
+					$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
 				} else if ( !empty( $meta_args['expires'] ) ) {
 					$expires = $meta_args['expires'];
 				}
@@ -767,7 +773,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			}
 			
 			if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
-				$expires = date( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
+				$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
 			} else if ( !empty( $meta_args['expires'] ) ) {
 				$expires = $meta_args['expires'];
 			}
@@ -1407,7 +1413,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
         }
 		$return .= '</select>';
 		
-		if ( ( function_exists( 'is_network_admin' ) && is_network_admin() ) ) {
+		if ( is_network_admin() ) {
 			
 			$return .= '&nbsp;' . __( 'on', 'issuem-leaky-paywall' ) . '&nbsp;';
 			$return .= '<select class="select_level_site" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][site]">';
