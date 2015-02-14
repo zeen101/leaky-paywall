@@ -712,10 +712,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					$settings['restrict_pdf_downloads'] = 'off';
 					
 				if ( !empty( $_REQUEST['subscribe_login_message'] ) )
-					$settings['subscribe_login_message'] = trim( $_REQUEST['subscribe_login_message']);
+					$settings['subscribe_login_message'] = trim( $_REQUEST['subscribe_login_message'] );
 					
 				if ( !empty( $_REQUEST['subscribe_upgrade_message'] ) )
-					$settings['subscribe_upgrade_message'] = trim( $_REQUEST['subscribe_upgrade_message']);
+					$settings['subscribe_upgrade_message'] = trim( $_REQUEST['subscribe_upgrade_message'] );
 					
 				if ( !empty( $_REQUEST['css_style'] ) )
 					$settings['css_style'] = $_REQUEST['css_style'];
@@ -731,40 +731,40 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					$settings['payment_gateway'] = array( 'stripe' );
 					
 				if ( !empty( $_REQUEST['live_secret_key'] ) )
-					$settings['live_secret_key'] = trim( $_REQUEST['live_secret_key']);
+					$settings['live_secret_key'] = apply_filters( 'zeen101_demo_stripe_live_secret_key', trim( $_REQUEST['live_secret_key'] ) );
 					
 				if ( !empty( $_REQUEST['live_publishable_key'] ) )
-					$settings['live_publishable_key'] = trim( $_REQUEST['live_publishable_key']);
+					$settings['live_publishable_key'] = apply_filters( 'zeen101_demo_stripe_live_publishable_key', trim( $_REQUEST['live_publishable_key'] ) );
 					
 				if ( !empty( $_REQUEST['test_secret_key'] ) )
-					$settings['test_secret_key'] = trim( $_REQUEST['test_secret_key']);
+					$settings['test_secret_key'] = apply_filters( 'zeen101_demo_stripe_test_secret_key', trim( $_REQUEST['test_secret_key'] ) );
 					
 				if ( !empty( $_REQUEST['test_publishable_key'] ) )
-					$settings['test_publishable_key'] = trim( $_REQUEST['test_publishable_key'] );
+					$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', trim( $_REQUEST['test_publishable_key'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_live_email'] ) )
-					$settings['paypal_live_email'] = trim( $_REQUEST['paypal_live_email']);
+					$settings['paypal_live_email'] = trim( $_REQUEST['paypal_live_email'] );
 					
 				if ( !empty( $_REQUEST['paypal_live_api_username'] ) )
-					$settings['paypal_live_api_username'] = trim( $_REQUEST['paypal_live_api_username']);
+					$settings['paypal_live_api_username'] = trim( $_REQUEST['paypal_live_api_username'] );
 					
 				if ( !empty( $_REQUEST['paypal_live_api_password'] ) )
-					$settings['paypal_live_api_password'] = trim( $_REQUEST['paypal_live_api_password']);
+					$settings['paypal_live_api_password'] = trim( $_REQUEST['paypal_live_api_password'] );
 					
 				if ( !empty( $_REQUEST['paypal_live_api_secret'] ) )
-					$settings['paypal_live_api_secret'] = trim( $_REQUEST['paypal_live_api_secret']);
+					$settings['paypal_live_api_secret'] = trim( $_REQUEST['paypal_live_api_secret'] );
 					
 				if ( !empty( $_REQUEST['paypal_sand_email'] ) )
-					$settings['paypal_sand_email'] = trim( $_REQUEST['paypal_sand_email']);
+					$settings['paypal_sand_email'] = trim( $_REQUEST['paypal_sand_email'] );
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_username'] ) )
-					$settings['paypal_sand_api_username'] = trim( $_REQUEST['paypal_sand_api_username']);
+					$settings['paypal_sand_api_username'] = trim( $_REQUEST['paypal_sand_api_username'] );
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_password'] ) )
-					$settings['paypal_sand_api_password'] = trim( $_REQUEST['paypal_sand_api_password']);
+					$settings['paypal_sand_api_password'] = trim( $_REQUEST['paypal_sand_api_password'] );
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_secret'] ) )
-					$settings['paypal_sand_api_secret'] = trim( $_REQUEST['paypal_sand_api_secret']);
+					$settings['paypal_sand_api_secret'] = trim( $_REQUEST['paypal_sand_api_secret'] );
 					
 				if ( !empty( $_REQUEST['restrictions'] ) )
 					$settings['restrictions'] = $_REQUEST['restrictions'];
@@ -1013,12 +1013,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Secret Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo apply_filters( 'zeen101_demo_live_secret_key', htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ) ); ?>" /></td>
+	                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Publishable Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo apply_filters( 'zeen101_demo_live_publishable_key', htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ) ); ?>" /></td>
+	                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                            <tr>
@@ -1028,12 +1028,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Test Secret Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo apply_filters( 'zeen101_demo_test_secret_key', htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ) ); ?>" /></td>
+	                                <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Test Publishable Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo apply_filters( 'zeen101_demo_test_publishable_key', htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ) ); ?>" /></td>
+	                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                            <tr>
