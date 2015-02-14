@@ -49,7 +49,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 					
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-			add_action( 'network_admin_menu', array( $this, 'admin_menu' ) );
+			//add_action( 'network_admin_menu', array( $this, 'admin_menu' ) );
 
 			//Premium Plugin Filters
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
@@ -402,7 +402,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		
 		function human_readable_interval( $interval_count, $interval ) {
 			
-			if ( 0 == $interval_count )
+			if ( 0 >= $interval_count )
 				return __( 'for life', 'issuem-leaky-paywall' );
 		
 			if ( 1 < $interval_count )
@@ -621,16 +621,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						),
 					)
 				),
-				'multisite' => false,
+				'multisite_gateway_settings' 				=> false,
+				'multisite_content_restriction_settings' 	=> false,
+				'multisite_subscription_settings' 			=> false,
 			);
 		
 			$defaults = apply_filters( 'leaky_paywall_default_settings', $defaults );
-			
-			//if ( $settings['multisite'] ) { 
-			//	$settings = get_option( 'issuem-leaky-paywall' );
-			//} else {
-				$settings = get_site_option( 'issuem-leaky-paywall' );
-			//}
+			$settings = get_option( 'issuem-leaky-paywall' );
 
 			return wp_parse_args( $settings, $defaults );
 			
@@ -642,11 +639,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		 * @since 1.0.0
 		 */
 		function update_settings( $settings ) {
-			//if ( $settings['multisite'] ) { 
-			//	update_option( 'issuem-leaky-paywall', $settings );
-			//} else {
-				update_site_option( 'issuem-leaky-paywall', $settings );
-			//}
+			update_option( 'issuem-leaky-paywall', $settings );
 		}
 		
 		/**
@@ -662,10 +655,20 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 			if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) ) {
 					
-				if ( !empty( $_REQUEST['multisite'] ) )
-					$settings['multisite'] = true;
+				if ( !empty( $_REQUEST['multisite_gateway_settings'] ) )
+					$settings['multisite_gateway_settings'] = true;
 				else
-					$settings['multisite'] = false;
+					$settings['multisite_gateway_settings'] = false;
+					
+				if ( !empty( $_REQUEST['multisite_content_restriction_settings'] ) )
+					$settings['multisite_content_restriction_settings'] = true;
+				else
+					$settings['multisite_content_restriction_settings'] = false;
+					
+				if ( !empty( $_REQUEST['multisite_subscription_settings'] ) )
+					$settings['multisite_subscription_settings'] = true;
+				else
+					$settings['multisite_subscription_settings'] = false;
 					
 				if ( !empty( $_REQUEST['license_key'] ) )
 					$settings['license_key'] = $_REQUEST['license_key'];
@@ -799,41 +802,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                 <form id="issuem" method="post" action="">
             
                     <h2 style='margin-bottom: 10px;' ><?php _e( "zeen101's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
-
-                    <?php if ( is_super_admin() && is_multisite() ) { ?>
-                		
-	                    <div id="multisite-options" class="postbox">
-	                    
-	                        <div class="handlediv" title="Click to toggle"><br /></div>
-	                        
-	                        <h3 class="hndle"><span><?php _e( 'Multisite Options', 'issuem-leaky-paywall' ); ?></span></h3>
-	                        
-	                        <div class="inside">
-	                        
-	                        <table id="issuem_license_key" class="leaky-paywall-table">
-	                        	<tr>
-	                                <th><?php _e( 'Enabled Multisite Options', 'issuem-leaky-paywall' ); ?></th>
-	                                <td>
-										<p>
-											<input id="enable-multisite-options" type="checkbox" name="multisite" <?php checked( $settings['multisite'] ); ?> />
-										</p>
-										<p class="description">
-											<?php printf( __( 'Doing this will require you to setup your Leaky Paywall settings in the <a href="%s">Network Admin</a>', 'issuem-leaky-paywall' ), network_admin_url() ); ?>
-										</p>
-	                                </td>
-	                            </tr>
-	                        </table>
-	                                                                                                         
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
-	                        
-	                        </div>
-	                        
-	                    </div>
-	                    
-                    <?php } ?>
-                                		
+  		
 						<div id="license-key" class="postbox">
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
@@ -981,7 +950,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                    </div>
 	                                        
-	                    <div id="modules" class="postbox">
+	                    <div id="modules" class="postbox leaky-paywall-gateway-settings">
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
@@ -989,9 +958,33 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table">
-	                        
-	                        	<tr>
+	                        <table id="leaky_paywall_gateway_options" class="leaky-paywall-table">
+				                        
+			                    <?php if ( is_super_admin() && is_multisite() && false ) { ?>
+			        		
+			                    	<tr>
+			                            <th><label for="enable-multisite-gateway-settings"><?php _e( 'Enable Multisite', 'issuem-leaky-paywall' ); ?></label></th>
+			                            <td>
+											<p>
+												<input id="enable-multisite-gateway-settings" type="checkbox" name="multisite_gateway_settings" <?php checked( $settings['multisite_gateway_settings'] ); ?> />
+											</p>
+											<p class="description">
+												<?php printf( __( 'Doing this will require you to setup these settings in the <a href="%s">Network Admin</a>', 'issuem-leaky-paywall' ), network_admin_url() ); ?>
+											</p>
+			                            </td>
+			                        </tr>
+			                
+			                    <?php } ?>
+
+								<?php 
+								if ( $settings['multisite_gateway_settings'] && !is_network_admin() ) {
+									$hidden = 'leaky_paywall_hidden';
+								} else {
+									$hidden = '';
+								}
+								?>
+								
+	                        	<tr class="single-site-gateway-options <?php echo $hidden; ?>">
 	                                <th><?php _e( 'Enabled Gateways', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
 										<p>
@@ -1003,7 +996,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                </td>
 	                            </tr>
 	                                                        
-	                            <tr>
+	                            <tr class="single-site-gateway-options <?php echo $hidden; ?>">
 	                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
 	                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
 	                            </tr>
@@ -1014,7 +1007,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
 	                        ?>
 	                        
-	                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table">
+	                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table single-site-gateway-options <?php echo $hidden; ?>">
 	                        
 		                        <tr><td colspan="2"><h3><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
 	                            
@@ -1056,7 +1049,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) { 
 	                    ?>
 	                                            
-	                        <table id="leaky_paywall_paypal_options" class="leaky-paywall-table">
+	                        <table id="leaky_paywall_paypal_options" class="leaky-paywall-table single-site-gateway-options <?php echo $hidden; ?>">
 	                        
 		                        <tr><td colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
 	                        
@@ -1184,7 +1177,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                    <?php // end currency options ?>
 	                    
-	                    <div id="modules" class="postbox">
+	                    <div id="modules" class="postbox leaky-paywall-restriction-settings">
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
@@ -1193,8 +1186,32 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <div class="inside">
 	                        
 	                        <table id="leaky_paywall_default_restriction_options" class="leaky-paywall-table">
-	                        	                            
-	                        	<tr>
+	                        	     
+			                    <?php if ( is_super_admin() && is_multisite() && false ) { ?>
+			        		
+			                    	<tr>
+			                            <th><label for="enable-multisite-content-restriction"><?php _e( 'Enable Multisite', 'issuem-leaky-paywall' ); ?></label></th>
+			                            <td>
+											<p>
+												<input id="enable-multisite-content-restriction" type="checkbox" name="multisite_content_restriction_settings" <?php checked( $settings['multisite_content_restriction_settings'] ); ?> />
+											</p>
+											<p class="description">
+												<?php printf( __( 'Doing this will require you to setup these settings in the <a href="%s">Network Admin</a>', 'issuem-leaky-paywall' ), network_admin_url() ); ?>
+											</p>
+			                            </td>
+			                        </tr>
+			                
+			                    <?php } ?>
+
+								<?php 
+								if ( $settings['multisite_content_restriction_settings'] && !is_network_admin() ) {
+									$hidden = 'leaky_paywall_hidden';
+								} else {
+									$hidden = '';
+								}
+								?>
+								                       
+	                        	<tr class="single-site-restriction-options <?php echo $hidden; ?>">
 	                                <th><?php _e( 'Limited Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
 	                                	<input type="text" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo stripcslashes( $settings['cookie_expiration'] ); ?>" /> 
@@ -1209,12 +1226,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                </td>
 	                            </tr>
 	                            
-	                        	<tr>
+	                        	<tr class="single-site-restriction-options <?php echo $hidden; ?>">
 	                                <th><?php _e( 'Restrict PDF Downloads?', 'issuem-leaky-paywall' ); ?></th>
 	                                <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
 	                            </tr>
 	                            
-								<tr>
+	                        	<tr class="single-site-restriction-options <?php echo $hidden; ?>">
 									<th>
 										<label for="restriction-post-type-' . $row_key . '"><?php _e( 'Restrictions', 'issuem-leaky-paywall' ); ?></label>
 									</th>
@@ -1235,7 +1252,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                        </td>
 		                        </tr>
 	                    
-								<tr>
+	                        	<tr class="single-site-restriction-options <?php echo $hidden; ?>">
 									<th>&nbsp;</th>
 									<td>
 								        <script type="text/javascript" charset="utf-8">
@@ -1258,19 +1275,39 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                    </div>
 	                                        
-	                    <div id="modules" class="postbox">
+	                    <div id="modules" class="postbox leaky-paywall-subscription-settings">
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
 	                        <h3 class="hndle"><span><?php _e( 'Subscription Levels', 'issuem-leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
-		                        
-							<?php if ( is_multisite() ) { ?>
-								<p class="description"><?php sprintf( _e( 'To setup subscription levels across sites, please go to the <a href="%s">Network Admin page</a>', 'issuem-leaky-paywall' ), network_admin_url() ); ?></p>
-							<?php } ?>
-	                    
-	                        <table id="leaky_paywall_subscription_level_options" class="leaky-paywall-table">
+	                        
+		                    <?php if ( is_super_admin() && is_multisite() && false ) { ?>
+	                        <table id="leaky_paywall_multisite_subscription_level_options" class="leaky-paywall-table">
+		                    	<tr>
+		                            <th><label for="enable-multisite-subscription-settings"><?php _e( 'Span subscription options across all sites.', 'issuem-leaky-paywall' ); ?></label></th>
+		                            <td>
+										<p>
+											<input id="enable-multisite-subscription-settings" type="checkbox" name="multisite_subscription_settings" <?php checked( $settings['multisite_subscription_settings'] ); ?> />
+										</p>
+										<p class="description">
+											<?php printf( __( 'Doing this will require you to setup these settings in the <a href="%s">Network Admin</a>', 'issuem-leaky-paywall' ), network_admin_url() ); ?>
+										</p>
+		                            </td>
+		                        </tr>
+	                        </table>
+		                    <?php } ?>
+		                    
+							<?php 
+							if ( $settings['multisite_subscription_settings'] && !is_network_admin() ) {
+								$hidden = 'leaky_paywall_hidden';
+							} else {
+								$hidden = '';
+							}
+							?>
+
+	                        <table id="leaky_paywall_subscription_level_options" class="leaky-paywall-table single-site-subscription-options <?php echo $hidden; ?>">
 	
 								<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
 	                        	<?php 
@@ -1294,7 +1331,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					            var leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;
 					        </script>
 	                        
-	                        <p>
+	                        <p class="single-site-subscription-options <?php echo $hidden; ?>">
 		                        <input class="button-secondary" id="add-subscription-row" class="add-new-issuem-leaky-paywall-subscription-row" type="submit" name="add_leaky_paywall_row" value="<?php _e( 'Add New Level', 'issuem-leaky-paywall' ); ?>" />
 	                        </p>
 	
@@ -1369,7 +1406,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								'plan'				=> '',
 							);
 							
-							$user_id = leaky_paywall_new_subscriber( $email, $subscriber_id, $meta, $login );
+							$user_id = leaky_paywall_new_subscriber( NULL, $email, $subscriber_id, $meta, $login );
 							
 							do_action( 'add_leaky_paywall_subscriber', $user_id );
 							
@@ -1529,7 +1566,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									'plan'				=> '',
 								);
 								
-								$user_id = leaky_paywall_new_subscriber( $email, '', $meta, $login );
+								$user_id = leaky_paywall_new_subscriber( NULL, $email, '', $meta, $login );
 								
 								if ( !empty( $user_id ) )
 									do_action( 'bulk_add_leaky_paywall_subscriber', $user_id, $keys, $import );

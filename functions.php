@@ -7,7 +7,7 @@
 if ( !function_exists( 'leaky_paywall_errors' ) ) {
 	function leaky_paywall_errors() {
 	    static $wp_error; // Will hold global variable safely
-	    return isset( $wp_error ) ? $wp_error : ( $wp_error = new WP_Error( null, null, null ) );
+	    return isset( $wp_error ) ? $wp_error : ( $wp_error = new WP_Error( NULL, NULL, NULL ) );
 	}
 }
 
@@ -626,11 +626,11 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 				if ( !empty( $user ) ) {
 					//WordPress user exists
 					$args['subscriber_email'] = $user->user_email;
-					leaky_paywall_update_subscriber( $args['subscriber_email'], $args['subscr_id'], $args );
+					leaky_paywall_update_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 				} else {
 					//Need to create a new user
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
-					leaky_paywall_new_subscriber( $args['subscriber_email'], $args['subscr_id'], $args );
+					leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 				}
 				
 			}
@@ -748,12 +748,13 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param deprecated $hash
 	 * @param string $email address of user "logged" in
 	 * @param int $customer_id Customer ID
 	 * @param array $meta_args Arguments passed from type of subscriber
 	 * @return mixed $wpdb insert ID or false
 	 */
-	function leaky_paywall_update_subscriber( $email, $customer_id, $meta_args ) {
+	function leaky_paywall_update_subscriber( $hash='deprecated', $email, $customer_id, $meta_args ) {
 		
 		global $wpdb;
 		
@@ -1413,7 +1414,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
         }
 		$return .= '</select>';
 		
-		if ( is_network_admin() ) {
+		if ( is_network_admin() && false ) {
 			
 			$return .= '&nbsp;' . __( 'on', 'issuem-leaky-paywall' ) . '&nbsp;';
 			$return .= '<select class="select_level_site" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][site]">';
@@ -1694,9 +1695,9 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				);
 					
 				if ( !empty( $existing_customer ) ) {
-					$value = leaky_paywall_update_subscriber( $_POST['stripeEmail'], $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
+					$value = leaky_paywall_update_subscriber( NULL, $_POST['stripeEmail'], $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 				} else {
-					$value = leaky_paywall_new_subscriber( $_POST['stripeEmail'], $customer_id, $args );
+					$value = leaky_paywall_new_subscriber( NULL, $_POST['stripeEmail'], $customer_id, $args );
 				}
 				
 				return true;
@@ -1824,9 +1825,9 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 							$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
 						
 						if ( $user = get_user_by( 'email', $user_email ) ) {
-							$user_id = leaky_paywall_update_subscriber( $user_email, $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
+							$user_id = leaky_paywall_update_subscriber( NULL, $user_email, $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 						} else {
-							$user_id = leaky_paywall_new_subscriber( $user_email, $customer_id, $args );
+							$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
 						}
 						
 					} else {

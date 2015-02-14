@@ -93,3 +93,7 @@ span.delete-x:hover {
 select.select_level_post_type, select.select_level_site {
 	width: 100px;	
 }
+
+.leaky_paywall_hidden {
+	display: none;	
+}
