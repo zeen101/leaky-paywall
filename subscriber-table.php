@@ -210,11 +210,11 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$expires = mysql2date( $date_format, $expires );
 						}
 						
-						echo "<td $attributes>" . $expires . "</td>";
+						echo "<td $attributes>" . $expires . '</td>';
 					break;
 
 					case 'gateway':
-						echo "<td $attributes>" . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . "</td>";
+						echo "<td $attributes>" . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . '</td>';
 					break;
 
 					case 'status':
@@ -222,7 +222,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 
 					default:
-						echo "<td $attributes>&nbsp;</td>";
+						echo "<td $attributes>" . apply_filters( 'manage_leaky_paywall_subscribers_custom_column', '&nbsp;', $column_name, $user->ID ) . '</td>';
 					break;
 				}
 			endforeach
