@@ -11,7 +11,7 @@ Plugin Name: Leaky Paywall
 Plugin URI: http://leakypw.com/
 Description: A premium leaky paywall add-on for WordPress and IssueM.
 Author: IssueM Development Team
-Version: 2.0.4
+Version: 2.0.5
 Author URI: http://leakypw.com/
 Tags:
 */
@@ -22,7 +22,7 @@ if ( !defined( 'ZEEN101_STORE_URL' ) )
 	
 define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION',	'2.0.4' );
+define( 'LEAKY_PAYWALL_VERSION',	'2.0.5' );
 define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
 define( 'LEAKY_PAYWALL_URL',		plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
