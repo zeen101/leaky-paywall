@@ -1,9 +1,9 @@
 === Leaky Paywall for WordPress ===
-Contributors: layotte
+Contributors: layotte, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
-Tested up to: 4.0
-Stable tag: 2.0.3
+Tested up to: 4.1
+Stable tag: 2.0.4
 
 A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
@@ -30,6 +30,9 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+= 2.0.4 =
+* Adding currency options for USD, GBP, and EUR
+
 = 2.0.3 =
 * Adding PayPal IPN txn_type case for max failed payments and suspended payments
 * Fixed bug with PayPal IPNs being sent with no item_number field

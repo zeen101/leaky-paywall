@@ -590,6 +590,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'paypal_sand_api_username'		=> '',
 				'paypal_sand_api_password'		=> '',
 				'paypal_sand_api_secret'		=> '',
+				'leaky_paywall_currency'		=> 'USD',
 				'restrict_pdf_downloads' 		=> 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
@@ -698,6 +699,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['cookie_expiration_interval'] ) )
 					$settings['cookie_expiration_interval'] = trim( $_REQUEST['cookie_expiration_interval'] );
+
+				if ( !empty( $_REQUEST['leaky_paywall_currency'] ) )
+					$settings['leaky_paywall_currency'] = trim( $_REQUEST['leaky_paywall_currency'] );
 					
 				if ( !empty( $_REQUEST['restrict_pdf_downloads'] ) )
 					$settings['restrict_pdf_downloads'] = $_REQUEST['restrict_pdf_downloads'];
@@ -1139,6 +1143,46 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </div>
 	                        
 	                    </div>
+
+	                    <?php // currency options ?>
+
+	                    <div id="modules" class="postbox">
+            
+                <div class="handlediv" title="Click to toggle"><br /></div>
+                
+                <h3 class="hndle"><span><?php _e( 'Leaky Paywall - Currency Options', 'issuem-leaky-paywall' ); ?></span></h3>
+                
+                <div class="inside">
+                
+                <table id="leaky_paywall_currency_options" class="form-table">
+                
+                    <tr>
+                        <th><?php _e( 'Currency', 'issuem-leaky-paywall' ); ?></th>
+                        <td>
+                        	<select id="leaky_paywall_currency" name="leaky_paywall_currency">
+                        		<option value="USD" <?php selected( 'USD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'US Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
+                        		<option value="GBP" <?php selected( 'GBP', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Pounds Sterling (£)', 'issuem-leaky-paywall' ); ?></option>
+                        		<option value="EUR" <?php selected( 'EUR', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Euros (€)', 'issuem-leaky-paywall' ); ?></option>
+
+                        	</select>
+                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'issuem-leaky-paywall' ); ?></p>
+                        </td>
+                    </tr>
+                    
+                    
+                    
+                </table>
+
+                                                                  
+                <p class="submit">
+                    <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                </p>
+
+                </div>
+                
+            </div>
+
+	                    <?php // end currency options ?>
 	                    
 	                    <div id="modules" class="postbox">
 	                    
