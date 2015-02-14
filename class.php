@@ -743,28 +743,28 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', trim( $_REQUEST['test_publishable_key'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_live_email'] ) )
-					$settings['paypal_live_email'] = trim( $_REQUEST['paypal_live_email'] );
+					$settings['paypal_live_email'] = apply_filters( 'zeen101_demo_paypal_live_email', trim( $_REQUEST['paypal_live_email'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_live_api_username'] ) )
-					$settings['paypal_live_api_username'] = trim( $_REQUEST['paypal_live_api_username'] );
+					$settings['paypal_live_api_username'] = apply_filters( 'zeen101_demo_paypal_live_api_username', trim( $_REQUEST['paypal_live_api_username'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_live_api_password'] ) )
-					$settings['paypal_live_api_password'] = trim( $_REQUEST['paypal_live_api_password'] );
+					$settings['paypal_live_api_password'] = apply_filters( 'zeen101_demo_paypal_live_api_password', trim( $_REQUEST['paypal_live_api_password'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_live_api_secret'] ) )
-					$settings['paypal_live_api_secret'] = trim( $_REQUEST['paypal_live_api_secret'] );
+					$settings['paypal_live_api_secret'] = apply_filters( 'zeen101_demo_paypal_live_api_secret', trim( $_REQUEST['paypal_live_api_secret'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_sand_email'] ) )
-					$settings['paypal_sand_email'] = trim( $_REQUEST['paypal_sand_email'] );
+					$settings['paypal_sand_email'] = apply_filters( 'zeen101_demo_paypal_sand_email', trim( $_REQUEST['paypal_sand_email'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_username'] ) )
-					$settings['paypal_sand_api_username'] = trim( $_REQUEST['paypal_sand_api_username'] );
+					$settings['paypal_sand_api_username'] = apply_filters( 'zeen101_demo_paypal_sand_api_username', trim( $_REQUEST['paypal_sand_api_username'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_password'] ) )
-					$settings['paypal_sand_api_password'] = trim( $_REQUEST['paypal_sand_api_password'] );
+					$settings['paypal_sand_api_password'] = apply_filters( 'zeen101_demo_paypal_sand_api_password', trim( $_REQUEST['paypal_sand_api_password'] ) );
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_secret'] ) )
-					$settings['paypal_sand_api_secret'] = trim( $_REQUEST['paypal_sand_api_secret'] );
+					$settings['paypal_sand_api_secret'] = apply_filters( 'zeen101_demo_paypal_sand_api_secret', trim( $_REQUEST['paypal_sand_api_secret'] ) );
 					
 				if ( !empty( $_REQUEST['restrictions'] ) )
 					$settings['restrictions'] = $_REQUEST['restrictions'];
