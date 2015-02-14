@@ -723,7 +723,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				if ( !empty( $_REQUEST['test_mode'] ) )
 					$settings['test_mode'] = $_REQUEST['test_mode'];
 				else
-					$settings['test_mode'] = 'off';
+					$settings['test_mode'] = apply_filters( 'zeen101_demo_test_mode', 'off' );
 					
 				if ( !empty( $_REQUEST['payment_gateway'] ) )
 					$settings['payment_gateway'] = $_REQUEST['payment_gateway'];
@@ -1013,12 +1013,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Secret Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ); ?>" /></td>
+	                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo apply_filters( 'zeen101_demo_live_secret_key', htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Publishable Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ); ?>" /></td>
+	                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo apply_filters( 'zeen101_demo_live_publishable_key', htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                            <tr>
@@ -1028,12 +1028,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Test Secret Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ); ?>" /></td>
+	                                <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo apply_filters( 'zeen101_demo_test_secret_key', htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Test Publishable Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ); ?>" /></td>
+	                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo apply_filters( 'zeen101_demo_test_publishable_key', htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                            <tr>

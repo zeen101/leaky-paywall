@@ -2252,13 +2252,9 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 		                'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
 		            );
 		            
-		            try {
-		                $stripe_plan = Stripe_Plan::create( $args );
-			            $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
-			            update_leaky_paywall_settings( $settings );
-		            } catch( Exception $e ) {
-		                throw new Exception( sprintf( __( 'Unable to create Plan in Stripe - %s', 'LION' ), $e->getMessage() ) );
-		            }
+	                $stripe_plan = Stripe_Plan::create( $args );
+		            $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
+		            update_leaky_paywall_settings( $settings );
 									
 				}
 				
