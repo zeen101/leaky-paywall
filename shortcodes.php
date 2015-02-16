@@ -137,6 +137,13 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 				
 		if ( is_user_logged_in() ) {
 			
+			global $blog_id;
+			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+				$site = '_' . $blog_id;
+			} else {
+				$site = '';
+			}
+			
 			$user = wp_get_current_user();
 						
 			$results .= apply_filters( 'leaky_paywall_subscriber_info_start', '' );
@@ -147,7 +154,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 						
 				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
 				
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 				
 				switch( $expires ) {
 				
@@ -217,6 +224,13 @@ if ( !function_exists( 'do_leaky_paywall_multisite_subscription' ) ) {
 				
 		if ( is_user_logged_in() ) {
 			
+			global $blog_id;
+			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+				$site = '_' . $blog_id;
+			} else {
+				$site = '';
+			}
+			
 			$user = wp_get_current_user();
 						
 			$results .= apply_filters( 'leaky_paywall_subscriber_info_start', '' );
@@ -227,7 +241,7 @@ if ( !function_exists( 'do_leaky_paywall_multisite_subscription' ) ) {
 						
 				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
 				
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 				
 				switch( $expires ) {
 				
@@ -295,6 +309,13 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 		
 		if ( is_user_logged_in() ) {
 			
+			global $blog_id;
+			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+				$site = '_' . $blog_id;
+			} else {
+				$site = '';
+			}
+			
 			$user = wp_get_current_user();
 			
 			$results .= sprintf( __( 'Welcome %s, you are currently logged in. <a href="%s">Click here to log out.</a>', 'issuem-leaky-paywall' ), $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
@@ -304,9 +325,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
 						
-			$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
+			$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 			
-			$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+			$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
 			$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 			if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
 				$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
@@ -314,9 +335,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
 			}
 			
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 			
-			$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
+			$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 			if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 				$expires = __( 'Never', 'issuem-leaky-paywall' );
 			} else {
@@ -456,8 +477,8 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					try {
 						
 						$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
-						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true );
+						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 														
 						$cu = Stripe_Customer::retrieve( $subscriber_id );
 						if ( !empty( $cu ) )
@@ -513,7 +534,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						
 				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
 				
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 				
 				switch( $expires ) {
 				
@@ -595,45 +616,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			
 			$results .= do_leaky_paywall_login( array() );
 			
-		}
-		
-		return $results;
-		
-		if ( 'passwordless' === $settings['login_method'] ) {
-	
-			if ( isset( $_REQUEST['submit-leaky-login'] ) ) {
-				
-				if ( isset( $_REQUEST['email'] ) && is_email( $_REQUEST['email'] ) ) {
-				
-					if ( send_leaky_paywall_email( $_REQUEST['email'] ) )
-						return '<h3>' . $email_sent . '</h3>';
-					else
-						$results .= '<h1 class="error">' . $error_msg . '</h1>';
-					
-				} else {
-				
-					$results .= '<h1 class="error">' . $missing_email_msg . '</h1>';
-					
-				}
-				
-			}
-			
-			$results .= '<h2>' . $heading . '</h2>';
-			$results .= '<form action="" method="post">';
-			$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
-			$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'issuem-leaky-paywall' ) . '" />';
-			$results .= '</form>';
-			$results .= '<h3>' . $description . '</h3>';
-	
-		} else { //traditional
-		
-			add_action( 'login_form_bottom', 'leaky_paywall_add_lost_password_link' );
-			$args = array(
-				'echo' => false,
-				'redirect' => get_page_link( $settings['page_for_subscription'] ),
-			);
-			$results .= wp_login_form( $args );
-		
 		}
 		
 		return $results;

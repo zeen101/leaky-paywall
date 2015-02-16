@@ -129,15 +129,21 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	}
 
 	function display_rows() {
-		global $current_site;
+		global $current_site, $blog_id;
 		$settings = get_leaky_paywall_settings();
+		
+		if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			$site = '_' . $blog_id;
+		} else {
+			$site = '';
+		}
 
 		$alt = '';
 		foreach ( $this->items as $user ) {
 			$alt = ( 'alternate' == $alt ) ? '' : 'alternate';
 			$user = get_user_by( 'email', $user->user_email );
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 			?>
 			<tr class="<?php echo $alt; ?>">
 			<?php
@@ -171,7 +177,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 					
 					case 'level_id':
-						$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+						$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
 						$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 						if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
 							$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
@@ -183,15 +189,15 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 					
 					case 'susbcriber_id':
-						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true ) . '</td>';
+						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) . '</td>';
 					break;
 
 					case 'price':
-						echo "<td $attributes>" . number_format( (float)get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ), '2' ) . '</td>';
+						echo "<td $attributes>" . number_format( (float)get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true ), '2' ) . '</td>';
 					break;
 
 					case 'plan':
-						$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
+						$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 						if ( empty( $plan ) ) {
 							$plan = __( 'Non-Recurring', 'issuem-leaky-paywall' );	
 						} else if ( 'paypal_standard' === $payment_gateway ) {
@@ -202,7 +208,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 
 					case 'expires':
-						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
+						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 							$expires = __( 'Never', 'issuem-leaky-paywall' );
 						} else {
@@ -218,7 +224,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					break;
 
 					case 'status':
-						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) . '</td>';
+						echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true ) . '</td>';
 					break;
 
 					default:
