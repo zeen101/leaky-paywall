@@ -1030,7 +1030,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
 	                        ?>
 	                        
-	                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table gateway-options <?php echo $hidden; ?>">
+	                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table gateway-options">
 	                        
 		                        <tr><td colspan="2"><h3><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
 	                            
