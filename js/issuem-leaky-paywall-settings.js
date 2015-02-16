@@ -13,7 +13,7 @@ $leaky_paywall_settings(document).ready(function($) {
         });
 	});
 	
-	$( '.issuem-leaky-paywall-subscription-level-row-table' ).on( 'click', 'input#add-subscription-row', function( event ) {
+	$( '#leaky_paywall_subscription_level_options' ).on( 'click', 'input#add-subscription-row', function( event ) {
 		event.preventDefault();
         var data = {
             'action': 'issuem-leaky-paywall-add-new-subscription-row',
@@ -24,7 +24,7 @@ $leaky_paywall_settings(document).ready(function($) {
         });
 	});
 	
-	$( '.issuem-leaky-paywall-subscription-level-row-table' ).on( 'click', 'input#add-subscription-row-post-type', function( event ) {
+	$( '#leaky_paywall_subscription_level_options' ).on( 'click', 'input#add-subscription-row-post-type', function( event ) {
 		event.preventDefault();
 		var row_key = $( this ).data( 'row-key' );
 		var select_post_key = 'leaky_paywall_subscription_row_' + row_key + '_last_post_type_key';
@@ -40,7 +40,7 @@ $leaky_paywall_settings(document).ready(function($) {
         });
 	});
 	
-	$( '.issuem-leaky-paywall-subscription-level-row-table' ).on( 'change', 'select.subscription_length_type', function( event ) {
+	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'change', 'select.subscription_length_type', function( event ) {
 		var parent = $( this ).parent();
 		if ( 'unlimited' == $( this ).val() ) {
 			$( '.interval_count', parent ).data( 'prev-value', $( '.interval_count', parent ).val() )
@@ -65,40 +65,22 @@ $leaky_paywall_settings(document).ready(function($) {
 		}
 	});
 		
-	$( '.issuem-leaky-paywall-restriction-row' ).on( 'click', '.delete-restriction-row', function ( event ) {
+	$( '#leaky_paywall_default_restriction_options' ).on( 'click', '.delete-restriction-row', function ( event ) {
 		event.preventDefault();
 		var parent = $( this ).parents( '.issuem-leaky-paywall-restriction-row' );
 		parent.slideUp( 'normal', function() { $( this ).remove(); } );
 	});
+	
+	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'click', '.delete-subscription-level', function ( event ) {
+		event.preventDefault();
+		var parent = $( this ).parents( '.issuem-leaky-paywall-subscription-level-row-table' );
+		parent.slideUp( 'normal', function() { $( this ).remove(); } );
+	});
 		
-	$( '.issuem-leaky-paywall-row-post-type' ).on( 'click', '.delete-post-type-row', function ( event ) {
+	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'click', '.delete-post-type-row', function ( event ) {
 		event.preventDefault();
 		var parent = $( this ).parent( '.issuem-leaky-paywall-row-post-type' );
 		parent.slideUp( 'normal', function() { $( this ).remove(); } );
 	});
-	
-	$( '.issuem-leaky-paywall-subscription-level-row-table' ).on( 'click', '.delete-subscription-level', function ( event ) {
-		event.preventDefault();
-		var parent = $( this ).parents( '.issuem-leaky-paywall-subscription-level-row-table' );
-		parent.slideUp( 'normal', function() { $( this ).remove(); } );
-	});
-	
-	$( '.issuem-leaky-paywall-subscription-level-row-table' ).on( 'click', '.delete-subscription-level', function ( event ) {
-		event.preventDefault();
-		var parent = $( this ).parents( '.issuem-leaky-paywall-subscription-level-row-table' );
-		parent.slideUp( 'normal', function() { $( this ).remove(); } );
-	});
-	
-	$( '.leaky-paywall-gateway-settings' ).on( 'click', '#enable-multisite-gateway-settings', function (event ) {
-		$( '.single-site-gateway-options' ).toggleClass( 'leaky_paywall_hidden' );
-	});
-	
-	$( '.leaky-paywall-restriction-settings' ).on( 'click', '#enable-multisite-content-restriction', function (event ) {
-		$( '.single-site-restriction-options' ).toggleClass( 'leaky_paywall_hidden' );
-	});
-	
-	$( '.leaky-paywall-subscription-settings' ).on( 'click', '#enable-multisite-subscription-settings', function (event ) {
-		$( '.single-site-subscription-options' ).toggleClass( 'leaky_paywall_hidden' );
-	});
-		
+			
 });
