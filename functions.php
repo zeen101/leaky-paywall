@@ -283,17 +283,17 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				
 				$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
 										
-				if ( '0000-00-00 00:00:00' !== $expires ) {
+				if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+				
+					return 'unlimited';
+							
+				} else {
 					
 					if ( strtotime( $expires ) > time() )
 						if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
 							return $expires;
 					else
 						return false;
-							
-				} else {
-				
-					return 'unlimited';
 					
 				}
 			} catch ( Exception $e ) {
@@ -304,7 +304,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			
 		} else if ( 'paypal_standard' === $payment_gateway ) {
 			
-			if ( '0000-00-00 00:00:00' === $expires )
+			if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 				return 'unlimited';
 			
 			if ( !empty( $plan ) && 'active' == $payment_status )
@@ -343,7 +343,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				case 'active':
 				case 'refunded':
 				case 'refund':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return 'unlimited';
 						
 					if ( strtotime( $expires ) > time() )
@@ -353,7 +353,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					break;
 				case 'cancelled':
 				case 'canceled':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return false;
 					else
 						return 'canceled';
@@ -377,7 +377,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				case 'active':
 				case 'refunded':
 				case 'refund':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return 'unlimited';
 						
 					if ( strtotime( $expires ) > time() )
@@ -387,7 +387,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					break;
 				case 'cancelled':
 				case 'canceled':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return false;
 					else
 						return 'canceled';
