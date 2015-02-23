@@ -153,7 +153,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( is_singular() ) {
 				
 				global $blog_id;
-				if ( is_multisite() && !is_main_blog( $blog_id ) ){
+				if ( is_multisite() && !is_main_site( $blog_id ) ){
 					$site = '_' . $blog_id;
 				} else {
 					$site = '';
@@ -400,24 +400,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			//Deprecated
 			$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
-			$message = str_ireplace( '{{LENGTH}}', $this->human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
+			$message = str_ireplace( '{{LENGTH}}', leaky_paywall_human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
 			
 			return $message;
-			
-		}
-		
-		function human_readable_interval( $interval_count, $interval ) {
-			
-			if ( 0 >= $interval_count )
-				return __( 'for life', 'issuem-leaky-paywall' );
-		
-			if ( 1 < $interval_count )
-				$interval .= 's';
-			
-			if ( 1 == $interval_count )
-				return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval;
-			else
-				return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
 			
 		}
 		

@@ -283,17 +283,17 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				
 				$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
 										
-				if ( '0000-00-00 00:00:00' !== $expires ) {
+				if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+				
+					return 'unlimited';
+							
+				} else {
 					
 					if ( strtotime( $expires ) > time() )
 						if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded )
 							return $expires;
 					else
 						return false;
-							
-				} else {
-				
-					return 'unlimited';
 					
 				}
 			} catch ( Exception $e ) {
@@ -304,7 +304,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			
 		} else if ( 'paypal_standard' === $payment_gateway ) {
 			
-			if ( '0000-00-00 00:00:00' === $expires )
+			if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 				return 'unlimited';
 			
 			if ( !empty( $plan ) && 'active' == $payment_status )
@@ -343,7 +343,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				case 'active':
 				case 'refunded':
 				case 'refund':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return 'unlimited';
 						
 					if ( strtotime( $expires ) > time() )
@@ -353,7 +353,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					break;
 				case 'cancelled':
 				case 'canceled':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return false;
 					else
 						return 'canceled';
@@ -377,7 +377,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				case 'active':
 				case 'refunded':
 				case 'refund':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return 'unlimited';
 						
 					if ( strtotime( $expires ) > time() )
@@ -387,7 +387,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					break;
 				case 'cancelled':
 				case 'canceled':
-					if ( $expires === '0000-00-00 00:00:00' )
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires )
 						return false;
 					else
 						return 'canceled';
@@ -694,13 +694,14 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param deprecated $hash
 	 * @param string $email address of user "logged" in
 	 * @param int $customer_id 
 	 * @param array $meta_args Arguments passed from type of subscriber
 	 * @param string $login optional login name to use instead of email address
 	 * @return mixed $wpdb insert ID or false
 	 */
-	function leaky_paywall_new_subscriber( $email, $customer_id, $meta_args, $login='' ) {
+	function leaky_paywall_new_subscriber( $hash='deprecated', $email, $customer_id, $meta_args, $login='' ) {
 		
 		if ( is_email( $email ) ) {
 			
@@ -2189,10 +2190,10 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$results .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), $currency_sym, number_format( $level['price'], 2 ), Leaky_Paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$results .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), $currency_sym, number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$results .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
-							$results .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), $currency_sym, number_format( $level['price'], 2 ), Leaky_Paywall::human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$results .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), $currency_sym, number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$results .= apply_filters( 'leaky_paywall_before_subscription_options_non_recurring_price', '' );
 						}
 						
@@ -2280,7 +2281,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				if ( $has_allowed_value ) {
 
 					$results .= '<div class="leaky_paywall_subscription_limit_details">';
-					$results .= '*' . ucfirst( Leaky_Paywall::human_readable_interval( $settings['cookie_expiration'], $settings['cookie_expiration_interval'] ) );
+					$results .= '*' . ucfirst( leaky_paywall_human_readable_interval( $settings['cookie_expiration'], $settings['cookie_expiration_interval'] ) );
 					$results .= '</div>';
 				
 				}
@@ -2563,4 +2564,21 @@ if ( !function_exists( 'leaky_paywall_payment_gateways' ) ) {
 		return apply_filters( 'leaky_paywall_subscriber_payment_gateways', $gateways );
 	}
 
+}
+
+if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
+	function leaky_paywall_human_readable_interval( $interval_count, $interval ) {
+		
+		if ( 0 >= $interval_count )
+			return __( 'for life', 'issuem-leaky-paywall' );
+	
+		if ( 1 < $interval_count )
+			$interval .= 's';
+		
+		if ( 1 == $interval_count )
+			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval;
+		else
+			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
+		
+	}
 }
