@@ -13,6 +13,7 @@ body.leaky-paywall_page_leaky-paywall-subscribers table input.small-text {
 table.issuem-leaky-paywall-subscription-level-row-table {
 	border: 1px solid #eee;
 	margin-bottom: 20px;
+	padding: 10px;
 }
 
 table.leaky-paywall-table tr th, table.leaky-paywall-table tr td,
