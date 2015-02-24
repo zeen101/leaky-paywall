@@ -2304,6 +2304,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 		$results = '';
 		$settings = get_leaky_paywall_settings();
 		$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
+		$currency = $settings['leaky_paywall_currency'];
 		$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 
 		if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
@@ -2338,7 +2339,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 		                'interval'          => esc_js( $level['interval'] ),
 		                'interval_count'    => esc_js( $level['interval_count'] ),
 		                'name'              => esc_js( $level['label'] ) . ' ' . $time,
-		                'currency'          => esc_js( apply_filters( 'leaky_paywall_stripe_currency', 'usd' ) ),
+		                'currency'          => esc_js( apply_filters( 'leaky_paywall_stripe_currency', $currency ) ),
 		                'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
 		            );
 		            
@@ -2353,6 +2354,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 							  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 									  data-key="' . esc_js( $publishable_key ) . '"
 									  data-plan="' . esc_js( $stripe_plan->id ) . '" 
+									   data-currency="' . esc_js( $currency ) . '" 
 									  data-description="' . esc_js( $level['label'] ) . '">
 							  </script>
 							  ' . apply_filters( 'leaky_paywall_pay_with_stripe_recurring_payment_form_after_script', '' ) . '
@@ -2371,6 +2373,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
 								  data-amount="' . esc_js( $stripe_price ) . '" 
+								  data-currency="' . esc_js( $currency ) . '" 
 								  data-description="' . esc_js( $level['label'] ) . '">
 						  </script>
 							  ' . apply_filters( 'leaky_paywall_pay_with_stripe_non_recurring_payment_form_after_script', '' ) . '
