@@ -837,13 +837,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
   		
 						<div id="license-key" class="postbox">
 	                    
-	                        <div class="handlediv" title="Click to toggle"><br /></div>
-	                        
-	                        <h3 class="hndle"><span><?php _e( 'License Key', 'issuem-leaky-paywall' ); ?></span></h3>
+	                       
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="issuem_license_key" class="leaky-paywall-table">
+	                        <table id="issuem_license_key" class="form-table">
 	                        	<tr>
 	                                <th rowspan="1"> <?php _e( 'License Key', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
@@ -875,11 +873,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Leaky Paywall Options', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'General Settings', 'issuem-leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="leaky_paywall_administrator_options" class="leaky-paywall-table">
+	                        <table id="leaky_paywall_administrator_options" class="form-table">
 	                        
 	                        	<tr>
 	                                <th><?php _e( 'Page for Log In', 'issuem-leaky-paywall' ); ?></th>
@@ -951,11 +949,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Leaky Paywall Email Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'Email Settings', 'issuem-leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="leaky_paywall_administrator_options" class="leaky-paywall-table">
+	                        <table id="leaky_paywall_administrator_options" class="form-table">
 	                        
 	                        	<tr>
 	                                <th><?php _e( 'Site Name', 'issuem-leaky-paywall' ); ?></th>
@@ -990,7 +988,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="leaky_paywall_gateway_options" class="leaky-paywall-table">
+	                        <table id="leaky_paywall_gateway_options" class="form-table">
 				                        								
 	                        	<tr class="gateway-options">
 	                                <th><?php _e( 'Enabled Gateways', 'issuem-leaky-paywall' ); ?></th>
@@ -1015,9 +1013,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
 	                        ?>
 	                        
-	                        <table id="leaky_paywall_stripe_options" class="leaky-paywall-table gateway-options">
+	                        <table id="leaky_paywall_stripe_options" class="form-table">
 	                        
-		                        <tr><td colspan="2"><h3><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
+		                        <tr><th><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></th><td></td></tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Secret Key', 'issuem-leaky-paywall' ); ?></th>
@@ -1057,9 +1055,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                    if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) { 
 		                    ?>
 		                                            
-		                        <table id="leaky_paywall_paypal_options" class="leaky-paywall-table gateway-options <?php echo $hidden; ?>">
+		                        <table id="leaky_paywall_paypal_options" class="gateway-options form-table">
 		                        
-			                        <tr><td colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></h3></td></tr>
+			                        <tr><th><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></th><td></td></tr>
 		                        
 		                        	<tr>
 		                                <th><?php _e( 'Merchant ID', 'issuem-leaky-paywall' ); ?></th>
@@ -1151,7 +1149,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
             
 			                <div class="handlediv" title="Click to toggle"><br /></div>
 			                
-			                <h3 class="hndle"><span><?php _e( 'Leaky Paywall - Currency Options', 'issuem-leaky-paywall' ); ?></span></h3>
+			                <h3 class="hndle"><span><?php _e( 'Currency Options', 'issuem-leaky-paywall' ); ?></span></h3>
 			                
 			                <div class="inside">
 			                
@@ -1193,7 +1191,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="leaky_paywall_default_restriction_options" class="leaky-paywall-table">
+	                        <table id="leaky_paywall_default_restriction_options" class="form-table">
 	                        	     
 	                        	<tr class="restriction-options">
 	                                <th><?php _e( 'Limited Article Cookie Expiration', 'issuem-leaky-paywall' ); ?></th>
@@ -1270,7 +1268,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <div id="leaky_paywall_subscription_level_options" class="inside">
 	                        
-	                        <table id="leaky_paywall_subscription_level_options_table" class="leaky-paywall-table subscription-options">
+	                        <table id="leaky_paywall_subscription_level_options_table" class="leaky-paywall-table subscription-options form-table">
 	
 								<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
 	                        	<?php 
