@@ -1947,7 +1947,7 @@ if ( !function_exists( 'leaky_paywall_free_registration_form' ) ) {
 	
 	function leaky_paywall_free_registration_form() {
 
-		$level_id = $_GET['issuem-leaky-paywall-free-return'];
+		$level_id = $_GET['issuem-leaky-paywall-free-form'];
 		$settings = get_leaky_paywall_settings();
 		
 		$return = '';
@@ -2067,6 +2067,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 	 
 			// only create the user in if there are no errors
 			if ( empty( $errors ) ) {
+				
 				$new_user_id = wp_insert_user(
 					array(
 						'user_login'		=> $user_login,
@@ -2099,7 +2100,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 						$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
 					
 					$args['subscriber_email'] = $user_email;
-					leaky_paywall_update_subscriber( $user_email, 'free-' . time(), $args );
+					leaky_paywall_update_subscriber( NULL, $user_email, 'free-' . time(), $args );
 	 
 					// log the new user in
 					wp_setcookie( $user_login, $user_pass, true );
@@ -2107,7 +2108,13 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					do_action( 'wp_login', $user_login );
 	 
 					// send the newly created user to the home page after logging them in
-					wp_redirect( home_url() ); exit;
+					if ( !empty( $settings['page_for_profile'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+					} else if ( !empty( $settings['page_for_subscription'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					}
+					
+					exit;
 				}
 	 
 			}
@@ -2164,16 +2171,15 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
 					foreach( $level['post_types'] as $post_type ) {
 					
+						/* @todo: We may need to change the site ID during this process, some sites may have different post types enabled */
 						$post_type_obj = get_post_type_object( $post_type['post_type'] );
-					
-						if ( 0 <= $post_type['allowed_value'] ) {
-							$has_allowed_value = true;
-							$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'issuem-leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
-						
-						} else {
-							
-							$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'issuem-leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
-							
+						if ( !empty( $post_type_obj ) ) {
+							if ( 0 <= $post_type['allowed_value'] ) {
+								$has_allowed_value = true;
+								$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'issuem-leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
+							} else {
+								$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'issuem-leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
+							}
 						}
 							
 					}
@@ -2463,8 +2469,8 @@ if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
 		
 		$settings = get_leaky_paywall_settings();
 		
-		$results  = '<form action="' . add_query_arg( 'issuem-leaky-paywall-free-return', $level_id, get_page_link( $settings['page_for_subscription'] ) ) . '" method="post">';
-		$results .= '<button type="submit">' . __( 'Register' ) . '</button>';
+		$results  = '<form action="' . add_query_arg( 'issuem-leaky-paywall-free-form', $level_id, get_page_link( $settings['page_for_subscription'] ) ) . '" method="post">';
+		$results .= '<button type="submit">' . __( 'Register', 'issuem-leaky-paywall' ) . '</button>';
 		$results .= '</form>';
 		
 		
