@@ -1920,7 +1920,11 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						
 					}
 						
-					wp_safe_redirect( $settings['page_for_subscription'] );
+					if ( !empty( $settings['page_for_profile'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+					} else if ( !empty( $settings['page_for_subscription'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					}
 						
 				}
 				catch ( Exception $e ) {

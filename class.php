@@ -162,7 +162,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				if ( !current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) { //Admins can see it all
 				
 					// We don't ever want to block the login, subscription
-					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'] ) ) ) {
+					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'], $settings['page_for_profile'] ) ) ) {
 					
 						global $post;
 						$post_type_id = '';
@@ -310,7 +310,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			if ( $has_subscriber_paid ) {
 						
-				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
+				if ( 
+					(
+						( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) ) 
+						|| ( !empty( $settings['page_for_profile'] ) && is_page( $settings['page_for_profile'] )  )
+					)
 					&& isset( $_REQUEST['cancel'] ) ) {
 					
 					wp_die( leaky_paywall_cancellation_confirmation() );
@@ -320,7 +324,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 				if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
 					
-					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					if ( !empty( $settings['page_for_profile'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+					} else if ( !empty( $settings['page_for_subscription'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					}
 					
 				}
 			
@@ -333,7 +341,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					if ( verify_leaky_paywall_login_hash( $login_hash ) ) {
 					
 						leaky_paywall_attempt_login( $login_hash );
-						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+						if ( !empty( $settings['page_for_profile'] ) ) {
+							wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+						} else if ( !empty( $settings['page_for_subscription'] ) ) {
+							wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+						}
 						
 					} else {
 					
@@ -387,9 +399,15 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$subscription_url = get_bloginfo( 'wpurl' ) . '/?subscription'; //CHANGEME -- I don't really know what this is suppose to do...
 			else
 				$subscription_url = get_page_link( $settings['page_for_subscription'] );
+			
+			if ( 0 === $settings['page_for_profile'] )
+				$my_account_url = get_bloginfo( 'wpurl' ) . '/?my-account'; //CHANGEME -- I don't really know what this is suppose to do...
+			else
+				$my_account_url = get_page_link( $settings['page_for_profile'] );
 				
 			$message = str_ireplace( '{{SUBSCRIBE_LOGIN_URL}}', $subscription_url, $message );
 			$message = str_ireplace( '{{SUBSCRIBE_URL}}', $subscription_url, $message );
+			$message = str_ireplace( '{{MY_ACCOUNT_URL}}', $my_account_url, $message );
 			
 			if ( 0 === $settings['page_for_login'] )
 				$login_url = get_bloginfo( 'wpurl' ) . '/?login'; //CHANGEME -- I don't really know what this is suppose to do...
@@ -564,6 +582,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'license_status'				=> '',
 				'page_for_login'				=> 0, /* Site Specific */
 				'page_for_subscription'			=> 0, /* Site Specific */
+				'page_for_profile'			=> 0, /* Site Specific */
 				'login_method'					=> 'traditional', //default over passwordless
 				'post_types'					=> ACTIVE_LP ? array( 'article' ) : array( 'post' ), /* Site Specific */
 				'free_articles'					=> 2,
@@ -631,6 +650,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				/* These are all site-specific settings */
 				unset( $site_wide_settings['page_for_login'] );
 				unset( $site_wide_settings['page_for_subscription'] );
+				unset( $site_wide_settings['page_for_profile'] );
 				unset( $site_wide_settings['post_types'] );
 				unset( $site_wide_settings['free_articles'] );
 				unset( $site_wide_settings['cookie_expiration'] );
@@ -681,6 +701,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['page_for_subscription'] ) )
 					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
+					
+				if ( !empty( $_REQUEST['page_for_profile'] ) )
+					$settings['page_for_profile'] = $_REQUEST['page_for_profile'];
 					
 				if ( !empty( $_REQUEST['login_method'] ) )
 					$settings['login_method'] = $_REQUEST['login_method'];
@@ -894,6 +917,15 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
 	                                </td>
 	                            </tr>
+	                            
+	                        	<tr>
+	                                <th><?php _e( 'Page for Profile', 'issuem-leaky-paywall' ); ?></th>
+	                                <td>
+									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_profile', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_profile'] ) ); ?>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
+	                                </td>
+	                            </tr>
+	                            
 	                        	<tr>
 	                                <th><?php _e( 'Login Method', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>

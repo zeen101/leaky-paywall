@@ -92,10 +92,16 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 	
 		} else { //traditional
 		
+			if ( !empty( $settings['page_for_profile'] ) ) {
+				$page_link = get_page_link( $settings['page_for_profile'] );
+			} else if ( !empty( $settings['page_for_subscription'] ) ) {
+				$page_link = get_page_link( $settings['page_for_subscription'] );
+			}
+		
 			add_action( 'login_form_bottom', 'leaky_paywall_add_lost_password_link' );
 			$args = array(
 				'echo' => false,
-				'redirect' => get_page_link( $settings['page_for_subscription'] ),
+				'redirect' => $page_link,
 			);
 			$results .= wp_login_form( $args );
 		
