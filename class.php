@@ -584,7 +584,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'page_for_subscription'			=> 0, /* Site Specific */
 				'page_for_profile'			=> 0, /* Site Specific */
 				'login_method'					=> 'traditional', //default over passwordless
-				'post_types'					=> ACTIVE_LP ? array( 'article' ) : array( 'post' ), /* Site Specific */
+				'post_types'					=> ACTIVE_ISSUEM ? array( 'article' ) : array( 'post' ), /* Site Specific */
 				'free_articles'					=> 2,
 				'cookie_expiration' 			=> 24,
 				'cookie_expiration_interval' 	=> 'day',
@@ -612,7 +612,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'restrict_pdf_downloads' 		=> 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
-						'post_type' 	=> ACTIVE_LP ? 'article' : 'post',
+						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
 						'allowed_value' => 2,
 					)
 				),
@@ -627,16 +627,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						'plan_id' 					=> '',
 						'post_types' => array(
 							array(
-								'post_type' 		=> 'post',
-								'allowed'			=> 'limited',
-								'allowed_value' 	=> 5,
-							),
-							array(
-								'post_type' 		=> 'article',
-								'allowed'			=> 'limited',
-								'allowed_value' 	=> 10,
+								'post_type' 		=> ACTIVE_ISSUEM ? 'article' : 'post',
+								'allowed' 			=> 'unlimited',
+								'allowed_value' 	=> -1,
 							),
 						),
+						'deleted' 					=> 0,
 					)
 				),
 			);

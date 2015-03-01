@@ -74,7 +74,7 @@ $leaky_paywall_settings(document).ready(function($) {
 	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'click', '.delete-subscription-level', function ( event ) {
 		event.preventDefault();
 		var parent = $( this ).parents( '.issuem-leaky-paywall-subscription-level-row-table' );
-		parent.slideUp( 'normal', function() { $( this ).remove(); } );
+		parent.slideUp( 'normal', function() { $( this ).hide(); $( '.deleted-subscription', this ).val( 1 ); } );
 	});
 		
 	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'click', '.delete-post-type-row', function ( event ) {
