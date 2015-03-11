@@ -633,6 +633,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							),
 						),
 						'deleted' 					=> 0,
+						'sites' 					=> array(),
 					)
 				),
 			);
@@ -1809,14 +1810,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		}
 				
 		function update_2_0_0() {
-			global $wpdb, $blog_id;
+			global $wpdb;
 						
-			if ( !$this->is_site_wide_enabled() && !is_main_site( $blog_id ) ) {
-				$site = '_' . $blog_id;
-			} else {
-				$site = '';
-			}
-			
 			echo '<h3>' . __( 'Version 2.0.0 Update Process', 'issuem-leaky-paywall' ) . '</h1>';
 			echo '<p>' . __( 'We have decided to use the WordPress Users table to instead of maintaining our own subscribers table. This process will copy all existing leaky paywall subscriber data to individual WordPress users.', 'issuem-leaky-paywall' ) . '</p>';
 			
@@ -1864,7 +1859,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                
 	                foreach( $meta as $key => $value ) {
 		
-						update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_' . $key . $site, $value );
+						update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_' . $key, $value );
 						
 					}
 	                

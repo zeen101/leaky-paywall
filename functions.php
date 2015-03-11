@@ -1337,6 +1337,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				)
 			),
 			'deleted' 					=> 0,
+			'sites' 					=> array(),
 		);
 		$level = wp_parse_args( $level, $default );
     	
@@ -1411,6 +1412,27 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			}
 			$return .= '</td>';
 			$return .= '</tr>';
+			
+			if ( is_multisite() ) {
+				if ( is_leaky_paywall_site_wide() ) {
+					$hidden = '';
+				} else {
+					$hidden = 'hidden';
+				}
+				
+				$return .= '<tr class="' . $hidden . '">';
+				$return .= '<th>' . __( 'Sites', 'issuem-leaky-paywall' ) . '</th>';
+				$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-sites">';
+				$return .= '<select id="sites" name="levels[' . $row_key . '][sites][]" multiple="multiple">';
+				$sites = wp_get_sites();
+				foreach( $sites	as $site ) {
+					$blog = get_blog_details( $site['blog_id'] );
+					$return .= '<option value="' . $blog->blog_id . '" ' . selected( in_array( $blog->blog_id, $level['sites'] ) || empty( $level['sites'] ), true, false ) . '>' . $blog->blogname . '</option>';
+				}
+		        $return .= '</select>';
+				$return .= '</td>';
+				$return .= '</tr>';
+			}
 			
 			$return .= '<tr>';
 			$return .= '<th>&nbsp;</th>';
