@@ -144,7 +144,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -228,7 +228,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';

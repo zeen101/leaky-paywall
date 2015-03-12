@@ -132,7 +132,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		global $current_site, $blog_id;
 		$settings = get_leaky_paywall_settings();
 		
-		if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+		if ( is_multisite() && !is_main_site( $blog_id ) ) {
 			$site = '_' . $blog_id;
 		} else {
 			$site = '';

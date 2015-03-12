@@ -153,7 +153,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( is_singular() ) {
 				
 				global $blog_id;
-				if ( is_multisite() && !is_main_site( $blog_id ) ){
+				if ( is_multisite() ){
 					$site = '_' . $blog_id;
 				} else {
 					$site = '';
@@ -582,7 +582,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'license_status'				=> '',
 				'page_for_login'				=> 0, /* Site Specific */
 				'page_for_subscription'			=> 0, /* Site Specific */
-				'page_for_profile'			=> 0, /* Site Specific */
+				'page_for_profile'				=> 0, /* Site Specific */
 				'login_method'					=> 'traditional', //default over passwordless
 				'post_types'					=> ACTIVE_ISSUEM ? array( 'article' ) : array( 'post' ), /* Site Specific */
 				'free_articles'					=> 2,
@@ -633,7 +633,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							),
 						),
 						'deleted' 					=> 0,
-						'sites' 					=> array(),
+						'site' 						=> 'all',
 					)
 				),
 			);
@@ -1355,7 +1355,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		function subscribers_page() {
 			
 			global $blog_id;
-			if ( !$this->is_site_wide_enabled() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1613,10 +1613,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                 	if ( !empty( $email ) && !empty( $user ) ) {
                 	
                 		$login = $user->user_login;
+                		
+                		$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
                 		$subscriber_level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
                 		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
                 		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-                		
+                		$price = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true );
                 		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 						if ( '0000-00-00 00:00:00' === $expires )
 							$expires = '';
@@ -1628,7 +1630,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<div style="display: table">
 	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-original-login" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
-	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true ); ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo $price; ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
@@ -1663,7 +1665,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </select>
 	                        </p>
 	                    	<p>
-		                        <label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php _e( 'Subscriber ID', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ); ?>" name="leaky-paywall-subscriber-id"  />
+		                        <label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php _e( 'Subscriber ID', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo $subscriber_id; ?>" name="leaky-paywall-subscriber-id"  />
 	                        </p>
 	                        <?php do_action( 'update_leaky_paywall_subscriber_form', $user->ID ); ?>
 	                        </div>

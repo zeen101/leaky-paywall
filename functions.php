@@ -29,25 +29,6 @@ if ( !function_exists( 'get_leaky_paywall_settings' ) ) {
 	}
 	
 }
-
-if ( !function_exists( 'is_leaky_paywall_site_wide' ) ) {
-
-	/**
-	 * Helper function to check if zeen101's Leaky Paywall MultiSite options are enabled
-	 *
-	 * @since CHANGEME
-	 *
-	 * @return boolean true if enabled, false otherwise
-	 */
-	function is_leaky_paywall_site_wide() {
-	
-		global $leaky_paywall;
-		
-		return $leaky_paywall->is_site_wide_enabled();
-		
-	}
-	
-}
  
 if ( !function_exists( 'update_leaky_paywall_settings' ) ) {
 
@@ -230,7 +211,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 	function leaky_paywall_has_user_paid( $email=false ) {
 	
 		global $blog_id;
-		if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+		if ( is_multisite() && !is_main_site( $blog_id ) ) {
 			$site = '_' . $blog_id;
 		} else {
 			$site = '';
@@ -426,7 +407,7 @@ if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
 	    if ( isset( $stripe_event->type ) ) {
 		    
 		    global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -519,7 +500,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 			if ( !empty( $_REQUEST['txn_type'] ) ) {
 			    
 				global $blog_id;
-				if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+				if ( is_multisite() && !is_main_site( $blog_id ) ) {
 					$site = '_' . $blog_id;
 				} else {
 					$site = '';
@@ -707,7 +688,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			
 			global $blog_id;
 			
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -809,7 +790,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			
 			global $blog_id;
 			
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -917,7 +898,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1132,7 +1113,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 		if ( leaky_paywall_has_user_paid() ) {
 				
 			global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1169,7 +1150,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 		if ( !empty( $args ) ) {
 			
 			global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1412,27 +1393,6 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			}
 			$return .= '</td>';
 			$return .= '</tr>';
-			
-			if ( is_multisite() ) {
-				if ( is_leaky_paywall_site_wide() ) {
-					$hidden = '';
-				} else {
-					$hidden = 'hidden';
-				}
-				
-				$return .= '<tr class="' . $hidden . '">';
-				$return .= '<th>' . __( 'Sites', 'issuem-leaky-paywall' ) . '</th>';
-				$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-sites">';
-				$return .= '<select id="sites" name="levels[' . $row_key . '][sites][]" multiple="multiple">';
-				$sites = wp_get_sites();
-				foreach( $sites	as $site ) {
-					$blog = get_blog_details( $site['blog_id'] );
-					$return .= '<option value="' . $blog->blog_id . '" ' . selected( in_array( $blog->blog_id, $level['sites'] ) || empty( $level['sites'] ), true, false ) . '>' . $blog->blogname . '</option>';
-				}
-		        $return .= '</select>';
-				$return .= '</td>';
-				$return .= '</tr>';
-			}
 			
 			$return .= '<tr>';
 			$return .= '<th>&nbsp;</th>';
@@ -1721,7 +1681,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 			try {
 		
 				global $blog_id;
-				if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+				if ( is_multisite() && !is_main_site( $blog_id ) ) {
 					$site = '_' . $blog_id;
 				} else {
 					$site = '';
@@ -2166,7 +2126,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 		if ( empty( $results ) ) {
 			
 			global $blog_id;
-			if ( !is_leaky_paywall_site_wide() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
