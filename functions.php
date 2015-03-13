@@ -2076,7 +2076,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 				);
 				if ( $new_user_id ) {
 					// send an email to the admin alerting them of the registration
-					wp_new_user_notification( $new_user_id );
+					wp_new_user_notification( $new_user_id, $user_pass );
 					
 					$args = array(
 						'level_id' 			=> $level_id,
