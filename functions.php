@@ -2095,7 +2095,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 						$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
 					
 					$args['subscriber_email'] = $user_email;
-					leaky_paywall_update_subscriber( $user_email, 'free-' . time(), $args );
+					leaky_paywall_update_subscriber( NULL, $user_email, 'free-' . time(), $args );
 	 
 					// log the new user in
 					wp_setcookie( $user_login, $user_pass, true );
