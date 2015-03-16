@@ -143,48 +143,55 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 				
 		if ( is_user_logged_in() ) {
 			
-			global $blog_id;
-			if ( is_multisite() && !is_main_site( $blog_id ) ) {
-				$site = '_' . $blog_id;
-			} else {
-				$site = '';
+			$sites = array( '' );
+			if ( is_multisite() ) {
+				global $blog_id;			
+				if ( !is_main_site( $blog_id ) ) {
+					$sites = array( '_all', '_' . $blog_id );
+				} else {
+					$sites = array( '_all', '' );
+				}
 			}
 			
 			$user = wp_get_current_user();
-						
+				
 			$results .= apply_filters( 'leaky_paywall_subscriber_info_start', '' );
 			
 			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
-						
-			if ( false !== $expires = leaky_paywall_has_user_paid() ) {
-						
-				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
+
+			foreach ( $sites as $site ) {
 				
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-				
-				switch( $expires ) {
-				
-					case 'subscription':
-						$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
-						break;
+				if ( false !== $expires = leaky_paywall_has_user_paid( $site ) ) {
 						
-					case 'unlimited':
-						$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
-						break;
-				
-					case 'canceled':
-						$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
-						break;
-						
-					default:
-						$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
-						
+					$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
+					
+					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+					
+					switch( $expires ) {
+					
+						case 'subscription':
+							$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>.', 'issuem-leaky-paywall' ), '?cancel' );
+							break;
+							
+						case 'unlimited':
+							$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
+							break;
+					
+						case 'canceled':
+							$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
+							break;
+							
+						default:
+							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+							
+					}
+					
+					$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_end', '' );
+					
+					$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
+									
 				}
-				
-				$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_end', '' );
-				
-				$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
-								
+			
 			}
 			
 			$results .= '</div>';
@@ -227,13 +234,15 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 		
 		if ( is_user_logged_in() ) {
 			
-			global $blog_id;
-			if ( is_multisite() && !is_main_site( $blog_id ) ) {
-				$site = '_' . $blog_id;
-			} else {
-				$site = '';
-			}
-			
+			$sites = array( '' );
+			if ( is_multisite() ) {
+				global $blog_id;			
+				if ( !is_main_site( $blog_id ) ) {
+					$sites = array( '_all', '_' . $blog_id );
+				} else {
+					$sites = array( '_all', '' );
+				}
+			}			
 			$user = wp_get_current_user();
 			
 			$results .= sprintf( __( 'Welcome %s, you are currently logged in. <a href="%s">Click here to log out.</a>', 'issuem-leaky-paywall' ), $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
@@ -242,26 +251,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			$results .= '<h2>' . __( 'Your Subscription', 'issuem-leaky-paywall' ) . '</h2>';
 
 			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
-						
-			$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-			
-			$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-			$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
-			if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
-				$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
-			} else {
-				$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
-			}
-			
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-			
-			$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-			if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-				$expires = __( 'Never', 'issuem-leaky-paywall' );
-			} else {
-				$date_format = get_option( 'date_format' );
-				$expires = mysql2date( $date_format, $expires );
-			}
 			
 			$results .= '<table>';
 			$results .= '<thead>';
@@ -272,12 +261,36 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			$results .= '	<th>' . __( 'Expiration', 'issuem-leaky-paywall' ) . '</th>';
 			$results .= '</tr>';
 			$results .= '</thead>';
-			$results .= '<tbody>';
-			$results .= '	<td>' . ucfirst( $status ) . '</td>';
-			$results .= '	<td>' . $level_name . '</td>';
-			$results .= '	<td>' . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . '</td>';
-			$results .= '	<td>' . $expires . '</td>';
-			$results .= '</tbody>';
+			foreach( $sites as $site ) {
+				$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+				
+				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
+				if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
+					$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
+				} else {
+					$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
+				}
+				
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+				
+				$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+				if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+					$expires = __( 'Never', 'issuem-leaky-paywall' );
+				} else {
+					$date_format = get_option( 'date_format' );
+					$expires = mysql2date( $date_format, $expires );
+				}
+				
+				if ( !empty( $status ) && !empty( $level_name ) && !empty( $payment_gateway ) && !empty( $expires ) ) {
+					$results .= '<tbody>';
+					$results .= '	<td>' . ucfirst( $status ) . '</td>';
+					$results .= '	<td>' . $level_name . '</td>';
+					$results .= '	<td>' . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . '</td>';
+					$results .= '	<td>' . $expires . '</td>';
+					$results .= '</tbody>';
+				}
+			}
 			$results .= '</table>';
 			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_end', '' );
 			

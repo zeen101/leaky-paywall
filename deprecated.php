@@ -20,20 +20,13 @@ if ( !function_exists( 'get_leaky_paywall_subscriber_by_hash' ) ) {
         
         if ( preg_match( '#^[0-9a-f]{32}$#i', $hash ) ) { //verify we get a valid 32 character md5 hash
 	
-			global $blog_id;
-			if ( is_multisite() && !is_main_site( $blog_id ) ) {
-				$site = '_' . $blog_id;
-			} else {
-				$site = '';
-			}
-				
 			if ( empty( $mode ) ) {
                 $settings = get_leaky_paywall_settings();
                 $mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
             }
 
             $args = array(
-                'meta_key'   => '_issuem_leaky_paywall_' . $mode . '_hash' . $site,
+                'meta_key'   => '_issuem_leaky_paywall_' . $mode . '_hash',
                 'meta_value' => $hash,
             );
             $users = get_users( $args );
