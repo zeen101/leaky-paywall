@@ -52,7 +52,7 @@ $leaky_paywall_settings(document).ready(function($) {
 		}
 	});
 	
-	$( '.issuem-leaky-paywall-row-post-type' ).on( 'change', 'select.allowed_type', function( event ) {
+	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'change', '.issuem-leaky-paywall-row-post-type select.allowed_type', function( event ) {
 		var parent = $( this ).parent();
 		if ( 'unlimited' == $( this ).val() ) {
 			console.log( 'here' );
