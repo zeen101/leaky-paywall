@@ -417,8 +417,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$message = str_ireplace( '{{LOGIN_URL}}', $login_url, $message );
 			
 			//Deprecated
-			$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
-			$message = str_ireplace( '{{LENGTH}}', leaky_paywall_human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
+			if ( !empty( $settings['price'] ) ) {
+				$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
+			}
+			if ( !empty( $settings['interval_count'] ) && !empty( $settings['interval'] ) ) {
+				$message = str_ireplace( '{{LENGTH}}', leaky_paywall_human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
+			}
 			
 			return $message;
 			
