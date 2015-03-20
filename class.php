@@ -851,7 +851,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 											&& $settings['license_status'] == 'valid' ) { ?>
 										<span style="color:green;"><?php _e('active'); ?></span>
 										<input type="submit" class="button-secondary" name="leaky_paywall_license_deactivate" value="<?php _e( 'Deactivate License', 'issuem-leaky-paywall' ); ?>"/>
-									<?php } else { ?>
+									<?php } else if ( $settings['license_status'] == 'invalid' ) {	?>
+									<span style="color:red;"><?php _e('invalid'); ?></span>
+									<input type="submit" class="button-secondary" name="leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
+									<?php } else  { ?>
 										<input type="submit" class="button-secondary" name="leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
 									<?php } ?>
 	                                <?php wp_nonce_field( 'verify', 'license_wpnonce' ); ?>
