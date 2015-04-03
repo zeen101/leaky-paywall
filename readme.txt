@@ -2,8 +2,8 @@
 Contributors: layotte, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
-Tested up to: 4.1
-Stable tag: 2.0.8
+Tested up to: 4.2
+Stable tag: 2.0.9
 
 A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
@@ -30,6 +30,13 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 2.0.9 =
+* Adding Australian Dollars
+* Add EDD SL plugin updater class and functionality to lp
+* Add invalid notice to license key field when an incorrect license key is entered, or it is already active on another site
+* Update new user notification for free users so the email sends
+
 = 2.0.8 =
 * Fixed bug when a new free user was updated
 
