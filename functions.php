@@ -313,8 +313,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				} else {
 					$sites = array( '_all', '' );
 				}
-			} else {
+			} else if ( is_int( $blog_id ) ) {
 				$sites = array( '_' . $blog_id );
+			} else {
+				$sites = array( '_all' );
 			}
 		}
 		
@@ -357,8 +359,8 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					if ( !empty( $plan ) ) {
 						if ( isset( $cu->subscriptions ) ) {
 							$subscriptions = $cu->subscriptions->all( 'limit=1' );
-							foreach( $subscriptions->data as $susbcription ) {
-								if ( 'active' === $susbcription->status ) {
+							foreach( $subscriptions->data as $subscription ) {
+								if ( 'active' === $subscription->status ) {
 									return 'subscription';
 								}
 							}
@@ -1080,27 +1082,36 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 				$site = '';
 			}
 			
+			if ( !empty( $_REQUEST['payment_gateway'] ) ) {
+				$payment_gateway = $_REQUEST['payment_gateway'];
+			} else {
+				return '<p>' . __( 'No payment gateway defined.', 'issuem-leaky-paywall' ) . '</p>';
+			}
+			
+			if ( !empty( $_REQUEST['subscriber_id'] ) ) {
+				$subscriber_id = $_REQUEST['subscriber_id'];
+			} else {
+				return '<p>' . __( 'No subscriber ID defined.', 'issuem-leaky-paywall' ) . '</p>';
+			}
+			
 			if ( isset( $_REQUEST['cancel'] ) && empty( $_REQUEST['cancel'] ) ) {
 	
 				$form = '<h3>' . __( 'Cancel Subscription', 'issuem-leaky-paywall' ) . '</h3>';
 	
 				$form .= '<p>' . __( 'Cancellations take effect at the end of your billing cycle, and we can’t give partial refunds for unused time in the billing cycle. If you still wish to cancel now, you may proceed, or you can come back later.', 'issuem-leaky-paywall' ) . '</p>';
 				$form .= '<p>' . sprintf( __( ' Thank you for the time you’ve spent subscribed to %s. We hope you’ll return someday. ', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
-				$form .= '<a href="' . add_query_arg( array( 'cancel' => 'confirm' ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_home_url() . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
+				$form .= '<a href="' . add_query_arg( array( 'cancel' => 'confirm', 'payment_gateway' => $payment_gateway, 'subscriber_id' => $subscriber_id ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_home_url() . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
 				
 				
 			} else if ( !empty( $_REQUEST['cancel'] ) && 'confirm' === $_REQUEST['cancel'] ) {
 				
 				$user = wp_get_current_user();
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 									
 				if ( 'stripe' === $payment_gateway ) {
 				
 					try {
 						
 						$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 													
 						$cu = Stripe_Customer::retrieve( $subscriber_id );
 							
