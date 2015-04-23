@@ -1683,21 +1683,6 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		
         }
 		$return .= '</select>';
-		
-		if ( is_network_admin() && false ) {
-			
-			$return .= '&nbsp;' . __( 'on', 'issuem-leaky-paywall' ) . '&nbsp;';
-			$return .= '<select class="select_level_site" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][site]">';
-			$return .= '<option value="0" ' . selected( 0, $select_post_type['site'], false ) . '>' . __( 'all sites', 'issuem-leaky-paywall' ) . '</option>';
-			$sites = wp_get_sites();
-			foreach ( $sites as $site ) {
-					
-				$return .= '<option value="' . $site['blog_id'] . '" ' . selected( $site['blog_id'], $select_post_type['site'], false ) . '>' . $site['domain'] . $site['path'] . '</option>';
-			
-	        }
-			$return .= '</select>';
-			
-		}
 				
 		$return .= '<span class="delete-x delete-post-type-row">&times;</span>';
 		
