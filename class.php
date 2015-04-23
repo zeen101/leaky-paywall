@@ -88,7 +88,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		}
 		
 		function issuem_pdf_attachment_url( $attachment_url, $attachment_id ) {
-			return add_query_arg( 'issuem-pdf-download', $attachment_id );
+			return esc_url( add_query_arg( 'issuem-pdf-download', $attachment_id ) );
 		}
 		
 		/**
@@ -504,7 +504,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				);
 				
 				// Call the custom API.
-				$response = wp_remote_get( add_query_arg( $api_params, ZEEN101_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+				$response = wp_remote_get( esc_url_raw( add_query_arg( $api_params, ZEEN101_STORE_URL ) ), array( 'timeout' => 15, 'sslverify' => false ) );
 
 				// make sure the response came back okay
 				if ( is_wp_error( $response ) )
@@ -543,7 +543,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				);
 				
 				// Call the custom API.
-				$response = wp_remote_get( add_query_arg( $api_params, ZEEN101_STORE_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+				$response = wp_remote_get( esc_url_raw( add_query_arg( $api_params, ZEEN101_STORE_URL ) ), array( 'timeout' => 15, 'sslverify' => false ) );
 		
 				// make sure the response came back okay
 				if ( is_wp_error( $response ) )
@@ -875,7 +875,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 											&& $settings['license_status'] == 'valid' ) { ?>
 										<span style="color:green;"><?php _e('active'); ?></span>
 										<input type="submit" class="button-secondary" name="leaky_paywall_license_deactivate" value="<?php _e( 'Deactivate License', 'issuem-leaky-paywall' ); ?>"/>
-									<?php } else { ?>
+									<?php } else if ( $settings['license_status'] == 'invalid' ) {	?>
+									<span style="color:red;"><?php _e('invalid'); ?></span>
+									<input type="submit" class="button-secondary" name="leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
+									<?php } else  { ?>
 										<input type="submit" class="button-secondary" name="leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
 									<?php } ?>
 	                                <?php wp_nonce_field( 'verify', 'license_wpnonce' ); ?>
@@ -1062,7 +1065,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                            <tr>
 	                            	<th><?php _e( 'Live Webhooks', 'issuem-leaky-paywall' ); ?></th>
-	                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-stripe-live-webhook', '1', get_site_url() . '/' ); ?></p></td>
+	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-live-webhook', '1', get_site_url() . '/' ) ); ?></p></td>
 	                            </tr>
 	                            
 	                        	<tr>
@@ -1077,7 +1080,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                            <tr>
 	                            	<th><?php _e( 'Test Webhooks', 'issuem-leaky-paywall' ); ?></th>
-	                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-stripe-test-webhook', '1', get_site_url() . '/' ); ?></p></td>
+	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-test-webhook', '1', get_site_url() . '/' ) ); ?></p></td>
 	                            </tr>
 	                            
 	                        </table>
@@ -1124,7 +1127,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                            
 		                            <tr>
 		                            	<th><?php _e( 'Live IPN', 'issuem-leaky-paywall' ); ?></th>
-		                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-live-ipn', '1', get_site_url() . '/' ); ?></p></td>
+		                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'issuem-leaky-paywall-paypal-standard-live-ipn', '1', get_site_url() . '/' ) ); ?></p></td>
 		                            </tr>
 		                            
 		                        	<tr>
@@ -1159,7 +1162,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                            
 		                            <tr>
 		                            	<th><?php _e( 'Sandbox IPN', 'issuem-leaky-paywall' ); ?></th>
-		                            	<td><p class="description"><?php echo add_query_arg( 'issuem-leaky-paywall-paypal-standard-test-ipn', '1', get_site_url() . '/' ); ?></p></td>
+		                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'issuem-leaky-paywall-paypal-standard-test-ipn', '1', get_site_url() . '/' ) ); ?></p></td>
 		                            </tr>
 		                            
 		                        </table>
@@ -1195,7 +1198,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                        		<option value="USD" <?php selected( 'USD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'US Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
 			                        		<option value="GBP" <?php selected( 'GBP', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Pounds Sterling (£)', 'issuem-leaky-paywall' ); ?></option>
 			                        		<option value="EUR" <?php selected( 'EUR', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Euros (€)', 'issuem-leaky-paywall' ); ?></option>
-			
+			                        		<option value="AUD" <?php selected( 'AUD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Australian Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
 			                        	</select>
 			                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'issuem-leaky-paywall' ); ?></p>
 			                        </td>
@@ -1603,7 +1606,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$subscriber_table->prepare_items();
                 $total_pages = $subscriber_table->get_pagination_arg( 'total_pages' );
 		        if ( $pagenum > $total_pages && $total_pages > 0 ) {
-	                wp_redirect( add_query_arg( 'paged', $total_pages ) );
+	                wp_redirect( esc_url_raw( add_query_arg( 'paged', $total_pages ) ) );
 	                exit;
 		        }
 		        
@@ -1675,7 +1678,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </div>
 	                        <?php submit_button( 'Update Subscriber' ); ?>
 	                        <p>
-	                        <a href="<?php echo remove_query_arg( 'edit' ); ?>"><?php _e( 'Cancel', 'issuem-leaky-paywall' ); ?></a>
+	                        <a href="<?php echo esc_url( remove_query_arg( 'edit' ) ); ?>"><?php _e( 'Cancel', 'issuem-leaky-paywall' ); ?></a>
 	                        </p>
 	                        <?php wp_nonce_field( 'edit_subscriber', 'leaky_paywall_edit_subscriber' ); ?>
 						</form>
@@ -1978,7 +1981,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							?>
 							<div id="leaky-paywall-2-0-0-update-nag" class="update-nag">
 								<?php
-								$update_link    = add_query_arg( array( 'page' => 'leaky-paywall-update' ), admin_url( 'admin.php' ) );
+								$update_link = esc_url( add_query_arg( array( 'page' => 'leaky-paywall-update' ), admin_url( 'admin.php' ) ) );
 								printf( __( 'You must update the Leaky Paywall Database to version 2 to continue using this plugin... %s', 'issuem-leaky-paywall' ), '<a class="btn" href="' . $update_link . '">' . __( 'Update Now', 'issuem-leaky-paywall' ) . '</a>' );
 								?>
 							</div>
@@ -1994,7 +1997,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				?>
 				<div id="missing-paypal-settings" class="update-nag">
 					<?php
-					$settings_link    = add_query_arg( array( 'page' => 'issuem-leaky-paywall' ), admin_url( 'admin.php' ) );
+					$settings_link = esc_url( add_query_arg( array( 'page' => 'issuem-leaky-paywall' ), admin_url( 'admin.php' ) ) );
 					printf( __( 'You must complete your PayPal setup to continue using the Leaky Paywall Plugin. %s.', 'issuem-leaky-paywall' ), '<a class="btn" href="' . $settings_link . '">' . __( 'Complete Your Setup Now', 'issuem-leaky-paywall' ) . '</a>' );
 					?>
 				</div>

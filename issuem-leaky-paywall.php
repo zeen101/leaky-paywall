@@ -11,7 +11,7 @@ Plugin Name: Leaky Paywall
 Plugin URI: http://leakypw.com/
 Description: A premium leaky paywall add-on for WordPress and IssueM.
 Author: IssueM Development Team
-Version: 2.0.7
+Version: 2.1.0
 Author URI: http://leakypw.com/
 Tags:
 */
@@ -21,8 +21,8 @@ if ( !defined( 'ZEEN101_STORE_URL' ) )
 	define( 'ZEEN101_STORE_URL',	'http://zeen101.com' );
 	
 define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
-define( 'LEAKY_PAYWALL_SLUG', 		'issuem-leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION',	'2.0.7' );
+define( 'LEAKY_PAYWALL_SLUG', 		'leaky-paywall' );
+define( 'LEAKY_PAYWALL_VERSION',	'2.1.0' );
 define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
 define( 'LEAKY_PAYWALL_URL',		plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
@@ -74,6 +74,22 @@ function leaky_paywall_plugins_loaded() {
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
 			
 	}
+
+	// Upgrade function based on EDD updater class
+	if( !class_exists( 'EDD_SL_Plugin_Updater' ) ) {
+		include( dirname( __FILE__ ) . '/include/EDD_SL_Plugin_Updater.php' );
+	} 
+
+	$settings = $leaky_paywall->get_settings();
+	$license_key = trim( $settings['license_key'] );
+
+	$edd_updater = new EDD_SL_Plugin_Updater( ZEEN101_STORE_URL, __FILE__, array(
+		'version' 	=> '2.0.8', // current version number
+		'license' 	=> $license_key,	
+		'item_name' => LEAKY_PAYWALL_NAME,	
+		'author' 	=> 'Zeen101 Development Team',
+		'url'       => home_url()
+	) );
 
 }
 add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); //wait for the plugins to be loaded before init

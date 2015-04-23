@@ -1100,8 +1100,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 	
 				$form .= '<p>' . __( 'Cancellations take effect at the end of your billing cycle, and we can’t give partial refunds for unused time in the billing cycle. If you still wish to cancel now, you may proceed, or you can come back later.', 'issuem-leaky-paywall' ) . '</p>';
 				$form .= '<p>' . sprintf( __( ' Thank you for the time you’ve spent subscribed to %s. We hope you’ll return someday. ', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
-				$form .= '<a href="' . add_query_arg( array( 'cancel' => 'confirm', 'payment_gateway' => $payment_gateway, 'subscriber_id' => $subscriber_id ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_home_url() . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
-				
+				$form .= '<a href="' . esc_url( add_query_arg( array( 'cancel' => 'confirm' ) ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_home_url() . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
 				
 			} else if ( !empty( $_REQUEST['cancel'] ) && 'confirm' === $_REQUEST['cancel'] ) {
 				
@@ -1195,7 +1194,7 @@ if ( !function_exists( 'send_leaky_paywall_email' ) ) {
 		add_leaky_paywall_login_hash( $email, $login_hash );
 		
 		$message  = 'Log into ' . $settings['site_name']  . ' by opening this link:' . "\r\n";
-		$message .= add_query_arg( 'r', $login_hash, $login_url ) . "\r\n";
+		$message .= esc_url( add_query_arg( 'r', $login_hash, $login_url ) ) . "\r\n";
 		$message .= 'This link will expire after an hour and can only be used once. To log into multiple browsers, send a login request from each one.' . "\r\n";
 		$message .= " - " . $settings['site_name'] . "'s passwordless login system" . "\r\n";
 		
@@ -2282,7 +2281,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 				);
 				if ( $new_user_id ) {
 					// send an email to the admin alerting them of the registration
-					wp_new_user_notification( $new_user_id );
+					wp_new_user_notification( $new_user_id, $user_pass );
 					
 					$args = array(
 						'level_id' 			=> $level_id,
@@ -2567,7 +2566,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 									
 				}
 				
-				$results .= '<form action="' . add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) . '" method="post">
+				$results .= '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
 							  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 							  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 									  data-key="' . esc_js( $publishable_key ) . '"
@@ -2586,7 +2585,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 			
 		} else {
 						
-			$results .= '<form action="' . add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) . '" method="post">
+			$results .= '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
 						  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
@@ -2675,9 +2674,8 @@ if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
 	function leaky_paywall_pay_with_email( $level, $level_id ) {
 		
 		$settings = get_leaky_paywall_settings();
-		
-		$results  = '<form action="' . add_query_arg( 'issuem-leaky-paywall-free-form', $level_id, get_page_link( $settings['page_for_subscription'] ) ) . '" method="post">';
-		$results .= '<button type="submit">' . __( 'Register', 'issuem-leaky-paywall' ) . '</button>';
+		$results  = '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-free-return', $level_id, get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">';
+		$results .= '<button type="submit">' . __( 'Register' ) . '</button>';
 		$results .= '</form>';
 		
 		
