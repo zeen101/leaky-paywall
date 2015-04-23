@@ -116,7 +116,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
-					$sites = array( '_all', '' );
+					$sites = array( '_all', '_' . $blog_id, '' );
 				}
 			}
 			
@@ -208,7 +208,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
-					$sites = array( '_all', '' );
+					$sites = array( '_all', '_' . $blog_id, '' );
 				}
 			}			
 			$user = wp_get_current_user();

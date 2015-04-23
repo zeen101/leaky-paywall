@@ -311,7 +311,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
-					$sites = array( '_all', '' );
+					$sites = array( '_all', '_' . $blog_id, '' );
 				}
 			} else if ( is_int( $blog_id ) ) {
 				$sites = array( '_' . $blog_id );
@@ -1304,7 +1304,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
-					$sites = array( '_all', '' );
+					$sites = array( '_all', '_' . $blog_id, '' );
 				}
 			}
 			
