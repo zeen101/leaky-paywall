@@ -311,7 +311,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
-					$sites = array( '_all', '' );
+					$sites = array( '_all', '_' . $blog_id, '' );
 				}
 			} else if ( is_int( $blog_id ) ) {
 				$sites = array( '_' . $blog_id );
@@ -1304,7 +1304,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
-					$sites = array( '_all', '' );
+					$sites = array( '_all', '_' . $blog_id, '' );
 				}
 			}
 			
@@ -1490,6 +1490,8 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 	 */
 	function build_leaky_paywall_subscription_levels_row( $level=array(), $row_key='' ) {
 		
+		global $leaky_paywall;
+		
 		$return = '';
 	
 		$default = array(
@@ -1591,6 +1593,9 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 	        $return .= '    var leaky_paywall_subscription_row_' . $row_key . '_last_post_type_key = ' . $last_key;
 	        $return .= '</script>';
 			$return .= '<p><input data-row-key="' . $row_key . '" class="button-secondary" id="add-subscription-row-post-type" class="add-new-issuem-leaky-paywall-row-post-type" type="submit" name="add_leaky_paywall_subscription_row_post_type" value="' . __( 'Add New Post Type', 'issuem-leaky-paywall' ) . '" /></p>';
+			if ( $leaky_paywall->is_site_wide_enabled() ) {
+				$return .= '<p class="description">' . __( 'Post Types that are not native the to the site currently being viewed are marked with an asterisk.', 'issuem-leaky-paywall' ) . '</p>';
+			}
 			$return .= '</td>';
 			$return .= '</tr>';
 	        		
@@ -1653,8 +1658,6 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		);
 		$select_post_type = wp_parse_args( $select_post_type, $default_select_post_type );
 		
-		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
-		$post_types = get_post_types( array(), 'objects' );
 
 		$return  = '<div class="issuem-leaky-paywall-row-post-type">';
 		
@@ -1674,30 +1677,19 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		$return .= '</div>';
 		
 		$return .= '<select class="select_level_post_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
-		foreach ( $post_types as $post_type ) {
-			
-			if ( in_array( $post_type->name, $hidden_post_types ) ) 
-				continue;
-				
-			$return .= '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . $post_type->labels->name . '</option>';
-		
+		$post_types = get_post_types( array(), 'objects' );
+		$post_types_names = get_post_types( array(), 'names' );
+		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
+		if ( in_array( $select_post_type['post_type'], $post_types_names ) ) {
+			foreach ( $post_types as $post_type ) {
+				if ( in_array( $post_type->name, $hidden_post_types ) ) 
+					continue;
+				$return .= '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . $post_type->labels->name . '</option>';
+	        }
+        } else {
+			$return .= '<option value="' . $select_post_type['post_type'] . '">' . $select_post_type['post_type'] . ' &#42;</option>';
         }
 		$return .= '</select>';
-		
-		if ( is_network_admin() && false ) {
-			
-			$return .= '&nbsp;' . __( 'on', 'issuem-leaky-paywall' ) . '&nbsp;';
-			$return .= '<select class="select_level_site" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][site]">';
-			$return .= '<option value="0" ' . selected( 0, $select_post_type['site'], false ) . '>' . __( 'all sites', 'issuem-leaky-paywall' ) . '</option>';
-			$sites = wp_get_sites();
-			foreach ( $sites as $site ) {
-					
-				$return .= '<option value="' . $site['blog_id'] . '" ' . selected( $site['blog_id'], $select_post_type['site'], false ) . '>' . $site['domain'] . $site['path'] . '</option>';
-			
-	        }
-			$return .= '</select>';
-			
-		}
 				
 		$return .= '<span class="delete-x delete-post-type-row">&times;</span>';
 		

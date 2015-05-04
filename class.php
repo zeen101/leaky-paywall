@@ -662,6 +662,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				unset( $site_wide_settings['site_name'] );
 				unset( $site_wide_settings['from_name'] );
 				unset( $site_wide_settings['from_email'] );
+				unset( $site_wide_settings['restrictions'] );
+				$site_wide_settings = apply_filters( 'leak_paywall_get_settings_site_wide_settings', $site_wide_settings );
 				$settings = wp_parse_args( $site_wide_settings, $settings );
 			}
 
@@ -844,7 +846,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        	<tr>
 	                                <th rowspan="1"> <?php _e( 'Enable Settings Site Wide?', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
-	                                <td><input type="checkbox" id="site_wide_enabled" name="site_wide_enabled" <?php checked( get_site_option( 'issuem-leaky-paywall-site-wide' ) ); ?> /></td>
+	                                <td><input type="checkbox" id="site_wide_enabled" name="site_wide_enabled" <?php checked( $this->is_site_wide_enabled() ); ?> /></td>
 	                                </td>
 	                            </tr>
 	                        </table>
