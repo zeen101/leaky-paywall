@@ -258,7 +258,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				}
 				
 				$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-				if ( !empty( $plan ) ) {
+				if ( !empty( $plan ) && 'Never' !== $expires ) {
 					$expires = sprintf( __( 'Recurs on %s', 'issuem-leaky-paywall' ), $expires );	
 				}
 							

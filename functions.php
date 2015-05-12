@@ -1971,12 +1971,16 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				wp_set_current_user( $user_id );
 				wp_set_auth_cookie( $user_id );
 				
-				return true;
-				
 			} catch ( Exception $e ) {
 				
 				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
 				
+			}
+				
+			if ( !empty( $settings['page_for_profile'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+			} else if ( !empty( $settings['page_for_subscription'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
 			}
 			
 		}
