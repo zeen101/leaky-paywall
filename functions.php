@@ -1342,8 +1342,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 	
 		if ( !empty( $args ) ) {
 			$site = '';
-			if ( empty( $blog_id ) && is_multisite() && !is_main_site( $blog_id ) ) {
-				global $blog_id;
+			if ( !empty( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			}
 
@@ -1813,15 +1812,15 @@ if ( !function_exists( 'wp_print_r' ) ) {
 if ( !function_exists( 'leaky_paywall_maybe_process_payment' ) ) {
 	
 	function leaky_paywall_maybe_process_payment() {
-				
 		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-return'] ) )
 			return leaky_paywall_process_stripe_payment();
 		
 		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-return'] ) )
 			return leaky_paywall_process_paypal_payment();
 		
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-free-return'] ) )
+		if ( !empty( $_REQUEST['issuem-leaky-paywall-free-return'] ) ) {
 			return leaky_paywall_process_free_registration();
+		}
 			
 		return apply_filters( 'leaky_paywall_maybe_process_payment', false );
 		
@@ -2666,7 +2665,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
 	function leaky_paywall_pay_with_email( $level, $level_id ) {
 		
 		$settings = get_leaky_paywall_settings();
-		$results  = '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-free-return', $level_id, get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">';
+		$results  = '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-free-form', $level_id, get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">';
 		$results .= '<button type="submit">' . __( 'Register' ) . '</button>';
 		$results .= '</form>';
 		
