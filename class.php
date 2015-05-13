@@ -174,9 +174,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						if ( empty( $restrictions ) )
 							$restrictions = $settings['restrictions']; //default restrictions
 						
-						if ( !empty( $restrictions['post_types'] ) ) {
+						if ( !empty( $restrictions ) ) {
 							
-							foreach( $restrictions['post_types'] as $key => $restriction ) {
+							foreach( $restrictions as $key => $restriction ) {
 								
 								if ( is_singular( $restriction['post_type'] ) ) {
 								
@@ -195,7 +195,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 						}
 					
-						$level_id = leaky_paywall_subscriber_current_level_id();
+						$level_ids = leaky_paywall_subscriber_current_level_ids();
 						$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
 						
 						if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
@@ -203,7 +203,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							switch( $visibility['visibility_type'] ) {
 								
 								case 'only':
-									if ( !in_array( $level_id, $visibility['only_visible'], true ) ) {
+									if ( empty( array_intersect( $level_ids, $visibility['only_visible'] ) ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
@@ -211,17 +211,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									break;
 									
 								case 'always':
-									if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
+									if ( in_array( -1, $visibility['always_visible'] ) || !empty( array_intersect( $level_ids, $visibility['always_visible'] ) ) ) { //-1 = Everyone
 										return; //always visible, don't need process anymore
 									}
 									break;
 								
 								case 'onlyalways':
-									if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
+									if ( empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else if ( in_array( $level_id, $visibility['only_always_visible'] ) ) {
+									} else if ( !empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
 										return; //always visible, don't need process anymore
 									}
 									break;
@@ -271,9 +271,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								
 							}
 														
-							if( -1 != $restrictions['post_types'][$post_type_id]['allowed_value'] ) { //-1 means unlimited
+							if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
 																							
-								if ( $restrictions['post_types'][$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
+								if ( $restrictions[$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
 								
 									if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
 										

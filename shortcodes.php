@@ -332,7 +332,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						
 						if ( !empty( $_POST['password1'] ) && !empty( $_POST['password2'] ) ) {
 							if ( $_POST['password1'] === $_POST['password2'] ) {
-								wp_set_password( $_POST['password1'], $user_id );
+								wp_set_password( $_POST['password1'], $user->ID );
 							} else {
 								throw new Exception( __( 'Passwords do not match.', 'issuem-leaky-paywall' ) );
 							}
@@ -402,7 +402,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						try {
 							
 							$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-							$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 															
 							$cu = Stripe_Customer::retrieve( $subscriber_id );
@@ -458,7 +457,8 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				foreach( $sites as $site ) {	
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-	
+					$expires = leaky_paywall_has_user_paid( $user->user_email, $site );
+
 					if ( 'subscription' === $expires ) {
 						switch( $payment_gateway ) {
 							

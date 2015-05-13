@@ -315,6 +315,8 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				}
 			} else if ( is_int( $blog_id ) ) {
 				$sites = array( '_' . $blog_id );
+			} else if ( empty( $blog_id ) ) {
+				$sites = array( '' );
 			} else {
 				$sites = array( '_all' );
 			}
@@ -1274,11 +1276,51 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 	function leaky_paywall_subscriber_restrictions() {
 	
 		$settings = get_leaky_paywall_settings();
-		if ( false !== $restriction_level = leaky_paywall_subscriber_current_level_id() ) {
+		if ( is_multisite() ) {
+			if ( false !== $restriction_levels = leaky_paywall_subscriber_current_level_ids() ) {
 				
-			if ( !empty( $settings['levels'][$restriction_level] ) )
-				return $settings['levels'][$restriction_level];
-			
+				$restrictions = array();
+				$merged_restrictions = array();
+				foreach( $restriction_levels as $restriction_level ) {
+					if ( !empty( $settings['levels'][$restriction_level]['post_types'] ) ) {
+						$restrictions = array_merge( $restrictions, $settings['levels'][$restriction_level]['post_types'] );
+					}
+				}
+				$merged_restrictions = array();
+				foreach( $restrictions as $key => $restriction ) {
+					if ( empty( $merged_restrictions ) ) {
+						$merged_restrictions[$key] = $restriction;
+						continue;
+					} else {
+						$post_type_found = false;
+						foreach( $merged_restrictions as $tmp_key => $tmp_restriction ) {
+							if ( $restriction['post_type'] === $tmp_restriction['post_type'] ) {
+								$post_type_found = true;
+								$post_type_found_key = $tmp_key;
+								break;
+							}
+						}
+						if ( !$post_type_found ) {
+							$merged_restrictions[$key] = $restriction;
+						} else {
+							if ( -1 == $restriction['allowed_value'] ) { //-1 is unlimited, just use it
+								$merged_restrictions[$post_type_found_key] = $restriction;
+							} else if ( $merged_restrictions[$post_type_found_key]['allowed_value'] < $restriction['allowed_value'] ) {
+								$merged_restrictions[$post_type_found_key] = $restriction;
+							}
+						}
+					}
+				}
+				return $merged_restrictions;
+				
+			}
+		} else {
+			if ( false !== $restriction_level = leaky_paywall_subscriber_current_level_id() ) {
+					
+				if ( !empty( $settings['levels'][$restriction_level]['post_types'] ) )
+					return $settings['levels'][$restriction_level]['post_types'];
+				
+			}
 		}
 		return $settings['restrictions']; //defaults
 		
@@ -1321,6 +1363,51 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 				}
 			}
 			
+		}
+		
+		return false;
+		
+	}
+}
+
+if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
+	
+	/**
+	 * Returns current user's subscription restrictions
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return array subscriber's subscription restrictions
+	 */
+	function leaky_paywall_subscriber_current_level_ids() {
+	
+		if ( leaky_paywall_has_user_paid() ) {
+				
+			$sites = array( '' );
+			if ( is_multisite() ) {
+				global $blog_id;
+				if ( !is_main_site( $blog_id ) ) {
+					$sites = array( '_all', '_' . $blog_id );
+				} else {
+					$sites = array( '_all', '_' . $blog_id, '' );
+				}
+			}
+			
+			$user = wp_get_current_user();
+			
+			$settings = get_leaky_paywall_settings();
+			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+			$level_ids = array();
+			foreach ( $sites as $site ) {
+				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
+				$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+				if ( 'active' === $status && is_numeric( $level_id ) ) {
+					$level_ids[] = $level_id;
+				}
+			}
+			return $level_ids;
 		}
 		
 		return false;
@@ -1970,17 +2057,17 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				
 				wp_set_current_user( $user_id );
 				wp_set_auth_cookie( $user_id );
+					
+				if ( !empty( $settings['page_for_profile'] ) ) {
+					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+				} else if ( !empty( $settings['page_for_subscription'] ) ) {
+					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+				}
 				
 			} catch ( Exception $e ) {
 				
 				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
 				
-			}
-				
-			if ( !empty( $settings['page_for_profile'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
-			} else if ( !empty( $settings['page_for_subscription'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
 			}
 			
 		}
