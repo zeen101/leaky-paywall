@@ -1130,7 +1130,8 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 						if ( !empty( $results->status ) && 'canceled' === $results->status ) {
 							
 							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
-							
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled' );
+
 						} else {
 						
 							$form .= '<p>' . sprintf( __( 'ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
@@ -1151,6 +1152,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 					$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
 					$form .= '<p>' . sprintf( __( 'You must cancel your account through PayPal. Please click this unsubscribe button to complete the cancellation process.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
 					$form .= '<p><a href="' . $paypal_url . '?cmd=_subscr-find&alias=' . urlencode( $paypal_email ) . '"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_unsubscribe_LG.gif" border="0"></a></p>';
+					
 				} else {
 					
 					$form .= '<p>' . __( 'Unable to determine your payment method. Please contact support for help canceling your account.', 'issuem-leaky-paywall' ) . '</p>';
@@ -2384,10 +2386,9 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					
 					$args['subscriber_email'] = $user_email;
 					leaky_paywall_update_subscriber( NULL, $user_email, 'free-' . time(), $args );
-	 
-					// log the new user in
-					wp_set_current_user( $user->ID );
-					wp_set_auth_cookie( $user->ID );
+										// log the new user in
+					wp_set_current_user( $new_user_id );
+					wp_set_auth_cookie( $new_user_id );
 					do_action( 'wp_login', $user_login );
 	 
 					// send the newly created user to the home page after logging them in
@@ -2415,7 +2416,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 		global $blog_id;
 		
 		$settings = get_leaky_paywall_settings();
-		$current_level_id = leaky_paywall_subscriber_current_level_id();
+		$current_level_ids = leaky_paywall_subscriber_current_level_ids();
 		
 		$results = apply_filters( 'leaky_paywall_subscription_options', '' );
 		//If someone wants to completely override this, they can with the above filter
@@ -2441,11 +2442,12 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$payment_options = '';
 					$allowed_content = '';
 					
-					if ( (string)$level_id === $current_level_id )
+					if ( in_array( $level_id, $current_level_ids ) ) {
 						$current_level = 'current-level';
-					else
+					} else {
 						$current_level = '';
-				
+					}
+					
 					$results .= '<div class="leaky_paywall_subscription_option ' . $current_level. '">';
 					$results .= '<h3>' . stripslashes( $level['label'] ) . '</h3>';
 					
@@ -2499,11 +2501,11 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= '</div>';
 					
 					//Don't show payment options if the users is currently subscribed to this level
-					if ( (string)$level_id !== $current_level_id ) {
+					if ( !in_array( $level_id, $current_level_ids ) ) {
 						$results .= '<div class="leaky_paywall_subscription_payment_options">';
 						
 						if ( !empty( $level['price'] ) ) {
-							if ( false === $current_level_id ) {
+							if ( false === $current_level_ids ) {
 								//New Account
 								if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
 									$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );

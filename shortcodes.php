@@ -258,7 +258,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				}
 				
 				$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-				if ( !empty( $plan ) && 'Never' !== $expires ) {
+				if ( !empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
 					$expires = sprintf( __( 'Recurs on %s', 'issuem-leaky-paywall' ), $expires );	
 				}
 							
@@ -506,6 +506,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					}
 				}
 			}
+			$results .= '</div>';
 			$results .= apply_filters( 'leaky_paywall_profile_your_payment_info_end', '' );
 			
 		} else {
