@@ -564,6 +564,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'license_status'				=> '',
 				'page_for_login'				=> 0, /* Site Specific */
 				'page_for_subscription'			=> 0, /* Site Specific */
+				'page_for_after_subscribe'		=> 0,
 				'login_method'					=> 'traditional', //default over passwordless
 				'post_types'					=> ACTIVE_LP ? array( 'article' ) : array( 'post' ), /* Site Specific */
 				'free_articles'					=> 2,
@@ -633,6 +634,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				/* These are all site-specific settings */
 				unset( $site_wide_settings['page_for_login'] );
 				unset( $site_wide_settings['page_for_subscription'] );
+				unset( $site_wide_settings['page_for_after_subscribe'] );
 				unset( $site_wide_settings['post_types'] );
 				unset( $site_wide_settings['free_articles'] );
 				unset( $site_wide_settings['cookie_expiration'] );
@@ -683,6 +685,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['page_for_subscription'] ) )
 					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
+
+				if ( !empty( $_REQUEST['page_for_after_subscribe'] ) )
+					$settings['page_for_after_subscribe'] = $_REQUEST['page_for_after_subscribe'];
 					
 				if ( !empty( $_REQUEST['login_method'] ) )
 					$settings['login_method'] = $_REQUEST['login_method'];
@@ -943,6 +948,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										<option value='default' <?php selected( 'default', $settings['css_style'] ); ?> ><?php _e( 'Default', 'issuem-leaky-paywall' ); ?></option>
 										<option value='none' <?php selected( 'none', $settings['css_style'] ); ?> ><?php _e( 'None', 'issuem-leaky-paywall' ); ?></option>
 									</select>
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'After Subscribe Page', 'issuem-leaky-paywall' ); ?></th>
+	                                <td>
+									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
+	                                <p class="description"><?php _e( 'Page to redirect to after a user subscribes', 'issuem-leaky-paywall' ); ?></p>
 	                                </td>
 	                            </tr>
 	                            

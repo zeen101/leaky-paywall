@@ -2115,7 +2115,8 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					do_action( 'wp_login', $user_login );
 	 
 					// send the newly created user to the home page after logging them in
-					wp_redirect( home_url() ); exit;
+					$redirect = ! empty( $settings['page_for_after_subscribe'] ) ? get_page_link( $settings['page_for_after_subscribe'] ) : home_url();
+					wp_redirect( $redirect ); exit;
 				}
 	 
 			}
