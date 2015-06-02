@@ -744,7 +744,11 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				);
 				$user_id = wp_insert_user( $userdata );
 				if ( !is_wp_error( $user_id ) ) {
-					wp_new_user_notification( $user_id, $password ); // If this is a new user signing up, send them their login and password
+					
+					// If this is a new user signing up, emails to admin and new user. We pass userdata so we can send the random password to the user
+					leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
+
+					//wp_new_user_notification( $user_id, $password ); // If this is a new user signing up, send them their login and password
 				}
 			}
 			
@@ -2075,8 +2079,16 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					)
 				);
 				if ( $new_user_id ) {
+
+					$email_args = array(
+						'user_pass'	=> $user_pass
+					);
+
 					// send an email to the admin alerting them of the registration
-					wp_new_user_notification( $new_user_id, $user_pass );
+					leaky_paywall_email_subscription_status( $new_user_id, 'new', $email_args );
+
+					
+					// wp_new_user_notification( $new_user_id, $user_pass );
 					
 					$args = array(
 						'level_id' 			=> $level_id,
