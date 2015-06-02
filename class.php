@@ -575,6 +575,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'site_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
+				'new_email_subject'				=> '',
+				'new_email_body'				=> '',
 				'payment_gateway'				=> array( 'stripe' ),
 				'test_mode'						=> 'off',
 				'live_secret_key'				=> '',
@@ -699,6 +701,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['from_email'] ) )
 					$settings['from_email'] = trim( $_REQUEST['from_email'] );
+
+				if ( !empty( $_REQUEST['new_email_subject'] ) )
+					$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
+
+				if ( !empty( $_REQUEST['new_email_body'] ) )
+					$settings['new_email_body'] = trim( $_REQUEST['new_email_body'] );
 					
 				if ( !empty( $_REQUEST['cookie_expiration'] ) )
 					$settings['cookie_expiration'] = trim( $_REQUEST['cookie_expiration'] );
@@ -971,6 +979,22 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        	<tr>
 	                                <th><?php _e( 'From Email', 'issuem-leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['from_email'] ) ); ?>" /></td>
+	                            </tr>
+
+	                            <tr><td colspan="2"><h3>New Subscriber Email</h3></td></tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Subject', 'issuem-leaky-paywall' ); ?></th>
+	                                <td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['new_email_subject'] ) ); ?>" />
+	                                	<p class="description">The subject line for the email sent to new subscribers.</p>
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Body', 'issuem-leaky-paywall' ); ?></th>
+	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
+	                                <p class="description">The email message that is sent to new subscribers.</p>
+	                                </td>
 	                            </tr>
 	                            
 	                        </table>
