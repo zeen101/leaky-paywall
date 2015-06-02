@@ -2585,3 +2585,101 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 		
 	}
 }
+
+if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
+	
+	function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
+
+		if ( isset($args) ) {
+			$password = $args['user_pass'];
+		}
+
+		$settings = get_leaky_paywall_settings();
+		
+		$user_info = get_userdata( $user_id );
+		$message = '';
+		$admin_message = '';
+
+		$admin_emails = array();
+		$admin_emails = get_option('admin_email');
+
+		$site_name    = stripslashes_deep( html_entity_decode( get_bloginfo('name'), ENT_COMPAT, 'UTF-8' ) );
+		$from_name      = isset( $settings['from_name'] ) ? $settings['from_name'] : $site_name;
+		$from_email     = isset( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
+
+		$headers        = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+		$headers       	.= "Reply-To: ". $from_email . "\r\n";
+
+		switch ( $status ) {
+
+			case "new" :
+
+				// new user subscribe email
+				$message = '<html>
+					<head>
+					  <title>' . $settings['new_email_subject']  . '</title>
+					</head>
+					<body>' . 
+						$settings['new_email_body']
+					. '</body>
+					</html>';
+
+
+				if ( isset($args ) ) {
+
+					// $message .= "\r\n" . 'Your username is: ' . $args['user_login'] . "\r\n";
+					// $message .= "\r\n" . 'Your temporary password is: ' . $password . '. Please log in and update your password.';
+
+				}
+				
+				add_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
+
+				wp_mail( $user_info->user_email, $settings['new_email_subject'], leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password), $headers );
+
+				remove_filter( 'wp_mail_content_type','leaky_paywall_set_email_content_type' );
+
+
+				// new user subscribe admin email
+				$admin_message = 'A new user has signed up on ' . $site_name . '. Congratulations!';
+
+				wp_mail( $admin_emails, __('New subscription on ', 'leaky-paywall') . $site_name, $admin_message, $headers );
+
+
+			break; 
+
+			default:
+				break;
+		}
+
+	}
+
+}
+
+if ( !function_exists( 'leaky_paywall_set_email_content_type' ) ) {
+
+	function leaky_paywall_set_email_content_type( $content_type ) {
+		return 'text/html';
+	}
+
+}
+
+if ( !function_exists( 'leaky_paywall_filter_email_tags' ) ) {
+	
+	function leaky_paywall_filter_email_tags( $message, $user_id, $display_name, $password ) {
+
+		$settings = get_leaky_paywall_settings();
+
+		$user = get_userdata( $user_id );
+
+		$site_name = stripslashes_deep( html_entity_decode( get_bloginfo('name'), ENT_COMPAT, 'UTF-8' ) );
+
+		$message = str_replace('%blogname%', $site_name, $message);
+		$message = str_replace('%username%', $user->user_login, $message);
+		$message = str_replace('%firstname%', $user->user_firstname, $message);
+		$message = str_replace('%lastname%', $user->user_lastname, $message);
+		$message = str_replace('%displayname%', $display_name, $message);
+
+		return $message;
+
+	}
+}
