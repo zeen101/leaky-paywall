@@ -2087,7 +2087,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					// send an email to the admin alerting them of the registration
 					leaky_paywall_email_subscription_status( $new_user_id, 'new', $email_args );
 
-					
+
 					// wp_new_user_notification( $new_user_id, $user_pass );
 					
 					$args = array(
@@ -2646,16 +2646,16 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 				
 				add_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
 
-				wp_mail( $user_info->user_email, $settings['new_email_subject'], leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password), $headers );
+				$filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password);
+
+				wp_mail( $user_info->user_email, $settings['new_email_subject'], $filtered_message , $headers );
 
 				remove_filter( 'wp_mail_content_type','leaky_paywall_set_email_content_type' );
-
 
 				// new user subscribe admin email
 				$admin_message = 'A new user has signed up on ' . $site_name . '. Congratulations!';
 
 				wp_mail( $admin_emails, __('New subscription on ', 'leaky-paywall') . $site_name, $admin_message, $headers );
-
 
 			break; 
 
