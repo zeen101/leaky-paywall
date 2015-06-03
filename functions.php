@@ -1993,6 +1993,9 @@ if ( !function_exists( 'leaky_paywall_free_registration_form' ) ) {
 				$return .= '<p>';
 				$return .= '<input type="hidden" name="leaky_paywall_register_nonce" value="' . wp_create_nonce('leaky_paywall-register-nonce') . '"/>';
 				$return .= '<input type="hidden" name="leaky_paywall_register_level_id" value="' . $level_id . '"/>';
+				
+				$return = apply_filters( 'leaky_paywall_after_registration_fields', $return );
+
 				$return .= '<input type="submit" name="issuem-leaky-paywall-free-return" value="' . __( 'Register Now', 'issuem-leaky-paywall' ) . '"/>';
 				$return .= '</p>';
 				$return .= '</fieldset>';
