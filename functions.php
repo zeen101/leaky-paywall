@@ -2065,6 +2065,8 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 				// passwords do not match
 				leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'issuem-leaky-paywall' ) );
 			}
+
+			do_action( 'leaky_paywall_registration_form_errors', $_POST );
 	 
 			$errors = leaky_paywall_errors()->get_error_messages();
 	 
