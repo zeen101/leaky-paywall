@@ -2174,7 +2174,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					else
 						$current_level = '';
 				
-					$results .= '<div class="leaky_paywall_subscription_option ' . $current_level. '">';
+					$results .= '<div class="leaky_paywall_subscription_option ' . $current_level . '" id="option-' . $level_id . '">';
 					$results .= '<h3>' . stripslashes( $level['label'] ) . '</h3>';
 					
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
