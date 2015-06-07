@@ -751,7 +751,6 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 					// If this is a new user signing up, emails to admin and new user. We pass userdata so we can send the random password to the user
 					leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
 
-					//wp_new_user_notification( $user_id, $password ); // If this is a new user signing up, send them their login and password
 				}
 			}
 			
