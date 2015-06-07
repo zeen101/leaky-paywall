@@ -742,6 +742,9 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 					'user_email' => $email,
 					'user_pass'  => $password,
 				);
+
+                $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
+
 				$user_id = wp_insert_user( $userdata );
 				if ( !is_wp_error( $user_id ) ) {
 					
