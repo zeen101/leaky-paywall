@@ -318,7 +318,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			
 			$user = wp_get_current_user();
 			
-			$results .= sprintf( __( 'Welcome %s, you are currently logged in. <a href="%s">Click here to log out.</a>', 'issuem-leaky-paywall' ), $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
+			$results .= sprintf( __( '<p>Welcome %s, you are currently logged in. <a href="%s">Click here to log out.</a></p>', 'issuem-leaky-paywall' ), $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
 			
 			//Your Subscription
 			$results .= '<h2>' . __( 'Your Subscription', 'issuem-leaky-paywall' ) . '</h2>';
