@@ -153,7 +153,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( is_singular() ) {
 				
 				global $blog_id;
-				if ( is_multisite() && !is_main_site( $blog_id ) ){
+				if ( is_multisite() ){
 					$site = '_' . $blog_id;
 				} else {
 					$site = '';
@@ -162,7 +162,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				if ( !current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) { //Admins can see it all
 				
 					// We don't ever want to block the login, subscription
-					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'] ) ) ) {
+					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'], $settings['page_for_profile'] ) ) ) {
 					
 						global $post;
 						$post_type_id = '';
@@ -174,9 +174,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						if ( empty( $restrictions ) )
 							$restrictions = $settings['restrictions']; //default restrictions
 						
-						if ( !empty( $restrictions['post_types'] ) ) {
+						if ( !empty( $restrictions ) ) {
 							
-							foreach( $restrictions['post_types'] as $key => $restriction ) {
+							foreach( $restrictions as $key => $restriction ) {
 								
 								if ( is_singular( $restriction['post_type'] ) ) {
 								
@@ -195,7 +195,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 						}
 					
-						$level_id = leaky_paywall_subscriber_current_level_id();
+						$level_ids = leaky_paywall_subscriber_current_level_ids();
 						$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
 						
 						if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
@@ -203,7 +203,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							switch( $visibility['visibility_type'] ) {
 								
 								case 'only':
-									if ( !in_array( $level_id, $visibility['only_visible'], true ) ) {
+									if ( empty( array_intersect( $level_ids, $visibility['only_visible'] ) ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
@@ -211,17 +211,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									break;
 									
 								case 'always':
-									if ( in_array( -1, $visibility['always_visible'] ) || in_array( $level_id, $visibility['always_visible'] ) ) { //-1 = Everyone
+									if ( in_array( -1, $visibility['always_visible'] ) || !empty( array_intersect( $level_ids, $visibility['always_visible'] ) ) ) { //-1 = Everyone
 										return; //always visible, don't need process anymore
 									}
 									break;
 								
 								case 'onlyalways':
-									if ( !in_array( $level_id, $visibility['only_always_visible'] ) ) {
+									if ( empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else if ( in_array( $level_id, $visibility['only_always_visible'] ) ) {
+									} else if ( !empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
 										return; //always visible, don't need process anymore
 									}
 									break;
@@ -271,9 +271,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								
 							}
 														
-							if( -1 != $restrictions['post_types'][$post_type_id]['allowed_value'] ) { //-1 means unlimited
+							if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
 																							
-								if ( $restrictions['post_types'][$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
+								if ( $restrictions[$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
 								
 									if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
 										
@@ -310,7 +310,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			if ( $has_subscriber_paid ) {
 						
-				if ( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) 
+				if ( 
+					(
+						( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) ) 
+						|| ( !empty( $settings['page_for_profile'] ) && is_page( $settings['page_for_profile'] )  )
+					)
 					&& isset( $_REQUEST['cancel'] ) ) {
 					
 					wp_die( leaky_paywall_cancellation_confirmation() );
@@ -320,7 +324,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 				if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
 					
-					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					if ( !empty( $settings['page_for_profile'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+					} else if ( !empty( $settings['page_for_subscription'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					}
 					
 				}
 			
@@ -333,7 +341,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					if ( verify_leaky_paywall_login_hash( $login_hash ) ) {
 					
 						leaky_paywall_attempt_login( $login_hash );
-						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+						if ( !empty( $settings['page_for_profile'] ) ) {
+							wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+						} else if ( !empty( $settings['page_for_subscription'] ) ) {
+							wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+						}
 						
 					} else {
 					
@@ -387,9 +399,15 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$subscription_url = get_bloginfo( 'wpurl' ) . '/?subscription'; //CHANGEME -- I don't really know what this is suppose to do...
 			else
 				$subscription_url = get_page_link( $settings['page_for_subscription'] );
+			
+			if ( 0 === $settings['page_for_profile'] )
+				$my_account_url = get_bloginfo( 'wpurl' ) . '/?my-account'; //CHANGEME -- I don't really know what this is suppose to do...
+			else
+				$my_account_url = get_page_link( $settings['page_for_profile'] );
 				
 			$message = str_ireplace( '{{SUBSCRIBE_LOGIN_URL}}', $subscription_url, $message );
 			$message = str_ireplace( '{{SUBSCRIBE_URL}}', $subscription_url, $message );
+			$message = str_ireplace( '{{MY_ACCOUNT_URL}}', $my_account_url, $message );
 			
 			if ( 0 === $settings['page_for_login'] )
 				$login_url = get_bloginfo( 'wpurl' ) . '/?login'; //CHANGEME -- I don't really know what this is suppose to do...
@@ -399,15 +417,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$message = str_ireplace( '{{LOGIN_URL}}', $login_url, $message );
 			
 			//Deprecated
-
-			if ( isset( $settings['price'] ) ) {
+			if ( !empty( $settings['price'] ) ) {
 				$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
 			}
-			
-			if ( isset( $settings['interval_count'] ) ) {
+			if ( !empty( $settings['interval_count'] ) && !empty( $settings['interval'] ) ) {
 				$message = str_ireplace( '{{LENGTH}}', leaky_paywall_human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
 			}
-			
 			
 			return $message;
 			
@@ -572,8 +587,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'page_for_login'				=> 0, /* Site Specific */
 				'page_for_subscription'			=> 0, /* Site Specific */
 				'page_for_after_subscribe'		=> 0,
+				'page_for_profile'				=> 0, /* Site Specific */
 				'login_method'					=> 'traditional', //default over passwordless
-				'post_types'					=> ACTIVE_LP ? array( 'article' ) : array( 'post' ), /* Site Specific */
+				'post_types'					=> ACTIVE_ISSUEM ? array( 'article' ) : array( 'post' ), /* Site Specific */
 				'free_articles'					=> 2,
 				'cookie_expiration' 			=> 24,
 				'cookie_expiration_interval' 	=> 'day',
@@ -603,7 +619,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'restrict_pdf_downloads' 		=> 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
-						'post_type' 	=> ACTIVE_LP ? 'article' : 'post',
+						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
 						'allowed_value' => 2,
 					)
 				),
@@ -618,16 +634,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						'plan_id' 					=> '',
 						'post_types' => array(
 							array(
-								'post_type' 		=> 'post',
-								'allowed'			=> 'limited',
-								'allowed_value' 	=> 5,
-							),
-							array(
-								'post_type' 		=> 'article',
-								'allowed'			=> 'limited',
-								'allowed_value' 	=> 10,
+								'post_type' 		=> ACTIVE_ISSUEM ? 'article' : 'post',
+								'allowed' 			=> 'unlimited',
+								'allowed_value' 	=> -1,
 							),
 						),
+						'deleted' 					=> 0,
+						'site' 						=> 'all',
 					)
 				),
 			);
@@ -642,6 +655,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				unset( $site_wide_settings['page_for_login'] );
 				unset( $site_wide_settings['page_for_subscription'] );
 				unset( $site_wide_settings['page_for_after_subscribe'] );
+				unset( $site_wide_settings['page_for_profile'] );
 				unset( $site_wide_settings['post_types'] );
 				unset( $site_wide_settings['free_articles'] );
 				unset( $site_wide_settings['cookie_expiration'] );
@@ -652,6 +666,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				unset( $site_wide_settings['site_name'] );
 				unset( $site_wide_settings['from_name'] );
 				unset( $site_wide_settings['from_email'] );
+				unset( $site_wide_settings['restrictions'] );
+				$site_wide_settings = apply_filters( 'leak_paywall_get_settings_site_wide_settings', $site_wide_settings );
 				$settings = wp_parse_args( $site_wide_settings, $settings );
 			}
 
@@ -695,6 +711,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 				if ( !empty( $_REQUEST['page_for_after_subscribe'] ) )
 					$settings['page_for_after_subscribe'] = $_REQUEST['page_for_after_subscribe'];
+					
+				if ( !empty( $_REQUEST['page_for_profile'] ) )
+					$settings['page_for_profile'] = $_REQUEST['page_for_profile'];
 					
 				if ( !empty( $_REQUEST['login_method'] ) )
 					$settings['login_method'] = $_REQUEST['login_method'];
@@ -840,7 +859,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        	<tr>
 	                                <th rowspan="1"> <?php _e( 'Enable Settings Site Wide?', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
-	                                <td><input type="checkbox" id="site_wide_enabled" name="site_wide_enabled" <?php checked( get_site_option( 'issuem-leaky-paywall-site-wide' ) ); ?> /></td>
+	                                <td><input type="checkbox" id="site_wide_enabled" name="site_wide_enabled" <?php checked( $this->is_site_wide_enabled() ); ?> /></td>
 	                                </td>
 	                            </tr>
 	                        </table>
@@ -917,6 +936,15 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
 	                                </td>
 	                            </tr>
+	                            
+	                        	<tr>
+	                                <th><?php _e( 'Page for Profile', 'issuem-leaky-paywall' ); ?></th>
+	                                <td>
+									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_profile', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_profile'] ) ); ?>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
+	                                </td>
+	                            </tr>
+	                            
 	                        	<tr>
 	                                <th><?php _e( 'Login Method', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
@@ -1375,7 +1403,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		function subscribers_page() {
 			
 			global $blog_id;
-			if ( !$this->is_site_wide_enabled() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1633,10 +1661,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                 	if ( !empty( $email ) && !empty( $user ) ) {
                 	
                 		$login = $user->user_login;
+                		
+                		$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
                 		$subscriber_level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
                 		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
                 		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-                		
+                		$price = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true );
                 		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 						if ( '0000-00-00 00:00:00' === $expires )
 							$expires = '';
@@ -1648,7 +1678,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<div style="display: table">
 	                    	<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php _e( 'Username (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo $login; ?>" name="leaky-paywall-subscriber-original-login" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
-	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true ); ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo $price; ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
 	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
@@ -1683,7 +1713,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </select>
 	                        </p>
 	                    	<p>
-		                        <label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php _e( 'Subscriber ID', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ); ?>" name="leaky-paywall-subscriber-id"  />
+		                        <label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php _e( 'Subscriber ID', 'issuem-leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo $subscriber_id; ?>" name="leaky-paywall-subscriber-id"  />
 	                        </p>
 	                        <?php do_action( 'update_leaky_paywall_subscriber_form', $user->ID ); ?>
 	                        </div>
@@ -1830,14 +1860,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		}
 				
 		function update_2_0_0() {
-			global $wpdb, $blog_id;
+			global $wpdb;
 						
-			if ( !$this->is_site_wide_enabled() && !is_main_site( $blog_id ) ) {
-				$site = '_' . $blog_id;
-			} else {
-				$site = '';
-			}
-			
 			echo '<h3>' . __( 'Version 2.0.0 Update Process', 'issuem-leaky-paywall' ) . '</h1>';
 			echo '<p>' . __( 'We have decided to use the WordPress Users table to instead of maintaining our own subscribers table. This process will copy all existing leaky paywall subscriber data to individual WordPress users.', 'issuem-leaky-paywall' ) . '</p>';
 			
@@ -1885,7 +1909,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                
 	                foreach( $meta as $key => $value ) {
 		
-						update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_' . $key . $site, $value );
+						update_user_meta( $user_id, '_issuem_leaky_paywall_' . $subscriber->mode . '_' . $key, $value );
 						
 					}
 	                

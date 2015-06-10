@@ -52,9 +52,9 @@ function leaky_paywall_plugins_loaded() {
 	
 	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 	if ( is_plugin_active( 'issuem/issuem.php' ) )
-		define( 'ACTIVE_LP', true );
+		define( 'ACTIVE_ISSUEM', true );
 	else
-		define( 'ACTIVE_LP', false );
+		define( 'ACTIVE_ISSUEM', false );
 
 	require_once( 'class.php' );
 
