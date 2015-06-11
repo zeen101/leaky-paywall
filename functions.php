@@ -2452,10 +2452,13 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 							$current_level = 'current-level';
 						} else {
 							$current_level = '';
+							// setting this to an empty array so in_array doesn't throw errors later on
+							$current_level_ids = array();
 						}
 
 					} else {
 						$current_level = '';
+						$current_level_ids = array();
 					}
 					
 					$results .= '<div class="leaky_paywall_subscription_option ' . $current_level. '">';
