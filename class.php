@@ -1236,10 +1236,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                        <th><?php _e( 'Currency', 'issuem-leaky-paywall' ); ?></th>
 			                        <td>
 			                        	<select id="leaky_paywall_currency" name="leaky_paywall_currency">
-			                        		<option value="USD" <?php selected( 'USD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'US Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
-			                        		<option value="GBP" <?php selected( 'GBP', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Pounds Sterling (£)', 'issuem-leaky-paywall' ); ?></option>
-			                        		<option value="EUR" <?php selected( 'EUR', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Euros (€)', 'issuem-leaky-paywall' ); ?></option>
-			                        		<option value="AUD" <?php selected( 'AUD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Australian Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
+				                        	<?php
+											$currencies = leaky_paywall_supported_currencies();
+											foreach ( $currencies as $key => $currency ) {
+				                        		echo '<option value="' . $key . '" ' . selected( $key, $settings['leaky_paywall_currency'], true ) . '>' . $currency['label'] . ' - ' . $currency['symbol'] . '</option>';
+											}
+				                        	?>
 			                        	</select>
 			                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'issuem-leaky-paywall' ); ?></p>
 			                        </td>
