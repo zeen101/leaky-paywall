@@ -904,9 +904,10 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 					'user_email' => $email,
 					'user_pass'  => $password,
 				);
+                $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
 				$user_id = wp_insert_user( $userdata );
-				if ( !is_wp_error( $user_id ) ) {
-					wp_new_user_notification( $user_id, $password ); // If this is a new user signing up, send them their login and password
+				if ( !is_wp_error( $user_id ) && 'traditional' === $settings['login_method'] ) {
+                    leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
 				}
 			}
 			
@@ -981,7 +982,10 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			
 			$expires = '0000-00-00 00:00:00';
 			
-			if ( $user = get_user_by( 'email', $email ) ) { 
+			if ( is_user_logged_in() && !is_admin() ) {
+				//Update the existing user
+				$user_id = get_current_user_id();
+			} elseif ( $user = get_user_by( 'email', $email ) ) { 
 				//the user already exists
 				//grab the ID for later
 				$user_id = $user->ID;
@@ -1010,10 +1014,10 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id );
 		
 			foreach( $meta as $key => $value ) {
-
 				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
-				
 			}
+			
+			$user_id = wp_update_user( array( 'ID' => $user_id, 'user_email' => $email ) );
 				
 			do_action( 'leaky_paywall_update_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
 		
@@ -1686,10 +1690,10 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			}
 			$return .= '</td>';
 			$return .= '</tr>';
-	       	
-	       	if ( is_multisite() ) {
-
-	       		$return .= '<tr>';
+			
+			if ( is_multisite() ) {
+		        		
+				$return .= '<tr>';
 				$return .= '<th>' . __( 'Site', 'issuem-leaky-paywall' ) . '</th>';
 				$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-site">';
 				$return .= '<select id="site" name="levels[' . $row_key . '][site]">';
@@ -1703,7 +1707,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				$return .= '</td>';
 				$return .= '</tr>';
 			
-	       	}
+			}
 			
 			$return .= apply_filters( 'build_leaky_paywall_subscription_levels_row_addon_filter', '', $level, $row_key );
 			
@@ -1977,13 +1981,30 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				} else {
 					$site = '';
 				}
-
-				if ( $user = get_user_by( 'email', $_POST['stripeEmail'] ) ) {
-					try {
-						$cu = Stripe_Customer::retrieve( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
-					}
-					catch( Exception $e ) {
-						$cu = false;
+				
+				if ( is_user_logged_in() && !is_admin() ) {
+					//Update the existing user
+					$user_id = get_current_user_id();
+					$subscriber_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+				}
+				
+				if ( !empty( $subscriber_id ) ) {
+					$cu = Stripe_Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
+				}
+				
+				if ( empty( $cu ) ) {
+					if ( $user = get_user_by( 'email', $_POST['stripeEmail'] ) ) {
+						try {
+							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+							if ( !empty( $subscriber_id ) ) {
+								$cu = Stripe_Customer::retrieve( $subscriber_id );
+							} else {
+								throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'issuem-leaky-paywall' ) );
+							}
+						}
+						catch( Exception $e ) {
+							$cu = false;
+						}
 					}
 				}
 					
@@ -2055,7 +2076,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 					'plan' 				=> !empty( $customer_array['plan'] ) ? $customer_array['plan'] : '',
 				);
 					
-				if ( !empty( $existing_customer ) ) {
+				if ( is_user_logged_in() || !empty( $existing_customer ) ) {
 					$user_id = leaky_paywall_update_subscriber( NULL, $_POST['stripeEmail'], $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 				} else {
 					$user_id = leaky_paywall_new_subscriber( NULL, $_POST['stripeEmail'], $customer_id, $args );
@@ -2192,8 +2213,8 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						//Mimic PayPal's Plan...
 						if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
 							$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
-						
-						if ( $user = get_user_by( 'email', $user_email ) ) {
+									
+						if ( is_user_logged_in() || $user = get_user_by( 'email', $user_email ) ) {
 							$user_id = leaky_paywall_update_subscriber( NULL, $user_email, $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 						} else {
 							$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
@@ -2368,8 +2389,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					)
 				);
 				if ( $new_user_id ) {
-					// send an email to the admin alerting them of the registration
-					wp_new_user_notification( $new_user_id, $user_pass );
+                    leaky_paywall_email_subscription_status( $new_user_id, 'new', $email_args );
 					
 					$args = array(
 						'level_id' 			=> $level_id,
@@ -2390,10 +2410,13 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					
 					$args['subscriber_email'] = $user_email;
 					leaky_paywall_update_subscriber( NULL, $user_email, 'free-' . time(), $args );
-										// log the new user in
-					wp_set_current_user( $new_user_id );
-					wp_set_auth_cookie( $new_user_id );
-					do_action( 'wp_login', $user_login );
+					
+                    do_action( 'leaky_paywall_after_free_user_created', $new_user_id, $_POST );
+
+                    // log the new user in
+                    wp_setcookie( $user_login, $user_pass, true );
+                    wp_set_current_user( $new_user_id, $user_login );
+                    do_action( 'wp_login', $user_login );
 	 
 					// send the newly created user to the home page after logging them in
 					if ( !empty( $settings['page_for_profile'] ) ) {
@@ -2446,19 +2469,10 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$payment_options = '';
 					$allowed_content = '';
 					
-					if ( $current_level_ids ) {
-
-						if ( in_array( $level_id, $current_level_ids ) ) {
-							$current_level = 'current-level';
-						} else {
-							$current_level = '';
-							// setting this to an empty array so in_array doesn't throw errors later on
-							$current_level_ids = array();
-						}
-
+					if ( in_array( $level_id, $current_level_ids ) ) {
+						$current_level = 'current-level';
 					} else {
 						$current_level = '';
-						$current_level_ids = array();
 					}
 					
 					$results .= '<div class="leaky_paywall_subscription_option ' . $current_level. '">';
@@ -2896,4 +2910,103 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
 		
 	}
+}
+
+if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
+
+        function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
+
+                if ( isset($args) ) {
+                        $password = $args['user_pass'];
+                }
+
+                $settings = get_leaky_paywall_settings();
+
+                $user_info = get_userdata( $user_id );
+                $message = '';
+                $admin_message = '';
+
+                $admin_emails = array();
+                $admin_emails = get_option('admin_email');
+
+                $site_name    = stripslashes_deep( html_entity_decode( get_bloginfo('name'), ENT_COMPAT, 'UTF-8' ) );
+                $from_name      = isset( $settings['from_name'] ) ? $settings['from_name'] : $site_name;
+                $from_email     = isset( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
+
+                $headers        = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+                $headers        .= "Reply-To: ". $from_email . "\r\n";
+
+                switch ( $status ) {
+
+                        case "new" :
+
+                                // new user subscribe email
+                                $message = '<html>
+                                        <head>
+                                          <title>' . $settings['new_email_subject']  . '</title>
+                                        </head>
+                                        <body>' .
+                                                $settings['new_email_body']
+                                        . '</body>
+                                        </html>';
+
+
+                                if ( isset($args ) ) {
+
+                                        // $message .= "\r\n" . 'Your username is: ' . $args['user_login'] . "\r\n";
+                                        // $message .= "\r\n" . 'Your temporary password is: ' . $password . '. Please log in and update your password.';
+
+                                }
+
+                                add_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
+
+                                $filtered_subject = leaky_paywall_filter_email_tags( $settings['new_email_subject'], $user_id, $user_info->display_name, $password);
+                                $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password);
+
+                                wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
+
+                                remove_filter( 'wp_mail_content_type','leaky_paywall_set_email_content_type' );
+
+                                // new user subscribe admin email
+                                $admin_message = 'A new user has signed up on ' . $site_name . '. Congratulations!';
+
+                                wp_mail( $admin_emails, __('New subscription on ', 'leaky-paywall') . $site_name, $admin_message, $headers );
+
+                        break;
+
+                        default:
+                                break;
+                }
+
+        }
+
+}
+
+if ( !function_exists( 'leaky_paywall_set_email_content_type' ) ) {
+
+        function leaky_paywall_set_email_content_type( $content_type ) {
+                return 'text/html';
+        }
+
+}
+
+if ( !function_exists( 'leaky_paywall_filter_email_tags' ) ) {
+
+        function leaky_paywall_filter_email_tags( $message, $user_id, $display_name, $password ) {
+
+                $settings = get_leaky_paywall_settings();
+
+                $user = get_userdata( $user_id );
+
+                $site_name = stripslashes_deep( html_entity_decode( get_bloginfo('name'), ENT_COMPAT, 'UTF-8' ) );
+
+                $message = str_replace('%blogname%', $site_name, $message);
+                $message = str_replace('%username%', $user->user_login, $message);
+                $message = str_replace('%firstname%', $user->user_firstname, $message);
+                $message = str_replace('%lastname%', $user->user_lastname, $message);
+                $message = str_replace('%displayname%', $display_name, $message);
+
+                return $message;
+
+        }
 }
