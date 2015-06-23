@@ -202,8 +202,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 													
 							switch( $visibility['visibility_type'] ) {
 								
+								// using trim() == false instead of empty() for older versions of php 
+								// see note on http://php.net/manual/en/function.empty.php
+
 								case 'only':
-									if ( empty( array_intersect( $level_ids, $visibility['only_visible'] ) ) ) {
+									if ( trim( array_intersect( $level_ids, $visibility['only_visible'] ) ) == false ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
@@ -211,17 +214,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									break;
 									
 								case 'always':
-									if ( in_array( -1, $visibility['always_visible'] ) || !empty( array_intersect( $level_ids, $visibility['always_visible'] ) ) ) { //-1 = Everyone
+									if ( in_array( -1, $visibility['always_visible'] ) || !trim( array_intersect( $level_ids, $visibility['always_visible'] ) ) == false ) { //-1 = Everyone
 										return; //always visible, don't need process anymore
 									}
 									break;
 								
 								case 'onlyalways':
-									if ( empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
+									if ( trim( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) == false ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else if ( !empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
+									} else if ( !trim( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) == false ) {
 										return; //always visible, don't need process anymore
 									}
 									break;
