@@ -1414,6 +1414,9 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 				}
 			}
 			return $level_ids;
+		} else {
+			$level_ids = array();
+			return $level_ids;
 		}
 		
 		return false;
