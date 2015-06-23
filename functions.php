@@ -1435,7 +1435,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 	
 		if ( !empty( $args ) ) {
 			$site = '';
-			if ( !empty( $blog_id ) ) {
+			if ( !empty( $blog_id ) && is_multisite() ) {
 				$site = '_' . $blog_id;
 			}
 
