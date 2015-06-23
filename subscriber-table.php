@@ -67,7 +67,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		// Query the user IDs for this page
 		global $blog_id;
 		$results = leaky_paywall_subscriber_query( $args, $blog_id );
-		$results = array_merge( $results, leaky_paywall_subscriber_query( $args, 'all' ) );
+
 		if ( is_multisite() && is_main_site( $blog_id ) ) {
 			$results = array_merge( $results, leaky_paywall_subscriber_query( $args, false ) );
 		}
@@ -150,10 +150,11 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		}
 
 		$alt = '';
+
 		foreach ( $this->items as $user ) {
 			$user = get_user_by( 'email', $user->user_email );
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-			
+		
 			foreach( $sites as $site ) {
 
 				$alt = ( 'alternate' == $alt ) ? '' : 'alternate';
@@ -164,6 +165,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
 				}
 				
+
 				
 				if ( empty( $payment_gateway ) ) {
 					continue;
