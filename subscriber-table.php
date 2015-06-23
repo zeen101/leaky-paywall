@@ -144,6 +144,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			} else {
 				$sites = array( '_all', '_' . $blog_id, '' );
 			}
+		} else {
+			// create a generic array so that single site installs will iterate through the sites loop below
+			$sites = array( '_all' );
 		}
 
 		$alt = '';
@@ -152,8 +155,15 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 			
 			foreach( $sites as $site ) {
+
 				$alt = ( 'alternate' == $alt ) ? '' : 'alternate';
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+
+				if ( is_multisite() ) {
+					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+				} else {
+					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
+				}
+				
 				
 				if ( empty( $payment_gateway ) ) {
 					continue;
