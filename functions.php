@@ -3002,6 +3002,7 @@ if ( !function_exists( 'leaky_paywall_filter_email_tags' ) ) {
         $message = str_replace('%firstname%', $user->user_firstname, $message);
         $message = str_replace('%lastname%', $user->user_lastname, $message);
         $message = str_replace('%displayname%', $display_name, $message);
+        $message = str_replace('%password%', $password, $message);
 
         return $message;
 

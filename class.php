@@ -1046,7 +1046,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
 	                                <p class="description">The email message that is sent to new subscribers.</p>
 	                                <p class="description">Available template tags: <br>
-	                                %blogname%, %username%, %firstname%, %lastname%, and %displayname%</p>
+	                                %blogname%, %username%, %password%, %firstname%, %lastname%, and %displayname%</p>
 	                                </td>
 	                            </tr>
 	                            
