@@ -2303,6 +2303,7 @@ if ( !function_exists( 'leaky_paywall_free_registration_form' ) ) {
 				$return .= '<label for="password_again">' . __( 'Password Again', 'issuem-leaky-paywall'  ) . '</label>';
 				$return .= '<input name="leaky_paywall_user_pass_confirm" id="password_again" class="required" type="password"/>';
 				$return .= '</p>';
+				$return  = apply_filters( 'leaky_paywall_after_registration_fields', $return );
 				$return .= '<p>';
 				$return .= '<input type="hidden" name="leaky_paywall_register_nonce" value="' . wp_create_nonce('leaky_paywall-register-nonce') . '"/>';
 				$return .= '<input type="hidden" name="leaky_paywall_register_level_id" value="' . $level_id . '"/>';
