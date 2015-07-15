@@ -1957,8 +1957,9 @@ if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 		$settings = get_leaky_paywall_settings();
 		
 		$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
-		if ( isset( $settings['levels'][$level_id] ) ) 
-			return $settings['levels'][$level_id];
+		if ( isset( $settings['levels'][$level_id] ) ) {
+			return apply_filters( 'get_leaky_paywall_subscription_level', $settings['levels'][$level_id], $level_id );
+		}
 		
 		return false;
 	}
@@ -2466,9 +2467,11 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				$results .= '<div class="leaky_paywall_subscription_options">';
 				foreach( $settings['levels'] as $level_id => $level ) {
 					
-					if ( is_multisite() && ( 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
+					if ( is_multisite() && ( !empty( $level['site'] ) && 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
 						continue;
-				
+						
+					$level = apply_filters( 'leaky_paywall_subscription_options_level', $level, $level_id );
+										
 					$payment_options = '';
 					$allowed_content = '';
 					
@@ -2540,7 +2543,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 									}
 									$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
 								}
-								$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level );
+								$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
 							} else {
 								//Upgrade
 								$user = wp_get_current_user();
@@ -2580,12 +2583,12 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 										
 									}
 									
-									$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level );							
+									$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
 								}
 							}
 						} else {
 							$payment_options .= leaky_paywall_pay_with_email( $level, $level_id );
-							$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level );							
+							$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
 						}
 						$results .= '</div>';
 					} else {

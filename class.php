@@ -674,7 +674,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$settings = wp_parse_args( $site_wide_settings, $settings );
 			}
 
-			return $settings;
+			return apply_filters( 'leaky_paywall_get_settings', $settings );
 			
 		}
 		
