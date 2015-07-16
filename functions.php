@@ -438,7 +438,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'refunded':
 					case 'refund':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							continue;
+							return 'unlimited';
 						}
 							
 						if ( strtotime( $expires ) > time() ) {
@@ -464,7 +464,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						continue;
 						break;
 					
-				}
+				}			
 				
 			} else if ( 'free_registration' === $payment_gateway ) {
 				
@@ -1393,6 +1393,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 	 * @return array subscriber's subscription restrictions
 	 */
 	function leaky_paywall_subscriber_current_level_ids() {
+		
 		if ( leaky_paywall_has_user_paid() ) {
 				
 			$sites = array( '' );
