@@ -302,8 +302,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 	 * @return mixed Expiration date or subscriptions status or false if not paid
 	 */
 	function leaky_paywall_has_user_paid( $email=false, $blog_id=null ) {
-	
+		
+		$paid = false;
 		$canceled = false;
+		$expired = false;
 		$sites = array( '' );
 		if ( is_multisite() ) {
 			if ( is_null( $blog_id ) ){
@@ -335,13 +337,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			}
 		}
 		
+		
 		foreach ( $sites as $site ) {
+		
 			$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-
-			if ( empty( $subscriber_id ) ) {
-				continue;
-			}
-			
 			$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 			$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
@@ -350,6 +349,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			if ( 'stripe' === $payment_gateway ) {
 				
 				try {
+					if ( empty( $subscriber_id ) ) {
+						continue;
+					}
+					
 					$cu = Stripe_Customer::retrieve( $subscriber_id );
 		
 					if ( !empty( $cu ) ) {
@@ -380,10 +383,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					} else {
 						if ( strtotime( $expires ) > time() ) {
 							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
-								return $expires;
+								$expired = $expires;
 							}
 						} else {
-							continue;
+							$paid = true;
 						}
 					}
 				} catch ( Exception $e ) {
@@ -406,9 +409,9 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'refunded':
 					case 'refund':
 						if ( strtotime( $expires ) > time() ) {
-							return $expires;
+							$expired = $expires;
 						} else {
-							continue;
+							$paid = true;
 						}
 						break;
 					case 'cancelled':
@@ -435,19 +438,19 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'refunded':
 					case 'refund':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							continue;
+							return 'unlimited';
 						}
 							
 						if ( strtotime( $expires ) > time() ) {
 							return $expires;
 						} else {
-							continue;
+							$paid = true;
 						}
 						break;
 					case 'cancelled':
 					case 'canceled':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return false;
+							$expired = true;
 						} else {
 							$canceled = true;
 						}
@@ -461,7 +464,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						continue;
 						break;
 					
-				}
+				}			
 				
 			} else if ( 'free_registration' === $payment_gateway ) {
 				
@@ -476,15 +479,15 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						}
 							
 						if ( strtotime( $expires ) > time() ) {
-							return $expires;
+							$expired = $expires;
 						} else {
-							continue;
+							$paid = true;
 						}
 						break;
 					case 'cancelled':
 					case 'canceled':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return false;
+							$expired = true;
 						} else {
 							$canceled = true;
 						}
@@ -502,7 +505,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				
 			} else {
 				
-				return apply_filters( 'leaky_paywall_has_user_paid', false, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires );
+				$paid = apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires );
 				
 			}
 			
@@ -511,8 +514,12 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		if ( $canceled ) {
 			return 'cancelled';
 		}
+
+		if ( $expired ) {
+			return $expired;
+		}
 	
-		return false;
+		return $paid;
 		
 	}
 	
@@ -903,11 +910,10 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				    'user_login' => $login,
 					'user_email' => $email,
 					'user_pass'  => $password,
+					'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
 				);
+                $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
 				$user_id = wp_insert_user( $userdata );
-				if ( !is_wp_error( $user_id ) ) {
-					wp_new_user_notification( $user_id, $password ); // If this is a new user signing up, send them their login and password
-				}
 			}
 			
 			if ( !empty( $user_id ) ) {
@@ -939,6 +945,8 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				}
 					
 				do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
+				
+                leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
 				
 				return $user_id;
 				
@@ -981,7 +989,10 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			
 			$expires = '0000-00-00 00:00:00';
 			
-			if ( $user = get_user_by( 'email', $email ) ) { 
+			if ( is_user_logged_in() && !is_admin() ) {
+				//Update the existing user
+				$user_id = get_current_user_id();
+			} elseif ( $user = get_user_by( 'email', $email ) ) { 
 				//the user already exists
 				//grab the ID for later
 				$user_id = $user->ID;
@@ -1010,10 +1021,10 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id );
 		
 			foreach( $meta as $key => $value ) {
-
 				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
-				
 			}
+			
+			$user_id = wp_update_user( array( 'ID' => $user_id, 'user_email' => $email ) );
 				
 			do_action( 'leaky_paywall_update_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
 		
@@ -1324,7 +1335,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 				
 			}
 		}
-		return $settings['restrictions']; //defaults
+		return $settings['restrictions']['post_types']; //defaults
 		
 	}
 }
@@ -1382,7 +1393,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 	 * @return array subscriber's subscription restrictions
 	 */
 	function leaky_paywall_subscriber_current_level_ids() {
-	
+		
 		if ( leaky_paywall_has_user_paid() ) {
 				
 			$sites = array( '' );
@@ -1410,6 +1421,9 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 				}
 			}
 			return $level_ids;
+		} else {
+			$level_ids = array();
+			return $level_ids;
 		}
 		
 		return false;
@@ -1431,7 +1445,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 	
 		if ( !empty( $args ) ) {
 			$site = '';
-			if ( !empty( $blog_id ) ) {
+			if ( !empty( $blog_id ) && is_multisite() ) {
 				$site = '_' . $blog_id;
 			}
 
@@ -1686,20 +1700,24 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			}
 			$return .= '</td>';
 			$return .= '</tr>';
-	        		
-			$return .= '<tr>';
-			$return .= '<th>' . __( 'Site', 'issuem-leaky-paywall' ) . '</th>';
-			$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-site">';
-			$return .= '<select id="site" name="levels[' . $row_key . '][site]">';
-	        $return .= '  <option value="all" ' . selected( 'all' === $level['site'], true, false ) . '>' . __( 'All Sites', 'issuem-leaky-paywall' ) . '</option>';
-			$sites = wp_get_sites();
-			foreach( $sites as $site ) {
-				$site_details = get_blog_details( $site['blog_id'] );
-				$return .= '  <option value="' . $site['blog_id'] . '" ' . selected( $site['blog_id'] === $level['site'], true, false ) . '>' . $site_details->blogname . '</option>';
+			
+			if ( is_multisite() ) {
+		        		
+				$return .= '<tr>';
+				$return .= '<th>' . __( 'Site', 'issuem-leaky-paywall' ) . '</th>';
+				$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-site">';
+				$return .= '<select id="site" name="levels[' . $row_key . '][site]">';
+		        $return .= '  <option value="all" ' . selected( 'all' === $level['site'], true, false ) . '>' . __( 'All Sites', 'issuem-leaky-paywall' ) . '</option>';
+				$sites = wp_get_sites();
+				foreach( $sites as $site ) {
+					$site_details = get_blog_details( $site['blog_id'] );
+					$return .= '  <option value="' . $site['blog_id'] . '" ' . selected( $site['blog_id'] === $level['site'], true, false ) . '>' . $site_details->blogname . '</option>';
+				}
+		        $return .= '</select>';
+				$return .= '</td>';
+				$return .= '</tr>';
+			
 			}
-	        $return .= '</select>';
-			$return .= '</td>';
-			$return .= '</tr>';
 			
 			$return .= apply_filters( 'build_leaky_paywall_subscription_levels_row_addon_filter', '', $level, $row_key );
 			
@@ -1946,8 +1964,9 @@ if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 		$settings = get_leaky_paywall_settings();
 		
 		$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
-		if ( isset( $settings['levels'][$level_id] ) ) 
-			return $settings['levels'][$level_id];
+		if ( isset( $settings['levels'][$level_id] ) ) {
+			return apply_filters( 'get_leaky_paywall_subscription_level', $settings['levels'][$level_id], $level_id );
+		}
 		
 		return false;
 	}
@@ -1973,13 +1992,30 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				} else {
 					$site = '';
 				}
-
-				if ( $user = get_user_by( 'email', $_POST['stripeEmail'] ) ) {
-					try {
-						$cu = Stripe_Customer::retrieve( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
-					}
-					catch( Exception $e ) {
-						$cu = false;
+				
+				if ( is_user_logged_in() && !is_admin() ) {
+					//Update the existing user
+					$user_id = get_current_user_id();
+					$subscriber_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+				}
+				
+				if ( !empty( $subscriber_id ) ) {
+					$cu = Stripe_Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
+				}
+				
+				if ( empty( $cu ) ) {
+					if ( $user = get_user_by( 'email', $_POST['stripeEmail'] ) ) {
+						try {
+							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+							if ( !empty( $subscriber_id ) ) {
+								$cu = Stripe_Customer::retrieve( $subscriber_id );
+							} else {
+								throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'issuem-leaky-paywall' ) );
+							}
+						}
+						catch( Exception $e ) {
+							$cu = false;
+						}
 					}
 				}
 					
@@ -2051,7 +2087,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 					'plan' 				=> !empty( $customer_array['plan'] ) ? $customer_array['plan'] : '',
 				);
 					
-				if ( !empty( $existing_customer ) ) {
+				if ( is_user_logged_in() || !empty( $existing_customer ) ) {
 					$user_id = leaky_paywall_update_subscriber( NULL, $_POST['stripeEmail'], $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 				} else {
 					$user_id = leaky_paywall_new_subscriber( NULL, $_POST['stripeEmail'], $customer_id, $args );
@@ -2188,8 +2224,8 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						//Mimic PayPal's Plan...
 						if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
 							$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
-						
-						if ( $user = get_user_by( 'email', $user_email ) ) {
+									
+						if ( is_user_logged_in() || $user = get_user_by( 'email', $user_email ) ) {
 							$user_id = leaky_paywall_update_subscriber( NULL, $user_email, $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
 						} else {
 							$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
@@ -2352,20 +2388,19 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 			// only create the user in if there are no errors
 			if ( empty( $errors ) ) {
 				
-				$new_user_id = wp_insert_user(
-					array(
-						'user_login'		=> $user_login,
-						'user_pass'	 		=> $user_pass,
-						'user_email'		=> $user_email,
-						'first_name'		=> $user_first,
-						'last_name'			=> $user_last,
-						'user_registered'	=> date('Y-m-d H:i:s'),
-						'role'				=> 'subscriber',
-					)
+                $userdata = array(
+					'user_login'		=> $user_login,
+					'user_pass'	 		=> $user_pass,
+					'user_email'		=> $user_email,
+					'first_name'		=> $user_first,
+					'last_name'			=> $user_last,
+					'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
 				);
-				if ( $new_user_id ) {
-					// send an email to the admin alerting them of the registration
-					wp_new_user_notification( $new_user_id, $user_pass );
+                $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
+				$user_id = wp_insert_user( $userdata );
+				
+				if ( $user_id ) {
+                    leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
 					
 					$args = array(
 						'level_id' 			=> $level_id,
@@ -2386,10 +2421,13 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					
 					$args['subscriber_email'] = $user_email;
 					leaky_paywall_update_subscriber( NULL, $user_email, 'free-' . time(), $args );
-										// log the new user in
-					wp_set_current_user( $new_user_id );
-					wp_set_auth_cookie( $new_user_id );
-					do_action( 'wp_login', $user_login );
+					
+                    do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
+
+                    // log the new user in
+                    wp_setcookie( $user_login, $user_pass, true );
+                    wp_set_current_user( $user_id, $user_login );
+                    do_action( 'wp_login', $user_login );
 	 
 					// send the newly created user to the home page after logging them in
 					if ( !empty( $settings['page_for_profile'] ) ) {
@@ -2436,9 +2474,11 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				$results .= '<div class="leaky_paywall_subscription_options">';
 				foreach( $settings['levels'] as $level_id => $level ) {
 					
-					if ( is_multisite() && ( 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
+					if ( is_multisite() && ( !empty( $level['site'] ) && 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
 						continue;
-				
+						
+					$level = apply_filters( 'leaky_paywall_subscription_options_level', $level, $level_id );
+										
 					$payment_options = '';
 					$allowed_content = '';
 					
@@ -2448,7 +2488,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						$current_level = '';
 					}
 					
-					$results .= '<div class="leaky_paywall_subscription_option ' . $current_level. '">';
+					$results .= '<div id="option-' . $level_id . '" class="leaky_paywall_subscription_option ' . $current_level. '">';
 					$results .= '<h3>' . stripslashes( $level['label'] ) . '</h3>';
 					
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
@@ -2470,23 +2510,16 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= '</div>';
 					
 					$currency = $settings['leaky_paywall_currency'];
-					
-					if ( $currency == 'USD' ) {
-						$currency_sym = '$';
-					} else if ( $currency == 'GBP' ) {
-						$currency_sym = '£';
-					} else if ( $currency == 'EUR' ) {
-						$currency_sym = '€';
-					}
+					$currencies = leaky_paywall_supported_currencies();
 					
 					$results .= '<div class="leaky_paywall_subscription_price">';
 					$results .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$results .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), $currency_sym, number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$results .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), $currencies[$currency]['symbol'], number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$results .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
-							$results .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), $currency_sym, number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$results .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), $currencies[$currency]['symbol'], number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$results .= apply_filters( 'leaky_paywall_before_subscription_options_non_recurring_price', '' );
 						}
 						
@@ -2517,7 +2550,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 									}
 									$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
 								}
-								$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level );
+								$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
 							} else {
 								//Upgrade
 								$user = wp_get_current_user();
@@ -2557,12 +2590,12 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 										
 									}
 									
-									$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level );							
+									$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
 								}
 							}
 						} else {
 							$payment_options .= leaky_paywall_pay_with_email( $level, $level_id );
-							$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level );							
+							$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
 						}
 						$results .= '</div>';
 					} else {
@@ -2882,5 +2915,254 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 		else
 			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
 		
+	}
+}
+
+if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
+
+    function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
+
+        if ( !empty( $args ) ) {
+            $password = $args['user_pass'];
+        } else {
+	        $password = '';
+        }
+
+        $settings = get_leaky_paywall_settings();
+
+        $user_info = get_userdata( $user_id );
+        $message = '';
+        $admin_message = '';
+
+        $admin_emails = array();
+        $admin_emails = get_option( 'admin_email' );
+
+        $site_name  = stripslashes_deep( html_entity_decode( get_bloginfo( 'name' ), ENT_COMPAT, 'UTF-8' ) );
+        $from_name  = isset( $settings['from_name'] ) ? $settings['from_name'] : $site_name;
+        $from_email = isset( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
+
+        $headers  = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+        $headers .= "Reply-To: ". $from_email . "\r\n";
+
+        switch ( $status ) {
+
+            case 'new' :
+
+                // new user subscribe email
+                $message = '<html>
+                                <head>
+                                	<title>' . $settings['new_email_subject']  . '</title>
+                                </head>
+                                <body>' . $settings['new_email_body'] . '</body>
+                            </html>';
+
+
+                if ( isset( $args ) ) {
+                    // $message .= "\r\n" . 'Your username is: ' . $args['user_login'] . "\r\n";
+                    // $message .= "\r\n" . 'Your temporary password is: ' . $password . '. Please log in and update your password.';
+                }
+
+                add_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
+
+                $filtered_subject = leaky_paywall_filter_email_tags( $settings['new_email_subject'], $user_id, $user_info->display_name, $password );
+                $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );
+                
+				if ( 'traditional' === $settings['login_method'] ) {
+                    wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
+				}
+
+                remove_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
+
+                // new user subscribe admin email
+                $admin_message = 'A new user has signed up on ' . $site_name . '. Congratulations!';
+
+                wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'issuem-leaky-paywall' ), $site_name ), $admin_message, $headers );                        
+
+            break;
+
+            default:
+            break;
+            
+        }
+
+    }
+
+}
+
+if ( !function_exists( 'leaky_paywall_set_email_content_type' ) ) {
+
+    function leaky_paywall_set_email_content_type( $content_type ) {
+        return 'text/html';
+    }
+
+}
+
+if ( !function_exists( 'leaky_paywall_filter_email_tags' ) ) {
+
+    function leaky_paywall_filter_email_tags( $message, $user_id, $display_name, $password ) {
+
+        $settings = get_leaky_paywall_settings();
+
+        $user = get_userdata( $user_id );
+
+        $site_name = stripslashes_deep( html_entity_decode( get_bloginfo('name'), ENT_COMPAT, 'UTF-8' ) );
+
+        $message = str_replace('%blogname%', $site_name, $message);
+        $message = str_replace('%username%', $user->user_login, $message);
+        $message = str_replace('%firstname%', $user->user_firstname, $message);
+        $message = str_replace('%lastname%', $user->user_lastname, $message);
+        $message = str_replace('%displayname%', $display_name, $message);
+        $message = str_replace('%password%', $password, $message);
+
+        return $message;
+
+    }
+}
+
+if ( !function_exists( 'leaky_paywall_supported_currencies' ) ) {
+	
+	function leaky_paywall_supported_currencies() {
+		$currencies = array(
+			'AED' => array( 'symbol' => '&#1583;.&#1573;', 'label' => __( 'UAE dirham', 'issuem-leaky-paywall' ) ),
+			'AFN' => array( 'symbol' => 'Afs', 'label' => __( 'Afghan afghani', 'issuem-leaky-paywall' ) ),
+			'ALL' => array( 'symbol' => 'L', 'label' => __( 'Albanian lek', 'issuem-leaky-paywall' ) ),
+			'AMD' => array( 'symbol' => 'AMD', 'label' => __( 'Armenian dram', 'issuem-leaky-paywall' ) ),
+			'ANG' => array( 'symbol' => 'NA&#402;', 'label' => __( 'Netherlands Antillean gulden', 'issuem-leaky-paywall' ) ),
+			'AOA' => array( 'symbol' => 'Kz', 'label' => __( 'Angolan kwanza', 'issuem-leaky-paywall' ) ),
+			'ARS' => array( 'symbol' => '$', 'label' => __( 'Argentine peso', 'issuem-leaky-paywall' ) ),
+			'AUD' => array( 'symbol' => '$', 'label' => __( 'Australian dollar', 'issuem-leaky-paywall' ) ),
+			'AWG' => array( 'symbol' => '&#402;', 'label' => __( 'Aruban florin', 'issuem-leaky-paywall' ) ),
+			'AZN' => array( 'symbol' => 'AZN', 'label' => __( 'Azerbaijani manat', 'issuem-leaky-paywall' ) ),
+			'BAM' => array( 'symbol' => 'KM', 'label' => __( 'Bosnia and Herzegovina konvertibilna marka', 'issuem-leaky-paywall' ) ),
+			'BBD' => array( 'symbol' => 'Bds$', 'label' => __( 'Barbadian dollar', 'issuem-leaky-paywall' ) ),
+			'BDT' => array( 'symbol' => '&#2547;', 'label' => __( 'Bangladeshi taka', 'issuem-leaky-paywall' ) ),
+			'BGN' => array( 'symbol' => 'BGN', 'label' => __( 'Bulgarian lev', 'issuem-leaky-paywall' ) ),
+			'BIF' => array( 'symbol' => 'FBu', 'label' => __( 'Burundi franc', 'issuem-leaky-paywall' ) ),
+			'BMD' => array( 'symbol' => 'BD$', 'label' => __( 'Bermudian dollar', 'issuem-leaky-paywall' ) ),
+			'BND' => array( 'symbol' => 'B$', 'label' => __( 'Brunei dollar', 'issuem-leaky-paywall' ) ),
+			'BOB' => array( 'symbol' => 'Bs.', 'label' => __( 'Bolivian boliviano', 'issuem-leaky-paywall' ) ),
+			'BRL' => array( 'symbol' => 'R$', 'label' => __( 'Brazilian real', 'issuem-leaky-paywall' ) ),
+			'BSD' => array( 'symbol' => 'B$', 'label' => __( 'Bahamian dollar', 'issuem-leaky-paywall' ) ),
+			'BWP' => array( 'symbol' => 'P', 'label' => __( 'Botswana pula', 'issuem-leaky-paywall' ) ),
+			'BZD' => array( 'symbol' => 'BZ$', 'label' => __( 'Belize dollar', 'issuem-leaky-paywall' ) ),
+			'CAD' => array( 'symbol' => '$', 'label' => __( 'Canadian dollar', 'issuem-leaky-paywall' ) ),
+			'CDF' => array( 'symbol' => 'F', 'label' => __( 'Congolese franc', 'issuem-leaky-paywall' ) ),
+			'CHF' => array( 'symbol' => 'CHF', 'label' => __( 'Swiss franc', 'issuem-leaky-paywall' ) ),
+			'CLP' => array( 'symbol' => '$', 'label' => __( 'Chilean peso', 'issuem-leaky-paywall' ) ),
+			'CNY' => array( 'symbol' => '&#165;', 'label' => __( 'Chinese Yuan Renminbi', 'issuem-leaky-paywall' ) ),
+			'COP' => array( 'symbol' => 'Col$', 'label' => __( 'Colombian peso', 'issuem-leaky-paywall' ) ),
+			'CRC' => array( 'symbol' => '&#8353;', 'label' => __( 'Costa Rican colon', 'issuem-leaky-paywall' ) ),
+			'CVE' => array( 'symbol' => 'Esc', 'label' => __( 'Cape Verdean escudo', 'issuem-leaky-paywall' ) ),
+			'CZK' => array( 'symbol' => 'K&#269;', 'label' => __( 'Czech koruna', 'issuem-leaky-paywall' ) ),
+			'DJF' => array( 'symbol' => 'Fdj', 'label' => __( 'Djiboutian franc', 'issuem-leaky-paywall' ) ),
+			'DKK' => array( 'symbol' => 'Kr', 'label' => __( 'Danish krone', 'issuem-leaky-paywall' ) ),
+			'DOP' => array( 'symbol' => 'RD$', 'label' => __( 'Dominican peso', 'issuem-leaky-paywall' ) ),
+			'DZD' => array( 'symbol' => '&#1583;.&#1580;', 'label' => __( 'Algerian dinar', 'issuem-leaky-paywall' ) ),
+			'EEK' => array( 'symbol' => 'KR', 'label' => __( 'Estonian kroon', 'issuem-leaky-paywall' ) ),
+			'EGP' => array( 'symbol' => '&#163;', 'label' => __( 'Egyptian pound', 'issuem-leaky-paywall' ) ),
+			'ETB' => array( 'symbol' => 'Br', 'label' => __( 'Ethiopian birr', 'issuem-leaky-paywall' ) ),
+			'EUR' => array( 'symbol' => '&#8364;', 'label' => __( 'European Euro', 'issuem-leaky-paywall' ) ),
+			'FJD' => array( 'symbol' => 'FJ$', 'label' => __( 'Fijian dollar', 'issuem-leaky-paywall' ) ),
+			'FKP' => array( 'symbol' => '&#163;', 'label' => __( 'Falkland Islands pound', 'issuem-leaky-paywall' ) ),
+			'GBP' => array( 'symbol' => '&#163;', 'label' => __( 'British pound', 'issuem-leaky-paywall' ) ),
+			'GEL' => array( 'symbol' => 'GEL', 'label' => __( 'Georgian lari', 'issuem-leaky-paywall' ) ),
+			'GIP' => array( 'symbol' => '&#163;', 'label' => __( 'Gibraltar pound', 'issuem-leaky-paywall' ) ),
+			'GMD' => array( 'symbol' => 'D', 'label' => __( 'Gambian dalasi', 'issuem-leaky-paywall' ) ),
+			'GNF' => array( 'symbol' => 'FG', 'label' => __( 'Guinean franc', 'issuem-leaky-paywall' ) ),
+			'GTQ' => array( 'symbol' => 'Q', 'label' => __( 'Guatemalan quetzal', 'issuem-leaky-paywall' ) ),
+			'GYD' => array( 'symbol' => 'GY$', 'label' => __( 'Guyanese dollar', 'issuem-leaky-paywall' ) ),
+			'HKD' => array( 'symbol' => 'HK$', 'label' => __( 'Hong Kong dollar', 'issuem-leaky-paywall' ) ),
+			'HNL' => array( 'symbol' => 'L', 'label' => __( 'Honduran lempira', 'issuem-leaky-paywall' ) ),
+			'HRK' => array( 'symbol' => 'kn', 'label' => __( 'Croatian kuna', 'issuem-leaky-paywall' ) ),
+			'HTG' => array( 'symbol' => 'G', 'label' => __( 'Haitian gourde', 'issuem-leaky-paywall' ) ),
+			'HUF' => array( 'symbol' => 'Ft', 'label' => __( 'Hungarian forint', 'issuem-leaky-paywall' ) ),
+			'IDR' => array( 'symbol' => 'Rp', 'label' => __( 'Indonesian rupiah', 'issuem-leaky-paywall' ) ),
+			'ILS' => array( 'symbol' => '&#8362;', 'label' => __( 'Israeli new sheqel', 'issuem-leaky-paywall' ) ),
+			'INR' => array( 'symbol' => '&#8329;', 'label' => __( 'Indian rupee', 'issuem-leaky-paywall' ) ),
+			'ISK' => array( 'symbol' => 'kr', 'label' => __( 'Icelandic króna', 'issuem-leaky-paywall' ) ),
+			'JMD' => array( 'symbol' => 'J$', 'label' => __( 'Jamaican dollar', 'issuem-leaky-paywall' ) ),
+			'JPY' => array( 'symbol' => '&#165;', 'label' => __( 'Japanese yen', 'issuem-leaky-paywall' ) ),
+			'KES' => array( 'symbol' => 'KSh', 'label' => __( 'Kenyan shilling', 'issuem-leaky-paywall' ) ),
+			'KGS' => array( 'symbol' => '&#1089;&#1086;&#1084;', 'label' => __( 'Kyrgyzstani som', 'issuem-leaky-paywall' ) ),
+			'KHR' => array( 'symbol' => '&#6107;', 'label' => __( 'Cambodian riel', 'issuem-leaky-paywall' ) ),
+			'KMF' => array( 'symbol' => 'KMF', 'label' => __( 'Comorian franc', 'issuem-leaky-paywall' ) ),
+			'KRW' => array( 'symbol' => 'W', 'label' => __( 'South Korean won', 'issuem-leaky-paywall' ) ),
+			'KYD' => array( 'symbol' => 'KY$', 'label' => __( 'Cayman Islands dollar', 'issuem-leaky-paywall' ) ),
+			'KZT' => array( 'symbol' => 'T', 'label' => __( 'Kazakhstani tenge', 'issuem-leaky-paywall' ) ),
+			'LAK' => array( 'symbol' => 'KN', 'label' => __( 'Lao kip', 'issuem-leaky-paywall' ) ),
+			'LBP' => array( 'symbol' => '&#163;', 'label' => __( 'Lebanese lira', 'issuem-leaky-paywall' ) ),
+			'LKR' => array( 'symbol' => 'Rs', 'label' => __( 'Sri Lankan rupee', 'issuem-leaky-paywall' ) ),
+			'LRD' => array( 'symbol' => 'L$', 'label' => __( 'Liberian dollar', 'issuem-leaky-paywall' ) ),
+			'LSL' => array( 'symbol' => 'M', 'label' => __( 'Lesotho loti', 'issuem-leaky-paywall' ) ),
+			'LTL' => array( 'symbol' => 'Lt', 'label' => __( 'Lithuanian litas', 'issuem-leaky-paywall' ) ),
+			'LVL' => array( 'symbol' => 'Ls', 'label' => __( 'Latvian lats', 'issuem-leaky-paywall' ) ),
+			'MAD' => array( 'symbol' => 'MAD', 'label' => __( 'Moroccan dirham', 'issuem-leaky-paywall' ) ),
+			'MDL' => array( 'symbol' => 'MDL', 'label' => __( 'Moldovan leu', 'issuem-leaky-paywall' ) ),
+			'MGA' => array( 'symbol' => 'FMG', 'label' => __( 'Malagasy ariary', 'issuem-leaky-paywall' ) ),
+			'MKD' => array( 'symbol' => 'MKD', 'label' => __( 'Macedonian denar', 'issuem-leaky-paywall' ) ),
+			'MNT' => array( 'symbol' => '&#8366;', 'label' => __( 'Mongolian tugrik', 'issuem-leaky-paywall' ) ),
+			'MOP' => array( 'symbol' => 'P', 'label' => __( 'Macanese pataca', 'issuem-leaky-paywall' ) ),
+			'MRO' => array( 'symbol' => 'UM', 'label' => __( 'Mauritanian ouguiya', 'issuem-leaky-paywall' ) ),
+			'MUR' => array( 'symbol' => 'Rs', 'label' => __( 'Mauritian rupee', 'issuem-leaky-paywall' ) ),
+			'MVR' => array( 'symbol' => 'Rf', 'label' => __( 'Maldivian rufiyaa', 'issuem-leaky-paywall' ) ),
+			'MWK' => array( 'symbol' => 'MK', 'label' => __( 'Malawian kwacha', 'issuem-leaky-paywall' ) ),
+			'MXN' => array( 'symbol' => '$', 'label' => __( 'Mexican peso', 'issuem-leaky-paywall' ) ),
+			'MYR' => array( 'symbol' => 'RM', 'label' => __( 'Malaysian ringgit', 'issuem-leaky-paywall' ) ),
+			'MZN' => array( 'symbol' => 'MT', 'label' => __( 'Mozambique Metical', 'issuem-leaky-paywall' ) ),
+			'NAD' => array( 'symbol' => 'N$', 'label' => __( 'Namibian dollar', 'issuem-leaky-paywall' ) ),
+			'NGN' => array( 'symbol' => '&#8358;', 'label' => __( 'Nigerian naira', 'issuem-leaky-paywall' ) ),
+			'NIO' => array( 'symbol' => 'C$', 'label' => __( 'Nicaraguan Córdoba', 'issuem-leaky-paywall' ) ),
+			'NOK' => array( 'symbol' => 'kr', 'label' => __( 'Norwegian krone', 'issuem-leaky-paywall' ) ),
+			'NPR' => array( 'symbol' => 'NRs', 'label' => __( 'Nepalese rupee', 'issuem-leaky-paywall' ) ),
+			'NZD' => array( 'symbol' => 'NZ$', 'label' => __( 'New Zealand dollar', 'issuem-leaky-paywall' ) ),
+			'PAB' => array( 'symbol' => 'B./', 'label' => __( 'Panamanian balboa', 'issuem-leaky-paywall' ) ),
+			'PEN' => array( 'symbol' => 'S/.', 'label' => __( 'Peruvian nuevo sol', 'issuem-leaky-paywall' ) ),
+			'PGK' => array( 'symbol' => 'K', 'label' => __( 'Papua New Guinean kina', 'issuem-leaky-paywall' ) ),
+			'PHP' => array( 'symbol' => '&#8369;', 'label' => __( 'Philippine peso', 'issuem-leaky-paywall' ) ),
+			'PKR' => array( 'symbol' => 'Rs.', 'label' => __( 'Pakistani rupee', 'issuem-leaky-paywall' ) ),
+			'PLN' => array( 'symbol' => 'z&#322;', 'label' => __( 'Polish zloty', 'issuem-leaky-paywall' ) ),
+			'PYG' => array( 'symbol' => '&#8370;', 'label' => __( 'Paraguayan guarani', 'issuem-leaky-paywall' ) ),
+			'QAR' => array( 'symbol' => 'QR', 'label' => __( 'Qatari riyal', 'issuem-leaky-paywall' ) ),
+			'RON' => array( 'symbol' => 'L', 'label' => __( 'Romanian leu', 'issuem-leaky-paywall' ) ),
+			'RSD' => array( 'symbol' => 'din.', 'label' => __( 'Serbian dinar', 'issuem-leaky-paywall' ) ),
+			'RUB' => array( 'symbol' => 'R', 'label' => __( 'Russian ruble', 'issuem-leaky-paywall' ) ),
+			'RWF' => array( 'symbol' => 'R&#8355;', 'label' => 'Rwandan Franc' ),
+			'SAR' => array( 'symbol' => 'SR', 'label' => __( 'Saudi riyal', 'issuem-leaky-paywall' ) ),
+			'SBD' => array( 'symbol' => 'SI$', 'label' => __( 'Solomon Islands dollar', 'issuem-leaky-paywall' ) ),
+			'SCR' => array( 'symbol' => 'SR', 'label' => __( 'Seychellois rupee', 'issuem-leaky-paywall' ) ),
+			'SEK' => array( 'symbol' => 'kr', 'label' => __( 'Swedish krona', 'issuem-leaky-paywall' ) ),
+			'SGD' => array( 'symbol' => 'S$', 'label' => __( 'Singapore dollar', 'issuem-leaky-paywall' ) ),
+			'SHP' => array( 'symbol' => '&#163;', 'label' => __( 'Saint Helena pound', 'issuem-leaky-paywall' ) ),
+			'SLL' => array( 'symbol' => 'Le', 'label' => __( 'Sierra Leonean leone', 'issuem-leaky-paywall' ) ),
+			'SOS' => array( 'symbol' => 'Sh.', 'label' => __( 'Somali shilling', 'issuem-leaky-paywall' ) ),
+			'SRD' => array( 'symbol' => '$', 'label' => __( 'Surinamese dollar', 'issuem-leaky-paywall' ) ),
+			'STD' => array( 'symbol' => 'STD', 'label' => __( 'São Tomé and Príncipe Dobra', 'issuem-leaky-paywall' ) ),
+			'SVC' => array( 'symbol' => '$', 'label' => __( 'El Salvador Colon', 'issuem-leaky-paywall' ) ),
+			'SZL' => array( 'symbol' => 'E', 'label' => __( 'Swazi lilangeni', 'issuem-leaky-paywall' ) ),
+			'THB' => array( 'symbol' => '&#3647;', 'label' => __( 'Thai baht', 'issuem-leaky-paywall' ) ),
+			'TJS' => array( 'symbol' => 'TJS', 'label' => __( 'Tajikistani somoni', 'issuem-leaky-paywall' ) ),
+			'TOP' => array( 'symbol' => 'T$', 'label' => __( "Tonga Pa'anga", 'issuem-leaky-paywall' ) ),
+			'TRY' => array( 'symbol' => 'TRY', 'label' => __( 'Turkish new lira', 'issuem-leaky-paywall' ) ),
+			'TTD' => array( 'symbol' => 'TT$', 'label' => __( 'Trinidad and Tobago dollar', 'issuem-leaky-paywall' ) ),
+			'TWD' => array( 'symbol' => 'NT$', 'label' => __( 'New Taiwan dollar', 'issuem-leaky-paywall' ) ),
+			'TZS' => array( 'symbol' => 'TZS', 'label' => __( 'Tanzanian shilling', 'issuem-leaky-paywall' ) ),
+			'UAH' => array( 'symbol' => 'UAH', 'label' => __( 'Ukrainian hryvnia', 'issuem-leaky-paywall' ) ),
+			'UGX' => array( 'symbol' => 'USh', 'label' => __( 'Ugandan shilling', 'issuem-leaky-paywall' ) ),
+			'USD' => array( 'symbol' => '$', 'label' => __( 'United States dollar', 'issuem-leaky-paywall' ) ),
+			'UYU' => array( 'symbol' => '$U', 'label' => __( 'Uruguayan peso', 'issuem-leaky-paywall' ) ),
+			'UZS' => array( 'symbol' => 'UZS', 'label' => __( 'Uzbekistani som', 'issuem-leaky-paywall' ) ),
+			'VND' => array( 'symbol' => '&#8363;', 'label' => __( 'Vietnamese dong', 'issuem-leaky-paywall' ) ),
+			'VUV' => array( 'symbol' => 'VT', 'label' => __( 'Vanuatu vatu', 'issuem-leaky-paywall' ) ),
+			'WST' => array( 'symbol' => 'WS$', 'label' => __( 'Samoan tala', 'issuem-leaky-paywall' ) ),
+			'XAF' => array( 'symbol' => 'CFA', 'label' => __( 'Central African CFA franc', 'issuem-leaky-paywall' ) ),
+			'XCD' => array( 'symbol' => 'EC$', 'label' => __( 'East Caribbean dollar', 'issuem-leaky-paywall' ) ),
+			'XOF' => array( 'symbol' => 'CFA', 'label' => __( 'West African CFA franc', 'issuem-leaky-paywall' ) ),
+			'XPF' => array( 'symbol' => 'F', 'label' => __( 'CFP franc', 'issuem-leaky-paywall' ) ),
+			'YER' => array( 'symbol' => 'YER', 'label' => __( 'Yemeni rial', 'issuem-leaky-paywall' ) ),
+			'ZAR' => array( 'symbol' => 'R', 'label' => __( 'South African rand', 'issuem-leaky-paywall' ) ),
+			'ZMW' => array( 'symbol' => 'ZK', 'label' => __( 'Zambian kwacha', 'issuem-leaky-paywall' ) ),
+		);
+	
+		return apply_filters( 'leaky_paywall_supported_currencies', $currencies );
 	}
 }

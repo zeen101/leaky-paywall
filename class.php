@@ -172,8 +172,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$restrictions = leaky_paywall_subscriber_restrictions();
 						
 						if ( empty( $restrictions ) )
-							$restrictions = $settings['restrictions']; //default restrictions
-						
+							$restrictions = $settings['restrictions']['post_types']; //default restrictions
+																					
 						if ( !empty( $restrictions ) ) {
 							
 							foreach( $restrictions as $key => $restriction ) {
@@ -202,8 +202,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 													
 							switch( $visibility['visibility_type'] ) {
 								
+								// using trim() == false instead of empty() for older versions of php 
+								// see note on http://php.net/manual/en/function.empty.php
+
 								case 'only':
-									if ( empty( array_intersect( $level_ids, $visibility['only_visible'] ) ) ) {
+									$only = array_intersect( $level_ids, $visibility['only_visible'] );
+									if ( empty( $only ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
@@ -211,17 +215,19 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									break;
 									
 								case 'always':
-									if ( in_array( -1, $visibility['always_visible'] ) || !empty( array_intersect( $level_ids, $visibility['always_visible'] ) ) ) { //-1 = Everyone
+									$always = array_intersect( $level_ids, $visibility['always_visible'] );
+									if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
 										return; //always visible, don't need process anymore
 									}
 									break;
 								
 								case 'onlyalways':
-									if ( empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
+									$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
+									if ( empty( $onlyalways ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else if ( !empty( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) ) {
+									} else if ( !empty( $onlyalways ) ) {
 										return; //always visible, don't need process anymore
 									}
 									break;
@@ -671,7 +677,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$settings = wp_parse_args( $site_wide_settings, $settings );
 			}
 
-			return $settings;
+			return apply_filters( 'leaky_paywall_get_settings', $settings );
 			
 		}
 		
@@ -1043,7 +1049,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
 	                                <p class="description">The email message that is sent to new subscribers.</p>
 	                                <p class="description">Available template tags: <br>
-	                                %blogname%, %username%, %firstname%, %lastname%, and %displayname%</p>
+	                                %blogname%, %username%, %password%, %firstname%, %lastname%, and %displayname%</p>
 	                                </td>
 	                            </tr>
 	                            
@@ -1236,10 +1242,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                        <th><?php _e( 'Currency', 'issuem-leaky-paywall' ); ?></th>
 			                        <td>
 			                        	<select id="leaky_paywall_currency" name="leaky_paywall_currency">
-			                        		<option value="USD" <?php selected( 'USD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'US Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
-			                        		<option value="GBP" <?php selected( 'GBP', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Pounds Sterling (£)', 'issuem-leaky-paywall' ); ?></option>
-			                        		<option value="EUR" <?php selected( 'EUR', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Euros (€)', 'issuem-leaky-paywall' ); ?></option>
-			                        		<option value="AUD" <?php selected( 'AUD', $settings['leaky_paywall_currency'] ); ?>><?php _e( 'Australian Dollars ($)', 'issuem-leaky-paywall' ); ?></option>
+				                        	<?php
+											$currencies = leaky_paywall_supported_currencies();
+											foreach ( $currencies as $key => $currency ) {
+				                        		echo '<option value="' . $key . '" ' . selected( $key, $settings['leaky_paywall_currency'], true ) . '>' . $currency['label'] . ' - ' . $currency['symbol'] . '</option>';
+											}
+				                        	?>
 			                        	</select>
 			                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'issuem-leaky-paywall' ); ?></p>
 			                        </td>
