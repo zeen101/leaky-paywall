@@ -2,8 +2,8 @@
 Contributors: layotte, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.0
-Tested up to: 4.2
-Stable tag: 3.0
+Tested up to: 4.3
+Stable tag: 3.1.0
 
 A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
 
@@ -30,6 +30,19 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+= 3.1.0 =
+* Fixed bug causing default restrictions to not be found
+* Fixed bug caused when multiple payments exist for a user
+* Updated for Leaky Paywal Coupons
+* Updated various texts and tags
+* Fixed bugs related to emails not being sent
+* Remove duplicate entries in subscriber table
+* Fix php errors on subscription page
+* Add multisite checks to subscriber table user data
+* Only add blog id to subscriber query if is multisite
+* Add level id to each subscription option subscribe box
+* Adding all the Stripe supported currencies
+* Fixing bug w/ Free Susbcription disappearing on upgrade, username changing on upgrade, email notifications not wokring, and email notifications not replacing args
 
 = 3.0.0 =
 * Initial Multisite Support
