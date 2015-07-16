@@ -172,8 +172,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$restrictions = leaky_paywall_subscriber_restrictions();
 						
 						if ( empty( $restrictions ) )
-							$restrictions = $settings['restrictions']; //default restrictions
-						
+							$restrictions = $settings['restrictions']['post_types']; //default restrictions
+														
 						if ( !empty( $restrictions ) ) {
 							
 							foreach( $restrictions as $key => $restriction ) {
