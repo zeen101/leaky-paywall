@@ -1335,7 +1335,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 				
 			}
 		}
-		return $settings['restrictions']; //defaults
+		return $settings['restrictions']['post_types']; //defaults
 		
 	}
 }
