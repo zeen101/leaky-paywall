@@ -172,8 +172,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$restrictions = leaky_paywall_subscriber_restrictions();
 						
 						if ( empty( $restrictions ) )
-							$restrictions = $settings['restrictions']; //default restrictions
-						
+							$restrictions = $settings['restrictions']['post_types']; //default restrictions
+																					
 						if ( !empty( $restrictions ) ) {
 							
 							foreach( $restrictions as $key => $restriction ) {
@@ -206,7 +206,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								// see note on http://php.net/manual/en/function.empty.php
 
 								case 'only':
-									if ( trim( array_intersect( $level_ids, $visibility['only_visible'] ) ) == false ) {
+									$only = array_intersect( $level_ids, $visibility['only_visible'] );
+									if ( empty( $only ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
@@ -214,17 +215,19 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									break;
 									
 								case 'always':
-									if ( in_array( -1, $visibility['always_visible'] ) || !trim( array_intersect( $level_ids, $visibility['always_visible'] ) ) == false ) { //-1 = Everyone
+									$always = array_intersect( $level_ids, $visibility['always_visible'] );
+									if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
 										return; //always visible, don't need process anymore
 									}
 									break;
 								
 								case 'onlyalways':
-									if ( trim( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) == false ) {
+									$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
+									if ( empty( $onlyalways ) ) {
 										add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 										do_action( 'leaky_paywall_is_restricted_content' );
 										return;
-									} else if ( !trim( array_intersect( $level_ids, $visibility['only_always_visible'] ) ) == false ) {
+									} else if ( !empty( $onlyalways ) ) {
 										return; //always visible, don't need process anymore
 									}
 									break;

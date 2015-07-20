@@ -302,8 +302,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 	 * @return mixed Expiration date or subscriptions status or false if not paid
 	 */
 	function leaky_paywall_has_user_paid( $email=false, $blog_id=null ) {
-	
+		
+		$paid = false;
 		$canceled = false;
+		$expired = false;
 		$sites = array( '' );
 		if ( is_multisite() ) {
 			if ( is_null( $blog_id ) ){
@@ -335,13 +337,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			}
 		}
 		
+		
 		foreach ( $sites as $site ) {
+		
 			$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-
-			if ( empty( $subscriber_id ) ) {
-				continue;
-			}
-			
 			$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 			$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
@@ -350,6 +349,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			if ( 'stripe' === $payment_gateway ) {
 				
 				try {
+					if ( empty( $subscriber_id ) ) {
+						continue;
+					}
+					
 					$cu = Stripe_Customer::retrieve( $subscriber_id );
 		
 					if ( !empty( $cu ) ) {
@@ -380,10 +383,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					} else {
 						if ( strtotime( $expires ) > time() ) {
 							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
-								return $expires;
+								$expired = $expires;
 							}
 						} else {
-							continue;
+							$paid = true;
 						}
 					}
 				} catch ( Exception $e ) {
@@ -406,9 +409,9 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'refunded':
 					case 'refund':
 						if ( strtotime( $expires ) > time() ) {
-							return $expires;
+							$expired = $expires;
 						} else {
-							continue;
+							$paid = true;
 						}
 						break;
 					case 'cancelled':
@@ -435,19 +438,19 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'refunded':
 					case 'refund':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							continue;
+							return 'unlimited';
 						}
 							
 						if ( strtotime( $expires ) > time() ) {
 							return $expires;
 						} else {
-							continue;
+							$paid = true;
 						}
 						break;
 					case 'cancelled':
 					case 'canceled':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return false;
+							$expired = true;
 						} else {
 							$canceled = true;
 						}
@@ -461,7 +464,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						continue;
 						break;
 					
-				}
+				}			
 				
 			} else if ( 'free_registration' === $payment_gateway ) {
 				
@@ -476,15 +479,15 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						}
 							
 						if ( strtotime( $expires ) > time() ) {
-							return $expires;
+							$expired = $expires;
 						} else {
-							continue;
+							$paid = true;
 						}
 						break;
 					case 'cancelled':
 					case 'canceled':
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return false;
+							$expired = true;
 						} else {
 							$canceled = true;
 						}
@@ -502,7 +505,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				
 			} else {
 				
-				return apply_filters( 'leaky_paywall_has_user_paid', false, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires );
+				$paid = apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires );
 				
 			}
 			
@@ -511,8 +514,12 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		if ( $canceled ) {
 			return 'cancelled';
 		}
+
+		if ( $expired ) {
+			return $expired;
+		}
 	
-		return false;
+		return $paid;
 		
 	}
 	
@@ -1328,7 +1335,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 				
 			}
 		}
-		return $settings['restrictions']; //defaults
+		return $settings['restrictions']['post_types']; //defaults
 		
 	}
 }
@@ -1386,7 +1393,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 	 * @return array subscriber's subscription restrictions
 	 */
 	function leaky_paywall_subscriber_current_level_ids() {
-	
+		
 		if ( leaky_paywall_has_user_paid() ) {
 				
 			$sites = array( '' );
