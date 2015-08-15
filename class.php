@@ -53,6 +53,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			//Premium Plugin Filters
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
 			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
+
 			
 			add_action( 'wp', array( $this, 'process_requests' ) );
 			
@@ -153,7 +154,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( is_singular() ) {
 				
 				global $blog_id;
-				if ( is_multisite() ){
+				if ( is_multisitePremium() ){
 					$site = '_' . $blog_id;
 				} else {
 					$site = '';
@@ -620,6 +621,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'paypal_sand_email'				=> '',
 				'paypal_sand_api_username'		=> '',
 				'paypal_sand_api_password'		=> '',
+				'multisite_premium'				=> '',
 				'paypal_sand_api_secret'		=> '',
 				'leaky_paywall_currency'		=> 'USD',
 				'restrict_pdf_downloads' 		=> 'off',
@@ -676,6 +678,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$site_wide_settings = apply_filters( 'leak_paywall_get_settings_site_wide_settings', $site_wide_settings );
 				$settings = wp_parse_args( $site_wide_settings, $settings );
 			}
+
+			$settings = apply_filters('leaky_paywall_multisite_premium', $settings);
 
 			return apply_filters( 'leaky_paywall_get_settings', $settings );
 			
@@ -813,7 +817,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['paypal_sand_api_secret'] ) )
 					$settings['paypal_sand_api_secret'] = apply_filters( 'zeen101_demo_paypal_sand_api_secret', trim( $_REQUEST['paypal_sand_api_secret'] ) );
-					
+				
+				if ( !empty( $_REQUEST['multisite_premium'] ) )
+					$settings['multisite_premium'] = FALSE;
+
 				if ( !empty( $_REQUEST['restrictions'] ) )
 					$settings['restrictions'] = $_REQUEST['restrictions'];
 				else
@@ -851,7 +858,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
             
                     <h2 style='margin-bottom: 10px;' ><?php _e( "zeen101's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
   		
-						<?php if ( is_multisite() && is_super_admin() ) { ?>
+						<?php if ( is_multisitePremium() && is_super_admin() ) { ?>
   		
 						<div id="site-wide-option" class="postbox">
 	                    
@@ -1411,7 +1418,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		function subscribers_page() {
 			
 			global $blog_id;
-			if ( is_multisite() && !is_main_site( $blog_id ) ) {
+			$settings = get_leaky_paywall_settings();
+
+			if ( is_multisitePremium() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1421,7 +1430,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$jquery_date_format = leaky_paywall_jquery_datepicker_format( $date_format );
 			$headings = apply_filters( 'leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id', 'subscriber-id' ) );
 			
-			$settings = get_leaky_paywall_settings();
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		   
 			?>

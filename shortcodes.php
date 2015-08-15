@@ -111,7 +111,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			$sites = array( '' );
-			if ( is_multisite() ) {
+			if ( is_multisitePremium() ) {
 				global $blog_id;			
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
@@ -209,7 +209,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			$sites = array( '' );
-			if ( is_multisite() ) {
+			if ( is_multisitePremium() ) {
 				global $blog_id;			
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
