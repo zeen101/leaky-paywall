@@ -1303,6 +1303,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 	
 		$settings = get_leaky_paywall_settings();
 		if ( is_multisitePremium() ) {
+
 			if ( false !== $restriction_levels = leaky_paywall_subscriber_current_level_ids() ) {
 				
 				$restrictions = array();
@@ -1337,6 +1338,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 						}
 					}
 				}
+				if(empty($merged_restrictions) ) return $settings['restrictions']['post_types'];
 				return $merged_restrictions;
 				
 			}
@@ -1406,7 +1408,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 	 * @return array subscriber's subscription restrictions
 	 */
 	function leaky_paywall_subscriber_current_level_ids() {
-		
+
 		if ( leaky_paywall_has_user_paid() ) {
 			$settings = get_leaky_paywall_settings();
 				
