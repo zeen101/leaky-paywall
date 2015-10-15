@@ -831,6 +831,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				} else {
 					$settings['levels'] = array();
 				}
+
+				if ( !empty( $_REQUEST['site_wide_enabled'] ) ) {
+					update_site_option( 'issuem-leaky-paywall-site-wide', true );
+				} else {
+					update_site_option( 'issuem-leaky-paywall-site-wide', false );
+				}
 				
 				$this->update_settings( $settings );
 				$settings_saved = true;
