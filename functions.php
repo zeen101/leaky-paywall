@@ -49,13 +49,13 @@ if ( !function_exists( 'update_leaky_paywall_settings' ) ) {
 	
 }
 
-if (!function_exists('is_multisitePremium') ) {
+if (!function_exists('is_multisite_premium') ) {
 
-	function is_multisitePremium() {
-		global $leaky_paywall;
+	function is_multisite_premium() {
 		$settings = get_leaky_paywall_settings();
-		if($settings['multisite_premium'] && is_multisite() ) return true;
-
+		if ( is_multisite() && function_exists( 'is_leaky_paywall_multisite' ) ) {
+			return is_leaky_paywall_multisite();
+		}
 		return false;
 	}
 }
@@ -69,7 +69,7 @@ if ( !function_exists( 'get_leaky_paywall_subscribers_site_id_by_subscriber_id' 
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		}
 		
-		if ( is_multisitePremium() ) {
+		if ( is_multisite_premium() ) {
 			global $wpdb;
 			$results = $wpdb->get_col( 
 				$wpdb->prepare( 
@@ -106,7 +106,7 @@ if ( !function_exists( 'get_leaky_paywall_subscribers_site_id_by_subscriber_emai
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		}
 		
-		if ( is_multisitePremium() ) {
+		if ( is_multisite_premium() ) {
 			global $wpdb;
 			$results = $wpdb->get_col( 
 				$wpdb->prepare( 
@@ -144,7 +144,7 @@ if ( !function_exists( 'get_leaky_paywall_subscriber_by_subscriber_id' ) ) {
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		}
 		
-		if ( is_multisitePremium() ) {
+		if ( is_multisite_premium() ) {
 			if ( empty( $blog_id ) ) {
 				if ( $blog_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $subscriber_id ) ) {
 					$site = '_' . $blog_id;
@@ -182,7 +182,7 @@ if ( !function_exists( 'get_leaky_paywall_subscriber_by_subscriber_email' ) ) {
 				$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 			}
 		
-			if ( is_multisitePremium() ) {
+			if ( is_multisite_premium() ) {
 				if ( empty( $blog_id ) ) {
 					if ( $blog_id = get_leaky_paywall_subscribers_site_id_by_subscriber_email( $subscriber_email ) ) {
 						$site = '_' . $blog_id;
@@ -319,7 +319,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		$canceled = false;
 		$expired = false;
 		$sites = array( '' );
-		if ( is_multisitePremium() ) {
+		if ( is_multisite_premium() ) {
 			if ( is_null( $blog_id ) ){
 				global $blog_id;			
 				if ( !is_main_site( $blog_id ) ) {
@@ -554,7 +554,7 @@ if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
 		
 			if ( !empty( $user ) ) {
 				
-				if ( is_multisitePremium() ) {
+				if ( is_multisite_premium() ) {
 					if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $stripe_object->customer ) ) {
 						$site = '_' . $site_id;
 					}
@@ -651,7 +651,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 				$args['interval'] = $level['interval'];
 				$args['interval_count'] = $level['interval_count'];
 				
-				if ( is_multisitePremium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
+				if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
 					$site = '_' . $level['site'];
 				} else {
 					$site = '';
@@ -718,7 +718,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 
 						$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
 						
-						if ( is_multisitePremium() ) {
+						if ( is_multisite_premium() ) {
 							if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 								$site = '_' . $site_id;
 							}
@@ -740,7 +740,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					case 'subscr_cancel':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
-							if ( is_multisitePremium() ) {
+							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 									$site = '_' . $site_id;
 								}
@@ -754,7 +754,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					case 'subscr_eot':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
-							if ( is_multisitePremium() ) {
+							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 									$site = '_' . $site_id;
 								}
@@ -768,7 +768,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					case 'recurring_payment_suspended_due_to_max_failed_payment':
 						if ( isset( $_REQUEST['recurring_payment_id'] ) ) { //subscr_payment
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['recurring_payment_id'], $mode );
-							if ( is_multisitePremium() ) {
+							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['recurring_payment_id'] ) ) {
 									$site = '_' . $site_id;
 								}
@@ -782,7 +782,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					case 'recurring_payment_suspended':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
-							if ( is_multisitePremium() ) {
+							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 									$site = '_' . $site_id;
 								}
@@ -792,7 +792,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 							}
 						} else if ( isset( $_REQUEST['recurring_payment_id'] ) ) { //subscr_payment
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['recurring_payment_id'], $mode );
-							if ( is_multisitePremium() ) {
+							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['recurring_payment_id'] ) ) {
 									$site = '_' . $site_id;
 								}
@@ -808,7 +808,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					$user = get_user_by( 'email', $_REQUEST['custom'] );
 					if ( empty( $user ) ) {
 						$user = get_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['custom'], $mode );
-						if ( is_multisitePremium() ) {
+						if ( is_multisite_premium() ) {
 							if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_email( $_REQUEST['custom'] ) ) {
 								$args['site'] = $site_id;
 							}
@@ -820,7 +820,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					$user = get_user_by( 'email', $_REQUEST['payer_email'] );
 					if ( empty( $user ) ) {
 						$user = get_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['payer_email'], $mode );
-						if ( is_multisitePremium() ) {
+						if ( is_multisite_premium() ) {
 							if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_email( $_REQUEST['payer_email'] ) ) {
 								$args['site'] = $site_id;
 							}
@@ -830,7 +830,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					
 				if ( empty( $user ) && !empty( $_REQUEST['txn_id'] ) ) {
 					$user = get_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['txn_id'], $mode );
-					if ( is_multisitePremium() ) {
+					if ( is_multisite_premium() ) {
 						if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['txn_id'] ) ) {
 							$args['site'] = $site_id;
 						}
@@ -839,7 +839,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 					
 				if ( empty( $user ) && !empty( $_REQUEST['subscr_id'] ) ) {
 					$user = get_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['subscr_id'], $mode );
-					if ( is_multisitePremium() ) {
+					if ( is_multisite_premium() ) {
 						if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 							$args['site'] = $site_id;
 						}
@@ -890,7 +890,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			
 			$settings = get_leaky_paywall_settings();
 			
-			if ( is_multisitePremium() && !is_main_site( $meta_args['site'] ) ) {
+			if ( is_multisite_premium() && !is_main_site( $meta_args['site'] ) ) {
 				$site = '_' . $meta_args['site'];
 			} else {
 				$site = '';
@@ -991,7 +991,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		if ( is_email( $email ) ) {
 			$settings = get_leaky_paywall_settings();
 			
-			if ( is_multisitePremium() && !is_main_site( $meta_args['site'] ) ) {
+			if ( is_multisite_premium() && !is_main_site( $meta_args['site'] ) ) {
 				$site = '_' . $meta_args['site'];
 			} else {
 				$site = '';
@@ -1102,7 +1102,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			global $blog_id;
-			if ( is_multisitePremium() && !is_main_site( $blog_id ) ) {
+			if ( is_multisite_premium() && !is_main_site( $blog_id ) ) {
 				$site = '_' . $blog_id;
 			} else {
 				$site = '';
@@ -1302,7 +1302,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 	function leaky_paywall_subscriber_restrictions() {
 	
 		$settings = get_leaky_paywall_settings();
-		if ( is_multisitePremium() ) {
+		if ( is_multisite_premium() ) {
 			if ( false !== $restriction_levels = leaky_paywall_subscriber_current_level_ids() ) {
 				
 				$restrictions = array();
@@ -1368,7 +1368,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 			$settings = get_leaky_paywall_settings();
 				
 			$sites = array( '' );
-			if ( is_multisitePremium() ) {
+			if ( is_multisite_premium() ) {
 				global $blog_id;
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
@@ -1411,7 +1411,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 			$settings = get_leaky_paywall_settings();
 				
 			$sites = array( '' );
-			if ( is_multisitePremium() ) {
+			if ( is_multisite_premium() ) {
 				global $blog_id;
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
@@ -1459,7 +1459,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 		if ( !empty( $args ) ) {
 			$site = '';
 			$settings = get_leaky_paywall_settings();
-			if ( !empty( $blog_id ) && is_multisitePremium() ) {
+			if ( !empty( $blog_id ) && is_multisite_premium() ) {
 				$site = '_' . $blog_id;
 			}
 
@@ -1715,7 +1715,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			$return .= '</td>';
 			$return .= '</tr>';
 			
-			if ( is_multisitePremium() ) {
+			if ( is_multisite_premium() ) {
 		        		
 				$return .= '<tr>';
 				$return .= '<th>' . __( 'Site', 'issuem-leaky-paywall' ) . '</th>';
@@ -1833,7 +1833,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type_ajax' ) )
 		if ( isset( $_REQUEST['select-post-key'] ) && isset( $_REQUEST['row-key'] ) ) {
 			$settings = get_leaky_paywall_settings();
 			
-			if ( is_multisitePremium() && preg_match( '#^' . network_admin_url() . '#i', $_SERVER['HTTP_REFERER'] ) ) {
+			if ( is_multisite_premium() && preg_match( '#^' . network_admin_url() . '#i', $_SERVER['HTTP_REFERER'] ) ) {
 				if ( !defined( 'WP_NETWORK_ADMIN' ) ) {
 					define( 'WP_NETWORK_ADMIN', true );
 				}
@@ -2002,7 +2002,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				$level = get_leaky_paywall_subscription_level( $_POST['custom'] );
 		        $amount = number_format( $level['price'], 2, '', '' );
 		        
-				if ( is_multisitePremium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
+				if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
 					$site = '_' . $level['site'];
 				} else {
 					$site = '';
@@ -2490,7 +2490,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				$results .= '<div class="leaky_paywall_subscription_options">';
 				foreach( $settings['levels'] as $level_id => $level ) {
 					
-					if ( is_multisitePremium() && ( !empty( $level['site'] ) && 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
+					if ( is_multisite_premium() && ( !empty( $level['site'] ) && 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
 						continue;
 						
 					$level = apply_filters( 'leaky_paywall_subscription_options_level', $level, $level_id );
@@ -2574,7 +2574,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 								
 								if ( !empty( $user ) ) {
 									
-									if ( is_multisitePremium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
+									if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
 										$site = '_' . $level['site'];
 									} else {
 										$site = '';
