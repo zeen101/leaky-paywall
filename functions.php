@@ -2490,7 +2490,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				$results .= '<div class="leaky_paywall_subscription_options">';
 				foreach( $settings['levels'] as $level_id => $level ) {
 					
-					if ( is_multisite_premium() && ( !empty( $level['site'] ) && 'all' !== $level['site'] && $blog_id !== $level['site'] ) )
+					if ( is_multisite_premium() && !empty( $level['site'] ) && 'all' != $level['site'] && $blog_id != $level['site'] )
 						continue;
 						
 					$level = apply_filters( 'leaky_paywall_subscription_options_level', $level, $level_id );
