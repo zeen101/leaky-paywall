@@ -1384,14 +1384,20 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	
 	                        </table>
 	
-					        <script type="text/javascript" charset="utf-8">
-					            var leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;
-					        </script>
+					       
 	                        
-	                        <p class="subscription-options">
-		                        <input class="button-secondary" id="add-subscription-row" class="add-new-issuem-leaky-paywall-subscription-row" type="submit" name="add_leaky_paywall_row" value="<?php _e( 'Add New Level', 'issuem-leaky-paywall' ); ?>" />
-	                        </p>
-	
+	                        <?php if ( apply_filters( 'leaky_paywall_enable_multiple_levels', false ) ) { ?>
+
+	                        	 <script type="text/javascript" charset="utf-8">
+						            var leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;
+						        </script>
+
+		                        <p class="subscription-options">
+			                        <input class="button-secondary" id="add-subscription-row" class="add-new-issuem-leaky-paywall-subscription-row" type="submit" name="add_leaky_paywall_row" value="<?php _e( 'Add New Level', 'issuem-leaky-paywall' ); ?>" />
+		                        </p>
+		                        
+							<?php } ?>
+
 	                        <p class="submit">
 	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
 	                        </p>
