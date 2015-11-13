@@ -1384,9 +1384,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	
 	                        </table>
 	
-					       
-	                        
-	                        <?php if ( apply_filters( 'leaky_paywall_enable_multiple_levels', false ) ) { ?>
+	                        <?php if ( apply_filters( 'leaky_paywall_enable_multiple_levels', true ) ) { ?>
 
 	                        	 <script type="text/javascript" charset="utf-8">
 						            var leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;

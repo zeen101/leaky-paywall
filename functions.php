@@ -52,10 +52,12 @@ if ( !function_exists( 'update_leaky_paywall_settings' ) ) {
 if (!function_exists('is_multisite_premium') ) {
 
 	function is_multisite_premium() {
-		$settings = get_leaky_paywall_settings();
-		if ( is_multisite() && function_exists( 'is_leaky_paywall_multisite' ) ) {
-			return is_leaky_paywall_multisite();
+		if ( is_multsite() ) {
+			return true;
 		}
+		//if ( is_multisite() && function_exists( 'is_leaky_paywall_multisite' ) ) {
+		//	return is_leaky_paywall_multisite();
+		//}
 		return false;
 	}
 }
@@ -398,7 +400,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		
 					if ( !empty( $cu ) ) {
 						if ( !empty( $cu->deleted ) && true === $cu->deleted ) {
-							continue;
+							$canceled = true;
 						}
 					}
 					
