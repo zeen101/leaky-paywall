@@ -52,7 +52,7 @@ if ( !function_exists( 'update_leaky_paywall_settings' ) ) {
 if (!function_exists('is_multisite_premium') ) {
 
 	function is_multisite_premium() {
-		if ( is_multsite() ) {
+		if ( is_multisite() ) {
 			return true;
 		}
 		//if ( is_multisite() && function_exists( 'is_leaky_paywall_multisite' ) ) {
