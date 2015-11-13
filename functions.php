@@ -357,7 +357,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 			$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 			$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-
+			
 			if ( 'stripe' === $payment_gateway ) {
 				
 				try {
@@ -420,11 +420,11 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					}
 					
 					$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
-											
+									
 					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 						return 'unlimited';
 					} else {
-						if ( strtotime( $expires ) > time() ) {
+						if ( strtotime( $expires ) < time() ) {
 							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
 								$expired = $expires;
 							}
@@ -451,7 +451,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'active':
 					case 'refunded':
 					case 'refund':
-						if ( strtotime( $expires ) > time() ) {
+						if ( strtotime( $expires ) < time() ) {
 							$expired = $expires;
 						} else {
 							$paid = true;
@@ -484,7 +484,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 							return 'unlimited';
 						}
 							
-						if ( strtotime( $expires ) > time() ) {
+						if ( strtotime( $expires ) < time() ) {
 							$expired = $expires;
 						} else {
 							$paid = true;
@@ -521,7 +521,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 							return 'unlimited';
 						}
 							
-						if ( strtotime( $expires ) > time() ) {
+						if ( strtotime( $expires ) < time() ) {
 							$expired = $expires;
 						} else {
 							$paid = true;
@@ -1455,7 +1455,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 			$user = wp_get_current_user();
 			
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-
+			
 			$level_ids = array();
 			foreach ( $sites as $site ) {
 				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
