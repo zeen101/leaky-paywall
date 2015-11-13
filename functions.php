@@ -348,7 +348,6 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			}
 		}
 		
-		
 		foreach ( $sites as $site ) {
 		
 			$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
@@ -361,7 +360,38 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 				
 				try {
 					if ( empty( $subscriber_id ) ) {
-						continue;
+						switch( $payment_status ) {
+							case 'Active':
+							case 'active':
+							case 'refunded':
+							case 'refund':
+								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+									return 'unlimited';
+								}
+								
+								if ( strtotime( $expires ) < time() ) {
+									$expired = $expires;
+								} else {
+									$paid = true;
+								}
+								break;
+							case 'cancelled':
+							case 'canceled':
+								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+									$expired = true;
+								} else {
+									$canceled = true;
+								}
+							case 'reversed':
+							case 'buyer_complaint':
+							case 'denied' :
+							case 'expired' :
+							case 'failed' :
+							case 'voided' :
+							case 'deactivated' :
+								continue;
+								break;
+						}
 					}
 					
 					$cu = Stripe_Customer::retrieve( $subscriber_id );
@@ -453,7 +483,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						}
 							
 						if ( strtotime( $expires ) > time() ) {
-							return $expires;
+							$expired = $expires;
 						} else {
 							$paid = true;
 						}
@@ -523,11 +553,11 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		}
 
 		if ( $canceled ) {
-			return 'cancelled';
+			return false;
 		}
 
 		if ( $expired ) {
-			return $expired;
+			return false;
 		}
 	
 		return $paid;
