@@ -2462,8 +2462,11 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 						'payment_status' 	=> 'active',
 						'interval' 			=> $level['interval'],
 						'interval_count' 	=> $level['interval_count'],
-						'site' 				=> $level['site'],
 					);
+
+					if ( isset( $level['site'] ) ) {
+						$args['site'] = $level['site'];
+					}
 					
 					//Mimic PayPal's Plan...
 					if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
