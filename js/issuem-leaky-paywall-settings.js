@@ -33,7 +33,6 @@ $leaky_paywall_settings(document).ready(function($) {
             'select-post-key': ++window[select_post_key],
             'row-key': row_key,
         }
-        console.log( data );
         $.post( ajaxurl, data, function( response ) {
 	        console.log( response );
             $( '#issuem-leaky-paywall-subsciption-row-' + row_key + '-post-types' ).append( response );
@@ -55,7 +54,6 @@ $leaky_paywall_settings(document).ready(function($) {
 	$( '#issuem-leaky-paywall-subscription-level-rows' ).on( 'change', '.issuem-leaky-paywall-row-post-type select.allowed_type', function( event ) {
 		var parent = $( this ).parent();
 		if ( 'unlimited' == $( this ).val() ) {
-			console.log( 'here' );
 			$( '.allowed_value', parent ).data( 'prev-value', $( '.allowed_value', parent ).val() )
 			$( '.allowed_value_div', parent ).hide();
 			$( '.allowed_value', parent ).val( '-1' );

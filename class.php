@@ -1044,21 +1044,21 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['from_email'] ) ); ?>" /></td>
 	                            </tr>
 
-	                            <tr><td colspan="2"><h3>New Subscriber Email</h3></td></tr>
+	                            <tr><td colspan="2"><h3><?php _e( 'New Subscriber Email', 'issuem-leaky-paywall' ); ?></h3></td></tr>
 
 	                            <tr>
 	                                <th><?php _e( 'Subject', 'issuem-leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['new_email_subject'] ) ); ?>" />
-	                                	<p class="description">The subject line for the email sent to new subscribers.</p>
+	                                	<p class="description"><?php _e( 'The subject line for the email sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
 	                                </td>
 	                            </tr>
 
 	                            <tr>
 	                                <th><?php _e( 'Body', 'issuem-leaky-paywall' ); ?></th>
 	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
-	                                <p class="description">The email message that is sent to new subscribers.</p>
-	                                <p class="description">Available template tags: <br>
-	                                %blogname%, %username%, %password%, %firstname%, %lastname%, and %displayname%</p>
+	                                <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
+	                                <p class="description"><?php _e( 'Available template tags:', 'issuem-leaky-paywall' ); ?> <br>
+	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
 	                                </td>
 	                            </tr>
 	                            

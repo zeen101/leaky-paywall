@@ -358,197 +358,201 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 			$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 			
-			if ( 'stripe' === $payment_gateway ) {
+			if ( !$paid ) {
 				
-				try {
-					if ( empty( $subscriber_id ) ) {
-						switch( $payment_status ) {
-							case 'Active':
-							case 'active':
-							case 'refunded':
-							case 'refund':
-								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-									return 'unlimited';
-								}
-								
-								if ( strtotime( $expires ) < time() ) {
-									$expired = $expires;
-								} else {
-									$paid = true;
-								}
-								break;
-							case 'cancelled':
-							case 'canceled':
-								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-									$expired = true;
-								} else {
-									$canceled = true;
-								}
-							case 'reversed':
-							case 'buyer_complaint':
-							case 'denied' :
-							case 'expired' :
-							case 'failed' :
-							case 'voided' :
-							case 'deactivated' :
-								continue;
-								break;
-						}
-					}
+				if ( 'stripe' === $payment_gateway ) {
 					
-					$cu = Stripe_Customer::retrieve( $subscriber_id );
-		
-					if ( !empty( $cu ) ) {
-						if ( !empty( $cu->deleted ) && true === $cu->deleted ) {
-							$canceled = true;
-						}
-					}
-					
-					if ( !empty( $plan ) ) {
-						if ( isset( $cu->subscriptions ) ) {
-							$subscriptions = $cu->subscriptions->all( 'limit=1' );
-							foreach( $subscriptions->data as $subscription ) {
-								if ( 'active' === $subscription->status ) {
-									return 'subscription';
-								}
-							}
-					
-						}
-						
-						continue;
-						
-					}
-					
-					$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
+					try {
+						if ( empty( $subscriber_id ) ) {
+							switch( $payment_status ) {
+								case 'Active':
+								case 'active':
+								case 'refunded':
+								case 'refund':
+									if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+										return 'unlimited';
+									}
 									
+									if ( strtotime( $expires ) < time() ) {
+										$expired = $expires;
+									} else {
+										$paid = true;
+									}
+									break;
+								case 'cancelled':
+								case 'canceled':
+									if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+										$expired = true;
+									} else {
+										$canceled = true;
+									}
+								case 'reversed':
+								case 'buyer_complaint':
+								case 'denied' :
+								case 'expired' :
+								case 'failed' :
+								case 'voided' :
+								case 'deactivated' :
+									continue;
+									break;
+							}
+						}
+						
+						$cu = Stripe_Customer::retrieve( $subscriber_id );
+			
+						if ( !empty( $cu ) ) {
+							if ( !empty( $cu->deleted ) && true === $cu->deleted ) {
+								$canceled = true;
+							}
+						}
+						
+						if ( !empty( $plan ) ) {
+							if ( isset( $cu->subscriptions ) ) {
+								$subscriptions = $cu->subscriptions->all( 'limit=1' );
+								foreach( $subscriptions->data as $subscription ) {
+									if ( 'active' === $subscription->status ) {
+										return 'subscription';
+									}
+								}
+						
+							}
+							
+							continue;
+							
+						}
+						
+						$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
+										
+						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+							return 'unlimited';
+						} else {
+							if ( strtotime( $expires ) < time() ) {
+								if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
+									$expired = $expires;
+								}
+							} else {
+								$paid = true;
+							}
+						}
+					} catch ( Exception $e ) {
+						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
+					}
+					
+				} else if ( 'paypal_standard' === $payment_gateway ) {
+					
 					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 						return 'unlimited';
-					} else {
-						if ( strtotime( $expires ) < time() ) {
-							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
-								$expired = $expires;
-							}
-						} else {
-							$paid = true;
-						}
 					}
-				} catch ( Exception $e ) {
-					$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
-				}
-				
-			} else if ( 'paypal_standard' === $payment_gateway ) {
-				
-				if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-					return 'unlimited';
-				}
-				
-				if ( !empty( $plan ) && 'active' == $payment_status ) {
-					return 'subscription';
-				}
 					
-				switch( $payment_status ) {
-				
-					case 'active':
-					case 'refunded':
-					case 'refund':
-						if ( strtotime( $expires ) < time() ) {
-							$expired = $expires;
-						} else {
-							$paid = true;
-						}
-						break;
-					case 'cancelled':
-					case 'canceled':
-						$canceled = true;
-					case 'reversed':
-					case 'buyer_complaint':
-					case 'denied' :
-					case 'expired' :
-					case 'failed' :
-					case 'voided' :
-					case 'deactivated' :
-						continue;
-						break;
+					if ( !empty( $plan ) && 'active' == $payment_status ) {
+						return 'subscription';
+					}
+						
+					switch( $payment_status ) {
 					
-				}
-				
-			} else if ( 'manual' === $payment_gateway ) {
-					
-				switch( $payment_status ) {
-				
-					case 'Active':
-					case 'active':
-					case 'refunded':
-					case 'refund':
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return 'unlimited';
-						}
-							
-						if ( strtotime( $expires ) < time() ) {
-							$expired = $expires;
-						} else {
-							$paid = true;
-						}
-						break;
-					case 'cancelled':
-					case 'canceled':
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							$expired = true;
-						} else {
+						case 'active':
+						case 'refunded':
+						case 'refund':
+							if ( strtotime( $expires ) < time() ) {
+								$expired = $expires;
+							} else {
+								$paid = true;
+							}
+							break;
+						case 'cancelled':
+						case 'canceled':
 							$canceled = true;
-						}
-					case 'reversed':
-					case 'buyer_complaint':
-					case 'denied' :
-					case 'expired' :
-					case 'failed' :
-					case 'voided' :
-					case 'deactivated' :
-						continue;
-						break;
+						case 'reversed':
+						case 'buyer_complaint':
+						case 'denied' :
+						case 'expired' :
+						case 'failed' :
+						case 'voided' :
+						case 'deactivated' :
+							continue;
+							break;
+						
+					}
 					
-				}			
-				
-			} else if ( 'free_registration' === $payment_gateway ) {
-				
-				switch( $payment_status ) {
-				
-					case 'Active':
-					case 'active':
-					case 'refunded':
-					case 'refund':
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return 'unlimited';
-						}
-							
-						if ( strtotime( $expires ) < time() ) {
-							$expired = $expires;
-						} else {
-							$paid = true;
-						}
-						break;
-					case 'cancelled':
-					case 'canceled':
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							$expired = true;
-						} else {
-							$canceled = true;
-						}
-					case 'reversed':
-					case 'buyer_complaint':
-					case 'denied' :
-					case 'expired' :
-					case 'failed' :
-					case 'voided' :
-					case 'deactivated' :
-						continue;
-						break;
-				
+				} else if ( 'manual' === $payment_gateway ) {
+						
+					switch( $payment_status ) {
+					
+						case 'Active':
+						case 'active':
+						case 'refunded':
+						case 'refund':
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+								return 'unlimited';
+							}
+								
+							if ( strtotime( $expires ) < time() ) {
+								$expired = $expires;
+							} else {
+								$paid = true;
+							}
+							break;
+						case 'cancelled':
+						case 'canceled':
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+								$expired = true;
+							} else {
+								$canceled = true;
+							}
+						case 'reversed':
+						case 'buyer_complaint':
+						case 'denied' :
+						case 'expired' :
+						case 'failed' :
+						case 'voided' :
+						case 'deactivated' :
+							continue;
+							break;
+						
+					}			
+					
+				} else if ( 'free_registration' === $payment_gateway ) {
+					
+					switch( $payment_status ) {
+					
+						case 'Active':
+						case 'active':
+						case 'refunded':
+						case 'refund':
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+								return 'unlimited';
+							}
+								
+							if ( strtotime( $expires ) < time() ) {
+								$expired = $expires;
+							} else {
+								$paid = true;
+							}
+							break;
+						case 'cancelled':
+						case 'canceled':
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+								$expired = true;
+							} else {
+								$canceled = true;
+							}
+						case 'reversed':
+						case 'buyer_complaint':
+						case 'denied' :
+						case 'expired' :
+						case 'failed' :
+						case 'voided' :
+						case 'deactivated' :
+							continue;
+							break;
+					
+					}
+					
+				} else {
+	
+					$paid = apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
+					
 				}
-				
-			} else {
-				
-				$paid = apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires );
 				
 			}
 			
@@ -981,7 +985,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 					'payment_status' 	=> $meta_args['payment_status'],
 				);
 			
-				$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id );
+				$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id, $meta_args );
 			
 				foreach( $meta as $key => $value ) {
 
@@ -1063,7 +1067,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 				'payment_status' 	=> $meta_args['payment_status'],
 			);
 			
-			$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id );
+			$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id, $meta_args );
 		
 			foreach( $meta as $key => $value ) {
 				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
@@ -1334,9 +1338,10 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 	function leaky_paywall_subscriber_restrictions() {
 	
 		$settings = get_leaky_paywall_settings();
+		$restrictions = $settings['restrictions']['post_types']; //defaults
 		if ( is_multisite_premium() ) {
 			if ( false !== $restriction_levels = leaky_paywall_subscriber_current_level_ids() ) {
-				
+
 				$restrictions = array();
 				$merged_restrictions = array();
 				foreach( $restriction_levels as $restriction_level ) {
@@ -1369,18 +1374,19 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 						}
 					}
 				}
-				return $merged_restrictions;
+				$restrictions = $merged_restrictions;
 				
 			}
 		} else {
 			if ( false !== $restriction_level = leaky_paywall_subscriber_current_level_id() ) {
 					
-				if ( !empty( $settings['levels'][$restriction_level]['post_types'] ) )
-					return $settings['levels'][$restriction_level]['post_types'];
+				if ( !empty( $settings['levels'][$restriction_level]['post_types'] ) ) {
+					$restrictions = $settings['levels'][$restriction_level]['post_types'];
+				}
 				
 			}
 		}
-		return $settings['restrictions']['post_types']; //defaults
+		return apply_filters( 'leaky_paywall_subscriber_restrictions', $restrictions );
 		
 	}
 }
@@ -1415,6 +1421,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_id' ) ) {
 
 			foreach ( $sites as $site ) {
 				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+				$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 				if ( is_numeric( $level_id ) ) {
 					return $level_id;
@@ -1438,7 +1445,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 	 * @return array subscriber's subscription restrictions
 	 */
 	function leaky_paywall_subscriber_current_level_ids() {
-		
+		$level_ids = array();
 		if ( leaky_paywall_has_user_paid() ) {
 			$settings = get_leaky_paywall_settings();
 				
@@ -1456,23 +1463,18 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 			
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 			
-			$level_ids = array();
 			foreach ( $sites as $site ) {
 				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+				$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 				$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 				if ( 'active' === $status && is_numeric( $level_id ) ) {
 					$level_ids[] = $level_id;
 				}
 			}
-			return $level_ids;
-		} else {
-			$level_ids = array();
-			return $level_ids;
 		}
-		
-		return false;
-		
+
+		return $level_ids;		
 	}
 }
 
@@ -3056,6 +3058,7 @@ if ( !function_exists( 'leaky_paywall_filter_email_tags' ) ) {
         $site_name = stripslashes_deep( html_entity_decode( get_bloginfo('name'), ENT_COMPAT, 'UTF-8' ) );
 
         $message = str_replace('%blogname%', $site_name, $message);
+        $message = str_replace('%sitename%', $site_name, $message);
         $message = str_replace('%username%', $user->user_login, $message);
         $message = str_replace('%firstname%', $user->user_firstname, $message);
         $message = str_replace('%lastname%', $user->user_lastname, $message);

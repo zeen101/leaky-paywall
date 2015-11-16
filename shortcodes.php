@@ -240,6 +240,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 				
 				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+				$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 				if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
 					$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
