@@ -5,11 +5,11 @@ Requires at least: 3.0
 Tested up to: 4.3
 Stable tag: 3.1.3
 
-A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
+A premium leaky paywall add-on for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
 
 == Description ==
 
-A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
+A premium leaky paywall add-on for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
 
 == Installation ==
 
