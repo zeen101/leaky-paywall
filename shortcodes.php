@@ -251,6 +251,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 				
 				$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+				$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
 				if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 					$expires = __( 'Never', 'issuem-leaky-paywall' );
 				} else {
