@@ -8,11 +8,11 @@
  
 /*
 Plugin Name: Leaky Paywall
-Plugin URI: http://leakypw.com/
-Description: A premium leaky paywall add-on for WordPress and IssueM.
-Author: IssueM Development Team
+Plugin URI: https://zeen101.com/
+Description: A premium leaky paywall add-on for WordPress that allows you to sell metered access to your content.
+Author: zeen101 Development Team
 Version: 3.1.3
-Author URI: http://leakypw.com/
+Author URI: https://zeen101.com/
 Tags:
 */
 
