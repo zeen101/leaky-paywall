@@ -361,28 +361,28 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			$results .= '<form id="leaky-paywall-profile" action="" method="post">';
 			
 			$results .= '<p>';
-			$results .= '<label class="lp-field-label" for="leaky-paywall-username">' . __( 'Username', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-username">' . __( 'Username', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . $user->user_login . '" disabled="disabled" readonly="readonly" />';
 			$results .= '</p>';
 			
 			$results .= '<p>';
-			$results .= '<label class="lp-field-label" for="leaky-paywall-display-name">' . __( 'Display Name', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-display-name">' . __( 'Display Name', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-display-name" name="displayname" value="' . $user->display_name . '" />';
 			$results .= '</p>';
 
 			$results .= '<p>';
-			$results .= '<label class="issuem-leaky-paywall-field-label" for="leaky-paywall-email">' . __( 'Email', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-email">' . __( 'Email', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-email" name="email" value="' . $user->user_email . '" />';
 			$results .= '</p>';
 
 
 			$results .= '<p>';
-			$results .= '<label class="issuem-leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'Password', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'Password', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-password1" name="password1" value="" />';
 			$results .= '</p>';
 
 			$results .= '<p>';
-			$results .= '<label class="issuem-leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'Password (again)', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'Password (again)', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-gift-subscription-password2" name="password2" value="" />';
 			$results .= '</p>';
 			

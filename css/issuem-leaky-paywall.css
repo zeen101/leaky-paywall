@@ -96,3 +96,7 @@
 .paypal-description {
 	font-size: .8em;
 }
+
+.leaky-paywall-field-label {
+	display: block;
+}
