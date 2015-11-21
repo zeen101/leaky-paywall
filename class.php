@@ -110,6 +110,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'issuem-leaky-paywall' ), __( 'Subscribers', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 									
 			add_submenu_page( false, __( 'Update', 'issuem-leaky-paywall' ), __( 'Update', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
+
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Add-Ons', 'issuem-leaky-paywall' ), __( 'Add-Ons', 'issuem-leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-addons', array( $this, 'addons_page' ) );
 			
 		}
 		
@@ -445,7 +447,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			global $hook_suffix;
 			
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
-				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix )
+				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix
+				|| 'leaky-paywall_page_leaky-paywall-addons' === $hook_suffix )
 				wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 				
 			if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix )
@@ -1812,6 +1815,94 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				</form>
 			   
 			</div>
+			<?php
+			
+		}
+
+		/**
+		 * Outputs the IssueM Add Ons page
+		 *
+		 * @since 3.1.3
+		 */
+		function addons_page() {
+			
+			// Display HTML
+			?>
+			<div class="wrap">
+        
+                <h2 style='margin-bottom: 10px;' ><?php _e( 'Leaky Paywall Add-Ons', 'issuem-leaky-paywall' ); ?></h2>
+                <p><?php _e( 'The following are available add-ons to extend Leaky Paywall functionality.', 'issuem-leaky-paywall' ); ?></p>
+
+                <table id="leaky-paywall-addons" cellpadding="0" cellspacing="0">
+                	<tbody>
+	                    <tr>
+
+	                    	 <td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-mailchimp-addon.jpg" alt="Leaky Paywall MailChimp"></a>
+									<h3>Leaky Paywall - MailChimp</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>Automatically add new Leaky Paywall subscribers to your MailChimp lists.</p>
+	                            </div>
+	                        </td>
+
+	                        <td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-coupons.jpg" alt="Leaky Paywall Coupons"></a>
+									<h3>Leaky Paywall – Coupons</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>Create unlimited coupon codes. Assign them to individual subscription levels and more.</p>
+	                            </div>
+	                        </td>
+
+	                        <td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<a target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-gift-subscriptions.jpg" alt="Leaky Paywall Gift Subscriptions"></a>
+									<h3>Leaky Paywall Gift Subscriptions</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>Generate more subscriptions to your publication by letting friends and family buy gift subscriptions!</p>
+	                            </div>
+	                        </td>
+	                    
+	                       
+	                        
+	                    </tr>
+
+	                    <tr>
+
+	                    	<td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<a target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-reporting.jpg" alt="Leaky Paywall Reporting Tool"></a>
+									<h3>Leaky Paywall Reporting Tool</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>Filter and download (CSV) the subscriber info you need to analyze your subscriptions.</p>
+	                            </div>
+	                        </td>
+
+	                    	<td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<img src="https://zeen101.com/wp-content/uploads/2015/03/unipress.jpg" alt="UniPress">
+									<h3>UniPress</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/unipress/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>UniPress is the first WordPress-to-App publishing framework. It is now simple, quick, and affordable to offer your publication as an app.</p>
+	                            </div>
+	                        </td>
+
+	                        <td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<img src="https://zeen101.com/wp-content/uploads/2015/03/addrop.jpg" alt="Ad Dropper">
+									<h3>Ad Dropper</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/ad-dropper/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>Manage and track your ads easily and seamlessly.</p>
+	                            </div>
+	                        </td>
+   
+	                    </tr>
+                    </tbody>
+                </table>
+             
+            </div>
+
 			<?php
 			
 		}
