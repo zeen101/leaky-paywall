@@ -3220,3 +3220,51 @@ if ( !function_exists( 'leaky_paywall_supported_currencies' ) ) {
 		return apply_filters( 'leaky_paywall_supported_currencies', $currencies );
 	}
 }
+
+if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
+
+	/**
+	 * Check zeen101.com for new RSS items in the leaky blast feed, to update users of latest Leaky Paywall news
+	 *
+	 * @since 1.1.1
+	 */
+	function zeen101_dot_com_leaky_rss_feed_check() {
+			
+		include_once( ABSPATH . WPINC . '/feed.php' );
+	
+		$output = '';
+		$feedurl = 'http://zeen101.com/feed/?post_type=blast&target=leaky-paywall';
+
+		$rss = fetch_feed( $feedurl );
+
+		if ( $rss && !is_wp_error( $rss ) ) {
+	
+			$rss_items = $rss->get_items( 0, 1 );
+	
+			foreach ( $rss_items as $item ) {
+	
+				$last_rss_item = get_option( 'last_zeen101_dot_com_leaky_rss_item' );
+				
+				$latest_rss_item = $item->get_content();
+	
+				if ( $last_rss_item !== $latest_rss_item ) {
+
+					global $current_user; 
+					get_currentuserinfo();
+
+					update_option( 'last_zeen101_dot_com_leaky_rss_item', $latest_rss_item );
+
+					update_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', 0 );
+				}
+
+			}
+	
+		}	
+				
+	}
+	add_action( 'zeen101_dot_com_leaky_rss_feed_check', 'zeen101_dot_com_leaky_rss_feed_check' );
+
+	if ( !wp_next_scheduled( 'zeen101_dot_com_leaky_rss_feed_check' ) )
+		wp_schedule_event( time(), 'daily', 'zeen101_dot_com_leaky_rss_feed_check' );
+	
+}

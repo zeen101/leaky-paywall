@@ -54,7 +54,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
 			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 
-			
+			add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
+				
 			add_action( 'wp', array( $this, 'process_requests' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
@@ -471,6 +472,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				wp_enqueue_script( 'leaky_paywall_subscribers_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
 			}
+
+
+			wp_localize_script( 'leaky_paywall_subscribers_js', 'leaky_paywall_notice_ajax',
+            array( 
+            	'ajaxurl' => admin_url( 'admin-ajax.php' ),
+            	'lpNoticeNonce' => wp_create_nonce( 'leaky-paywall-notice-nonce')
+             ) );
+
 				
 			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix )
 				wp_enqueue_script( 'leaky_paywall_post_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
@@ -1440,6 +1449,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$headings = apply_filters( 'leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id', 'subscriber-id' ) );
 			
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+
+			$this->display_zeen101_dot_com_leaky_rss_item();
+
 		   
 			?>
 			<div class="wrap">
@@ -2248,6 +2261,70 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			return $_transient_data;
 			
 		}
+
+		/**
+	 * Displays latest RSS item from Zeen101.com on Subscriber page
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $views
+	 */
+	function display_zeen101_dot_com_leaky_rss_item() {
+
+		global $current_user;
+		get_currentuserinfo();
+
+		$hide = get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
+
+		if ( $hide == 1 ) {
+			return;
+		} 
+
+		if ( $last_rss_item = get_option( 'last_zeen101_dot_com_leaky_rss_item', true ) ) {
+			
+			echo '<div class="notice notice-success">';
+			echo $last_rss_item;
+			echo '<p><a href="#" class="lp-notice-link" data-notice="rss_item" data-type="dismiss">Dismiss</a></p>';
+			echo '</div>';
+			
+		}
+		
+	}
+
+	/**
+	 * Process ajax calls for notice links
+	 *
+	 * @since 2.0.3
+	 */
+	function ajax_process_notice_link() {
+
+		$nonce = $_POST['nonce'];
+
+		if ( ! wp_verify_nonce( $nonce, 'leaky-paywall-notice-nonce' ) )
+			die ( 'Busted!'); 
+
+		global $current_user;
+		get_currentuserinfo();
+
+		update_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', 1 );
+
+		echo get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
+
+		exit;
+
+	}
+
+	public function testing( $views ) {
+
+		global $view;
+
+		echo '<pre>';
+		print_r( $view);
+		echo '</pre>';
+
+		die('here');
+
+	}
 		
 	}
 	
