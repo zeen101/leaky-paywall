@@ -1753,7 +1753,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <td class="available-addon">
 	                        	<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-gift-subscriptions.jpg" alt="Leaky Paywall Gift Subscriptions"></a>
-									<h3>Leaky Paywall Gift Subscriptions</h3>
+									<h3>Leaky Paywall - Gift Subscriptions</h3>
 									<a class="button" target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Generate more subscriptions to your publication by letting friends and family buy gift subscriptions!</p>
 	                            </div>
@@ -1768,9 +1768,18 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<td class="available-addon">
 	                        	<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-reporting.jpg" alt="Leaky Paywall Reporting Tool"></a>
-									<h3>Leaky Paywall Reporting Tool</h3>
+									<h3>Leaky Paywall - Reporting Tool</h3>
 									<a class="button" target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Filter and download (CSV) the subscriber info you need to analyze your subscriptions.</p>
+	                            </div>
+	                        </td>
+
+	                        <td class="available-addon">
+	                        	<div class="available-addon-inner">
+									<img src="https://zeen101.com/wp-content/uploads/2015/12/leaky-paywall-multiple-levels.jpg" alt="Ad Dropper">
+									<h3>Leaky Paywall - Multiple Levels</h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<p>Give your readers different subscription options by creating an unlimited number of subscriber levels.</p>
 	                            </div>
 	                        </td>
 
@@ -1780,15 +1789,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									<h3>UniPress</h3>
 									<a class="button" target="_blank" href="https://zeen101.com/unipress/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>UniPress is the first WordPress-to-App publishing framework. It is now simple, quick, and affordable to offer your publication as an app.</p>
-	                            </div>
-	                        </td>
-
-	                        <td class="available-addon">
-	                        	<div class="available-addon-inner">
-									<img src="https://zeen101.com/wp-content/uploads/2015/03/addrop.jpg" alt="Ad Dropper">
-									<h3>Ad Dropper</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/ad-dropper/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Manage and track your ads easily and seamlessly.</p>
 	                            </div>
 	                        </td>
    
