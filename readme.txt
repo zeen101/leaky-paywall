@@ -1,15 +1,18 @@
 === Leaky Paywall for WordPress ===
-Contributors: layotte, endocreative
+Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
-Requires at least: 3.0
-Tested up to: 4.3
+Requires at least: 3.3
+Tested up to: 4.4
 Stable tag: 3.1.3
+Tags: leaky paywall, membership, metered paywall, metered access 
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A premium leaky paywall add-on for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
+A plugin for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
 
 == Description ==
 
-A premium leaky paywall add-on for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
+A plugin for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
 
 == Installation ==
 
