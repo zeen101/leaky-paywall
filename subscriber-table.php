@@ -249,7 +249,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							
 							if ( empty( $plan ) ) {
 								$plan = __( 'Non-Recurring', 'issuem-leaky-paywall' );	
-							} else if ( 'paypal_standard' === $payment_gateway ) {
+							} else if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
 								$plan = sprintf( __( 'Recurring every %s', 'issuem-leaky-paywall' ), str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ) );
 							}
 							

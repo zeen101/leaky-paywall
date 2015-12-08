@@ -497,6 +497,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								break;
 								
 							case 'paypal-standard':
+							case 'paypal_standard':
 								$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
 								$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
 								$results .= '<p>' . __( "You can update your payment details through PayPal's website.", 'issuem-leaky-paywall' ) . '</p>';

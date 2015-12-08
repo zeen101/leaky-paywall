@@ -438,7 +438,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
 					}
 					
-				} else if ( 'paypal_standard' === $payment_gateway ) {
+				} else if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
 					
 					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 						return 'unlimited';
@@ -1100,6 +1100,7 @@ if ( !function_exists( 'leaky_paywall_translate_payment_gateway_slug_to_name' ) 
 				break;
 				
 			case 'paypal_standard':
+			case 'paypal-standard':
 				$return = 'PayPal';
 				break;
 				
@@ -1206,7 +1207,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 						
 					}
 				
-				} else if ( 'paypal_standard' === $payment_gateway ) {
+				} else if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
 
 					$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
 					$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
@@ -2597,7 +2598,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 									$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
 								}
 								
-								if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) {
+								if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
 									if ( !empty( $payment_options ) ) {
 										$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
 									}
@@ -2625,6 +2626,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 											break;
 											
 										case 'paypal_standard':
+										case 'paypal-standard':
 											$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
 											break;
 											
@@ -2633,7 +2635,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 												$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
 											}
 											
-											if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) {
+											if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
 												if ( !empty( $payment_options ) ) {
 													$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
 												}

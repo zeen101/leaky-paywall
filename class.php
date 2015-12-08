@@ -77,7 +77,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			}
 			
-			if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) {
+			if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
 				
 				if ( empty( $settings['paypal_live_api_username'] ) || empty( $settings['paypal_live_api_password'] ) || empty( $settings['paypal_live_api_secret'] ) ) {
 					
@@ -1156,7 +1156,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                    <?php } ?>
 		                    
 		                    <?php
-		                    if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) ) { 
+		                    if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) { 
 		                    ?>
 		                                            
 		                        <table id="leaky_paywall_paypal_options" class="gateway-options form-table">
