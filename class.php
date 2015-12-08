@@ -41,18 +41,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_action( 'admin_notices', array( $this, 'update_notices' ) );
 		
 			add_action( 'admin_init', array( $this, 'upgrade' ) );
-			add_action( 'admin_init', array( $this, 'activate_license' ) );
-			add_action( 'admin_init', array( $this, 'deactivate_license' ) );
 			
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_wp_enqueue_scripts' ) );
 			add_action( 'admin_print_styles', array( $this, 'admin_wp_print_styles' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 					
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-
-			//Premium Plugin Filters
-			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
-			add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'update_plugins' ) );
 
 			add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
 				
@@ -499,91 +493,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 		}
 		
-		function activate_license() {
-		
-			// listen for our activate button to be clicked
-			if( isset( $_POST['leaky_paywall_license_activate'] ) ) {
-		
-				// run a quick security check 
-				if( ! check_admin_referer( 'verify', 'license_wpnonce' ) )
-					return; // get out if we didn't click the Activate button
-				
-				$settings = $this->get_settings();
-				if ( !empty( $_POST['license_key'] ) )
-					$settings['license_key'] = $_POST['license_key'];
-		
-				// retrieve the license from the database
-				$license = trim( $settings['license_key'] );
-		
-				// data to send in our API request
-				$api_params = array( 
-					'edd_action'=> 'activate_license', 
-					'license' 	=> $license, 
-					'item_name' => urlencode( $this->plugin_name ) // the name of our product in EDD
-				);
-				
-				// Call the custom API.
-				$response = wp_remote_get( esc_url_raw( add_query_arg( $api_params, ZEEN101_STORE_URL ) ), array( 'timeout' => 15, 'sslverify' => false ) );
-
-				// make sure the response came back okay
-				if ( is_wp_error( $response ) )
-					return false;
-		
-				// decode the license data
-				$license_data = json_decode( wp_remote_retrieve_body( $response ) );
-				
-				// $license_data->license will be either "active" or "inactive"
-				$settings['license_status'] = $license_data->license;
-				$this->update_settings( $settings );
-		
-			}
-			
-		}
-		
-		function deactivate_license() {
-		
-			// listen for our activate button to be clicked
-			if( isset( $_POST['leaky_paywall_license_deactivate'] ) ) {
-		
-				// run a quick security check 
-				if( ! check_admin_referer( 'verify', 'license_wpnonce' ) ) 	
-					return; // get out if we didn't click the Activate button
-				
-				$settings = $this->get_settings();
-		
-				// retrieve the license from the database
-				$license = trim( $settings['license_key'] );
-		
-				// data to send in our API request
-				$api_params = array( 
-					'edd_action'=> 'deactivate_license', 
-					'license' 	=> $license, 
-					'item_name' => urlencode( $this->plugin_name ) // the name of our product in EDD
-				);
-				
-				// Call the custom API.
-				$response = wp_remote_get( esc_url_raw( add_query_arg( $api_params, ZEEN101_STORE_URL ) ), array( 'timeout' => 15, 'sslverify' => false ) );
-		
-				// make sure the response came back okay
-				if ( is_wp_error( $response ) )
-					return false;
-		
-				// decode the license data
-				$license_data = json_decode( wp_remote_retrieve_body( $response ) );
-				
-				// $license_data->license will be either "deactivated" or "failed"
-				if( $license_data->license == 'deactivated' ) {
-					
-					unset( $settings['license_key'] );
-					unset( $settings['license_status'] );
-					$this->update_settings( $settings );
-					
-				}
-		
-			}
-			
-		}
-		
 		/**
 		 * Check if zeen101's Leaky Paywall MultiSite options are enabled
 		 *
@@ -601,8 +510,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		function get_settings() {
 			
 			$defaults = array( 
-				'license_key'					=> '',
-				'license_status'				=> '',
 				'page_for_login'				=> 0, /* Site Specific */
 				'page_for_subscription'			=> 0, /* Site Specific */
 				'page_for_after_subscribe'		=> 0,
@@ -721,9 +628,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 			if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) ) {
 										
-				if ( !empty( $_REQUEST['license_key'] ) )
-					$settings['license_key'] = $_REQUEST['license_key'];
-					
 				if ( !empty( $_REQUEST['page_for_login'] ) )
 					$settings['page_for_login'] = $_REQUEST['page_for_login'];
 					
@@ -882,7 +786,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <div class="inside">
 	                        
-	                        <table id="issuem_license_key" class="leaky-paywall-table">
+	                        <table id="issuem_multisite_settings" class="leaky-paywall-table">
 	                        	<tr>
 	                                <th rowspan="1"> <?php _e( 'Enable Settings Site Wide?', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
@@ -901,41 +805,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
   		
 						<?php } ?>
   		
-						<div id="license-key" class="postbox">
-	                    
-	                       
-	                        
-	                        <div class="inside">
-	                        
-	                        <table id="issuem_license_key" class="form-table">
-	                        	<tr>
-	                                <th rowspan="1"> <?php _e( 'License Key', 'issuem-leaky-paywall' ); ?></th>
-	                                <td>
-	                                <input type="text" id="license_key" class="regular-text" name="license_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['license_key'] ) ); ?>" />
-	                                
-	                                <?php if( $settings['license_status'] !== false 
-											&& $settings['license_status'] == 'valid' ) { ?>
-										<span style="color:green;"><?php _e('active'); ?></span>
-										<input type="submit" class="button-secondary" name="leaky_paywall_license_deactivate" value="<?php _e( 'Deactivate License', 'issuem-leaky-paywall' ); ?>"/>
-									<?php } else if ( $settings['license_status'] == 'invalid' ) {	?>
-									<span style="color:red;"><?php _e('invalid'); ?></span>
-									<input type="submit" class="button-secondary" name="leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
-									<?php } else  { ?>
-										<input type="submit" class="button-secondary" name="leaky_paywall_license_activate" value="<?php _e( 'Activate License', 'issuem-leaky-paywall' ); ?>"/>
-									<?php } ?>
-	                                <?php wp_nonce_field( 'verify', 'license_wpnonce' ); ?>
-	                                </td>
-	                            </tr>
-	                        </table>
-	                                                                                                         
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
-	                        
-	                        </div>
-	                        
-	                    </div>
-	                                        
 						<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
 	                    
 	                    <div id="modules" class="postbox">
@@ -2172,96 +2041,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			}
 		}
 		
-		/**
-         * API Request sent and processed by the IssueM API
-         *
-         * @since 1.0.0
-         *
-         * @param array $args Arguments to send to the IssueM API
-         */
-        function issuem_api_request( $_action, $_data ) {
-
-                $api_params = array(
-                        'edd_action' 	=> 'get_version',
-                        'name' 			=> $_data['name'],
-                        'slug' 			=> $_data['slug'],
-                        'license' 		=> $_data['license'],
-                        'author' 		=> 'zeen101 Development Team',
-                );
-
-                $request = wp_remote_post(
-                        ZEEN101_STORE_URL,
-                        array(
-                                'timeout' => 15,
-                                'sslverify' => false,
-                                'body' => $api_params
-                        )
-                );
-
-                if ( !is_wp_error( $request ) ) {
-
-                        $request = json_decode( wp_remote_retrieve_body( $request ) );
-
-                        if ( $request )
-                                $request->sections = maybe_unserialize( $request->sections );
-
-                        return $request;
-
-                } else {
-
-                        return false;
-
-                }
-
-        }
-		
-		function plugins_api( $_data, $_action = '', $_args = NULL ) {
-			
-			if ( ( $_action != 'plugin_information' ) || !isset( $_args->slug ) || ( $_args->slug != $this->plugin_slug ) ) 
-				return $_data;
-				
-			$settings = $this->get_settings();
-	
-			$to_send = array( 
-				'slug' 		=> $this->plugin_slug,
-				'name'		=> $this->plugin_name,
-				'license'	=> $settings['license_key'],
-			);
-	
-			$api_response = $this->issuem_api_request( 'plugin_information', $to_send );			
-			if ( false !== $api_response ) 
-				$_data = $api_response;
-	
-			return $_data;
-			
-		}
-		
-		function update_plugins( $_transient_data ) {
-
-			if( empty( $_transient_data->checked ) ) 
-				return $_transient_data;
-				
-			$settings = $this->get_settings();
-				
-			// The transient contains the 'checked' information
-			// Now append to it information form your own API
-	
-			$to_send = array( 
-				'slug' 		=> $this->plugin_slug,
-				'name'		=> $this->plugin_name,
-				'license'	=> $settings['license_key'],
-			);
-	
-			$api_response = $this->issuem_api_request( 'plugin_latest_version', $to_send );
-			
-			if( false !== $api_response && is_object( $api_response ) )
-				if( version_compare( $api_response->new_version, $_transient_data->checked[$this->basename], '>' ) )
-					$_transient_data->response[$this->basename] = $api_response;
-			
-			return $_transient_data;
-			
-		}
-
 		/**
 	 * Displays latest RSS item from Zeen101.com on Subscriber page
 	 *
