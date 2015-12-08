@@ -1248,34 +1248,47 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
 	                        	<?php 
 	                        	$last_key = -1;
-	                        	if ( !empty( $settings['levels'] ) ) {
-	                        	
+	                        	if ( !empty( $settings['levels'] ) ) {             		
+
+	                        		$deleted = array();
+
 		                        	foreach( $settings['levels'] as $key => $level ) {
-		                        	
+		                        		
 		                        		if ( !is_numeric( $key ) )
 			                        		continue;
 		                        		echo build_leaky_paywall_subscription_levels_row( $level, $key );
 		                        		$last_key = $key;
+
+		                        		if ( $level['deleted'] == 1 ) {
+		                        			$deleted[] = true;
+		                        		}
 		                        		
 		                        	} 
+
+		                        	// if we have levels but they have all been deleted, add one level 
+		                        	if ( count( $deleted ) == count( $settings['levels'] ) ) {
+		                        		
+		                        		// set the default key to one more than they last key value
+		                        		$default_key = count( $settings['levels'] );
+
+		                        		echo build_leaky_paywall_subscription_levels_row( '', $default_key );
+
+		                        	}
 		                        	
-	                        	}
+	                        	} 	
 	                        	?>
 								</td></tr>
-	
+
 	                        </table>
 	
-	                        <?php if ( apply_filters( 'leaky_paywall_enable_multiple_levels', true ) ) { ?>
+	                        <?php do_action( 'leaky_paywall_after_subscription_levels', $last_key ); ?>
 
-	                        	 <script type="text/javascript" charset="utf-8">
-						            var leaky_paywall_subscription_levels_row_key = <?php echo $last_key; ?>;
-						        </script>
+	                        <?php 
+	                        	if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
+	                        		echo '<p class="description">Want more levels? Buy our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/">multiple subscription levels</a> add-on.</p>';
+	                        	}
 
-		                        <p class="subscription-options">
-			                        <input class="button-secondary" id="add-subscription-row" class="add-new-issuem-leaky-paywall-subscription-row" type="submit" name="add_leaky_paywall_row" value="<?php _e( 'Add New Level', 'issuem-leaky-paywall' ); ?>" />
-		                        </p>
-		                        
-							<?php } ?>
+	                        ?>
 
 	                        <p class="submit">
 	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
