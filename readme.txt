@@ -2,8 +2,8 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
-Tested up to: 4.4
-Stable tag: 3.1.3
+Tested up to: 4.5
+Stable tag: 3.2.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -33,6 +33,16 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 3.2.0 =
+* Release to Public on WordPress.org
+* Create Add-ons page
+* Fix for int/string compare on subscription options shortcode
+* Expiration Fix
+* Adding new filters and actions
+* General code cleanup
+* General styling cleanup
+
 = 3.1.3 =
 * Fixed bug causing updater to always say there is an update
 
