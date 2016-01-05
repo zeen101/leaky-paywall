@@ -34,6 +34,9 @@ You must have:
 
 == Changelog ==
 
+= 3.2.1 =
+* Fix: Don't show deleted levels on frontend
+
 = 3.2.0 =
 * Release to Public on WordPress.org
 * Create Add-ons page
