@@ -80,16 +80,5 @@ function leaky_paywall_plugins_loaded() {
 		include( dirname( __FILE__ ) . '/include/EDD_SL_Plugin_Updater.php' );
 	} 
 
-	$settings = $leaky_paywall->get_settings();
-	$license_key = trim( $settings['license_key'] );
-
-	$edd_updater = new EDD_SL_Plugin_Updater( ZEEN101_STORE_URL, __FILE__, array(
-		'version' 	=> LEAKY_PAYWALL_VERSION, 
-		'license' 	=> $license_key,	
-		'item_name' 	=> LEAKY_PAYWALL_NAME,	
-		'author' 	=> 'Zeen101 Development Team',
-		'url'      	=> home_url()
-	) );
-
 }
 add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); //wait for the plugins to be loaded before init

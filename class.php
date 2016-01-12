@@ -2106,18 +2106,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	}
 
-	public function testing( $views ) {
-
-		global $view;
-
-		echo '<pre>';
-		print_r( $view);
-		echo '</pre>';
-
-		die('here');
-
-	}
-		
 	}
 	
 }
