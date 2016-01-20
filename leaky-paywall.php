@@ -75,10 +75,5 @@ function leaky_paywall_plugins_loaded() {
 			
 	}
 
-	// Upgrade function based on EDD updater class
-	if( !class_exists( 'EDD_SL_Plugin_Updater' ) ) {
-		include( dirname( __FILE__ ) . '/include/EDD_SL_Plugin_Updater.php' );
-	} 
-
 }
 add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); //wait for the plugins to be loaded before init
