@@ -3,16 +3,56 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.5
-Stable tag: 3.2.0
+Stable tag: 3.3.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A plugin for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
+The #1 metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
 
 == Description ==
 
-A plugin for WordPress that allows you to sell metered access to your content. More info at https://zeen101.com/
+[Leaky Paywall](https://zeen101.com/leaky-paywall) is perfect for bloggers, news, and magazine sites that need content to be discovered in Google search and shared socially on Facebook and the rest. Set your meter to allow X number of free articles before requiring a subscription.
+
+Pioneered by the Financial Times, popularized by the New York Times and used by 1000’s of publishers large and small, the metered paywall is now the most successful paywall approach in the publishing industry.
+
+**Leaky Paywall integrates with**
+
+* [IssueM](http://zeen101.com/issuem) issue publishing: Our IssueM plugin allows publishers to manage live web issues that are mobile, search engine, and social sharing friendly. Issues and articles reach today’s modern reader. Now you can promote and sell subscriptions to special or traditional recurring issues. 
+
+* iOS and Android apps! Leaky Paywall integrates with [UniPress](http://getunipress.com) to give your subscribers native mobile apps for the best reading experience available today. Your subscribers will have automatic access to your content in the app after subscribing with Leaky Paywall. All content and apps are managed right in WordPress for true 1 click publishing.
+
+**Features**
+
+* Metered paywall: Let your readers read X number of free articles before they need to subscribe
+* Get found in Google: Allows all your content to be indexed by search engines
+* Viral sharing: All your articles can be shared 1000s of times in social media
+* Sell live web issues: Integrates with [IssueM](https://zeen101.com/issuem) to sell access to individual special issues or traditional weekly, monthly, quarterly, etc issues
+* iOS and Android app publishing: Integrates with [UniPress](https://getunipress.com/) to easily give your subscribers access to apps and sell subscriptions in the app stores
+* Build your email list with a Free subscription level
+* Granular content restriction: Optionally set any article as subscriber only or always free/public
+* Much more
+
+**Add-ons available here [https://zeen101.com/leakypaywall/leaky-paywall-add-ons/](https://zeen101.com/leakypaywall/leaky-paywall-add-ons/)**
+
+* Native iOS and Android apps 
+* Offer multiple subscription levels 
+* Coupons
+* Gift Subscriptions
+* IP Exceptions
+* Corporate subscriptions via domain name EG abcbiz.com or top level domain EG .edu, .gov
+* Reporting Tool
+* File restrictions
+* MailChimp/MailPoet subscriber list signups
+* Article Countdown Nag							
+* More
+
+For documentation see: [https://zeen101.com/documentation](http://zeen101.com/documentation)
+
+We love contributions! Head over to our GitHub page if your feeling inspired [https://github.com/zeen101/leaky-paywall](https://github.com/zeen101/leaky-paywall)
+
+
+A plugin for WordPress that allows you to sell metered access to your content. More info at [https://zeen101.com/](https://zeen101.com/)
 
 == Installation ==
 
@@ -33,6 +73,11 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 3.3.0 =
+* Remove reference to EDD updater class
+* Add function to build post type row in access options when add new post type button is clicked
+* Removing EDD Updater references
 
 = 3.2.1 =
 * Fix: Don't show deleted levels on frontend
