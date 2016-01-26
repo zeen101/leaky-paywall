@@ -940,6 +940,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				//the user already exists
 				//grab the ID for later
 				$user_id = $user->ID;
+				$userdata = get_userdata( $user_id );
 			} else {
 				//the user doesn't already exist
 				//create a new user with their email address as their username

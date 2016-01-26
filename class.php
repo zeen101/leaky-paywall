@@ -1371,6 +1371,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								'payment_status' 	=> $_POST['leaky-paywall-subscriber-status'],
 								'interval' 			=> 0,
 								'plan'				=> '',
+								'site'				=> $site,
 							);
 							
 							$user_id = leaky_paywall_new_subscriber( NULL, $email, $subscriber_id, $meta, $login );
@@ -1487,7 +1488,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								$keys['level-id'] = 5;
 								$keys['subscriber-id'] = 6;
 							}
-							
+
 							foreach( $imports as $import ) {
 								
 								$login = trim( $import[$keys['username']] );
@@ -1521,6 +1522,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								else 
 									$level_id = '';
 															
+
+								if ( isset( $import[$keys['subscriber-id']] ) )
+									$subscriber_id = trim( $import[$keys['subscriber-id']] );
+								else 
+									$subscriber_id = '';
+															
 								$meta = array(
 									'level_id'			=> $level_id,
 									'subscriber_id' 	=> $subscriber_id,
@@ -1531,6 +1538,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									'payment_status' 	=> $status,
 									'interval' 			=> 0,
 									'plan'				=> '',
+									'site'				=> $site,
 								);
 								
 								$user_id = leaky_paywall_new_subscriber( NULL, $email, '', $meta, $login );
