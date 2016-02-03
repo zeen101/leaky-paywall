@@ -209,8 +209,8 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 		if ( is_user_logged_in() ) {
 			
 			$sites = array( '' );
+			global $blog_id;
 			if ( is_multisite_premium() ) {
-				global $blog_id;			
 				if ( !is_main_site( $blog_id ) ) {
 					$sites = array( '_all', '_' . $blog_id );
 				} else {
@@ -404,8 +404,13 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						try {
 							
 							$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-															
+							foreach ( $sites as $site ) {
+								$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+								if ( !empty( $subscriber_id ) ) {
+									break;
+								}
+							}
+														
 							$cu = Stripe_Customer::retrieve( $subscriber_id );
 							if ( !empty( $cu ) )
 								if ( true === $cu->deleted )

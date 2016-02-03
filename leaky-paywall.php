@@ -14,6 +14,7 @@ Author: zeen101 Development Team
 Version: 3.3.1
 Author URI: https://zeen101.com/
 Tags:
+Text Domain: issuem-leaky-paywall
 */
 
 //Define global variables...
