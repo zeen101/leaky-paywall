@@ -2147,7 +2147,10 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				wp_set_current_user( $user_id );
 				wp_set_auth_cookie( $user_id );
 					
-				if ( !empty( $settings['page_for_profile'] ) ) {
+				// send the newly created user to the appropriate page after logging them in
+				if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+					wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+				} else if ( !empty( $settings['page_for_profile'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 				} else if ( !empty( $settings['page_for_subscription'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
@@ -2291,7 +2294,10 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						
 					}
 						
-					if ( !empty( $settings['page_for_profile'] ) ) {
+					// send the newly created user to the appropriate page after logging them in
+					if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+					} else if ( !empty( $settings['page_for_profile'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 					} else if ( !empty( $settings['page_for_subscription'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
@@ -2484,8 +2490,10 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
                     wp_set_current_user( $user_id, $user_login );
                     do_action( 'wp_login', $user_login );
 	 
-					// send the newly created user to the home page after logging them in
-					if ( !empty( $settings['page_for_profile'] ) ) {
+					// send the newly created user to the appropriate page after logging them in
+					if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+					} else if ( !empty( $settings['page_for_profile'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 					} else if ( !empty( $settings['page_for_subscription'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
