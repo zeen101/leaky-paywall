@@ -775,7 +775,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						
 					case 'subscr_cancel':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
-							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
+							$user = get_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['subscr_id'], $mode );
 							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 									$site = '_' . $site_id;
@@ -789,7 +789,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						
 					case 'subscr_eot':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
-							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
+							$user = get_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['subscr_id'], $mode );
 							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 									$site = '_' . $site_id;
@@ -817,7 +817,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 						
 					case 'recurring_payment_suspended':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { //subscr_payment
-							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['subscr_id'], $mode );
+							$user = get_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['subscr_id'], $mode );
 							if ( is_multisite_premium() ) {
 								if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $_REQUEST['subscr_id'] ) ) {
 									$site = '_' . $site_id;
@@ -2295,9 +2295,9 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 					}
 						
 					// send the newly created user to the appropriate page after logging them in
-					if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-						wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
-					} else if ( !empty( $settings['page_for_profile'] ) ) {
+                                	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+                                        	wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+                                	} else if ( !empty( $settings['page_for_profile'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 					} else if ( !empty( $settings['page_for_subscription'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
@@ -2483,17 +2483,17 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 					$args['subscriber_email'] = $user_email;
 					leaky_paywall_update_subscriber( NULL, $user_email, 'free-' . time(), $args );
 					
-                    do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
+                    			do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
 
-                    // log the new user in
-                    wp_setcookie( $user_login, $user_pass, true );
-                    wp_set_current_user( $user_id, $user_login );
-                    do_action( 'wp_login', $user_login );
+                    			// log the new user in
+                    			wp_setcookie( $user_login, $user_pass, true );
+                    			wp_set_current_user( $user_id, $user_login );
+                    			do_action( 'wp_login', $user_login );
 	 
 					// send the newly created user to the appropriate page after logging them in
-					if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-						wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
-					} else if ( !empty( $settings['page_for_profile'] ) ) {
+                                	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+                                        	wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+                                	} else if ( !empty( $settings['page_for_profile'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 					} else if ( !empty( $settings['page_for_subscription'] ) ) {
 						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
