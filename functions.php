@@ -3282,3 +3282,23 @@ if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 		wp_schedule_event( time(), 'daily', 'zeen101_dot_com_leaky_rss_feed_check' );
 	
 }
+
+
+/**
+ * Helper function to get the data associated with a level by the level id
+ *
+ * @since 1.0.0
+ * @return array
+ */
+if ( ! function_exists( 'get_level_by_level_id' ) ) {
+
+	function get_level_by_level_id( $level_id ) {
+
+		$settings = get_leaky_paywall_settings();
+		$level = $settings['levels'][$level_id];
+
+		return $level;
+
+	}
+
+}
