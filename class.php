@@ -750,6 +750,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					update_site_option( 'issuem-leaky-paywall-site-wide', false );
 				}
 				
+				$settings = apply_filters( 'leaky_paywall_update_settings_settings', $settings );
+				
 				$this->update_settings( $settings );
 				$settings_saved = true;
 				
@@ -960,6 +962,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <h3 class="hndle"><span><?php _e( 'Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
+		                        
+		                    <table id="leaky_paywall_test_option" class="form-table">
+			                    
+	                            <tr class="gateway-options">
+	                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
+	                            </tr>
+	                            
+		                    </table>
+		                        
+		                    <?php ob_start(); //Level 1 ?>
 	                        
 	                        <table id="leaky_paywall_gateway_options" class="form-table">
 				                        								
@@ -974,16 +987,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										</p>
 	                                </td>
 	                            </tr>
-	                                                        
-	                            <tr class="gateway-options">
-	                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
-	                            </tr>
 	                            
 	                        </table>
 	                        
 	                        <?php
 	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
+		                    ob_start(); //Level 2
 	                        ?>
 	                        
 	                        <table id="leaky_paywall_stripe_options" class="form-table">
@@ -1021,7 +1030,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 	                            
 	                        </table>
-	
+							<?php echo apply_filters( 'leaky_paywall_settings_page_stripe_payment_gateway_options', ob_get_clean() ); ?>
 		                    <?php } ?>
 		                    
 		                    <?php
@@ -1107,6 +1116,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                    <?php } ?>
 	                        
 	                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+	                        
+	                        <?php $leaky_paywall_gateway_options = ob_get_clean(); ?>
+	                        <?php echo apply_filters( 'leaky_paywall_settings_page_gateway_options', $leaky_paywall_gateway_options ); ?>
 	                                                  
 	                        <p class="submit">
 	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />

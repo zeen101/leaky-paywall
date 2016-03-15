@@ -513,6 +513,11 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						break; //We only want the first match
 					}
 				}
+			} else {
+				
+				$results .= '<h2>' . __( 'Your Account is Not Currently Active', 'issuem-leaky-paywall' ) . '</h2>';
+				$results .= '<p>' . sprintf( __( 'To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
+				
 			}
 			$results .= '</div>';
 			$results .= apply_filters( 'leaky_paywall_profile_your_payment_info_end', '' );
