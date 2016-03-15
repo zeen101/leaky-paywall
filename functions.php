@@ -1062,7 +1062,6 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 				'price' 			=> $meta_args['price'],
 				'description' 		=> $meta_args['description'],
 				'plan' 				=> $meta_args['plan'],
-				'created' 			=> date( 'Y-m-d H:i:s' ),
 				'expires' 			=> $expires,
 				'payment_gateway' 	=> $meta_args['payment_gateway'],
 				'payment_status' 	=> $meta_args['payment_status'],
@@ -1342,7 +1341,8 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 		$settings = get_leaky_paywall_settings();
 		$restrictions = $settings['restrictions']['post_types']; //defaults
 		if ( is_multisite_premium() ) {
-			if ( false !== $restriction_levels = leaky_paywall_subscriber_current_level_ids() ) {
+			$restriction_levels = leaky_paywall_subscriber_current_level_ids();
+			if ( !empty( $restriction_levels ) ) {
 
 				$restrictions = array();
 				$merged_restrictions = array();
@@ -2604,7 +2604,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						$results .= '<div class="leaky_paywall_subscription_payment_options">';
 						
 						if ( !empty( $level['price'] ) ) {
-							if ( false === $current_level_ids ) {
+							if ( empty( $current_level_ids ) ) {
 								//New Account
 								if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
 									$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
@@ -2622,7 +2622,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 								$user = wp_get_current_user();
 								$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 								
-								if ( !empty( $user ) ) {
+								if ( !empty( $user->ID ) ) {
 									
 									if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
 										$site = '_' . $level['site'];
