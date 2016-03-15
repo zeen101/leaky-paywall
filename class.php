@@ -750,6 +750,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					update_site_option( 'issuem-leaky-paywall-site-wide', false );
 				}
 				
+				$settings = apply_filters( 'leaky_paywall_update_settings_settings', $settings );
+				
 				$this->update_settings( $settings );
 				$settings_saved = true;
 				
@@ -960,6 +962,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <h3 class="hndle"><span><?php _e( 'Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
+		                        
+		                    <table id="leaky_paywall_test_option" class="form-table">
+			                    
+	                            <tr class="gateway-options">
+	                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
+	                            </tr>
+	                            
+		                    </table>
+		                        
+		                    <?php ob_start(); //Level 1 ?>
 	                        
 	                        <table id="leaky_paywall_gateway_options" class="form-table">
 				                        								
@@ -974,16 +987,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										</p>
 	                                </td>
 	                            </tr>
-	                                                        
-	                            <tr class="gateway-options">
-	                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> /></td>
-	                            </tr>
 	                            
 	                        </table>
 	                        
 	                        <?php
 	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
+		                    ob_start(); //Level 2
 	                        ?>
 	                        
 	                        <table id="leaky_paywall_stripe_options" class="form-table">
@@ -1021,7 +1030,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 	                            
 	                        </table>
-	
+							<?php echo apply_filters( 'leaky_paywall_settings_page_stripe_payment_gateway_options', ob_get_clean() ); ?>
 		                    <?php } ?>
 		                    
 		                    <?php
@@ -1107,6 +1116,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                    <?php } ?>
 	                        
 	                        <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+	                        
+	                        <?php $leaky_paywall_gateway_options = ob_get_clean(); ?>
+	                        <?php echo apply_filters( 'leaky_paywall_settings_page_gateway_options', $leaky_paywall_gateway_options ); ?>
 	                                                  
 	                        <p class="submit">
 	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
@@ -1723,7 +1735,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		}
 
 		/**
-		 * Outputs the IssueM Add Ons page
+		 * Outputs the Leaky Paywall Add Ons page
 		 *
 		 * @since 3.1.3
 		 */
@@ -1732,9 +1744,23 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			// Display HTML
 			?>
 			<div class="wrap">
-        
-                <h2 style='margin-bottom: 10px;' ><?php _e( 'Leaky Paywall Add-Ons', 'issuem-leaky-paywall' ); ?></h2>
-                <p><?php _e( 'The following are available add-ons to extend Leaky Paywall functionality.', 'issuem-leaky-paywall' ); ?></p>
+        	
+        	<div style="max-width: 1035px; margin-bottom: 20px; overflow: hidden;">
+	        	<div style="float: left;">
+	                <h2 style='margin-bottom: 10px;' ><?php _e( 'Leaky Paywall Add-Ons', 'issuem-leaky-paywall' ); ?></h2>
+	                <p><?php _e( 'The following are available add-ons to extend Leaky Paywall functionality.', 'issuem-leaky-paywall' ); ?></p>
+				</div>
+
+				<div style="float: right; margin-top: 20px;">	
+					<div class="leaky-publisher-bundle">
+						<a target="_blank" href="https://zeen101.com/downloads/publisher-bundle/?utm_source=Leaky%20Addons%20dashboard&utm_medium=banner&utm_campaign=Publisher%20bundle%20banner%20addons%20leaky"><img width="500" src="https://zeen101.com/wp-content/uploads/edd/2016/03/publisher-bundle.jpg" alt="publisher-bundle"></a>
+					</div>
+				</div>
+			</div>
+			
+			<p>
+					<a target="_blank" class="button-primary" href="https://zeen101.com/leakypaywall/leaky-paywall-add-ons/?utm_source=Leaky%20dashboard%20addons&utm_medium=Button&utm_content=Button&utm_campaign=Leaky%20Addons%20dashboard%20Browse%20addons%20button">Browse all add-ons for Leaky Paywall</a>
+             	</p>
 
                 <table id="leaky-paywall-addons" cellpadding="0" cellspacing="0">
                 	<tbody>
@@ -1803,7 +1829,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    </tr>
                     </tbody>
                 </table>
-             
+             	
+
+             	
+
             </div>
 
 			<?php

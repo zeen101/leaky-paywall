@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.5
-Stable tag: 3.5.0
+Stable tag: 3.6.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,13 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 3.6.0 =
+* Update add ons page with publisher bundle banner
+* Fixing bug when detecting empty users and level IDs
+* Fixing bug when updating subscriber information
+* Adding filters for new payment gateways
+* Adding text to profile shortcode for unpaid accounts to resubscribe.
 
 = 3.5.0 =
 * Fixing bug in PayPal IPN EOT/Suspend/Cancel
