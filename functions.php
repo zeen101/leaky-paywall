@@ -2704,8 +2704,14 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 	
 		$results = '';
 		$settings = get_leaky_paywall_settings();
-		$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
-		$currency = $settings['leaky_paywall_currency'];
+		$currency = apply_filters( 'leaky_paywall_stripe_currency', $settings['leaky_paywall_currency'] );
+		if ( in_array( strtoupper( $currency ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
+			//Zero-Decimal Currencies
+			//https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support
+			$stripe_price = number_format( $level['price'], '0', '', '' );
+		} else {
+			$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
+		}
 		$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 
 		if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
@@ -2714,8 +2720,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 			
 		        $stripe_plan = false;
 		        $time = time();
-		        $amount = number_format( $level['price'], 2, '', '' );
-			
+
 				if ( !empty( $level['plan_id'] ) ) {
 					//We need to verify that the plan_id matches the level details, otherwise we need to update it
 					try {
@@ -2729,18 +2734,18 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 				
 				if ( !is_object( $stripe_plan ) || //If we don't have a stripe plan
 					( //or the stripe plan doesn't match...
-						$amount 					!= $stripe_plan->amount 
+						$stripe_price 					!= $stripe_plan->amount 
 						|| $level['interval'] 		!= $stripe_plan->interval 
 						|| $level['interval_count'] != $stripe_plan->interval_count
 					) 
 				) {
 				
 					$args = array(
-		                'amount'            => esc_js( $amount ),
+		                'amount'            => esc_js( $stripe_price ),
 		                'interval'          => esc_js( $level['interval'] ),
 		                'interval_count'    => esc_js( $level['interval_count'] ),
 		                'name'              => esc_js( $level['label'] ) . ' ' . $time,
-		                'currency'          => esc_js( apply_filters( 'leaky_paywall_stripe_currency', $currency ) ),
+		                'currency'          => esc_js( $currency ),
 		                'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
 		            );
 		            
