@@ -1317,7 +1317,7 @@ if ( !function_exists( 'leaky_paywall_attempt_login' ) ) {
 
 				delete_transient( '_lpl_' . $login_hash ); //one time use
 				wp_set_current_user( $user->ID );
-				wp_set_auth_cookie( $user->ID );
+				wp_set_auth_cookie( $user->ID, true );
 
 			}
 
@@ -2145,7 +2145,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
 				}
 				
 				wp_set_current_user( $user_id );
-				wp_set_auth_cookie( $user_id );
+				wp_set_auth_cookie( $user_id, true );
 					
 				// send the newly created user to the appropriate page after logging them in
 				if ( !empty( $settings['page_for_after_subscribe'] ) ) {
@@ -2286,7 +2286,7 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						}
 						
 						wp_set_current_user( $user_id );
-						wp_set_auth_cookie( $user_id );
+						wp_set_auth_cookie( $user_id, true );
 						
 					} else {
 						
