@@ -73,7 +73,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			
 			try {
 
-				$charge = 
+				// $charge = 
 				
 			} 
 			

@@ -70,6 +70,18 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'shortcodes.php' );
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
+
+		// error tracking
+		include( LEAKY_PAYWALL_PATH . 'include/error-tracking.php' );
+
+		// registration
+		include( LEAKY_PAYWALL_PATH . 'include/registration-functions.php' );
+
+		// gateways
+		include( LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php' );
+		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway.php' );
+		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateways.php' );
+		// include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-stripe.php' );
 			
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );

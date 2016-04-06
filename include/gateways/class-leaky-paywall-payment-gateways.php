@@ -54,7 +54,7 @@ class Leaky_Paywall_Payment_Gateways {
 				'admin_label'	=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Manual'
 			),
-			'paypal'	=> array(
+			'paypal_standard'	=> array(
 				'label'		=> __( 'PayPal', 'issuem-leaky-paywall' ),
 				'admin_label'	=> __( 'PayPal Standard', 'issuem-leaky-paywall' ),
 				'class'			=> __( 'Leaky_Paywall_Payment_Gateway_PayPal' )
@@ -71,7 +71,7 @@ class Leaky_Paywall_Payment_Gateways {
 	}
 
 	/**
-	 * Retrieve all enable gateways
+	 * Retrieve all enabled gateways
 	 *
 	 * @since 3.5.1 
 	 * @return array 
@@ -81,13 +81,13 @@ class Leaky_Paywall_Payment_Gateways {
 		$settings = get_leaky_paywall_settings();
 
 		$enabled = array();
-		$saved = isset( $settings['gateways'] ) ? array_map( 'trim', $settings['gateways'] ) : array();
+		$saved = isset( $settings['payment_gateway'] ) ? array_map( 'trim', $settings['payment_gateway'] ) : array();
 
 		if ( ! empty( $saved ) ) {
 
 			foreach ( $this->available_gateways as $key => $gateway ) {
 
-				if ( isset( $saved[$key] ) && $saved[$key] == 1 ) {
+				if ( in_array( $key, $saved ) ) {
 
 					$enabled[$key] = $gateway;
 
@@ -97,7 +97,7 @@ class Leaky_Paywall_Payment_Gateways {
 
 		if ( empty( $enabled ) ) {
 
-			$enabled['paypal'] = __( 'PayPal', 'issuem-leaky-paywall' );
+			$enabled['paypal_standard'] = __( 'PayPal Standard', 'issuem-leaky-paywall' );
 
 		}
 

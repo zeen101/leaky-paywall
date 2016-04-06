@@ -4,13 +4,6 @@
  * @since 1.0.0
  */
 
-if ( !function_exists( 'leaky_paywall_errors' ) ) {
-	function leaky_paywall_errors() {
-	    static $wp_error; // Will hold global variable safely
-	    return isset( $wp_error ) ? $wp_error : ( $wp_error = new WP_Error( NULL, NULL, NULL ) );
-	}
-}
-
 if ( !function_exists( 'get_leaky_paywall_settings' ) ) {
 
 	/**
