@@ -978,13 +978,27 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				                        								
 	                        	<tr class="gateway-options">
 	                                <th><?php _e( 'Enabled Gateways', 'issuem-leaky-paywall' ); ?></th>
-	                                <td>
+									<td>
+	                                <?php 
+	                                	$gateways = leaky_paywall_get_payment_gateways();
+
+	                                	// echo '<pre>';
+	                                	// print_r( $gateways );
+	                                	// echo '</pre>';
+
+	                                	foreach( $gateways as $key => $value ) {
+	                                		?>
+											<p>
+												<input id="enable-<?php echo $key; ?>" type="checkbox" name="payment_gateway[]" value="<?php echo $key; ?>" <?php checked( in_array( $key, $settings['payment_gateway'] ) ); ?> /> <label for="enable-<?php echo $key; ?>"><?php _e( $value['admin_label'], 'issuem-leaky-paywall' ); ?></label>
+											</p>
+	                                		<?php 
+	                                	}
+	                                ?>
+	                               
 										<p>
-											<input id="enable-stripe" type="checkbox" name="payment_gateway[]" value="stripe" <?php checked( in_array( 'stripe', $settings['payment_gateway'] ) ); ?> /> <label for="enable-stripe"><?php _e( 'Stripe', 'issuem-leaky-paywall' ); ?></label>
+											<input id="enable-stripe" type="checkbox" name="payment_gateway[]" value="stripe" <?php checked( in_array( 'stripe', $settings['payment_gateway'] ) ); ?> /> <label for="enable-stripe"><?php _e( 'Stripe Checkout', 'issuem-leaky-paywall' ); ?></label>
 										</p>
-										<p>
-										<input id="enable-paypal-standard" type="checkbox" name="payment_gateway[]"  value='paypal_standard' <?php checked( in_array( 'paypal_standard', $settings['payment_gateway'] ) ); ?> /> <label for="enable-paypal-standard"><?php _e( 'PayPal Standard', 'issuem-leaky-paywall' ); ?></label>
-										</p>
+										
 	                                </td>
 	                            </tr>
 	                            

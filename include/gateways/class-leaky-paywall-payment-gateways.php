@@ -49,11 +49,11 @@ class Leaky_Paywall_Payment_Gateways {
 	private function get_gateways() {
 
 		$gateways = array(
-			'manual'	=> array(
-				'label'		=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
-				'admin_label'	=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
-				'class'			=> 'Leaky_Paywall_Payment_Gateway_Manual'
-			),
+			// 'manual'	=> array(
+			// 	'label'		=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
+			// 	'admin_label'	=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
+			// 	'class'			=> 'Leaky_Paywall_Payment_Gateway_Manual'
+			// ),
 			'paypal_standard'	=> array(
 				'label'		=> __( 'PayPal', 'issuem-leaky-paywall' ),
 				'admin_label'	=> __( 'PayPal Standard', 'issuem-leaky-paywall' ),
@@ -63,7 +63,13 @@ class Leaky_Paywall_Payment_Gateways {
 				'label'		=> __( 'Credit / Debit Card', 'issuem-leaky-paywall' ),
 				'admin_label'	=> __( 'Stripe', 'issuem-leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe'
-			)
+			),
+			// @todo build this out later
+			// 'stripe_checkout'	=> array(
+			// 	'label'		=> __( 'Stripe Checkout', 'issuem-leaky-paywall' ),
+			// 	'admin_label'	=> __( 'Stripe Checkout', 'issuem-leaky-paywall' ),
+			// 	'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
+			// )
 		);
 
 		return apply_filters( 'leaky_paywall_payment_gateways', $gateways );
