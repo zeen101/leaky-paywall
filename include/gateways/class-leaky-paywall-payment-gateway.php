@@ -26,7 +26,6 @@ class Leaky_Paywall_Payment_Gateway {
 	public $site;
 	public $recurring;
 	public $return_url;
-	public $test_mode;
 
 	public function __construct( $subscription_data = array() ) {
 
@@ -50,19 +49,22 @@ class Leaky_Paywall_Payment_Gateway {
 			// $this->auto_renew			= $this->supports( 'recurring' ) ? $subscription_data['auto_renew'] : false;
 			// $this->return_url			= $subscription_data['return_url'];
 			
-			$this->email 				= $subscription_data['email'];
+			$this->email 				= $subscription_data['user_email'];
+			$this->user_id				= $subscription_data['user_id'];
+			$this->user_name			= $subscription_data['user_name'];
 			$this->first_name 			= $subscription_data['first_name'];
 			$this->last_name 			= $subscription_data['last_name'];
 			$this->currency				= $subscription_data['currency'];
 			$this->amount				= $subscription_data['amount'];
-			$this->length 				= $subscription_data['interval_count'];
-			$this->length_unit			= $subscription_data['interval'];
+			$this->length 				= $subscription_data['length'];
+			$this->length_unit			= $subscription_data['length_unit'];
 			$this->level_id 			= $subscription_data['level_id'];
 			$this->level_price 			= $subscription_data['level_price'];
 			$this->level_name			= $subscription_data['description'];
 			$this->plan_id				= $subscription_data['plan_id'];
-			$this->recurring			= $subscription_data['recurring'];
 			$this->site					= $subscription_data['site'];
+			$this->recurring			= $subscription_data['recurring'];
+			$this->return_url			= $subscription_data['return_url'];
 
 		}
 

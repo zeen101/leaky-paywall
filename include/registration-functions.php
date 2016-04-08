@@ -26,6 +26,7 @@ function leaky_paywall_process_registration() {
 	}	
 
 	$settings = get_leaky_paywall_settings();
+
 	global $user_ID;
 
 	$level_id = isset( $_POST['level_id'] ) ? absint( $_POST['level_id'] ) : false;
@@ -115,9 +116,9 @@ function leaky_paywall_process_registration() {
 		}
 
 		
-		do_action( 'leaky_paywall_form_processing', $_POST, $user_data['id'], $price );
+		do_action( 'leaky_paywall_form_processing', $_POST, $user_data['id'], $meta['price'] );
 
-		if ( $price > '0' ) {
+		if ( $meta['price'] > '0' ) {
 
 			if ( !empty( $discount ) ) {
 				// record usage of discount code
@@ -127,17 +128,19 @@ function leaky_paywall_process_registration() {
 			// get redirect url
 
 			$subscription_data = array(
-				'price'		=> $price,
-				'discount'	=> $discount,
-				'subscription_id'	=> $subscription->id,
-				'subscription_name'	=> $subscription->name,
-				'key'				=> $subscription_key,
+				'amount'			=> sanitize_text_field( $_POST['stripe_price'] ),
+				'description'		=> sanitize_text_field( $_POST['description'] ),
 				'user_id'			=> $user_data['id'],
 				'user_name'			=> $user_data['login'],
 				'user_email'		=> $user_data['email'],
-				'currency'			=> $settings['currency'],
-				'auto_renew'		=> $auto_renew,
-				'return_url'		=> $redirect,
+				'level_id'			=> $meta['level_id'],
+				'level_price'		=> sanitize_text_field( $_POST['level_price'] ),
+				'plan_id'			=> sanitize_text_field( $_POST['plan_id'] ),
+				'currency'			=> $settings['leaky_paywall_currency'],
+				'length'			=> sanitize_text_field( $_POST['interval_count'] ),
+				'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
+				'recurring'			=> sanitize_text_field( $_POST['recurring'] ),
+				'site'				=> sanitize_text_field( $_POST['site'] ),
 				'new_user'			=> $user_data['need_new'],
 				'post_data'			=> $_POST
 			);

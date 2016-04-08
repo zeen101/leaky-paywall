@@ -934,6 +934,9 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				//grab the ID for later
 				$user_id = $user->ID;
 				$userdata = get_userdata( $user_id );
+
+				$userdata = object_to_array( $userdata );
+				
 			} else {
 				//the user doesn't already exist
 				//create a new user with their email address as their username
@@ -3292,6 +3295,24 @@ if ( ! function_exists( 'get_level_by_level_id' ) ) {
 
 		return $level;
 
+	}
+
+}
+
+/**
+ * Helper function to convert object to array
+ *
+ * @since 3.7.0
+ * @return array
+ */
+if ( ! function_exists( 'object_to_array' ) ) {
+
+	function object_to_array ($object) {
+
+	    if(!is_object($object) && !is_array($object))
+	        return $object;
+
+	    return array_map('objectToArray', (array) $object);
 	}
 
 }
