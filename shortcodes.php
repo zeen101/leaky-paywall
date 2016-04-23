@@ -662,7 +662,7 @@ function do_leaky_paywall_register_form() {
 
 		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways ); ?>
 
-		  <button id="leaky-paywall-submit" type="submit">Submit Payment</button>
+		  <button id="leaky-paywall-submit" type="submit">Subscribe</button>
 		</form>
 
 		<?php 

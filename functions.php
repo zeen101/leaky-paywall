@@ -2891,9 +2891,8 @@ if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
 	function leaky_paywall_pay_with_email( $level, $level_id ) {
 		
 		$settings = get_leaky_paywall_settings();
-		$results  = '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-free-form', $level_id, get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">';
-		$results .= '<button type="submit">' . __( 'Register' ) . '</button>';
-		$results .= '</form>';
+		$results = '<a href="' . $settings['page_for_register'] . '/?level_id=' . $level_id . '">Subscribe</a>';
+
 		
 		
 		return '<div class="leaky-paywall-payment-button">' . $results . '</div>';
