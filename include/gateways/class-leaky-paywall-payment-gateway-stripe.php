@@ -300,7 +300,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			</script>
 
 		<?php 
-
+		leaky_paywall_card_form( $this->level_price );
 		return ob_get_clean();
 
 	}

@@ -245,3 +245,41 @@ function leaky_paywall_validate_username( $username = '' ) {
 	$valid = ( $sanitized == $username );
 	return (bool) apply_filters( 'leaky_paywall_validate_username', $valid, $username );
 }
+
+function leaky_paywall_card_form( $price ) {
+
+	if ( $price == 0) {
+		return; 
+	}
+	
+	?>
+	<h3>Payment Information</h3>
+
+	  <p class="form-row">
+	    <label>Name on Card <i class="required">*</i></label>
+	    <input type="text" size="20" name="card_name" class="card-name" />
+	  </p>
+
+	  <p class="form-row">
+	    <label>Card Number <i class="required">*</i></label>
+	    <input type="text" size="20" name="card_num" class="card-num" />
+	  </p>
+
+	  <p class="form-row">
+	    <label>CVC <i class="required">*</i></label>
+	    <input type="text" size="4" name="cvc" class="cvc" />
+	  </p>
+
+	  <p class="form-row">
+	    <label>Card Zip or Postal Code <i class="required">*</i></label>
+	    <input type="text" size="20" name="card_zip" class="card-zip" />
+	  </p>
+
+	  <p class="form-row">
+	    <label>Expiration (MM/YYYY) <i class="required">*</i></span></label>
+	    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
+	  </p>
+
+		 
+	<?php 
+}
