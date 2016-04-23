@@ -108,6 +108,13 @@ function leaky_paywall_process_registration() {
 		} else {
 			$site = '';
 		}
+
+		if ( $meta['price'] == '0' ) {
+
+			$meta['payment_gateway'] = 'free_registration';
+			$meta['payment_status'] = 'active';
+
+		}
 		
 		foreach( $meta as $key => $value ) {
 
@@ -149,9 +156,23 @@ function leaky_paywall_process_registration() {
 			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data ) );
 
 		} else {
-			// process a free or trial subscription
+			// process a free subscription
 			
-			// @todo add all the logic for this stuff here
+			$subscription_data = array(
+				'length'			=> sanitize_text_field( $_POST['interval_count'] ),
+				'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
+				'site'				=> $site,
+				'mode'				=> $mode
+			);
+
+			leaky_paywall_set_expiration_date( $user_data['id'], $subscription_data );
+
+			// send email notification 
+			// @todo add a free version of the email notification, not just new
+			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
+
+			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
+
 		}
 	}
 }
@@ -246,12 +267,16 @@ function leaky_paywall_validate_username( $username = '' ) {
 	return (bool) apply_filters( 'leaky_paywall_validate_username', $valid, $username );
 }
 
+/**
+ * Display the credit card fields on the registration form
+ * @param  string $price The price of the current chosen level
+ */
 function leaky_paywall_card_form( $price ) {
 
 	if ( $price == 0) {
 		return; 
 	}
-	
+
 	?>
 	<h3>Payment Information</h3>
 

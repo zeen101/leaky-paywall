@@ -903,6 +903,34 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 	
 }
 
+if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
+
+	/**
+	 * Set a user's expiration data
+	 * @param  int $user_id the user id
+	 * @param  array $data    information about the subscription
+	 * 
+	 */
+	function leaky_paywall_set_expiration_date( $user_id, $data ) {
+
+		if ( empty( $user_id ) ) {
+			return;
+		}
+
+		if ( !empty( $data['length_unit'] ) && isset( $data['length'] ) && 1 <= $data['length'] ) {
+			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $data['length'] . ' ' . $data['length_unit'] ) ); //we're generous, give them the whole day!
+		} else {
+			$expires = '0000-00-00 00:00:00';
+		}
+
+		$key = 'expires';
+
+		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $data['mode'] . '_' . $key . $data['site'], $expires );
+
+	}
+
+}
+
 if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 
 	/**

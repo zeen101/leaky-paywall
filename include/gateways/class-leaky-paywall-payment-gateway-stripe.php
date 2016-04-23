@@ -231,6 +231,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function fields() {
 
+		// this is a free level, so don't load the payment gateway info
+		if ( $this->level_price == 0 ) {
+			return;
+		}
+
 		ob_start();
 		?>
 			
