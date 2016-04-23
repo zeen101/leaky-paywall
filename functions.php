@@ -354,6 +354,10 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			if ( !$paid ) {
 				
 				if ( 'stripe' === $payment_gateway ) {
+
+					if ( ! class_exists( 'Stripe' ) ) {
+						require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
+					}
 					
 					try {
 						if ( empty( $subscriber_id ) ) {

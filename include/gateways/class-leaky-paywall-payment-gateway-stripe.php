@@ -40,7 +40,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		}
 
-		if ( ! class_exists( 'Stripe\Stripe' ) ) {
+		if ( ! class_exists( 'Stripe' ) ) {
 			require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
 		}
 
