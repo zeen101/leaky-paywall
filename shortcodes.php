@@ -534,3 +534,180 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 	add_shortcode( 'leaky_paywall_profile', 'do_leaky_paywall_profile' );
 	
 }
+
+/**
+ * Outputs the default Leaky Paywall register form
+ *
+ * @since 3.7.0
+ */
+function do_leaky_paywall_register_form() {
+
+	$settings = get_leaky_paywall_settings();
+
+	$level_id = isset($_GET['level_id']) ? $_GET['level_id'] : null;
+
+	if ( is_null( $level_id ) ) {
+		$page = $settings['page_for_subscribe'];
+		$content .= '<p>Please <a href="' . $page . '">go to the subscribe page</a> to choose a subscription level.</p>';
+		return $content;
+	}
+
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	
+	$currency = $settings['leaky_paywall_currency'];
+	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
+
+	// $stripe_price = number_format( $level['price'], '2', '', '' );
+	// $stripe_plan = $this->create_stripe_plan( $level, $level_id );
+
+	ob_start();
+
+	// show any error messages after form submission
+	leaky_paywall_show_error_messages( 'register' );
+		?>
+
+			<h3>Your Subscription</h3>
+
+			<ul>
+				<li><strong>Subscription Name:</strong> <?php echo $level['label']; ?></li>
+				<li><strong>Subscription Length:</strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . 's'; ?>
+				<li><strong>Recurring: </strong> <?php echo $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
+				<li><strong>Content Access:</strong>
+					<ul>
+				<?php 
+					foreach( $level['post_types'] as $type ) {
+
+						if ( $type['allowed'] == 'unlimited' ) {
+							echo '<li>' . ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's</li>';
+						} else {
+							echo '<li>' . $type['allowed_value'] . ' ' . $type['post_type'] . 's</li>';
+						}
+						
+					}	
+				?>
+					</ul>
+				</li>
+				<li><strong>Total:</strong> $<?php echo $level['price']; ?></li>
+			</ul>
+
+			<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form">
+			  <span class="payment-errors"></span>
+
+			  <h3>Your Details</h3>
+
+			  <p class="form-row">
+			    <label for="first_name">First Name <i class="required">*</i></label>
+			    <input type="text" size="20" name="first_name"/>
+			   
+			  </p>
+
+			  <p class="form-row">
+			    <label for="last_name">Last Name <i class="required">*</i></label>
+			    <input type="text" size="20" name="last_name"/>
+			   
+			  </p>
+			 
+			  <p class="form-row">
+			    <label for="email_address">Email Address <i class="required">*</i></label>
+			    <input type="text" size="20" name="email_address"/>
+			  </p>
+
+			  <h3>Account Details</h3>
+
+			  <p class="form-row">
+			    <label for="username">Username<i class="required">*</i></label>
+			    <input type="text" size="20" name="username"/>
+			  </p>
+
+			  <p class="form-row">
+			    <label for="password">Password <i class="required">*</i></label>
+			    <input type="password" size="20" name="password"/>
+			  </p>
+
+			  <p class="form-row">
+			    <label for="confirm_password">Confirm Password<i class="required">*</i></label>
+			    <input type="password" size="20" name="confirm_password"/>
+			  </p>
+
+			  <?php do_action( 'leaky_paywall_after_password_registration_field' ); ?>
+
+			 
+
+			 
+
+			  
+			  <h3>Payment Information</h3>
+
+			  <p class="form-row">
+			    <label>Name on Card <i class="required">*</i></label>
+			    <input type="text" size="20" name="card_name" class="card-name" />
+			  </p>
+
+			  <p class="form-row">
+			    <label>Card Number <i class="required">*</i></label>
+			    <input type="text" size="20" name="card_num" class="card-num" />
+			  </p>
+
+			  <p class="form-row">
+			    <label>CVC <i class="required">*</i></label>
+			    <input type="text" size="4" name="cvc" class="cvc" />
+			  </p>
+
+			  <p class="form-row">
+			    <label>Card Zip or Postal Code <i class="required">*</i></label>
+			    <input type="text" size="20" name="card_zip" class="card-zip" />
+			  </p>
+
+			  <p class="form-row">
+			    <label>Expiration (MM/YYYY) <i class="required">*</i></span></label>
+			    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
+			  </p>
+
+			  
+
+			  <?php 
+
+			  	$gateways = leaky_paywall_get_enabled_payment_gateways(); 
+
+			  	if ( $gateways ) {
+
+			  		foreach( $gateways as $key => $gateway ) {
+
+			  			echo '<input type="hidden" name="gateway" value="' . esc_attr( $key ) . '" />';
+
+			  		}
+			  	}
+
+			  ?>
+
+			  <input type="hidden" name="stripe_price" value="<?php echo $stripe_price; ?>"/>
+			  <input type="hidden" name="level_price" value="<?php echo $level['price']; ?>"/>
+			  <input type="hidden" name="currency" value="<?php echo $currency; ?>"/>
+			  <input type="hidden" name="description" value="<?php echo $level['label']; ?>"/>
+			  <input type="hidden" name="level_id" value="<?php echo $level_id; ?>"/>
+			  <input type="hidden" name="interval" value="<?php echo $level['interval']; ?>"/>
+			  <input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>"/>
+			  <input type="hidden" name="recurring" value="<?php echo $level['recurring']; ?>"/>
+			  <input type="hidden" name="plan_id" value="<?php echo $stripe_plan; ?>"/>
+			  <input type="hidden" name="site" value="<?php echo $level['site']; ?>"/>
+				
+
+			  <input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>
+
+			  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways ); ?>
+
+			  <button id="leaky-paywall-submit" type="submit">Submit Payment</button>
+			</form>
+
+
+
+			<?php 
+
+	$content = ob_get_contents();
+	ob_end_clean();
+
+	return $content; 
+
+}
+add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' );
