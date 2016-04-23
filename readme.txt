@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.5
-Stable tag: 3.6.0
+Stable tag: 3.7.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,10 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 3.7.0 =
+* Setup 'rememberme' to true for set_auth_cookie calls
+* Adding support for Zero-Decimal currencies in Stripe
 
 = 3.6.0 =
 * Update add ons page with publisher bundle banner
