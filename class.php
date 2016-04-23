@@ -1133,7 +1133,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <?php $leaky_paywall_gateway_options = ob_get_clean(); ?>
 	                        <?php echo apply_filters( 'leaky_paywall_settings_page_gateway_options', $leaky_paywall_gateway_options ); ?>
-	                                                  
+	                        
+	                        <?php do_action( 'leaky_paywall_payments_settings', $settings ); ?>
+
 	                        <p class="submit">
 	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
 	                        </p>
