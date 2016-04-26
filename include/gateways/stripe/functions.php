@@ -10,6 +10,10 @@ add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall
  */
 function leaky_paywall_stripe_add_signup_link( $payment_options, $level, $level_id ) {
 
+	if ( $level['price'] == 0 ) {
+		return $payment_options;
+	}
+
 	$output = '';
 
 	$gateways = new Leaky_Paywall_Payment_Gateways();
@@ -18,7 +22,7 @@ function leaky_paywall_stripe_add_signup_link( $payment_options, $level, $level_
 	$settings = get_leaky_paywall_settings();
 
 	if ( in_array( 'stripe', array_keys( $enabled_gateways ) ) ) {
-		$output = '<a href="' . $settings['page_for_register'] . '/?level_id=' . $level_id . '">Subscribe</a>';
+		$output = '<a href="' . get_page_link( $settings['page_for_register'] ) . '?level_id=' . $level_id . '">Subscribe</a>';
 	}
 
 	return $payment_options . $output;
