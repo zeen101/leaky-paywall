@@ -34,15 +34,6 @@ if ( !defined( 'PAYPAL_LIVE_URL' ) )
 	define( 'PAYPAL_LIVE_URL', 'https://www.paypal.com/' );
 if ( !defined( 'PAYPAL_SANDBOX_URL' ) )
 	define( 'PAYPAL_SANDBOX_URL', 'https://www.sandbox.paypal.com/' );
-if ( !defined( 'PAYPAL_PAYMENT_SANDBOX_URL' ) )
-
-	define( 'PAYPAL_PAYMENT_SANDBOX_URL', 'https://www.sandbox.paypal.com/cgi-bin/webscr' );
-if ( !defined( 'PAYPAL_PAYMENT_LIVE_URL' ) )
-	define( 'PAYPAL_PAYMENT_LIVE_URL', 'https://www.paypal.com/cgi-bin/webscr' );
-if ( !defined( 'PAYPAL_NVP_API_SANDBOX_URL' ) )
-	define( 'PAYPAL_NVP_API_SANDBOX_URL', 'https://api-3t.sandbox.paypal.com/nvp' );
-if ( !defined( 'PAYPAL_NVP_API_LIVE_URL' ) )
-	define( 'PAYPAL_NVP_API_LIVE_URL', 'https://api-3t.paypal.com/nvp' );
 
 /**
  * Instantiate Pigeon Pack class, require helper files
@@ -82,6 +73,7 @@ function leaky_paywall_plugins_loaded() {
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/stripe/functions.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-stripe.php' );
+		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-paypal.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateways.php' );
 
 			

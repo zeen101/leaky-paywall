@@ -94,6 +94,74 @@ add_action( 'leaky_paywall_before_registration_submit_field', 'leaky_paywall_loa
 
 
 /**
+ * Load webhook processor for all gateways
+ *
+ * @access      public
+ * @since       3.7.0
+ * @return      void
+*/
+function leaky_paywall_process_gateway_webooks() {
+
+	$gateways = new Leaky_Paywall_Payment_Gateways;
+
+	foreach( $gateways->available_gateways  as $key => $gateway ) {
+
+		if( is_array( $gateway ) && isset( $gateway['class'] ) ) {
+
+			$gateway = new $gateway['class'];
+			$gateway->process_webhooks();
+
+		}
+
+	}
+
+}
+add_action( 'init', 'leaky_paywall_process_gateway_webooks', -99999 );
+
+/**
+ * Process gateway confirmaions
+ *
+ * @access      public
+ * @since       3.7.0
+ * @return      void
+*/
+function leaky_paywall_process_gateway_confirmations() {
+
+	// global $rcp_options;
+
+	// if( empty( $rcp_options['registration_page'] ) ) {
+	// 	return;
+	// }
+
+	if( empty( $_GET['leaky-paywall-confirm'] ) ) {
+		return;
+	}
+
+	// if( ! rcp_is_registration_page() ) {
+	// 	return;
+	// }
+
+	$gateways = new Leaky_Paywall_Payment_Gateways;
+	$gateway  = sanitize_text_field( $_GET['leaky-paywall-confirm'] );
+
+	if( ! $gateways->is_gateway_enabled( $gateway ) ) {
+		return;
+	}
+
+	$gateway = $gateways->get_gateway( $gateway );
+
+	if( is_array( $gateway ) && isset( $gateway['class'] ) ) {
+
+		$gateway = new $gateway['class'];
+		$gateway->process_confirmation();
+
+	}
+
+}
+add_action( 'template_redirect', 'leaky_paywall_process_gateway_confirmations', -99999 );
+
+
+/**
  * Load scripts for all gateways
  *
  * @access      public
