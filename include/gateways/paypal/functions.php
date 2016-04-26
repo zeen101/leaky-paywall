@@ -3,7 +3,7 @@
 add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_paypal_subscription_cards', 7, 3 );
 
 /**
- * Add the Paypal subscribe button to the subscribe cards. 
+ * Add the Paypal subscribe option to the subscribe cards. 
  *
  * @since 3.7.0
  */
@@ -28,6 +28,11 @@ function leaky_paywall_paypal_subscription_cards( $payment_options, $level, $lev
 
 }
 
+/**
+ * Add the Paypal subscribe or buy now button to the subscribe cards. 
+ *
+ * @since 3.7.0
+ */
 function leaky_paywall_paypal_button( $level, $level_id ) {
 
 	$results = '';

@@ -75,8 +75,6 @@ function leaky_paywall_get_enabled_payment_gateways() {
  */
 function leaky_paywall_load_gateway_fields( $gateways ) {
 
-
-
 	foreach( $gateways as $key => $gateway ) {
 
 		$all_gateways = new Leaky_Paywall_Payment_Gateways;

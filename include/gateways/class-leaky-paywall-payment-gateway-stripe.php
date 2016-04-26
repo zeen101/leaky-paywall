@@ -231,8 +231,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function fields() {
 
-		// this is a free level, so don't load the payment gateway info
-		if ( $this->level_price == 0 ) {
+		$level_id = esc_html( $_GET['level_id'] );
+		$level = get_level_by_level_id( $level_id );
+
+		if ( $level['price'] == 0 ) {
 			return;
 		}
 
@@ -305,7 +307,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			</script>
 
 		<?php 
-		leaky_paywall_card_form( $this->level_price );
+		leaky_paywall_card_form();
 		return ob_get_clean();
 
 	}

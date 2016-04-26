@@ -135,7 +135,7 @@ function leaky_paywall_process_registration() {
 			// get redirect url
 
 			$subscription_data = array(
-				'amount'			=> sanitize_text_field( $_POST['stripe_price'] ),
+				'amount'			=> sanitize_text_field( $_POST['level_price'] ),
 				'description'		=> sanitize_text_field( $_POST['description'] ),
 				'user_id'			=> $user_data['id'],
 				'user_name'			=> $user_data['login'],
@@ -154,6 +154,7 @@ function leaky_paywall_process_registration() {
 
 			// send all data to the gateway for processing
 			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data ) );
+			
 
 		} else {
 			// process a free subscription
@@ -272,10 +273,6 @@ function leaky_paywall_validate_username( $username = '' ) {
  * @param  string $price The price of the current chosen level
  */
 function leaky_paywall_card_form( $price ) {
-
-	if ( $price == 0) {
-		return; 
-	}
 
 	?>
 	<h3>Payment Information</h3>
