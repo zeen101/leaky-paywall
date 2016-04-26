@@ -878,7 +878,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Page for Profile', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_profile', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_profile'] ) ); ?>
-	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s. This page displays the account information for subscribers.', 'issuem-leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
 	                                </td>
 	                            </tr>
 	                           
