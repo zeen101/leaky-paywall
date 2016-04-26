@@ -512,6 +512,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$defaults = array( 
 				'page_for_login'				=> 0, /* Site Specific */
 				'page_for_subscription'			=> 0, /* Site Specific */
+				'page_for_register'				=> 0, /* Site Specific */
 				'page_for_after_subscribe'		=> 0,
 				'page_for_profile'				=> 0, /* Site Specific */
 				'login_method'					=> 'traditional', //default over passwordless
@@ -580,6 +581,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				/* These are all site-specific settings */
 				unset( $site_wide_settings['page_for_login'] );
 				unset( $site_wide_settings['page_for_subscription'] );
+				unset( $site_wide_settings['page_for_register'] );
 				unset( $site_wide_settings['page_for_after_subscribe'] );
 				unset( $site_wide_settings['page_for_profile'] );
 				unset( $site_wide_settings['post_types'] );
@@ -633,6 +635,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				if ( !empty( $_REQUEST['page_for_subscription'] ) )
 					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
+
+				if ( !empty( $_REQUEST['page_for_register'] ) )
+					$settings['page_for_register'] = $_REQUEST['page_for_register'];
 
 				if ( !empty( $_REQUEST['page_for_after_subscribe'] ) )
 					$settings['page_for_after_subscribe'] = $_REQUEST['page_for_after_subscribe'];
@@ -828,10 +833,18 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 	                            
 	                        	<tr>
-	                                <th><?php _e( 'Page for Subscription', 'issuem-leaky-paywall' ); ?></th>
+	                                <th><?php _e( 'Page for Subscribe Cards', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_subscription', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_subscription'] ) ); ?>
 	                                <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Page for Register Form', 'issuem-leaky-paywall' ); ?></th>
+	                                <td>
+									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_register', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_register'] ) ); ?>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your register page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_register_form]' ); ?></p>
 	                                </td>
 	                            </tr>
 	                            
