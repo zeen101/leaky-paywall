@@ -881,18 +881,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s', 'issuem-leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
 	                                </td>
 	                            </tr>
-	                            
-	                        	<tr>
-	                                <th><?php _e( 'Login Method', 'issuem-leaky-paywall' ); ?></th>
-	                                <td>
-									<select id='login_method' name='login_method'>
-										<option value='traditional' <?php selected( 'traditional', $settings['login_method'] ); ?> ><?php _e( 'Traditional', 'issuem-leaky-paywall' ); ?></option>
-										<option value='passwordless' <?php selected( 'passwordless', $settings['login_method'] ); ?> ><?php _e( 'Passwordless', 'issuem-leaky-paywall' ); ?></option>
-									</select>
-	                                <p class="description"><?php printf( __( 'Traditional allows users to log in with a username and password. Passwordless authenticates the user via a secure link sent to their email.', 'issuem-leaky-paywall' ) ); ?></p>
-	                                </td>
-	                            </tr>
-	                            
+	                           
 	                        	<tr>
 	                                <th><?php _e( 'Subscribe or Login Message', 'issuem-leaky-paywall' ); ?></th>
 	                                <td>
