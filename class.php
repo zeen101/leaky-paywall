@@ -1023,9 +1023,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                	}
 	                                ?>
 	                               
-										<p>
-											<input id="enable-stripe" type="checkbox" name="payment_gateway[]" value="stripe" <?php checked( in_array( 'stripe', $settings['payment_gateway'] ) ); ?> /> <label for="enable-stripe"><?php _e( 'Stripe Checkout', 'issuem-leaky-paywall' ); ?></label>
-										</p>
 										
 	                                </td>
 	                            </tr>
@@ -1033,7 +1030,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </table>
 	                        
 	                        <?php
-	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
+	                        if ( in_array( 'stripe', $settings['payment_gateway'] ) || in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
 		                    ob_start(); //Level 2
 	                        ?>
 	                        
