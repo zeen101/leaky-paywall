@@ -508,6 +508,32 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		 * @since 1.0.0
 		 */
 		function get_settings() {
+
+			$default_email_body = 'PLEASE EDIT THIS CONTENT - You can use simple html… but no images yet.
+
+			<p>Thank you for subscribing to %sitename% and welcome to our community!</p>
+
+			<p>Your account is activated.</p>
+
+			<p>As a member you will gain more insight into the topics you care about, gain access to the latest articles, and you will gain a greater understanding of the events that are shaping our time. With a Digital Subscription, you also get our official Mobile App for FREE. Get the apps here: http://OurPublication.com/apps</p>
+
+			<p><b>How to login:</b></p>
+
+			Go to: http://OurPublication.com/my-account/ (this is the “Page for Profile” setting in Leaky Paywall Settings)
+			<br>Username: %username%</br>
+			<br>Password: %password%</br>
+
+			<p>Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication </p>
+
+			<p>TWEET: I just subscribed to Our Publication. Join up and be awesome! www.ourpublication.com</p>
+
+			<p>Facebook https://www.facebook.com/ourpublication/</p>
+
+			<p>Instagram https://www.instagram.com/ourpublication/</p>
+
+			<p>LinkedIn https://www.linkedin.com/groups/12345678</p>
+
+			<p>We love feedback… please help us make your publication better by emailing info@ourpublication.pub … and thanks again!</p>';
 			
 			$defaults = array( 
 				'page_for_login'				=> 0, /* Site Specific */
@@ -527,7 +553,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'from_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
 				'new_email_subject'				=> '',
-				'new_email_body'				=> '',
+				'new_email_body'				=> $default_email_body,
 				'payment_gateway'				=> array( 'stripe' ),
 				'test_mode'						=> 'off',
 				'live_secret_key'				=> '',
@@ -951,7 +977,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                            <tr>
 	                                <th><?php _e( 'Body', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
+	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
 	                                <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
 	                                <p class="description"><?php _e( 'Available template tags:', 'issuem-leaky-paywall' ); ?> <br>
 	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
