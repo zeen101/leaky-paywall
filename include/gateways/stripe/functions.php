@@ -1,13 +1,13 @@
 <?php 
 
-add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_stripe_add_signup_link', 7, 3 );
+add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_stripe_subscription_cards', 7, 3 );
 
 /**
  * Add the subscribe link to the subscribe cards. 
  *
  * @since 3.7.0
  */
-function leaky_paywall_stripe_add_signup_link( $payment_options, $level, $level_id ) {
+function leaky_paywall_stripe_subscription_cards( $payment_options, $level, $level_id ) {
 
 	if ( $level['price'] == 0 ) {
 		return $payment_options;

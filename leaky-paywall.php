@@ -71,6 +71,7 @@ function leaky_paywall_plugins_loaded() {
 		// gateways
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/stripe/functions.php' );
+		include( LEAKY_PAYWALL_PATH . 'include/gateways/paypal/functions.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-stripe.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-stripe-checkout.php' );

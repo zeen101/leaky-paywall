@@ -2634,16 +2634,16 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						if ( !empty( $level['price'] ) ) {
 							if ( empty( $current_level_ids ) ) {
 								//New Account
-								if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
-									$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
-								}
+								// if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
+								// 	$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
+								// }
 								
-								if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
-									if ( !empty( $payment_options ) ) {
-										$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
-									}
-									$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
-								}
+								// if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
+								// 	if ( !empty( $payment_options ) ) {
+								// 		$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
+								// 	}
+								// 	$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
+								// }
 								$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
 							} else {
 								//Upgrade
