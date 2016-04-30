@@ -125,19 +125,9 @@ add_action( 'init', 'leaky_paywall_process_gateway_webooks', -99999 );
 */
 function leaky_paywall_process_gateway_confirmations() {
 
-	// global $rcp_options;
-
-	// if( empty( $rcp_options['registration_page'] ) ) {
-	// 	return;
-	// }
-
 	if( empty( $_GET['leaky-paywall-confirm'] ) ) {
 		return;
 	}
-
-	// if( ! rcp_is_registration_page() ) {
-	// 	return;
-	// }
 
 	$gateways = new Leaky_Paywall_Payment_Gateways;
 	$gateway  = sanitize_text_field( $_GET['leaky-paywall-confirm'] );

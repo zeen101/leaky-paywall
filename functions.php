@@ -1995,46 +1995,48 @@ if ( !function_exists( 'wp_print_r' ) ) {
 	
 }
 
-if ( !function_exists( 'leaky_paywall_maybe_process_payment' ) ) {
+// @todo depricate this functionality
+// if ( !function_exists( 'leaky_paywall_maybe_process_payment' ) ) {
 	
-	function leaky_paywall_maybe_process_payment() {
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-return'] ) )
-			return leaky_paywall_process_stripe_payment();
+// 	function leaky_paywall_maybe_process_payment() {
+// 		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-return'] ) )
+// 			return leaky_paywall_process_stripe_payment();
 		
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-return'] ) )
-			return leaky_paywall_process_paypal_payment();
+// 		// if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-return'] ) )
+// 		// 	return leaky_paywall_process_paypal_payment();
 		
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-free-return'] ) ) {
-			return leaky_paywall_process_free_registration();
-		}
+// 		if ( !empty( $_REQUEST['issuem-leaky-paywall-free-return'] ) ) {
+// 			return leaky_paywall_process_free_registration();
+// 		}
 			
-		return apply_filters( 'leaky_paywall_maybe_process_payment', false );
+// 		return apply_filters( 'leaky_paywall_maybe_process_payment', false );
 		
-	}
+// 	}
 	
-}
+// }
 
-if ( !function_exists( 'leaky_paywall_maybe_process_webhooks' ) ) {
+// @todo deprecate this functionality
+// if ( !function_exists( 'leaky_paywall_maybe_process_webhooks' ) ) {
 	
-	function leaky_paywall_maybe_process_webhooks() {
+// 	function leaky_paywall_maybe_process_webhooks() {
 					
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-live-webhook'] ) )
-			return issuem_process_stripe_webhook( 'live' );
+// 		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-live-webhook'] ) )
+// 			return issuem_process_stripe_webhook( 'live' );
 			
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-test-webhook'] ) )
-			return issuem_process_stripe_webhook( 'test' );
+// 		if ( !empty( $_REQUEST['issuem-leaky-paywall-stripe-test-webhook'] ) )
+// 			return issuem_process_stripe_webhook( 'test' );
 			
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-live-ipn'] ) )
-			return issuem_process_paypal_standard_ipn( 'live' );
+// 		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-live-ipn'] ) )
+// 			return issuem_process_paypal_standard_ipn( 'live' );
 			
-		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-test-ipn'] ) )
-			return issuem_process_paypal_standard_ipn( 'test' );
+// 		if ( !empty( $_REQUEST['issuem-leaky-paywall-paypal-standard-test-ipn'] ) )
+// 			return issuem_process_paypal_standard_ipn( 'test' );
 		
-		return apply_filters( 'leaky_paywall_maybe_process_webhooks', false );
+// 		return apply_filters( 'leaky_paywall_maybe_process_webhooks', false );
 		
-	}
+// 	}
 	
-}
+// }
 
 if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 	

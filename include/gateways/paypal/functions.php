@@ -51,8 +51,8 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 																				
 		$results .= '<script src="' . LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
 						data-env="' . esc_js( $paypal_sandbox ) . '" 
-						data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '"
-						data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
+						data-callback="' . esc_js( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ) . '"
+						data-return="' . esc_js( add_query_arg( 'leaky-paywall-confirm', 'paypal_standard', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
 						data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" 
 						data-src="1" 
 						data-period="' . esc_js( strtoupper( substr( $level['interval'], 0, 1 ) ) ) . '" 
@@ -64,15 +64,15 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-button="subscribe" 
 						data-no_note="1" 
 						data-no_shipping="1" 
-						data-custom="' . esc_js( $user_email ) . '"
+						data-custom="' . esc_js( $user_email ) . '-' . esc_js( $level_id ) . '"
 					></script>';
 											
 	} else {
 					
 		$results .= '<script src="' . LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
 						data-env="' . esc_js( $paypal_sandbox ) . '" 
-						data-callback="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-' . $mode . '-ipn', '1', get_site_url() . '/' ) ) . '" 
-						data-return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
+						data-callback="' . esc_js( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ) . '" 
+						data-return="' . esc_js( add_query_arg( 'leaky-paywall-confirm', 'paypal_standard', get_page_link( $settings['page_for_subscription'] ) ) ) . '"
 						data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" 
 						data-tax="0" 
 						data-shipping="0" 
@@ -85,7 +85,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-no_note="1" 
 						data-no_shipping="1" 
 						data-shipping="0" 
-						data-custom="' . esc_js( $user_email ) . '"
+						data-custom="' . esc_js( $user_email ) . '-' . esc_js( $level_id ) . '"
 					></script>';
 	
 	}

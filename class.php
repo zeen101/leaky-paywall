@@ -114,17 +114,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				
 			$settings = $this->get_settings();
 			
-			$response = leaky_paywall_maybe_process_payment();
-			if ( is_wp_error( $response ) ) {
-				$args = array(
-					'response' => 401,
-					'back_link' => true,
-				);		
-				wp_die( $response, '', $args );
-			}
+			// $response = leaky_paywall_maybe_process_payment();
+			// if ( is_wp_error( $response ) ) {
+			// 	$args = array(
+			// 		'response' => 401,
+			// 		'back_link' => true,
+			// 	);		
+			// 	wp_die( $response, '', $args );
+			// }
 			
-			if ( leaky_paywall_maybe_process_webhooks() )
-				die(); //no point in loading the whole page for webhooks
+			// if ( leaky_paywall_maybe_process_webhooks() )
+			// 	die(); //no point in loading the whole page for webhooks
 
 			$has_subscriber_paid = leaky_paywall_has_user_paid();
 											
@@ -1112,7 +1112,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                            
 		                            <tr>
 		                            	<th><?php _e( 'Live IPN', 'issuem-leaky-paywall' ); ?></th>
-		                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'issuem-leaky-paywall-paypal-standard-live-ipn', '1', get_site_url() . '/' ) ); ?></p></td>
+		                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ); ?></p></td>
 		                            </tr>
 		                            
 		                        	<tr>
@@ -1147,7 +1147,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                            
 		                            <tr>
 		                            	<th><?php _e( 'Sandbox IPN', 'issuem-leaky-paywall' ); ?></th>
-		                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'issuem-leaky-paywall-paypal-standard-test-ipn', '1', get_site_url() . '/' ) ); ?></p></td>
+		                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ); ?></p></td>
 		                            </tr>
 		                            
 		                        </table>
