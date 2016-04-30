@@ -921,7 +921,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	 * @return mixed $wpdb insert ID or false
 	 */
 	function leaky_paywall_new_subscriber( $hash='deprecated', $email, $customer_id, $meta_args, $login='' ) {
-			
+
 		if ( !is_email( $email ) ) {
 			return false;
 		}

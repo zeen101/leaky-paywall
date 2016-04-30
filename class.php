@@ -1487,31 +1487,46 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 								foreach ( $items as $item ) {
 
-									$email = $item['email'];
-									$login = $item['username'];
-
+									// need at least an email and level_id to create a subscriber
+									$email = isset($item['email']) ? $item['email'] : '';
+									$level_id = isset($item['level_id']) ? trim($item['level_id']) : '';
+									
 									if ( !is_email( $email ) ) {
 										continue;
 									}
 
-									if ( !trim( $login ) ) {
+									// allows a level_id of 0 if needed
+									if ( $level_id == NULL ) {
 										continue;
 									}
 
+									// level_id is not a valid level
+									if ( !get_leaky_paywall_subscription_level( $level_id ) ) {
+										continue;
+									}
+
+									$payment_status = isset($item['status']) ? $item['status'] : 'active';
+
+									if ( empty( trim( $payment_status ) ) ) {
+										$payment_status = 'active';
+									}
+
+									$subscriber_id = isset($item['subscriber_id']) ? $item['subscriber_id'] : '';
+
 									$meta = array(
-										'level_id'	=> $item['level_id'],
-										'subscriber_id'	=> isset($item['subscriber_id']) ? $item['subscriber_id'] : '',
-										'price'		=> $item['price'],
+										'level_id'	=> $level_id,
+										'price'		=> isset($item['price']) ? $item['price'] : '',
 										'description'	=> __( 'Bulk Addition', 'issuem-leaky-paywall' ),
-										'expires'	=> $item['expires'],
+										'expires'	=> isset($item['expires']) ? $item['expires'] : '',
 										'payment_gateway'	=> 'manual',
-										'payment_status'	=> $item['status'],
+										'payment_status'	=> $payment_status, // set default to active
 										'interval'		=> 0,
 										'plan'		=> '',
 										'site'		=> $site
 									);
 
-									$user_id = leaky_paywall_new_subscriber( NULL, $email, '', $meta, $login );
+									$login = isset($item['username']) ? $item['username'] : '';
+									$user_id = leaky_paywall_new_subscriber( NULL, $email, $subscriber_id, $meta, $login );
 								
 									if ( !empty( $user_id ) )
 										do_action( 'bulk_add_leaky_paywall_subscriber', $user_id, $meta, $file );
@@ -1671,7 +1686,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<input class="medium-text" type="text" id="leaky_paywall_import_user_csv_file" name="leaky_paywall_import_user_csv_file" value="" />
 						    <input id="leaky_paywall_upload_user_csv_button" type="button" class="button" value="<?php _e( 'Upload CSV', 'leaky-paywall' ); ?>" /> 
 
-						    <p><a href="#">Download example csv file</a></p>
+						    <p><a target="_blank" href="https://zeen101.com/wp-content/uploads/2016/04/leaky-user-csv-example.csv">Download example csv file</a></p>
+						    <p>Minimum required fields: email, level_id</p>
 							
 							 <?php submit_button( 'Bulk Add Subscribers' ); ?>
 
