@@ -463,6 +463,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			}
 				
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix ) {
+
+				wp_enqueue_media();
+
 				wp_enqueue_script( 'leaky_paywall_subscribers_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
 			}
@@ -1471,115 +1474,70 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					}  else {
 						// process form data
-						if ( !empty( $_POST['leaky-paywall-subscriber-bulk-add-content'] ) ) {
-							
-							$errors = array();
-							$keys = array();
-							
-							$textarea = explode( "\n", $_POST['leaky-paywall-subscriber-bulk-add-content'] );
-							foreach( $textarea as $line ) {
-								if ( !empty( $line ) )
-									$imports[] = str_getcsv( trim( rawurldecode( stripslashes( $line ) ) ), ',', '"' );
-							}
-							
-							$heading_line = array_shift( $imports );
-							
-							foreach( $headings as $heading ) {
-								if ( false !== $key = array_search( $heading, $heading_line ) )
-									$keys[$heading] = $key;
-							}
-							
-							if ( !array_key_exists( 'email', $keys ) ) { //header line was not included (or modified)
-								$imports = array_unshift( $imports, $heading_line ); //so add the line back for processing
-								//assume these keys
-								$keys['username'] = 0;
-								$keys['email'] = 1;
-								$keys['price'] = 2;
-								$keys['expires'] = 3;
-								$keys['status'] = 4;
-								$keys['level-id'] = 5;
-								$keys['subscriber-id'] = 6;
-							}
+						if ( !empty( $_POST['leaky_paywall_import_user_csv_file'] ) ) {
 
-							foreach( $imports as $import ) {
-								
-								$login = trim( $import[$keys['username']] );
-								if ( empty( $login ) ) {
-									$errors[] = sprintf( __( 'Invalid Username, line: %s', 'issuem-leaky-paywall' ), join( ',', $import ) );
-									continue;
-								}
-								
-								$email = trim( $import[$keys['email']] );
-								if ( empty( $email ) || !is_email( $email ) ) {
-									$errors[] = sprintf( __( 'Invalid Email, line: %s', 'issuem-leaky-paywall' ), join( ',', $import ) );
-									continue;
-								}
-								if ( empty( $import[$keys['price']] ) )
-									$price = 0;
-								else 
-									$price = trim( $import[$keys['price']] );
-								
-								if ( empty( $import[$keys['expires']] ) )
-									$expires = 0;
-								else 
-									$expires = date( 'Y-m-d 23:59:59', strtotime( trim( $import[$keys['expires']] ) ) );
-									
-								if ( empty( $import[$keys['status']] ) )
-									$status = 'active';
-								else 
-									$status = strtolower( trim( $import[$keys['status']] ) );
-									
-								if ( isset( $import[$keys['level-id']] ) )
-									$level_id = trim( $import[$keys['level-id']] );
-								else 
-									$level_id = '';
-															
+							$file = $_POST['leaky_paywall_import_user_csv_file'];
 
-								if ( isset( $import[$keys['subscriber-id']] ) )
-									$subscriber_id = trim( $import[$keys['subscriber-id']] );
-								else 
-									$subscriber_id = '';
-															
-								$meta = array(
-									'level_id'			=> $level_id,
-									'subscriber_id' 	=> $subscriber_id,
-									'price' 			=> $price,
-									'description' 		=> __( 'Bulk Addition', 'issuem-leaky-paywall' ),
-									'expires' 			=> $expires,
-									'payment_gateway' 	=> 'manual',
-									'payment_status' 	=> $status,
-									'interval' 			=> 0,
-									'plan'				=> '',
-									'site'				=> $site,
-								);
+							if ( $file  ) {
+
+								$imported = array();
+								$items = leaky_paywall_csv_to_array( $file, ',' );
+
+								$i = 0;
+
+								foreach ( $items as $item ) {
+
+									$email = $item['email'];
+									$login = $item['username'];
+
+									if ( !is_email( $email ) ) {
+										continue;
+									}
+
+									if ( !trim( $login ) ) {
+										continue;
+									}
+
+									$meta = array(
+										'level_id'	=> $item['level_id'],
+										'subscriber_id'	=> isset($item['subscriber_id']) ? $item['subscriber_id'] : '',
+										'price'		=> $item['price'],
+										'description'	=> __( 'Bulk Addition', 'issuem-leaky-paywall' ),
+										'expires'	=> $item['expires'],
+										'payment_gateway'	=> 'manual',
+										'payment_status'	=> $item['status'],
+										'interval'		=> 0,
+										'plan'		=> '',
+										'site'		=> $site
+									);
+
+									$user_id = leaky_paywall_new_subscriber( NULL, $email, '', $meta, $login );
 								
-								$user_id = leaky_paywall_new_subscriber( NULL, $email, '', $meta, $login );
-								
-								if ( !empty( $user_id ) )
-									do_action( 'bulk_add_leaky_paywall_subscriber', $user_id, $keys, $import );
-								else
-									do_action( 'bulk_add_leaky_paywall_subscriber_failed', $keys, $import, $email, $meta, $login );
-								
-							}
-							
-							if ( !empty( $errors ) ) {
-							
-								echo '<div class="error settings-error" id="setting-error-bulk-import">';
-								foreach( $errors as $error ) {
-									echo '<p><strong>' . $error . '</strong></p>';
+									if ( !empty( $user_id ) )
+										do_action( 'bulk_add_leaky_paywall_subscriber', $user_id, $meta, $file );
+									else
+										do_action( 'bulk_add_leaky_paywall_subscriber_failed', $meta, $file, $email, $login );
+
+									$i++;
 								}
-								echo '</div>';								
+
+								if ( $i > 0 ) {
+
+								}
+
+								echo '<div class="updated"><p><strong>' . $i . __( ' subscribers were uploaded.', 'issuem-leaky-paywall' ) . '</strong></p></div>';
+
 							}
-							
+						
 						} else {
 						
-							echo '<div class="error settings-error" id="setting-error-bulk-content"><p><strong>' . __( 'No valid content supplied for bulk upload.', 'issuem-leaky-paywall' ) . '</strong></p></div>';
+							echo '<div class="error settings-error" id="setting-error-bulk-content"><p><strong>' . __( 'No file uploaded for bulk upload.', 'issuem-leaky-paywall' ) . '</strong></p></div>';
 							
 						}
 					
 					}
                 }
-					
+
 				//Create an instance of our package class...
 				$subscriber_table = new Leaky_Paywall_Subscriber_List_Table();
 				$pagenum = $subscriber_table->get_pagenum();
@@ -1708,9 +1666,16 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <?php wp_nonce_field( 'add_new_subscriber', 'leaky_paywall_add_subscriber' ); ?>
 	                    </form>
 	                    <form id="leaky-paywall-subscriber-bulk-add" name="leaky-paywall-subscriber-bulk-add" method="post">
-	                    	<p><label for="leaky-paywall-subscriber-bulk-content" style="display:table-cell"><?php _e( 'Bulk Import', 'issuem-leaky-paywall' ); ?></label><textarea id="leaky-paywall-subscriber-bulk-add-content" name="leaky-paywall-subscriber-bulk-add-content"><?php echo join( ',', $headings ) . "\n"; ?></textarea></p>
-	                    	<p class="description"><?php _e( 'Use double quotes " to enclose strings with commas', 'issuem-leaky-paywall' ); ?></p>
-	                        <?php submit_button( 'Bulk Add Subscribers' ); ?>
+	                    	<h2>CSV Import</h2>
+
+							<input class="medium-text" type="text" id="leaky_paywall_import_user_csv_file" name="leaky_paywall_import_user_csv_file" value="" />
+						    <input id="leaky_paywall_upload_user_csv_button" type="button" class="button" value="<?php _e( 'Upload CSV', 'leaky-paywall' ); ?>" /> 
+
+						    <p><a href="#">Download example csv file</a></p>
+							
+							 <?php submit_button( 'Bulk Add Subscribers' ); ?>
+
+
 	                        <?php wp_nonce_field( 'bulk_add_subscribers', 'leaky_paywall_bulk_add_subscribers' ); ?>
 	                    </form>
                     <?php } ?>
