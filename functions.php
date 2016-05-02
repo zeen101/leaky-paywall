@@ -3273,8 +3273,7 @@ if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 	
 				if ( $last_rss_item !== $latest_rss_item ) {
 
-					global $current_user; 
-					get_currentuserinfo();
+					$current_user = get_current_user();
 
 					update_option( 'last_zeen101_dot_com_leaky_rss_item', $latest_rss_item );
 

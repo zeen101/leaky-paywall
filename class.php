@@ -2081,8 +2081,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	 */
 	function display_zeen101_dot_com_leaky_rss_item() {
 
-		global $current_user;
-		get_currentuserinfo();
+		$current_user = get_current_user();
 
 		$hide = get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
 
@@ -2113,8 +2112,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		if ( ! wp_verify_nonce( $nonce, 'leaky-paywall-notice-nonce' ) )
 			die ( 'Busted!'); 
 
-		global $current_user;
-		get_currentuserinfo();
+		$current_user = get_current_user();
 
 		update_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', 1 );
 
