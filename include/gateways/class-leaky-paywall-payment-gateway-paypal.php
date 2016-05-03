@@ -56,7 +56,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	public function process_confirmation() {
 
 		if ( empty( $_GET['leaky-paywall-confirm'] ) && $_GET['leaky-paywall-confirm'] != 'paypal_standard' ) {
-			return;
+			return false;
 		}
 		
 		$settings = get_leaky_paywall_settings();
@@ -88,7 +88,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		else
 			$transaction_status = NULL;
 					
-		if ( !empty( $transaction_id ) && !empty( $transaction_amount ) && !empty( $transaction_status ) ) {		
+		if ( !empty( $transaction_id ) && !empty( $transaction_amount ) && !empty( $transaction_status ) ) {
 
 			try {
 
@@ -111,88 +111,77 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 						break;
 					
 				}
-
-				// echo '<pre>';
-				// print_r( $_REQUEST );
-				// echo '</pre>';
 				
-				// $paypal_api_url       = ( 'test' === $mode ) ? PAYPAL_NVP_API_SANDBOX_URL : PAYPAL_NVP_API_LIVE_URL;
-				// $paypal_api_username  = ( 'test' === $mode ) ? $settings['paypal_sand_api_username'] : $settings['paypal_live_api_username'];
-				// $paypal_api_password  = ( 'test' === $mode ) ? $settings['paypal_sand_api_password'] : $settings['paypal_live_api_password'];
-				// $paypal_api_signature = ( 'test' === $mode ) ? $settings['paypal_sand_api_secret'] : $settings['paypal_live_api_secret'];
-
-				// $request = array(
-				// 	'USER'          => trim( $paypal_api_username ),
-				// 	'PWD'           => trim( $paypal_api_password ),
-				// 	'SIGNATURE'     => trim( $paypal_api_signature ),
-				// 	'VERSION'       => '96.0', //The PayPal API version
-				// 	'METHOD'        => 'GetTransactionDetails',
-				// 	'TRANSACTIONID' => $transaction_id,
-				// );
-
-				// $response = wp_remote_post( $paypal_api_url, array( 'body' => $request ) );	
-
-
-				// echo '<pre>';
-				// print_r( $response );
-				// echo '</pre>';
+				$paypal_api_url       = ( 'test' === $mode ) ? PAYPAL_NVP_API_SANDBOX_URL : PAYPAL_NVP_API_LIVE_URL;
+				$paypal_api_username  = ( 'test' === $mode ) ? $settings['paypal_sand_api_username'] : $settings['paypal_live_api_username'];
+				$paypal_api_password  = ( 'test' === $mode ) ? $settings['paypal_sand_api_password'] : $settings['paypal_live_api_password'];
+				$paypal_api_signature = ( 'test' === $mode ) ? $settings['paypal_sand_api_secret'] : $settings['paypal_live_api_secret'];
 				
-				// if ( is_wp_error( $response ) ) {
-				// 	throw new Exception( $response->get_error_message() );
-				// }
-
-				// $array = array();
-				// parse_str( wp_remote_retrieve_body( $response ), $response_array );
-
-				$transaction_status = $_REQUEST['payment_status'];  // $response_array['PAYMENTSTATUS'];
-				$custom = explode( '-', $_REQUEST['custom'] );
-				$level = get_leaky_paywall_subscription_level( $custom[1]  ); // $response_array['L_NUMBER0']
-						
-				if ( !is_email( $user_email ) ) { 
-					$user_email = $_REQUEST['payer_email']; // $response_array['EMAIL'];
-				}
-					
-				// if ( $transaction_id != $response_array['TRANSACTIONID'] )
-				// 	throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'issuem-leaky-paywall' ) );
-				
-				// if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) )
-				// 	throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
-
-				
-
-				$args = array(
-					'level_id' 			=> $custom[1],  // $response_array['L_NUMBER0'],
-					'subscriber_id' 	=> $customer_id,
-					'subscriber_email' 	=> $user_email,
-					'price' 			=> $level['price'],
-					'description' 		=> $level['label'],
-					'payment_gateway' 	=> 'paypal_standard',
-					'payment_status' 	=> 'active',
-					'interval' 			=> $level['interval'],
-					'interval_count' 	=> $level['interval_count'],
-					'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
+				$request = array(
+					'USER'          => trim( $paypal_api_username ),
+					'PWD'           => trim( $paypal_api_password ),
+					'SIGNATURE'     => trim( $paypal_api_signature ),
+					'VERSION'       => '96.0', //The PayPal API version
+					'METHOD'        => 'GetTransactionDetails',
+					'TRANSACTIONID' => $transaction_id,
 				);
-				
-				//Mimic PayPal's Plan...
-				if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
-					$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
-							
-				if ( is_user_logged_in() || $user = get_user_by( 'email', $user_email ) ) {
-					$user_id = leaky_paywall_update_subscriber( NULL, $user_email, $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
-				} else {
-					$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
-				}
-				
-				wp_set_current_user( $user_id );
-				wp_set_auth_cookie( $user_id, true );
 					
-				
+				$response = wp_remote_post( $paypal_api_url, array( 'body' => $request, 'httpversion' => '1.1' ) );
 
+				if ( !is_wp_error( $response ) ) {
+				
+					$array = array();
+					parse_str( wp_remote_retrieve_body( $response ), $response_array );
+					
+					$transaction_status = $response_array['PAYMENTSTATUS'];
+					$level = get_leaky_paywall_subscription_level( $response_array['L_NUMBER0'] );
+							
+					if ( !is_email( $user_email ) ) {
+						$user_email = $response_array['EMAIL'];
+					}
+						
+					if ( $transaction_id != $response_array['TRANSACTIONID'] )
+						throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'issuem-leaky-paywall' ) );
+					
+					if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) )
+						throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
+
+					$args = array(
+						'level_id' 			=> $response_array['L_NUMBER0'],
+						'subscriber_id' 	=> $customer_id,
+						'subscriber_email' 	=> $user_email,
+						'price' 			=> $level['price'],
+						'description' 		=> $level['label'],
+						'payment_gateway' 	=> 'paypal_standard',
+						'payment_status' 	=> 'active',
+						'interval' 			=> $level['interval'],
+						'interval_count' 	=> $level['interval_count'],
+						'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
+					);
+					
+					//Mimic PayPal's Plan...
+					if ( !empty( $level['recurring'] ) && 'on' == $level['recurring'] )
+						$args['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
+								
+					if ( is_user_logged_in() || $user = get_user_by( 'email', $user_email ) ) {
+						$user_id = leaky_paywall_update_subscriber( NULL, $user_email, $customer_id, $args ); //if the email already exists, we want to update the subscriber, not create a new one
+					} else {
+						$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
+					}
+					
+					wp_set_current_user( $user_id );
+					wp_set_auth_cookie( $user_id, true );
+					
+				} else {
+					
+					throw new Exception( $response->get_error_message() );
+					
+				}
 					
 				// send the newly created user to the appropriate page after logging them in
-            	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-                    	wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
-            	} else if ( !empty( $settings['page_for_profile'] ) ) {
+                            	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+                                    	wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+                            	} else if ( !empty( $settings['page_for_profile'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 				} else if ( !empty( $settings['page_for_subscription'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
@@ -205,8 +194,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 			}
 			
-		}	
+		}				
 
+		return false;
 				
 
 	}
@@ -224,14 +214,16 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		}
 		
 		$site = '';
-		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$settings = get_leaky_paywall_settings();
 	    $payload['cmd'] = '_notify-validate';
+
 	    foreach( $_POST as $key => $value ) {
 		    $payload[$key] = stripslashes( $value );
 	    }
+
 		$paypal_api_url = !empty( $_REQUEST['test_ipn'] ) ? PAYPAL_PAYMENT_SANDBOX_URL : PAYPAL_PAYMENT_LIVE_URL;
-		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload ) );
+		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload, 'httpversion' => '1.1' ) );
 		$body = wp_remote_retrieve_body( $response );
 		
 		if ( 'VERIFIED' === $body ) {

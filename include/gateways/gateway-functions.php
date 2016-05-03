@@ -28,7 +28,7 @@ function leaky_paywall_get_payment_gateways() {
 /**
  * Send payment / subscription data to gateway
  *
- * @since 3.5.1
+ * @since 3.7.0
  * @return array
  */
 
@@ -98,7 +98,7 @@ add_action( 'leaky_paywall_before_registration_submit_field', 'leaky_paywall_loa
  * @since       3.7.0
  * @return      void
 */
-function leaky_paywall_process_gateway_webooks() {
+function leaky_paywall_process_gateway_webhooks() {
 
 	$gateways = new Leaky_Paywall_Payment_Gateways;
 
@@ -114,7 +114,7 @@ function leaky_paywall_process_gateway_webooks() {
 	}
 
 }
-add_action( 'init', 'leaky_paywall_process_gateway_webooks', -99999 );
+add_action( 'init', 'leaky_paywall_process_gateway_webhooks', -99999 );
 
 /**
  * Process gateway confirmaions
@@ -146,7 +146,7 @@ function leaky_paywall_process_gateway_confirmations() {
 	}
 
 }
-add_action( 'template_redirect', 'leaky_paywall_process_gateway_confirmations', -99999 );
+add_action( 'wp', 'leaky_paywall_process_gateway_confirmations', -99999 );
 
 
 /**
