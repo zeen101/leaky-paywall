@@ -670,7 +670,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 		    $payload[$key] = stripslashes( $value );
 	    }
 		$paypal_api_url = !empty( $_REQUEST['test_ipn'] ) ? PAYPAL_PAYMENT_SANDBOX_URL : PAYPAL_PAYMENT_LIVE_URL;
-		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload ) );
+		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload, 'httpversion' => '1.1' ) );
 		$body = wp_remote_retrieve_body( $response );
 		
 		if ( 'VERIFIED' === $body ) {
@@ -2247,7 +2247,7 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						'METHOD'        => 'GetTransactionDetails',
 						'TRANSACTIONID' => $transaction_id,
 					);
-					$response = wp_remote_post( $paypal_api_url, array( 'body' => $request ) );	
+					$response = wp_remote_post( $paypal_api_url, array( 'body' => $request, 'httpversion' => '1.1' ) );	
 					
 					if ( !is_wp_error( $response ) ) {
 					
@@ -3273,7 +3273,7 @@ if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 	
 				if ( $last_rss_item !== $latest_rss_item ) {
 
-					$current_user = get_current_user();
+					$current_user = wp_get_current_user();
 
 					update_option( 'last_zeen101_dot_com_leaky_rss_item', $latest_rss_item );
 
