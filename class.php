@@ -1504,9 +1504,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										continue;
 									}
 
-									$payment_status = isset($item['status']) ? $item['status'] : 'active';
+									$payment_status = isset($item['status']) ? trim( $item['status'] ) : 'active';
 
-									if ( empty( trim( $payment_status ) ) ) {
+									if ( empty( $payment_status ) ) {
 										$payment_status = 'active';
 									}
 
