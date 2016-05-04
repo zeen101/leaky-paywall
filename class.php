@@ -1467,7 +1467,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						}
 					
 					}
-				
+
                 }
 
 				//Create an instance of our package class...

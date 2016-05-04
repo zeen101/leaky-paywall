@@ -2,7 +2,7 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
-Tested up to: 4.5
+Tested up to: 4.6
 Stable tag: 3.8.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
@@ -73,6 +73,15 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 3.8.0 =
+
+* Add recent subscribers dashboard widget
+* Add a check to the new subscriber email to make sure the user does not already exist in the system
+* Add leaky_paywall_after_new_subscriber_form action on subscriber page
+* Adding HTTP Version to PayPal API calls... fixing get current user function calls
+* Fixing deprecated function call
+* Add bulk csv uploader to subscribers pagee
 
 = 3.7.0 =
 * Setup 'rememberme' to true for set_auth_cookie calls
