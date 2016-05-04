@@ -965,6 +965,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				'user_pass'  => $password,
 				'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
 			);
+
             $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
 			$user_id = wp_insert_user( $userdata );
 
@@ -1002,8 +1003,11 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			}
 				
 			do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
-			
-            leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
+
+			// We only need to send a new user email to newly created users. If userdata is an object, then the user already exists in the system and they have already received a new user email. 
+			if ( is_array( $userdata ) ) {
+				leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
+			}
 			
 			return $user_id;
 			
@@ -2998,8 +3002,9 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
     function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
-
-        if ( !empty( $args ) ) {
+    	
+    	// if the args come through as a WP User object, then the user already exists in the system and we don't know their password
+        if ( !empty( $args ) && is_array( $args ) ) {
             $password = $args['user_pass'];
         } else {
 	        $password = '';
