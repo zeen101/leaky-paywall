@@ -443,6 +443,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 				|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix
+				|| 'index.php' === $hook_suffix
 				|| 'leaky-paywall_page_leaky-paywall-addons' === $hook_suffix )
 				wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 				

@@ -70,6 +70,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'shortcodes.php' );
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
+		require_once( 'include/admin/dashboard-widgets.php' );
 			
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
