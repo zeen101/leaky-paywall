@@ -464,8 +464,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix ) {
 
-				wp_enqueue_media();
-
 				wp_enqueue_script( 'leaky_paywall_subscribers_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
 			}
@@ -1680,20 +1678,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <?php submit_button( 'Add New Subscriber' ); ?>
 	                        <?php wp_nonce_field( 'add_new_subscriber', 'leaky_paywall_add_subscriber' ); ?>
 	                    </form>
-	                    <form id="leaky-paywall-subscriber-bulk-add" name="leaky-paywall-subscriber-bulk-add" method="post">
-	                    	<h2>CSV Import</h2>
 
-							<input class="medium-text" type="text" id="leaky_paywall_import_user_csv_file" name="leaky_paywall_import_user_csv_file" value="" />
-						    <input id="leaky_paywall_upload_user_csv_button" type="button" class="button" value="<?php _e( 'Upload CSV', 'leaky-paywall' ); ?>" /> 
-
-						    <p><a target="_blank" href="https://zeen101.com/wp-content/uploads/2016/04/leaky-user-csv-example.csv">Download example csv file</a></p>
-						    <p>Minimum required fields: email, level_id</p>
-							
-							 <?php submit_button( 'Bulk Add Subscribers' ); ?>
-
-
-	                        <?php wp_nonce_field( 'bulk_add_subscribers', 'leaky_paywall_bulk_add_subscribers' ); ?>
-	                    </form>
+	                    <?php do_action( 'leaky_paywall_after_new_subscriber_form' ); ?>
+	                   
                     <?php } ?>
 					<br class="clear">
 				</div>
