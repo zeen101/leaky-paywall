@@ -69,7 +69,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'shortcodes.php' );
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
-<<<<<<< HEAD
+		require_once( 'include/admin/dashboard-widgets.php' );
 
 		// error tracking
 		include( LEAKY_PAYWALL_PATH . 'include/error-tracking.php' );
@@ -87,10 +87,6 @@ function leaky_paywall_plugins_loaded() {
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-paypal.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateways.php' );
 
-=======
-		require_once( 'include/admin/dashboard-widgets.php' );
->>>>>>> master
-			
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
 			
