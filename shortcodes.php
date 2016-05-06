@@ -636,18 +636,19 @@ function do_leaky_paywall_register_form() {
 
 		  	$gateways = leaky_paywall_get_enabled_payment_gateways(); 
 
-		  	if ( $gateways ) {
+		  	if ( $gateways && $level['price'] != 0 ) {
 
 		  		foreach( $gateways as $key => $gateway ) {
 
 		  			echo '<input type="hidden" name="gateway" value="' . esc_attr( $key ) . '" />';
 
 		  		}
+		  	} else {
+		  		echo '<input type="hidden" name="gateway" value="free_registration" />';
 		  	}
 
 		  ?>
 
-		  <!-- <input type="hidden" name="stripe_price" value="<?php echo $stripe_price; ?>"/> -->
 		  <input type="hidden" name="level_price" value="<?php echo $level['price']; ?>"/>
 		  <input type="hidden" name="currency" value="<?php echo $currency; ?>"/>
 		  <input type="hidden" name="description" value="<?php echo $level['label']; ?>"/>
@@ -655,7 +656,6 @@ function do_leaky_paywall_register_form() {
 		  <input type="hidden" name="interval" value="<?php echo $level['interval']; ?>"/>
 		  <input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>"/>
 		  <input type="hidden" name="recurring" value="<?php echo $level['recurring']; ?>"/>
-		  <!-- <input type="hidden" name="plan_id" value="<?php echo $stripe_plan; ?>"/> -->
 		  <input type="hidden" name="site" value="<?php echo $level['site']; ?>"/>
 
 		  <input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>

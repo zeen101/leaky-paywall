@@ -88,9 +88,8 @@ function leaky_paywall_process_registration() {
 		return;
 	}
 
-	// setup the subscriber object
-	// $subscriber = new Leaky_Paywall_Subscriber( $user_data['id'] );
-
+	// add details about the subscription to newly created subscriber
+	
 	if ( $user_data['id'] ) {
 
 		$meta = array(
@@ -116,7 +115,6 @@ function leaky_paywall_process_registration() {
 
 		if ( $meta['price'] == '0' ) {
 
-			$meta['payment_gateway'] = 'free_registration';
 			$meta['payment_status'] = 'active';
 
 		}
@@ -179,6 +177,21 @@ function leaky_paywall_process_registration() {
 
 			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
 
+			// log the new user in
+			wp_setcookie( $user_data['login'], $user_data['password'], true );
+			wp_set_current_user( $user_data['id'], $user_data['login'] );
+			do_action( 'wp_login', $user_data['login'] );
+
+			// send the newly created user to the appropriate page after logging them in
+        	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+                wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+        	} else if ( !empty( $settings['page_for_profile'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+			} else if ( !empty( $settings['page_for_subscription'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+			}
+			
+			exit;
 		}
 	}
 }
