@@ -3321,8 +3321,6 @@ if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 	
 }
 
-<<<<<<< HEAD
-
 /**
  * Helper function to get the data associated with a level by the level id
  *
@@ -3359,7 +3357,7 @@ if ( ! function_exists( 'object_to_array' ) ) {
 	}
 
 }
-=======
+
 /**
  * Allow csv files to be uploaded via the media uploader
  *
