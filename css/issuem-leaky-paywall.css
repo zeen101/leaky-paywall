@@ -100,3 +100,17 @@
 .leaky-paywall-field-label {
 	display: block;
 }
+
+.leaky-paywall-payment-button a {
+	display: block;
+	min-height: 20px;
+	background: #32A3E4;
+	color: #fff;
+	padding: 7px 15px;
+	border-radius: 3px;
+	text-decoration: none;
+}
+.leaky-paywall-payment-button a:hover {
+		color: #fff;
+		background: #52B2E9;
+	}
