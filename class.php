@@ -113,18 +113,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		function process_requests() {
 				
 			$settings = $this->get_settings();
-			
-			// $response = leaky_paywall_maybe_process_payment();
-			// if ( is_wp_error( $response ) ) {
-			// 	$args = array(
-			// 		'response' => 401,
-			// 		'back_link' => true,
-			// 	);		
-			// 	wp_die( $response, '', $args );
-			// }
-			
-			// if ( leaky_paywall_maybe_process_webhooks() )
-			// 	die(); //no point in loading the whole page for webhooks
+
+			do_action( 'leaky_paywall_before_process_requests', $settings );
 
 			$has_subscriber_paid = leaky_paywall_has_user_paid();
 											
@@ -1011,10 +1001,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									<td>
 	                                <?php 
 	                                	$gateways = leaky_paywall_get_payment_gateways();
-
-	                                	// echo '<pre>';
-	                                	// print_r( $gateways );
-	                                	// echo '</pre>';
 
 	                                	foreach( $gateways as $key => $value ) {
 	                                		?>

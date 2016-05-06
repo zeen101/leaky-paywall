@@ -168,7 +168,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					} else {
 						$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
 					}
-					
+
 					wp_set_current_user( $user_id );
 					wp_set_auth_cookie( $user_id, true );
 					
@@ -179,13 +179,15 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				}
 					
 				// send the newly created user to the appropriate page after logging them in
-                            	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-                                    	wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
-                            	} else if ( !empty( $settings['page_for_profile'] ) ) {
+	        	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+	                wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+	        	} else if ( !empty( $settings['page_for_profile'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
 				} else if ( !empty( $settings['page_for_subscription'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
 				}
+
+				exit;
 					
 			}
 			catch ( Exception $e ) {
@@ -203,7 +205,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 
 	/**
-	 * Process PayPal IPN
+	 * Process PayPal IPN. This is also where Paypal Subscribe buttons are processed.
 	 * 
 	 * @since 3.7.0
 	 */
@@ -443,6 +445,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					//Need to create a new user
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
 					leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
+
 				}
 				
 			}

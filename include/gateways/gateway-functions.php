@@ -124,7 +124,7 @@ add_action( 'init', 'leaky_paywall_process_gateway_webhooks', -99999 );
  * @return      void
 */
 function leaky_paywall_process_gateway_confirmations() {
-
+	
 	if( empty( $_GET['leaky-paywall-confirm'] ) ) {
 		return;
 	}
