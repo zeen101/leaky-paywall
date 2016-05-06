@@ -3401,4 +3401,3 @@ function leaky_paywall_csv_to_array( $filename = '', $delimiter = ',' ) {
 	return $data;
 
 }
->>>>>>> master
