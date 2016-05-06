@@ -113,3 +113,15 @@ td.available-addon {
 div.available-addon-inner {
 	margin: 20px;
 }
+
+.leaky-paywall-dashboard-table {
+	width: 100%;
+}
+
+.leaky-paywall-dashboard-table th {
+	text-align: left;
+	font-weight: bold;
+}
+.leaky-paywall-dashboard-table td {
+	padding-bottom: 5px;
+}

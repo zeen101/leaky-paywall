@@ -263,7 +263,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							
 							$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
 							
-							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
 								$expires = __( 'Never', 'issuem-leaky-paywall' );
 							} else {
 								$date_format = get_option( 'date_format' );

@@ -11,7 +11,7 @@ Plugin Name: Leaky Paywall
 Plugin URI: https://zeen101.com/
 Description: A premium leaky paywall add-on for WordPress that allows you to sell metered access to your content.
 Author: zeen101 Development Team
-Version: 3.7.0
+Version: 3.8.0
 Author URI: https://zeen101.com/
 Tags:
 Text Domain: issuem-leaky-paywall
@@ -23,7 +23,7 @@ if ( !defined( 'ZEEN101_STORE_URL' ) )
 	
 define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 		'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION',	'3.7.0' );
+define( 'LEAKY_PAYWALL_VERSION',	'3.8.0' );
 define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
 define( 'LEAKY_PAYWALL_URL',		plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
@@ -69,6 +69,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'shortcodes.php' );
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
+<<<<<<< HEAD
 
 		// error tracking
 		include( LEAKY_PAYWALL_PATH . 'include/error-tracking.php' );
@@ -86,6 +87,9 @@ function leaky_paywall_plugins_loaded() {
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-paypal.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateways.php' );
 
+=======
+		require_once( 'include/admin/dashboard-widgets.php' );
+>>>>>>> master
 			
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );

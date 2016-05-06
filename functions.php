@@ -667,7 +667,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 		    $payload[$key] = stripslashes( $value );
 	    }
 		$paypal_api_url = !empty( $_REQUEST['test_ipn'] ) ? PAYPAL_PAYMENT_SANDBOX_URL : PAYPAL_PAYMENT_LIVE_URL;
-		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload ) );
+		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload, 'httpversion' => '1.1' ) );
 		$body = wp_remote_retrieve_body( $response );
 		
 		if ( 'VERIFIED' === $body ) {
@@ -946,92 +946,98 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	 * @return mixed $wpdb insert ID or false
 	 */
 	function leaky_paywall_new_subscriber( $hash='deprecated', $email, $customer_id, $meta_args, $login='' ) {
-		
-		if ( is_email( $email ) ) {
-			
-			$settings = get_leaky_paywall_settings();
-			
-			if ( is_multisite_premium() && !is_main_site( $meta_args['site'] ) ) {
-				$site = '_' . $meta_args['site'];
-			} else {
-				$site = '';
-			}
-			unset( $meta_args['site'] );
-			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-			
-			$expires = '0000-00-00 00:00:00';
-			
-			if ( $user = get_user_by( 'email', $email ) ) { 
-				//the user already exists
-				//grab the ID for later
-				$user_id = $user->ID;
-				$userdata = get_userdata( $user_id );
 
-				$userdata = object_to_array( $userdata );
-				
-			} else {
-				//the user doesn't already exist
-				//create a new user with their email address as their username
-				//grab the ID for later
-				if ( empty( $login ) ) {
-					$parts = explode( '@', $email );
-					$login = $parts[0];
-				}
-				
-				//Avoid collisions
-				while ( $user = get_user_by( 'login', $login ) ) { 
-					$login = $user->user_login . '_' . substr( uniqid(), 5 );
-				} 
-				
-				$password = wp_generate_password();
-                $userdata = array(
-				    'user_login' => $login,
-					'user_email' => $email,
-					'user_pass'  => $password,
-					'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
-				);
-                $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
-				$user_id = wp_insert_user( $userdata );
-			}
+		if ( !is_email( $email ) ) {
+			return false;
+		}
 			
-			if ( !empty( $user_id ) ) {
-								
-				if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
-					$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
-				} else if ( !empty( $meta_args['expires'] ) ) {
-					$expires = $meta_args['expires'];
-				}
-				
-				$meta = array(
-					'level_id' 			=> $meta_args['level_id'],
-					'subscriber_id' 	=> $customer_id,
-					'price' 			=> $meta_args['price'],
-					'description' 		=> $meta_args['description'],
-					'plan' 				=> $meta_args['plan'],
-					'created' 			=> date( 'Y-m-d H:i:s' ),
-					'expires' 			=> $expires,
-					'payment_gateway' 	=> $meta_args['payment_gateway'],
-					'payment_status' 	=> $meta_args['payment_status'],
-				);
-			
-				$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id, $meta_args );
-			
-				foreach( $meta as $key => $value ) {
-
-					update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
-					
-				}
-					
-				do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
-				
-                leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
-				
-				return $user_id;
-				
-			}
+		$settings = get_leaky_paywall_settings();
 		
+		if ( is_multisite_premium() && !is_main_site( $meta_args['site'] ) ) {
+			$site = '_' . $meta_args['site'];
+		} else {
+			$site = '';
+		}
+		unset( $meta_args['site'] );
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		
+		$expires = '0000-00-00 00:00:00';
+
+		if ( $user = get_user_by( 'email', $email ) ) { 
+			//the user already exists
+			//grab the ID for later
+			$user_id = $user->ID;
+			$userdata = get_userdata( $user_id );
+		} else {
+	
+			//the user doesn't already exist
+			//create a new user with their email address as their username
+			//grab the ID for later
+			if ( empty( $login ) ) {
+				$parts = explode( '@', $email );
+				$login = $parts[0];
+			}
+			
+			//Avoid collisions
+			while ( $user = get_user_by( 'login', $login ) ) { 
+				$login = $user->user_login . '_' . substr( uniqid(), 5 );
+			} 
+			
+			$password = wp_generate_password();
+            $userdata = array(
+			    'user_login' => $login,
+				'user_email' => $email,
+				'user_pass'  => $password,
+				'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
+			);
+
+            $userdata = apply_filters( 'leaky_paywall_userdata_before_user_create', $userdata );
+			$user_id = wp_insert_user( $userdata );
+
 		}
 		
+		if ( !empty( $user_id ) ) {
+			
+			if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
+				$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
+			} else if ( !empty( $meta_args['expires'] ) ) {
+				$expires = $meta_args['expires'];
+			}			
+			
+			$meta = array(
+				'level_id' 			=> $meta_args['level_id'],
+				'subscriber_id' 	=> $customer_id,
+				'price' 			=> $meta_args['price'],
+				'description' 		=> $meta_args['description'],
+				'plan' 				=> $meta_args['plan'],
+				'created' 			=> date( 'Y-m-d H:i:s' ),
+				'expires' 			=> $expires,
+				'payment_gateway' 	=> $meta_args['payment_gateway'],
+				'payment_status' 	=> $meta_args['payment_status'],
+			);
+			
+			$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id, $meta_args );
+
+			// remove any extra underscores from site variable
+			$site = str_replace( '__', '_', $site );
+		
+			foreach( $meta as $key => $value ) {
+
+				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
+				
+			}
+				
+			do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
+
+			// We only need to send a new user email to newly created users. If userdata is an object, then the user already exists in the system and they have already received a new user email. 
+			if ( is_array( $userdata ) ) {
+				leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
+			}
+			
+			return $user_id;
+			
+		}
+
 		return false;
 		
 	}
@@ -2272,7 +2278,7 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
 						'METHOD'        => 'GetTransactionDetails',
 						'TRANSACTIONID' => $transaction_id,
 					);
-					$response = wp_remote_post( $paypal_api_url, array( 'body' => $request ) );	
+					$response = wp_remote_post( $paypal_api_url, array( 'body' => $request, 'httpversion' => '1.1' ) );	
 					
 					if ( !is_wp_error( $response ) ) {
 					
@@ -3020,8 +3026,9 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
     function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
-
-        if ( !empty( $args ) ) {
+    	
+    	// if the args come through as a WP User object, then the user already exists in the system and we don't know their password
+        if ( !empty( $args ) && is_array( $args ) ) {
             $password = $args['user_pass'];
         } else {
 	        $password = '';
@@ -3295,8 +3302,7 @@ if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 	
 				if ( $last_rss_item !== $latest_rss_item ) {
 
-					global $current_user; 
-					get_currentuserinfo();
+					$current_user = wp_get_current_user();
 
 					update_option( 'last_zeen101_dot_com_leaky_rss_item', $latest_rss_item );
 
@@ -3315,6 +3321,7 @@ if ( !function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 	
 }
 
+<<<<<<< HEAD
 
 /**
  * Helper function to get the data associated with a level by the level id
@@ -3352,3 +3359,48 @@ if ( ! function_exists( 'object_to_array' ) ) {
 	}
 
 }
+=======
+/**
+ * Allow csv files to be uploaded via the media uploader
+ *
+ * @since  3.7.1
+ */
+add_filter('upload_mimes', 'leaky_paywall_upload_mimes');
+
+function leaky_paywall_upload_mimes ( $existing_mimes=array() ) {
+    $existing_mimes['csv'] = 'text/csv';
+    return $existing_mimes;
+}
+
+/**
+ * Convert csv file to array
+ * @param  string $filename  csv file name
+ * @param  string $delimiter separator for data fields
+ * @return array            array of data from csv
+ */
+function leaky_paywall_csv_to_array( $filename = '', $delimiter = ',' ) {
+
+	if (!file_exists($filename) || !is_readable($filename)) {
+		
+		// return FALSE;
+	}
+
+	$header = NULL;
+	$data = array();
+
+	if (($handle = fopen($filename, 'r')) !== FALSE) {
+		while (($row = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
+
+			if (!$header) {
+				$header = $row;
+			} else {
+				$data[] = array_combine($header, $row);
+			}
+
+		}
+		fclose($handle);
+	}
+	return $data;
+
+}
+>>>>>>> master
