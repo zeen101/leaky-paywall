@@ -50,6 +50,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 		$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
 	}
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
+	$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 
 	if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 		
@@ -76,7 +77,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 					|| $level['interval_count'] != $stripe_plan->interval_count
 				) 
 			) {
-			
+				
 				$args = array(
 	                'amount'            => esc_js( $stripe_price ),
 	                'interval'          => esc_js( $level['interval'] ),
@@ -85,17 +86,19 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 	                'currency'          => esc_js( $currency ),
 	                'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
 	            );
-	            
-                $stripe_plan = Stripe_Plan::create( $args );
+	            	
+                $stripe_plan = Stripe_Plan::create( $args, $secret_key );
+
 	            $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
 	            update_leaky_paywall_settings( $settings );
-								
+									
 			}
 			
 			$results .= '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
 						  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
+								  data-label="' . apply_filters('leaky_paywall_stripe_button_label', 'Subscribe' ) . '" 
 								  data-plan="' . esc_js( $stripe_plan->id ) . '" 
 								  data-currency="' . esc_js( $currency ) . '" 
 								  data-description="' . esc_js( $level['label'] ) . '">
@@ -115,6 +118,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 					  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 					  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 							  data-key="' . esc_js( $publishable_key ) . '"
+							  data-label="' . apply_filters('leaky_paywall_stripe_button_label', 'Subscribe' ) . '" 
 							  data-amount="' . esc_js( $stripe_price ) . '" 
 							  data-currency="' . esc_js( $currency ) . '" 
 							  data-description="' . esc_js( $level['label'] ) . '">
