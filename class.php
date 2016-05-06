@@ -55,21 +55,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
 			
-			if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
-				
-				if ( !empty( $settings['test_secret_key'] ) || !empty( $settings['live_secret_key'] ) ) {
-										
-					// Initialized Stripe...
-					if ( !class_exists( 'Stripe' ) )
-						require_once('include/stripe/lib/Stripe.php');
-					
-					$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-					Stripe::setApiKey( $secret_key );
-					Stripe::setApiVersion( '2014-06-17' ); //Last version before Stripe changed subscription model
-									
-				}
 			
-			}
 			
 			if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
 				

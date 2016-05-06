@@ -124,7 +124,7 @@ add_action( 'init', 'leaky_paywall_process_gateway_webhooks', -99999 );
  * @return      void
 */
 function leaky_paywall_process_gateway_confirmations() {
-	
+
 	if( empty( $_GET['leaky-paywall-confirm'] ) ) {
 		return;
 	}
@@ -157,12 +157,6 @@ add_action( 'wp', 'leaky_paywall_process_gateway_confirmations', -99999 );
  * @return      void
 */
 function leaky_paywall_load_gateway_scripts() {
-
-	// global $rcp_options;
-
-	// if( ! rcp_is_registration_page() && ! defined( 'RCP_LOAD_SCRIPTS_GLOBALLY' ) ) {
-	// 	return;
-	// }
 
 	$gateways = new Leaky_Paywall_Payment_Gateways;
 

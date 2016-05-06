@@ -15,27 +15,34 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 	 *
 	 * @since 3.7.0
 	 */
-	public function process_signup() {
+	public function process_confirmation() {
 
-		if( ! empty( $_POST['leaky_paywall_stripe_checkout'] ) ) {
+		if ( empty( $_GET['leaky-paywall-confirm'] ) && $_GET['leaky-paywall-confirm'] != 'stripe_checkout' ) {
+			return false;
+		}
 
-			// $this->auto_renew = '2' === rcp_get_auto_renew_behavior() ? false : true;
-	
+		$settings = get_leaky_paywall_settings();
+
+		$this->email = $_POST['stripeEmail'];
+		$this->level_id = $_POST['custom'];
+
+		$level = get_level_by_level_id( $this->level_id );
+
+		$this->level_name = $level['label'];
+		$this->recurring = $level['recurring'];
+		$this->plan_id = $level['plan_id'];
+		$this->level_price = $level['price'];
+		$this->amount = number_format( $level['price'], 2, '', '' ); // format for Stripe charge
+		$this->currency = $settings['leaky_paywall_currency'];
+		$this->length_unit = $level['interval'];
+		$this->length = $level['interval_count'];
+
+		if ( ! class_exists( 'Stripe' ) ) {
+			require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
 		}
 
 		parent::process_signup();
 
-	}
-
-	/**
-	 * Print fields for this gateway
-	 *
-	 * @return string
-	 */
-	public function fields() {
-
-		
-		
 	}
 
 }

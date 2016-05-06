@@ -1,7 +1,5 @@
 <?php 
 
-add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_stripe_subscription_cards', 7, 3 );
-
 /**
  * Add the subscribe link to the subscribe cards. 
  *
@@ -31,6 +29,8 @@ function leaky_paywall_stripe_subscription_cards( $payment_options, $level, $lev
 	return $payment_options . $output;
 
 }
+add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_stripe_subscription_cards', 7, 3 );
+
 
 /**
  * Add the Stripe subscribe popup button to the subscribe cards. 
@@ -94,7 +94,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 									
 			}
 			
-			$results .= '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
+			$results .= '<form action="' . esc_url( add_query_arg( 'leaky-paywall-confirm', 'stripe_checkout', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
 						  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
@@ -114,7 +114,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 		
 	} else {
 					
-		$results .= '<form action="' . esc_url( add_query_arg( 'issuem-leaky-paywall-stripe-return', '1', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
+		$results .= '<form action="' . esc_url( add_query_arg( 'leaky-paywall-confirm', 'stripe_checkout', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
 					  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 					  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 							  data-key="' . esc_js( $publishable_key ) . '"

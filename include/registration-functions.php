@@ -28,8 +28,7 @@ function leaky_paywall_process_registration() {
 	if ( !wp_verify_nonce( $_POST['leaky_paywall_register_nonce'], 'leaky-paywall-register-nonce' ) ) {
 		return;
 	}
-
-
+	
 	$settings = get_leaky_paywall_settings();
 
 	global $user_ID;

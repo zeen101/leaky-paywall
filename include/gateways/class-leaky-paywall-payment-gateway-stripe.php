@@ -57,7 +57,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			wp_die( __( 'Missing Stripe token, please try again or contact support if the issue persists.', 'rcp' ), __( 'Error', 'rcp' ), array( 'response' => 400 ) );
 		}
 
-		\Stripe\Stripe::setApiKey( $this->secret_key );
+		Stripe::setApiKey( $this->secret_key );
 
 		$paid   = false;
 		$customer_exists = false;
@@ -162,7 +162,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$charge = Stripe_Charge::create( $charge_array );
 
-
 			}
 
 		} catch ( Exception $e ) {
@@ -172,7 +171,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		}
 
 		$customer_id = $cu->id;
-
 
 		$meta_args = array(
 			'level_id'			=> $this->level_id,
@@ -188,7 +186,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'plan' 				=> !empty( $customer_array['plan'] ) ? $customer_array['plan'] : '',
 		);
 
-
 		if ( is_user_logged_in() || !empty( $existing_customer ) ) {
 			$user_id = leaky_paywall_update_subscriber( NULL,  $this->email, $customer_id, $meta_args ); //if the email already exists, we want to update the subscriber, not create a new one
 		} else {
@@ -196,14 +193,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			$user_id = leaky_paywall_new_subscriber( NULL,  $this->email, $customer_id, $meta_args );
 		}
 
-
 		if ( $user_id ) {
 
 			do_action( 'leaky_paywall_stripe_signup', $user_id );
 			
-			// don't want to log them in for now, but maybe in the future
-			// wp_set_current_user( $user_id );
-			// wp_set_auth_cookie( $user_id );
+			// log the user in
+			wp_set_current_user( $user_id );
+			wp_set_auth_cookie( $user_id, true );
 			
 			// redirect user after sign up
 			if ( !empty( $settings['page_for_after_subscribe'] ) ) {
