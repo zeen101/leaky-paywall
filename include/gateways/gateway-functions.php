@@ -95,7 +95,7 @@ add_action( 'leaky_paywall_before_registration_submit_field', 'leaky_paywall_loa
  * Load webhook processor for all gateways
  *
  * @access      public
- * @since       3.7.0
+ * @since       4.0.0
  * @return      void
 */
 function leaky_paywall_process_gateway_webhooks() {
