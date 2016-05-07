@@ -26,7 +26,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$this->supports[]	= 'recurring';
 		// $this->supports[]	= 'fees';
 
-		$this->test_mode	= isset( $settings['test_mode'] );
+		$this->test_mode	= 'off' === $settings['test_mode'] ? false : true;
 
 		if ( $this->test_mode ) {
 
@@ -61,7 +61,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$paid   = false;
 		$customer_exists = false;
-
 
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -155,7 +154,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$charge_array = array(
 					'customer'	=> $cu->id,
-					'amount'	=> $this->amount,
+					'amount'	=> number_format( $this->amount, 2, '', '' ), // format amount for Stripe
 					'currency'	=> apply_filters( 'leaky_paywall_stripe_currency', strtolower( $this->currency ) ),
 					'description'	=> $this->level_name,
 				);
@@ -165,6 +164,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 
 		} catch ( Exception $e ) {
+
+			echo '<pre>';
+			print_r( $e );
+			echo '</pre>';
+
+			die('stripe error');
 				
 			return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
 			
@@ -223,7 +228,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Add credit card fields
 	 *
-	 * @since 3.5.1
+	 * @since 4.0.0
 	 */
 	public function fields() {
 
@@ -234,9 +239,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			return;
 		}
 
+		$settings = get_leaky_paywall_settings();
+
+		$plan_args = array(
+			'stripe_price'	=> number_format( $level['price'], 2, '', '' ),
+			'currency'		=> $settings['leaky_paywall_currency'],
+			'secret_key'	=> $this->secret_key
+		);
+
+		$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+
 		ob_start();
 		?>
-			
+
+			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan->id; ?>"/>
+
 			<script type="text/javascript">
 
 			var leaky_paywall_script_options;

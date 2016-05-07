@@ -1697,9 +1697,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					
 			$has_allowed_value = false;
 			$results .= '<h2>' . __( 'Subscription Options', 'issuem-leaky-paywall' ) . '</h2>';
-			
-			$results .= '<div class="leaky-paywall-payment-form"></div>';
-			
+
 			$results .= apply_filters( 'leaky_paywall_subscription_options_header', '' );
 			
 			if ( !empty( $settings['levels'] ) ) {
@@ -1711,6 +1709,8 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					
 					if ( !empty( $level['deleted'] ) )
 						continue;
+
+					
 					
 					if ( is_multisite_premium() && !empty( $level['site'] ) && 'all' != $level['site'] && $blog_id != $level['site'] )
 						continue;

@@ -136,7 +136,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				if ( !current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) { //Admins can see it all
 				
 					// We don't ever want to block the login, subscription
-					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'], $settings['page_for_profile'] ) ) ) {
+					if ( !is_page( array( $settings['page_for_login'], $settings['page_for_subscription'], $settings['page_for_profile'], $settings['page_for_register'] ) ) ) {
 					
 						global $post;
 						$post_type_id = '';

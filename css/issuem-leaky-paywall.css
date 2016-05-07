@@ -107,10 +107,26 @@
 	background: #32A3E4;
 	color: #fff;
 	padding: 7px 15px;
-	border-radius: 3px;
+	border-radius: 4px;
 	text-decoration: none;
 }
 .leaky-paywall-payment-button a:hover {
-		color: #fff;
-		background: #52B2E9;
-	}
+	color: #fff;
+	background: #52B2E9;
+}
+
+.leaky_paywall_message {
+	border-radius: 4px;
+}
+
+.leaky_paywall_message.error {
+	background: #FFAAAA;
+	border: 1px solid #FF5555;
+	padding: 10px;
+}
+
+.leaky_paywall_message.error p {
+	margin-bottom: 5px;
+	font-size: .875em;
+	color: #333;
+}

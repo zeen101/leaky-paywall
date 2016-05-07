@@ -32,6 +32,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 		$this->recurring = $level['recurring'];
 		$this->plan_id = $level['plan_id'];
 		$this->level_price = $level['price'];
+
+		// @todo: Fix: this will ignore coupons
 		$this->amount = number_format( $level['price'], 2, '', '' ); // format for Stripe charge
 		$this->currency = $settings['leaky_paywall_currency'];
 		$this->length_unit = $level['interval'];

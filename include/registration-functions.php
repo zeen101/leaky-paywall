@@ -28,7 +28,7 @@ function leaky_paywall_process_registration() {
 	if ( !wp_verify_nonce( $_POST['leaky_paywall_register_nonce'], 'leaky-paywall-register-nonce' ) ) {
 		return;
 	}
-	
+
 	$settings = get_leaky_paywall_settings();
 
 	global $user_ID;
@@ -98,9 +98,7 @@ function leaky_paywall_process_registration() {
 			'plan' 				=> sanitize_text_field( $_POST['plan_id'] ),
 			'created' 			=> date( 'Y-m-d H:i:s' ),
 			'subscriber_id' 	=> '',
-			//'expires' 			=> $expires,
 			'payment_gateway' 	=> $gateway,
-			//'payment_status' 	=> $meta_args['payment_status'],
 		);
 
 		$level = get_level_by_level_id( $level_id );
@@ -112,6 +110,7 @@ function leaky_paywall_process_registration() {
 			$site = '';
 		}
 
+		// set free level subscribers to active
 		if ( $meta['price'] == '0' ) {
 
 			$meta['payment_status'] = 'active';
@@ -123,7 +122,6 @@ function leaky_paywall_process_registration() {
 			update_user_meta( $user_data['id'], '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
 			
 		}
-
 		
 		do_action( 'leaky_paywall_form_processing', $_POST, $user_data['id'], $meta['price'] );
 

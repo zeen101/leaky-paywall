@@ -557,9 +557,6 @@ function do_leaky_paywall_register_form() {
 	$currency = $settings['leaky_paywall_currency'];
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 
-	// $stripe_price = number_format( $level['price'], '2', '', '' );
-	// $stripe_plan = $this->create_stripe_plan( $level, $level_id );
-
 	ob_start();
 
 	// show any error messages after form submission
