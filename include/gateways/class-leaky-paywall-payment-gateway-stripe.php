@@ -54,7 +54,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function process_signup() {
 
 		if( empty( $_POST['stripeToken'] ) ) {
-			wp_die( __( 'Missing Stripe token, please try again or contact support if the issue persists.', 'rcp' ), __( 'Error', 'rcp' ), array( 'response' => 400 ) );
+			wp_die( __( 'Missing Stripe token, please try again or contact support if the issue persists.', 'issuem-leaky-paywall' ), __( 'Error', 'issuem-leaky-paywall' ), array( 'response' => 400 ) );
 		}
 
 		Stripe::setApiKey( $this->secret_key );
