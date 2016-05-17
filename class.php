@@ -1024,7 +1024,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                            <tr>
 	                            	<th><?php _e( 'Live Webhooks', 'issuem-leaky-paywall' ); ?></th>
-	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe_live', get_site_url() . '/' ) ); ?></p></td>
+	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
 	                            </tr>
 	                            
 	                        	<tr>
@@ -1039,7 +1039,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                            <tr>
 	                            	<th><?php _e( 'Test Webhooks', 'issuem-leaky-paywall' ); ?></th>
-	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe_test', get_site_url() . '/' ) ); ?></p></td>
+	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
 	                            </tr>
 	                            
 	                        </table>
