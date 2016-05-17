@@ -532,7 +532,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
 				'new_email_subject'				=> '',
 				'new_email_body'				=> $default_email_body,
-				'payment_gateway'				=> array( 'stripe' ),
+				'payment_gateway'				=> array( 'stripe_checkout' ),
 				'test_mode'						=> 'off',
 				'live_secret_key'				=> '',
 				'live_publishable_key'			=> '',
