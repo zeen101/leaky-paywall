@@ -2,7 +2,7 @@
 /**
  * Payment Gateways Class
  *
- * @since 3.5.1
+ * @since 4.0.0
  */
 
 class Leaky_Paywall_Payment_Gateways {
@@ -13,7 +13,7 @@ class Leaky_Paywall_Payment_Gateways {
 	/**
 	 *  Get things going
 	 *
-	 * @since 3.5.1 
+	 * @since 4.0.0 
 	 */
 	public function __construct() {
 
@@ -25,7 +25,7 @@ class Leaky_Paywall_Payment_Gateways {
 	/**
 	 * Retrieve a gateway by ID
 	 *
-	 * @since 3.5.1
+	 * @since 4.0.0
 	 * @return object|false
 	 */
 	public function get_gateway( $id = '' ) {
@@ -43,7 +43,7 @@ class Leaky_Paywall_Payment_Gateways {
 	/** 
 	 * Retrieve all registered gateways
 	 *
-	 * @since  3.5.1 
+	 * @since  4.0.0 
 	 * @return array
 	 */
 	private function get_gateways() {
@@ -78,7 +78,7 @@ class Leaky_Paywall_Payment_Gateways {
 	/**
 	 * Retrieve all enabled gateways
 	 *
-	 * @since 3.5.1 
+	 * @since 4.0.0 
 	 * @return array 
 	 */
 	private function get_enabled_gateways() {
@@ -113,7 +113,7 @@ class Leaky_Paywall_Payment_Gateways {
 	/**
 	 * Determine if a gateway is enabled
 	 *
-	 * @since 3.5.1 
+	 * @since 4.0.0 
 	 * @return bool
 	 */
 	public function is_gateway_enabled( $id = '' ) {
@@ -123,7 +123,7 @@ class Leaky_Paywall_Payment_Gateways {
 	/**
 	 * Loead the fieds for the gateway
 	 *
-	 * @since 3.5.1 
+	 * @since 4.0.0 
 	 * @return void
 	 */
 	public function load_fields() {

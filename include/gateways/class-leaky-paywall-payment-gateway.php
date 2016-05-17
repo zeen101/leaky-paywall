@@ -3,7 +3,7 @@
  * Payment Gateway Base Class
  *
  * @package     zeen101's Leaky Paywall
- * @since 3.5.1
+ * @since 4.0.0
 */
 
 class Leaky_Paywall_Payment_Gateway {

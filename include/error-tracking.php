@@ -17,7 +17,7 @@ if ( !function_exists( 'leaky_paywall_errors' ) ) {
  * Retrieves the HTML for error messages
  *
  * @access      public
- * @since       3.7.0
+ * @since       4.0.0
  */
 function leaky_paywall_get_error_messages_html( $error_id = '' ) {
 
@@ -52,7 +52,7 @@ function leaky_paywall_get_error_messages_html( $error_id = '' ) {
  * Displays the HTML for error messages
  *
  * @access      public
- * @since       3.7.0
+ * @since       4.0.0
  */
 function leaky_paywall_show_error_messages( $error_id = '' ) {
 

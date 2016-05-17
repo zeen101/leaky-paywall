@@ -5,7 +5,7 @@ add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall
 /**
  * Add the Paypal subscribe option to the subscribe cards. 
  *
- * @since 3.7.0
+ * @since 4.0.0
  */
 function leaky_paywall_paypal_subscription_cards( $payment_options, $level, $level_id ) {
 
@@ -31,7 +31,7 @@ function leaky_paywall_paypal_subscription_cards( $payment_options, $level, $lev
 /**
  * Add the Paypal subscribe or buy now button to the subscribe cards. 
  *
- * @since 3.7.0
+ * @since 4.0.0
  */
 function leaky_paywall_paypal_button( $level, $level_id ) {
 
@@ -53,7 +53,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-env="' . esc_js( $paypal_sandbox ) . '" 
 						data-callback="' . esc_js( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ) . '"
 						data-return="' . esc_js( add_query_arg( 'leaky-paywall-confirm', 'paypal_standard', get_page_link( $settings['page_for_after_subscribe'] ) ) ) . '"
-						data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_profile'] ) ) ) . '" 
+						data-cancel_return="' . esc_js( add_query_arg( 'leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_profile'] ) ) ) . '" 
 						data-src="1" 
 						data-period="' . esc_js( strtoupper( substr( $level['interval'], 0, 1 ) ) ) . '" 
 						data-recurrence="' . esc_js( $level['interval_count'] ) . '" 
@@ -73,7 +73,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-env="' . esc_js( $paypal_sandbox ) . '" 
 						data-callback="' . esc_js( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ) . '" 
 						data-return="' . esc_js( add_query_arg( 'leaky-paywall-confirm', 'paypal_standard', get_page_link( $settings['page_for_after_subscribe'] ) ) ) . '"
-						data-cancel_return="' . esc_js( add_query_arg( 'issuem-leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_profile'] ) ) ) . '" 
+						data-cancel_return="' . esc_js( add_query_arg( 'leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_profile'] ) ) ) . '" 
 						data-tax="0" 
 						data-shipping="0" 
 						data-currency="' . esc_js( apply_filters( 'leaky_paywall_paypal_currency', $currency ) ) . '" 

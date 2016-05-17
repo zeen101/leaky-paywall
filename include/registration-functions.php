@@ -8,7 +8,7 @@
  * @subpackage  Login Functions
  * @copyright   Copyright (c) 2016, Zeen101 Development Team
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       3.7.0
+ * @since       4.0.0
  */
 
 // Exit if accessed directly
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Regsiter a new user
  *
- * @since 3.7.0
+ * @since 4.0.0
  */
 function leaky_paywall_process_registration() {
 
@@ -197,7 +197,7 @@ add_action( 'init', 'leaky_paywall_process_registration', 100 );
 /** 
  * Validate and setup the user data for registration
  *
- * @since  3.7.0
+ * @since  4.0.0
  */
 function leaky_paywall_validate_user_data() {
 
@@ -269,7 +269,7 @@ function leaky_paywall_validate_user_data() {
  * Validate a potential username
  *
  * @access      public
- * @since       3.7.0
+ * @since       4.0.0
  * @param       string $username The username to validate
  * @return      bool
  */

@@ -5,7 +5,7 @@
  * @package     Leaky Paywall
  * @subpackage  Classes/Roles
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       3.70.0
+ * @since       4.0.0
 */
 
 class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway {
@@ -16,7 +16,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Get things going
 	 *
-	 * @since  3.5.1
+	 * @since  4.0.0
 	 */
 	public function init() {
 
@@ -49,7 +49,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Process registration
 	 *
-	 * @since 3.7.0
+	 * @since 4.0.0
 	 */
 	public function process_signup() {
 
@@ -418,7 +418,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Validate additional fields during registration submission
 	 *
-	 * @since 3.5.1
+	 * @since 4.0.0
 	 */
 	public function validate_fields() {
 
@@ -432,7 +432,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Load Stripe JS
 	 *
-	 * @since  3.7.0
+	 * @since  4.0.0
 	 */
 	public function scripts() {
 		wp_enqueue_script( 'stripe', 'https://js.stripe.com/v2/', array( 'jquery' ) );

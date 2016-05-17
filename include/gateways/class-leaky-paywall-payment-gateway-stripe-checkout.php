@@ -5,7 +5,7 @@
  * @package     Leaky Paywall
  * @subpackage  Classes/Roles
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       3.70.0
+ * @since       4.0.0
 */
 
 class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Payment_Gateway_Stripe {
@@ -13,7 +13,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 	/**
 	 * Process registration
 	 *
-	 * @since 3.7.0
+	 * @since 4.0.0
 	 */
 	public function process_confirmation() {
 

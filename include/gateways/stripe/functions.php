@@ -3,7 +3,7 @@
 /**
  * Add the subscribe link to the subscribe cards. 
  *
- * @since 3.7.0
+ * @since 4.0.0
  */
 function leaky_paywall_stripe_subscription_cards( $payment_options, $level, $level_id ) {
 
@@ -35,7 +35,7 @@ add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall
 /**
  * Add the Stripe subscribe popup button to the subscribe cards. 
  *
- * @since 3.7.0
+ * @since 4.0.0
  */
 function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 

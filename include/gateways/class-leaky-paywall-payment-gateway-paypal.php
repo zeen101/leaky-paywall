@@ -5,7 +5,7 @@
  * @package     Leaky Paywall
  * @subpackage  Classes/Roles
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       3.7.0
+ * @since       4.0.0
 */
 
 class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway {
@@ -20,7 +20,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Get things going
 	 *
-	 * @since  3.7.0
+	 * @since  4.0.0
 	 */
 	public function init() {
 
@@ -35,14 +35,11 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		if ( $this->test_mode ) {
 
 			$this->api_endpoint = 'https://api-3t.sandbox.paypal.com/nvp';
-			// $this->checkout_url = 'https://www.sandbox.paypal.com/webscr&cmd=_express-checkout&token=';
 			$this->checkout_url = 'https://www.paypal.com/cgi-bin/webscr';
 
 		} else {
 
 			$this->api_endpoint = 'https://api-3t.paypal.com/nvp';
-			// $this->checkout_url = 'https://www.paypal.com/webscr&cmd=_express-checkout&token=';
-
 			$this->checkout_url = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
 		}
 
@@ -51,7 +48,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Process registration and payment confirmation after returning from PayPal
 	 *
-	 * @since 3.7.0
+	 * @since 4.0.0
 	 */
 	public function process_confirmation() {
 
@@ -207,7 +204,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	/**
 	 * Process PayPal IPN. This is also where Paypal Subscribe buttons are processed.
 	 * 
-	 * @since 3.7.0
+	 * @since 4.0.0
 	 */
 	public function process_webhooks() {
 
