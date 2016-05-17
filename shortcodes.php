@@ -587,44 +587,50 @@ function do_leaky_paywall_register_form() {
 			<li><strong>Total:</strong> $<?php echo $level['price']; ?></li>
 		</ul>
 
-		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form">
+		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
 		  <span class="payment-errors"></span>
 
-		  <h3>Your Details</h3>
+		  <div class="leaky-paywall-user-fields">
 
-		  <p class="form-row">
-		    <label for="first_name">First Name <i class="required">*</i></label>
-		    <input type="text" size="20" name="first_name"/>
-		   
-		  </p>
+			  <h3>Your Details</h3>
 
-		  <p class="form-row">
-		    <label for="last_name">Last Name <i class="required">*</i></label>
-		    <input type="text" size="20" name="last_name"/>
-		   
-		  </p>
-		 
-		  <p class="form-row">
-		    <label for="email_address">Email Address <i class="required">*</i></label>
-		    <input type="text" size="20" name="email_address"/>
-		  </p>
+			  <p class="form-row">
+			    <label for="first_name">First Name <i class="required">*</i></label>
+			    <input type="text" size="20" name="first_name"/>
+			  </p>
 
-		  <h3>Account Details</h3>
+			  <p class="form-row">
+			    <label for="last_name">Last Name <i class="required">*</i></label>
+			    <input type="text" size="20" name="last_name"/>
+			  </p>
+			 
+			  <p class="form-row">
+			    <label for="email_address">Email Address <i class="required">*</i></label>
+			    <input type="text" size="20" name="email_address"/>
+			  </p>
 
-		  <p class="form-row">
-		    <label for="username">Username<i class="required">*</i></label>
-		    <input type="text" size="20" name="username"/>
-		  </p>
+		  </div>
 
-		  <p class="form-row">
-		    <label for="password">Password <i class="required">*</i></label>
-		    <input type="password" size="20" name="password"/>
-		  </p>
+		  <div class="leaky-paywall-account-fields">
 
-		  <p class="form-row">
-		    <label for="confirm_password">Confirm Password<i class="required">*</i></label>
-		    <input type="password" size="20" name="confirm_password"/>
-		  </p>
+			  <h3>Account Details</h3>
+
+			  <p class="form-row">
+			    <label for="username">Username<i class="required">*</i></label>
+			    <input type="text" size="20" name="username"/>
+			  </p>
+
+			  <p class="form-row">
+			    <label for="password">Password <i class="required">*</i></label>
+			    <input type="password" size="20" name="password"/>
+			  </p>
+
+			  <p class="form-row">
+			    <label for="confirm_password">Confirm Password<i class="required">*</i></label>
+			    <input type="password" size="20" name="confirm_password"/>
+			  </p>
+
+		  </div>
 
 		  <?php do_action( 'leaky_paywall_after_password_registration_field' ); ?>
 

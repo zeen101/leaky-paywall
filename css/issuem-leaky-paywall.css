@@ -43,8 +43,6 @@
     text-align: center;
 }
 
-.leaky-paywall-payment-form { display: none; }
-
 .leaky_paywall_subscription_option.current-level {
     border: 2px solid #007711;
     box-shadow: 0 0 20px #3e8e51;
@@ -129,4 +127,8 @@
 	margin-bottom: 5px;
 	font-size: .875em;
 	color: #333;
+}
+
+.leaky-paywall-payment-form .form-row label {
+	display: block;
 }

@@ -281,12 +281,16 @@ function leaky_paywall_validate_username( $username = '' ) {
 
 /**
  * Display the credit card fields on the registration form
- * @param  string $price The price of the current chosen level
+ *
+ * @since  4.0.0 
  */
-function leaky_paywall_card_form( $price ) {
+function leaky_paywall_card_form() {
 
 	?>
-	<h3>Payment Information</h3>
+
+	<div class="leaky-paywall-card-details">
+
+	  <h3>Payment Information</h3>
 
 	  <p class="form-row">
 	    <label>Name on Card <i class="required">*</i></label>
@@ -313,6 +317,7 @@ function leaky_paywall_card_form( $price ) {
 	    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
 	  </p>
 
+	</div>
 		 
 	<?php 
 }
@@ -322,7 +327,7 @@ function leaky_paywall_card_form_full() {
 
 	?>
 
-	<fieldset class="leaky_paywall_card_fieldset">
+	<div class="leaky-paywall-card-details">
 	   <p class="form-row">
 	        <label><?php _e( 'Card Number', 'rcp' ); ?></label>
 	        <input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
@@ -618,7 +623,7 @@ function leaky_paywall_card_form_full() {
 	            <?php endfor; ?>
 	        </select>
 	    </p>
-	</fieldset>
+	</div>
 	<?php 
 
 }
