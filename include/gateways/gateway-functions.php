@@ -175,3 +175,23 @@ function leaky_paywall_load_gateway_scripts() {
 
 }
 add_action( 'wp_enqueue_scripts', 'leaky_paywall_load_gateway_scripts', 100 );
+
+/**
+ * Add subscribe button to free level subcription cards
+ *
+ * @since  4.0.0
+ * @return string 	payment option output for subscription card
+ */
+function leaky_paywall_free_subscription_cards( $payment_options, $level, $level_id ) {
+	
+	if ( $level['price'] != 0 ) {
+		return $payment_options;
+	}
+
+	$settings = get_leaky_paywall_settings();
+
+	$output = '<div class="leaky-paywall-payment-button"><a href="' . get_page_link( $settings['page_for_register'] ) . '?level_id=' . $level_id . '">Subscribe</a></div>';
+
+	return $payment_options . $output; 
+}
+add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_free_subscription_cards', 7, 3 );

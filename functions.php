@@ -1833,7 +1833,6 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 								}
 							}
 						} else {
-							$payment_options .= leaky_paywall_pay_with_email( $level, $level_id );
 							$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
 						}
 						$results .= '</div>';
