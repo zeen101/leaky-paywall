@@ -568,7 +568,7 @@ function do_leaky_paywall_register_form() {
 		<ul>
 			<li><strong>Subscription Name:</strong> <?php echo $level['label']; ?></li>
 			<li><strong>Subscription Length:</strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . 's'; ?>
-			<li><strong>Recurring: </strong> <?php echo $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
+			<li><strong>Recurring: </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
 			<li><strong>Content Access:</strong>
 				<ul>
 			<?php 
@@ -657,7 +657,7 @@ function do_leaky_paywall_register_form() {
 		  <input type="hidden" name="level_id" value="<?php echo $level_id; ?>"/>
 		  <input type="hidden" name="interval" value="<?php echo $level['interval']; ?>"/>
 		  <input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>"/>
-		  <input type="hidden" name="recurring" value="<?php echo $level['recurring']; ?>"/>
+		  <input type="hidden" name="recurring" value="<?php echo empty( $level['recurring'] ) ? '' : $level['recurring']; ?>"/>
 		  <input type="hidden" name="site" value="<?php echo $level['site']; ?>"/>
 
 		  <input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>
