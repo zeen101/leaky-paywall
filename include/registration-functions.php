@@ -133,6 +133,8 @@ function leaky_paywall_process_registration() {
 				'user_id'			=> $user_data['id'],
 				'user_name'			=> $user_data['login'],
 				'user_email'		=> $user_data['email'],
+				'first_name'		=> $user_data['first_name'],
+				'last_name'			=> $user_data['last_name'],
 				'level_id'			=> $meta['level_id'],
 				'level_price'		=> sanitize_text_field( $_POST['level_price'] ),
 				'plan_id'			=> sanitize_text_field( $_POST['plan_id'] ),

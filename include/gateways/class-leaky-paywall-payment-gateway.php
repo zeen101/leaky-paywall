@@ -64,7 +64,7 @@ class Leaky_Paywall_Payment_Gateway {
 			$this->plan_id				= $subscription_data['plan_id'];
 			$this->site					= $subscription_data['site'];
 			$this->recurring			= $subscription_data['recurring'];
-			$this->return_url			= $subscription_data['return_url'];
+			// $this->return_url			= $subscription_data['return_url'];
 
 		}
 
