@@ -568,7 +568,7 @@ function do_leaky_paywall_register_form() {
 		<ul>
 			<li><strong>Subscription Name:</strong> <?php echo $level['label']; ?></li>
 			<li><strong>Subscription Length:</strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . 's'; ?>
-			<li><strong>Recurring: </strong> <?php echo $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
+			<li><strong>Recurring: </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
 			<li><strong>Content Access:</strong>
 				<ul>
 			<?php 
