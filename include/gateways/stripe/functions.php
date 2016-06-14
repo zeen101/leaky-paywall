@@ -23,7 +23,7 @@ function leaky_paywall_stripe_subscription_cards( $payment_options, $level, $lev
 	}
 
 	if ( in_array( 'stripe_checkout', array_keys( $enabled_gateways ) ) ) {
-		$output = leaky_paywall_stripe_checkout_button( $level, $level_id );
+		$output .= leaky_paywall_stripe_checkout_button( $level, $level_id );
 	}
 
 	return $payment_options . $output;

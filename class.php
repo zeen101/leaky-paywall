@@ -1957,7 +1957,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			else
 				$old_version = 0;
 				
-			if ( !empty( $old_version ) ) { //new installs shouldn't see this notice
+			if ( empty( $old_version ) ) { //new installs shouldn't see this notice
 				if ( current_user_can( 'manage_options' ) ) {
 					if ( 'admin_page_leaky-paywall-update' !== $hook_suffix && 'leaky-paywall_page_leaky-paywall-update' !== $hook_suffix ) {
 										

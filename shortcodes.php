@@ -93,6 +93,10 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 		
 		if ( isset( $_REQUEST['issuem-leaky-paywall-free-form'] ) )
 			return leaky_paywall_free_registration_form();
+			
+		if ( !empty( $_REQUEST['level_id'] ) ) {
+			return do_leaky_paywall_register_form();
+		}
 		
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -563,13 +567,13 @@ function do_leaky_paywall_register_form() {
 	leaky_paywall_show_error_messages( 'register' );
 		?>
 
-		<h3>Your Subscription</h3>
+		<h3><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
 
 		<ul>
-			<li><strong>Subscription Name:</strong> <?php echo $level['label']; ?></li>
-			<li><strong>Subscription Length:</strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . 's'; ?>
-			<li><strong>Recurring: </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
-			<li><strong>Content Access:</strong>
+			<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['label']; ?></li>
+			<li><strong><?php printf( __( 'Subscription Length:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . 's'; ?>
+			<li><strong><?php printf( __( 'Recurring:', 'leaky-paywall' ) ); ?> </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
+			<li><strong><?php printf( __( 'Content Access:', 'leaky-paywall' ) ); ?></strong>
 				<ul>
 			<?php 
 				foreach( $level['post_types'] as $type ) {
@@ -584,7 +588,7 @@ function do_leaky_paywall_register_form() {
 			?>
 				</ul>
 			</li>
-			<li><strong>Total:</strong> $<?php echo $level['price']; ?></li>
+			<li><strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> $<?php echo $level['price']; ?></li>
 		</ul>
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
@@ -592,20 +596,20 @@ function do_leaky_paywall_register_form() {
 
 		  <div class="leaky-paywall-user-fields">
 
-			  <h3>Your Details</h3>
+			  <h3><?php printf( __( 'Your Details', 'leaky-paywall' ) ); ?></h3>
 
 			  <p class="form-row">
-			    <label for="first_name">First Name <i class="required">*</i></label>
+			    <label for="first_name"><?php printf( __( 'First Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="first_name"/>
 			  </p>
 
 			  <p class="form-row">
-			    <label for="last_name">Last Name <i class="required">*</i></label>
+			    <label for="last_name"><?php printf( __( 'Last Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="last_name"/>
 			  </p>
 			 
 			  <p class="form-row">
-			    <label for="email_address">Email Address <i class="required">*</i></label>
+			    <label for="email_address"><?php printf( __( 'Email Address', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="email_address"/>
 			  </p>
 
@@ -613,20 +617,20 @@ function do_leaky_paywall_register_form() {
 
 		  <div class="leaky-paywall-account-fields">
 
-			  <h3>Account Details</h3>
+			  <h3><?php printf( __( 'Account Details', 'leaky-paywall' ) ); ?></h3>
 
 			  <p class="form-row">
-			    <label for="username">Username<i class="required">*</i></label>
+			    <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="username"/>
 			  </p>
 
 			  <p class="form-row">
-			    <label for="password">Password <i class="required">*</i></label>
+			    <label for="password"><?php printf( __( 'Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="password" size="20" name="password"/>
 			  </p>
 
 			  <p class="form-row">
-			    <label for="confirm_password">Confirm Password<i class="required">*</i></label>
+			    <label for="confirm_password"><?php printf( __( 'Confirm Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="password" size="20" name="confirm_password"/>
 			  </p>
 
@@ -664,7 +668,7 @@ function do_leaky_paywall_register_form() {
 
 		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways ); ?>
 
-		  <button id="leaky-paywall-submit" type="submit">Subscribe</button>
+		  <button id="leaky-paywall-submit" type="submit"><?php printf( __( 'Subscribe', 'leaky-paywall' ) ); ?></button>
 		</form>
 
 		<?php 

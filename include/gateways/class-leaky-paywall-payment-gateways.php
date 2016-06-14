@@ -61,12 +61,12 @@ class Leaky_Paywall_Payment_Gateways {
 			),
 			'stripe'	=> array(
 				'label'		=> __( 'Credit / Debit Card', 'issuem-leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Credit / Debit Card', 'issuem-leaky-paywall' ),
+				'admin_label'	=> __( 'Stripe Credit / Debit Card Form', 'issuem-leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe'
 			),
 			'stripe_checkout'	=> array(
 				'label'		=> __( 'Stripe Checkout', 'issuem-leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Checkout', 'issuem-leaky-paywall' ),
+				'admin_label'	=> __( 'Stripe Checkout Popup', 'issuem-leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
 			)
 		);
