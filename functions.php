@@ -332,6 +332,14 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		}
 		
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+		if ( $mode == 'test' ) {
+			$secret_key = isset( $settings['test_secret_key'] ) ? trim( $settings['test_secret_key'] ) : '';
+		} else {
+			$secret_key = isset( $settings['live_secret_key'] ) ? trim( $settings['live_secret_key'] ) : '';
+		}
+
+		Stripe::setApiKey( $secret_key );
 		
 		if ( empty( $email ) ) {
 			$user = wp_get_current_user();
