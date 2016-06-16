@@ -16,7 +16,11 @@ if ( ! defined( 'WPINC' ) ) {
  * @since  3.8.0
  */
 function leaky_paywall_register_recent_subscribers_dashboard_widget() {
-	wp_add_dashboard_widget('dashboard_widget', 'Leaky Paywall Dashboard', 'leaky_paywall_load_recent_subscribers_dashboard_widget');
+
+	if ( current_user_can( 'manage_options' ) ) {
+		wp_add_dashboard_widget('dashboard_widget', 'Leaky Paywall Dashboard', 'leaky_paywall_load_recent_subscribers_dashboard_widget');
+	}
+	
 }
 add_action('wp_dashboard_setup', 'leaky_paywall_register_recent_subscribers_dashboard_widget' );
 
