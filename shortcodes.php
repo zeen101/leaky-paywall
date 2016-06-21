@@ -91,10 +91,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 	 */
 	function do_leaky_paywall_subscription( $atts ) {
 		
-		if ( isset( $_REQUEST['issuem-leaky-paywall-free-form'] ) )
-			return leaky_paywall_free_registration_form();
-			
-		if ( !empty( $_REQUEST['level_id'] ) ) {
+		if ( isset( $_REQUEST['level_id'] ) ) {
 			return do_leaky_paywall_register_form();
 		}
 		
