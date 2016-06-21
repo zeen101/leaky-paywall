@@ -404,7 +404,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						}
 						
 						$cu = Stripe_Customer::retrieve( $subscriber_id );
-			
+						
 						if ( !empty( $cu ) ) {
 							if ( !empty( $cu->deleted ) && true === $cu->deleted ) {
 								$canceled = true;
@@ -419,11 +419,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 										return 'subscription';
 									}
 								}
-						
 							}
-							
-							continue;
-							
 						}
 						
 						$ch = Stripe_Charge::all( array( 'count' => 1, 'customer' => $subscriber_id ) );
@@ -597,9 +593,7 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 			$expires = '0000-00-00 00:00:00';
 		}
 
-		$key = 'expires';
-
-		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $data['mode'] . '_' . $key . $data['site'], $expires );
+		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $data['mode'] . '_expires' . $data['site'], $expires );
 
 	}
 
