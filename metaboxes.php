@@ -35,14 +35,13 @@ if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
 	
 		$settings = get_leaky_paywall_settings();
 		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-		if ( empty( $visibility ) ) {
-			$visibility = array(
-				'visibility_type' 		=> 'default',
-				'only_visible' 			=> array(),
-				'only_always_visible' 	=> array(),
-				'always_visible' 		=> array(),
-			);
-		}
+		$defaults = array(
+			'visibility_type' 		=> 'default',
+			'only_visible' 			=> array(),
+			'only_always_visible' 	=> array(),
+			'always_visible' 		=> array(),
+		);
+		$visibility = wp_parse_args( $visibility, $defaults );
 		
 		echo '<label for="leaky-paywall-visibility">' . sprintf( __( 'This %s should...', 'issuem-leaky-paywall' ), $post->post_type ) . '</label> ';
 
