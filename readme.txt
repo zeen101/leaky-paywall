@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.6
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,12 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.0.2 =
+* Set defaults for visibility metaboxes
+* Fixing bug w/ Stripe cancellations not displaying content if not yet expired
+* Checking for zero based level ID in registration form output w/ LP subscription shortcode
+
 
 = 4.0.1 =
 * Hide dashboard widget from non-admin users
