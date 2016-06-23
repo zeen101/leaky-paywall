@@ -337,7 +337,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'secret_key'	=> $this->secret_key
 		);
 
-		$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+		if ( $level['subscription_length_type'] == 'limited' ) {
+			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+		}
 
 		ob_start();
 		?>
