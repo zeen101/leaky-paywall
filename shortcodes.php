@@ -554,6 +554,13 @@ function do_leaky_paywall_register_form() {
 
 	$level = get_leaky_paywall_subscription_level( $level_id );
 
+	global $blog_id;
+	if ( is_multisite_premium() ){
+		$site = '_' . $blog_id;
+	} else {
+		$site = '';
+	}
+
 	
 	$currency = $settings['leaky_paywall_currency'];
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
@@ -659,7 +666,7 @@ function do_leaky_paywall_register_form() {
 		  <input type="hidden" name="interval" value="<?php echo $level['interval']; ?>"/>
 		  <input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>"/>
 		  <input type="hidden" name="recurring" value="<?php echo empty( $level['recurring'] ) ? '' : $level['recurring']; ?>"/>
-		  <input type="hidden" name="site" value="<?php echo $level['site']; ?>"/>
+		  <input type="hidden" name="site" value="<?php echo $site; ?>"/>
 
 		  <input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>
 
