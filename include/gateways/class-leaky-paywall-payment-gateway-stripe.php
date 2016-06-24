@@ -148,14 +148,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ( empty( $cu ) ) {
 					$cu = Stripe_Customer::create( $customer_array );
 				} else {
-					$cu->cards->create( array( 'card' => $_POST['stripeToken'] ) );
+					$cu->sources->create( array( 'source' => $_POST['stripeToken'] ) );
 				}
 
-
 				$charge_array = array(
-					'customer'	=> $cu->id,
-					'amount'	=> number_format( $this->amount, 2, '', '' ), // format amount for Stripe
-					'currency'	=> apply_filters( 'leaky_paywall_stripe_currency', strtolower( $this->currency ) ),
+					'customer'	    => $cu->id,
+					'amount'	    => $this->amount,
+					'currency'	    => apply_filters( 'leaky_paywall_stripe_currency', strtolower( $this->currency ) ),
 					'description'	=> $this->level_name,
 				);
 

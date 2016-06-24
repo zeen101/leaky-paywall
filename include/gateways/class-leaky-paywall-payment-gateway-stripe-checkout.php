@@ -29,8 +29,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 		$level = get_level_by_level_id( $this->level_id );
 
 		$this->level_name = $level['label'];
-		$this->recurring = $level['recurring'];
-		$this->plan_id = $level['plan_id'];
+		$this->recurring = !empty( $level['recurring'] ) ? $level['recurring'] : false;
+		$this->plan_id = !empty( $level['plan_id'] ) ? $level['plan_id'] : false;
 		$this->level_price = $level['price'];
 
 		// @todo: Fix: this will ignore coupons
