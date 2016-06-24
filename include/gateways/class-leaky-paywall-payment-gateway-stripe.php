@@ -111,9 +111,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 
 			$customer_array = array(
-				'email' => $this->email,
-				'source'  => $_POST['stripeToken'],
-				'description'	=> $this->level_name
+				'email'       => $this->email,
+				'source'      => $_POST['stripeToken'],
+				'description' => $this->level_name
 			);
 
 			$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array );
@@ -151,16 +151,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					$cu->sources->create( array( 'source' => $_POST['stripeToken'] ) );
 				}
 				
-				// if the amount still includes a period, it needs to be formatted for stripe
-				if (strpos($this->amount, '.') !== false) {
-				    $this->amount = number_format( $level['price'], 2, '', '' );
-				}
-
 				$charge_array = array(
-					'customer'	    => $cu->id,
-					'amount'	    => $this->amount,
-					'currency'	    => apply_filters( 'leaky_paywall_stripe_currency', strtolower( $this->currency ) ),
-					'description'	=> $this->level_name,
+					'customer'    => $cu->id,
+					'amount'      => number_format( $this->amount, 2, '', '' ),
+					'currency'    => apply_filters( 'leaky_paywall_stripe_currency', strtolower( $this->currency ) ),
+					'description' => $this->level_name,
 				);
 
 				$charge = Stripe_Charge::create( $charge_array );
