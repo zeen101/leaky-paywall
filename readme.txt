@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.6
-Stable tag: 4.0.2
+Stable tag: 4.0.3
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -74,11 +74,15 @@ You must have:
 
 == Changelog ==
 
+= 4.0.3 =
+* Fix a bug in Stripe onetime payment, causing HUGE payments
+* Fix credit card form display
+* Style updates and code cleanup
+
 = 4.0.2 =
 * Set defaults for visibility metaboxes
 * Fixing bug w/ Stripe cancellations not displaying content if not yet expired
 * Checking for zero based level ID in registration form output w/ LP subscription shortcode
-
 
 = 4.0.1 =
 * Hide dashboard widget from non-admin users
