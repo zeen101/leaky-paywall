@@ -315,7 +315,7 @@ function leaky_paywall_card_form() {
 	  </p>
 
 	  <p class="form-row">
-	    <label><?php printf( __( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></span></label>
+	    <label><?php printf( __( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 	    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
 	  </p>
 
