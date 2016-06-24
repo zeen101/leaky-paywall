@@ -150,6 +150,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				} else {
 					$cu->sources->create( array( 'source' => $_POST['stripeToken'] ) );
 				}
+				
+				// if the amount still includes a period, it needs to be formatted for stripe
+				if (strpos($this->amount, '.') !== false) {
+				    $this->amount = number_format( $level['price'], 2, '', '' );
+				}
 
 				$charge_array = array(
 					'customer'	    => $cu->id,

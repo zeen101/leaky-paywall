@@ -47,4 +47,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 
 	}
 
+	/**
+	 * Add credit card fields
+	 *
+	 * @since 4.0.0
+	 */
+	public function fields() {
+
+	}
+
 }
