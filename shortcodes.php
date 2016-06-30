@@ -397,7 +397,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						
 			if ( false !== $expires = leaky_paywall_has_user_paid() ) {
 				//Your Payment Information
-				$results .= '<h2>' . __( 'Your Payment Information', 'issuem-leaky-paywall' ) . '</h2>';
 				if ( !empty( $_POST['leaky-paywall-profile-stripe-cc-update-nonce'] ) ) {
 					
 					if ( wp_verify_nonce( $_POST['leaky-paywall-profile-stripe-cc-update-nonce'], 'leaky-paywall-profile-stripe-cc-update' ) ) {
@@ -468,48 +467,54 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					$expires = leaky_paywall_has_user_paid( $user->user_email, $site );
 
 					if ( 'subscription' === $expires ) {
+						$payment_form = '';
+						
 						switch( $payment_gateway ) {
 							
 							case 'stripe':
-								$results .= '<h3>' . __( 'Update Credit Card', 'issuem-leaky-paywall' ) . '</h3>';
-								$results .= '<form id="leaky-paywall-update-credit-card" action="" method="post">';
+								$payment_form .= '<h3>' . __( 'Update Credit Card', 'issuem-leaky-paywall' ) . '</h3>';
+								$payment_form .= '<form id="leaky-paywall-update-credit-card" action="" method="post">';
 								
-								$results .= '<p>';
-								$results .= '<label class="lp-field-label" for="leaky-paywall-cc-number">' . __( 'Card Number', 'issuem-leaky-paywall' ) . '</label>';
-								$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-number" name="stripe-cc-number" value="" placeholder="4242 4242 4242 4242" />';
-								$results .= '</p>';
+								$payment_form .= '<p>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-number">' . __( 'Card Number', 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-number" name="stripe-cc-number" value="" placeholder="4242 4242 4242 4242" />';
+								$payment_form .= '</p>';
 		
-								$results .= '<p>';
-								$results .= '<label class="lp-field-label" for="leaky-paywall-cc-expiration">' . __( 'Expiration Date', 'issuem-leaky-paywall' ) . '</label>';
-								$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-exp-month" name="stripe-cc-exp-month" value="" placeholder="' . date_i18n( 'm', strtotime( '+1 Month' ) ) . '" />';
-								$results .= '&nbsp;/&nbsp;';
-								$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-exp-year" name="stripe-cc-exp-year" value="" placeholder="' . date_i18n( 'Y', strtotime( '+1 Year' ) ) . '" />';
-								$results .= '</p>';
+								$payment_form .= '<p>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-expiration">' . __( 'Expiration Date', 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-exp-month" name="stripe-cc-exp-month" value="" placeholder="' . date_i18n( 'm', strtotime( '+1 Month' ) ) . '" />';
+								$payment_form .= '&nbsp;/&nbsp;';
+								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-exp-year" name="stripe-cc-exp-year" value="" placeholder="' . date_i18n( 'Y', strtotime( '+1 Year' ) ) . '" />';
+								$payment_form .= '</p>';
 		
-								$results .= '<p>';
-								$results .= '<label class="lp-field-label" for="leaky-paywall-cc-cvc">' . __( 'Security Code (CVC)', 'issuem-leaky-paywall' ) . '</label>';
-								$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-cvc" name="stripe-cc-cvc" value="" placeholder="777" />';
-								$results .= '</p>';
+								$payment_form .= '<p>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-cvc">' . __( 'Security Code (CVC)', 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-cvc" name="stripe-cc-cvc" value="" placeholder="777" />';
+								$payment_form .= '</p>';
 		
-								$results .= '<p>';
-								$results .= '<label class="lp-field-label" for="leaky-paywall-cc-name">' . __( "Cardholder's Name", 'issuem-leaky-paywall' ) . '</label>';
-								$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-name" name="stripe-cc-name" value="" placeholder="John Doe" />';
-								$results .= '</p>';
+								$payment_form .= '<p>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-name">' . __( "Cardholder's Name", 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-name" name="stripe-cc-name" value="" placeholder="John Doe" />';
+								$payment_form .= '</p>';
 								
-								$results .= wp_nonce_field( 'leaky-paywall-profile-stripe-cc-update', 'leaky-paywall-profile-stripe-cc-update-nonce', true, false );
+								$payment_form .= wp_nonce_field( 'leaky-paywall-profile-stripe-cc-update', 'leaky-paywall-profile-stripe-cc-update-nonce', true, false );
 								
-								$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Update Credit Card Information', 'issuem-leaky-paywall' ) . '"  /></p>'; 
-								$results .= '</form>';
+								$payment_form .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Update Credit Card Information', 'issuem-leaky-paywall' ) . '"  /></p>'; 
+								$payment_form .= '</form>';
 								break;
 								
 							case 'paypal-standard':
 							case 'paypal_standard':
 								$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
 								$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
-								$results .= '<p>' . __( "You can update your payment details through PayPal's website.", 'issuem-leaky-paywall' ) . '</p>';
-								$results .= '<p><a href="' . $paypal_url . '"><img src="https://www.paypalobjects.com/webstatic/en_US/btn/btn_pponly_142x27.png" border="0"></a></p>';
+								$payment_form .= '<p>' . __( "You can update your payment details through PayPal's website.", 'issuem-leaky-paywall' ) . '</p>';
+								$payment_form .= '<p><a href="' . $paypal_url . '"><img src="https://www.paypalobjects.com/webstatic/en_US/btn/btn_pponly_142x27.png" border="0"></a></p>';
 								break;
 						}
+						
+						
+						$results .= '<h2>' . __( 'Your Payment Information', 'issuem-leaky-paywall' ) . '</h2>';
+						$results .= $payment_form;
 						
 						break; //We only want the first match
 					}
