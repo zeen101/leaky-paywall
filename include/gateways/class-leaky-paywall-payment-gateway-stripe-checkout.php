@@ -26,7 +26,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 		$this->email = $_POST['stripeEmail'];
 		$this->level_id = $_POST['custom'];
 
-		$level = get_level_by_level_id( $this->level_id );
+		$level = get_leaky_paywall_subscription_level( $this->level_id );
 
 		$this->level_name  = $level['label'];
 		$this->recurring   = !empty( $level['recurring'] ) ? $level['recurring'] : false;

@@ -597,7 +597,7 @@ function do_leaky_paywall_register_form() {
 			?>
 				</ul>
 			</li>
-			<li><strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> $<?php echo $level['price']; ?></li>
+			<li><strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> $<?php echo number_format( $level['price'], 2 ); ?></li>
 		</ul>
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
@@ -664,7 +664,7 @@ function do_leaky_paywall_register_form() {
 
 		  ?>
 
-		  <input type="hidden" name="level_price" value="<?php echo $level['price']; ?>"/>
+		  <input type="hidden" name="level_price" value="<?php echo number_format( $level['price'], 2 ); ?>"/>
 		  <input type="hidden" name="currency" value="<?php echo $currency; ?>"/>
 		  <input type="hidden" name="description" value="<?php echo $level['label']; ?>"/>
 		  <input type="hidden" name="level_id" value="<?php echo $level_id; ?>"/>

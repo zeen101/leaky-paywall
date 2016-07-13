@@ -97,7 +97,7 @@ function leaky_paywall_process_registration() {
 			'payment_gateway' 	=> $gateway,
 		);
 
-		$level = get_level_by_level_id( $level_id );
+		$level = get_leaky_paywall_subscription_level( $level_id );
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
 		if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {

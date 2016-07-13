@@ -64,7 +64,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-		$level = get_level_by_level_id( $this->level_id );
+		$level = get_leaky_paywall_subscription_level( $this->level_id );
 
 		$cu = false;
 
@@ -322,7 +322,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function fields() {
 
 		$level_id = esc_html( $_GET['level_id'] );
-		$level = get_level_by_level_id( $level_id );
+		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {
 			return;
