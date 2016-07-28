@@ -327,7 +327,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			} else if ( empty( $blog_id ) ) {
 				$sites = array( '' );
 			} else {
-				$sites = array( '_all' );
+				$sites = array( $blog_id );
 			}
 		}
 		
