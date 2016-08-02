@@ -51,15 +51,18 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		// If a search is not being performed, show only the latest users with no paging in order
 		// to avoid expensive count queries.
 		if ( !$usersearch ) {
-			if ( !isset($_REQUEST['orderby']) )
-				$_GET['orderby'] = $_REQUEST['orderby'] = 'created';
-			if ( !isset($_REQUEST['order']) )
+			if ( !isset( $_REQUEST['orderby'] ) ) {
+				$_GET['orderby'] = $_REQUEST['orderby'] = 'ID';
+			}
+			if ( !isset( $_REQUEST['order'] ) ) {
 				$_GET['order'] = $_REQUEST['order'] = 'DESC';
+			}
 			$args['count_total'] = false;
 		}
 
-		if ( !empty( $_REQUEST['orderby'] ) )
+		if ( !empty( $_REQUEST['orderby'] ) ) {
 			$args['orderby'] = $_REQUEST['orderby'];
+		}
 
 		if ( !empty( $_REQUEST['order'] ) )
 			$args['order'] = $_REQUEST['order'];
@@ -95,6 +98,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'susbcriber_id' => __( 'Subscriber ID', 'issuem-leaky-paywall' ),
 			'price'         => __( 'Price', 'issuem-leaky-paywall' ),
 			'plan'          => __( 'Plan', 'issuem-leaky-paywall' ),
+			'created'       => __( 'Created', 'issuem-leaky-paywall' ),
 			'expires'       => __( 'Expires', 'issuem-leaky-paywall' ),
 			'gateway'       => __( 'Gateway', 'issuem-leaky-paywall' ),
 			'status'        => __( 'Status', 'issuem-leaky-paywall' ),
@@ -112,7 +116,6 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'susbcriber_id' => array( 'susbcriber_id', false ),
 			'price'         => array( 'price', false ),
 			'plan'          => array( 'plan', false ),
-			'expires'       => array( 'expires', false ),
 			'gateway'       => array( 'payment_gateway', false ),
 			'status'        => array( 'payment_status', false ),
 		);
@@ -252,6 +255,21 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							}
 							
 							echo "<td $attributes>" . $plan . '</td>';
+						break;
+	
+						case 'created':
+							if ( is_multisite_premium() ) {
+								$created = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_created' . $site, true );
+							} else {
+								$created = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_created', true );
+							}
+							
+							$created = apply_filters( 'do_leaky_paywall_profile_shortcode_created_column', $created, $user, $mode, $site, $level_id );
+							
+							$date_format = get_option( 'date_format' );
+							$created = mysql2date( $date_format, $created );
+							
+							echo "<td $attributes>" . $created . '</td>';
 						break;
 	
 						case 'expires':
