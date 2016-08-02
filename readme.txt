@@ -2,8 +2,8 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
-Tested up to: 4.6
-Stable tag: 4.0.5
+Tested up to: 4.7
+Stable tag: 4.0.6
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,11 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.0.6 =
+* Fix for multisite subsites not showing payment data
+* Adding Created column to subscribers table
+* Fixing default sort order in subscribers table
 
 = 4.0.5 =
 * Update registration form to correctly calculate coupon discounts
