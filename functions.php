@@ -313,7 +313,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		$paid = false;
 		$canceled = false;
 		$expired = false;
-		$sites = array( '' );
+		$sites = array( '' ); //Empty String for non-Multisite, so we cycle through "sites" one time with no $site set
 		if ( is_multisite_premium() ) {
 			if ( is_null( $blog_id ) ){
 				global $blog_id;			
