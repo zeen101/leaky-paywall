@@ -34,7 +34,6 @@ function leaky_paywall_process_registration() {
 	global $user_ID;
 
 	$level_id = isset( $_POST['level_id'] ) ? absint( $_POST['level_id'] ) : false;
-	
 
 	// get the selected payment method
 	if ( ! isset( $_POST['gateway'] ) ) {
@@ -42,7 +41,6 @@ function leaky_paywall_process_registration() {
 	} else {
 		$gateway = sanitize_text_field( $_POST['gateway'] );
 	}
-
 	
 	/** 
 	 * Validate the Form
@@ -57,8 +55,6 @@ function leaky_paywall_process_registration() {
 	// retrieve all error messages, if any
 	$errors = leaky_paywall_errors()->get_error_messages();
 
-
-
 	// only create the user if there are no errors
 	if ( ! empty( $errors ) ) {
 		return;
@@ -66,7 +62,6 @@ function leaky_paywall_process_registration() {
 
 	// create a new user
 	if ( $user_data['need_new'] ) {
-
 		$user_data['id'] = wp_insert_user( array(
 				'user_login'			=> $user_data['login'],
 				'user_pass'				=> $user_data['password'],
@@ -215,50 +210,62 @@ function leaky_paywall_validate_user_data() {
 		$user['last_name']			= sanitize_text_field( $_POST['last_name']);
 		$user['need_new']			= true;
 	} else {
-		$userdata 			= get_userdata( get_current_user_id() );
-		$user['id']			= $userdata->ID;
-		$user['login']		= $userdata->user_login;
-		$user['email']		= $userdata->user_email;
+		$userdata 			      = get_userdata( get_current_user_id() );
+		$user['id']			      = $userdata->ID;
+		$user['login']		      = $userdata->user_login;
+		$user['email']		      = $userdata->user_email;
+		$user['first_name']       = sanitize_text_field( $_POST['first_name']);
+		$user['last_name']        = sanitize_text_field( $_POST['last_name']);
+		$user['password']         = sanitize_text_field( $_POST['password'] );
+		$user['confirm_password'] = sanitize_text_field( $_POST['confirm_password'] );
 		$user['need_new']	= false;
 	}
 
-	if ( $user['need_new'] ) {
+	if ( empty( $user['first_name'] ) ) {
+		// empty first name
+		leaky_paywall_errors()->add( 'firstname_empty', __( 'Please enter your first name', 'leaky_paywall' ), 'register' );
+	}
+	
+	if ( empty( $user['last_name'] ) ) {
+		// empty last name
+		leaky_paywall_errors()->add( 'lastname_empty', __( 'Please enter your last name', 'leaky_paywall' ), 'register' );
+	}
+	
+	if ( ! is_email( $user['email'] ) ) {
+		//invalid email
+		leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky_paywall' ), 'register' );
+	}
+	
+	if ( ! leaky_paywall_validate_username( $user['login'] ) ) {
+		// invalid username
+		leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky_paywall' ), 'register' );
+	}
+	
+	if ( empty( $user['password'] ) ) {
+		// password is empty
+		leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky_paywall' ), 'register' );
+	}
+	
+	if ( $user['password'] !== $user['confirm_password'] ) {
+		// passwords do not match
+		leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky_paywall' ), 'register' );
+	}
 
-		if( empty( $user['first_name'] ) ) {
-			// empty first name
-			leaky_paywall_errors()->add( 'firstname_empty', __( 'Please enter your first name', 'leaky_paywall' ), 'register' );
-		}
-		if( empty( $user['last_name'] ) ) {
-			// empty last name
-			leaky_paywall_errors()->add( 'lastname_empty', __( 'Please enter your last name', 'leaky_paywall' ), 'register' );
-		}
-		if( ! is_email( $user['email'] ) ) {
-			//invalid email
-			leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky_paywall' ), 'register' );
-		}
-		if( email_exists( $user['email'] ) ) {
+	if ( $user['need_new'] ) {
+		
+		if ( email_exists( $user['email'] ) ) {
 			//Email address already registered
 			leaky_paywall_errors()->add( 'email_used', __( 'Email already registered', 'leaky_paywall' ), 'register' );
 		}
-		if( username_exists( $user['login'] ) ) {
+		
+		if ( username_exists( $user['login'] ) ) {
 			// Username already registered
 			leaky_paywall_errors()->add( 'username_unavailable', __( 'Username already taken', 'leaky_paywall' ), 'register' );
 		}
-		if( ! leaky_paywall_validate_username( $user['login'] ) ) {
-			// invalid username
-			leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky_paywall' ), 'register' );
-		}
-		if( empty( $user['login'] ) ) {
+		
+		if ( empty( $user['login'] ) ) {
 			// empty username
 			leaky_paywall_errors()->add( 'username_empty', __( 'Please enter a username', 'leaky_paywall' ), 'register' );
-		}
-		if( empty( $user['password'] ) ) {
-			// password is empty
-			leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky_paywall' ), 'register' );
-		}
-		if( $user['password'] !== $user['confirm_password'] ) {
-			// passwords do not match
-			leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky_paywall' ), 'register' );
 		}
 
 	}

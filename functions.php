@@ -1460,10 +1460,10 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-site">';
 				$return .= '<select id="site" name="levels[' . $row_key . '][site]">';
 		        $return .= '  <option value="all" ' . selected( 'all' === $level['site'], true, false ) . '>' . __( 'All Sites', 'issuem-leaky-paywall' ) . '</option>';
-				$sites = wp_get_sites();
+				$sites = get_sites();
 				foreach( $sites as $site ) {
-					$site_details = get_blog_details( $site['blog_id'] );
-					$return .= '  <option value="' . $site['blog_id'] . '" ' . selected( $site['blog_id'] === $level['site'], true, false ) . '>' . $site_details->blogname . '</option>';
+					$site_details = get_blog_details( $site->id );
+					$return .= '  <option value="' . $site->id . '" ' . selected( $site->id === $level['site'], true, false ) . '>' . $site_details->blogname . '</option>';
 				}
 		        $return .= '</select>';
 				$return .= '</td>';
@@ -1776,67 +1776,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					//Don't show payment options if the users is currently subscribed to this level
 					if ( !in_array( $level_id, $current_level_ids ) ) {
 						$results .= '<div class="leaky_paywall_subscription_payment_options">';
-						
-						if ( !empty( $level['price'] ) ) {
-							if ( empty( $current_level_ids ) ) {
-								//New Account
-								// if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
-								// 	$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
-								// }
-								
-								// if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
-								// 	if ( !empty( $payment_options ) ) {
-								// 		$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
-								// 	}
-								// 	$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
-								// }
-								$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
-							} else {
-								//Upgrade
-								$user = wp_get_current_user();
-								$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-								
-								if ( !empty( $user->ID ) ) {
-									
-									if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
-										$site = '_' . $level['site'];
-									} else {
-										$site = '';
-									}
-									$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );		
-									
-									switch( $payment_gateway ) {
-										
-										case 'stripe':
-											$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
-											break;
-											
-										case 'paypal_standard':
-										case 'paypal-standard':
-											$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
-											break;
-											
-										default:
-											if ( in_array( 'stripe', $settings['payment_gateway'] ) ) {
-												$payment_options .= leaky_paywall_pay_with_stripe( $level, $level_id );
-											}
-											
-											if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
-												if ( !empty( $payment_options ) ) {
-													$payment_options .= '<div class="paypal-description">' . __( 'or pay with PayPal', 'issuem-leaky-paywall' ) . '</div>';
-												}
-												$payment_options .= leaky_paywall_pay_with_paypal_standard( $level, $level_id );
-											}
-											break;
-										
-									}
-									
-									$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
-								}
-							}
-						} else {
-							$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );							
-						}
+						$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
 						$results .= '</div>';
 					} else {
 						$results .= '<div class="leaky_paywall_subscription_current_level">';

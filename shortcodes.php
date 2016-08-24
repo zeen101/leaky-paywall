@@ -570,6 +570,14 @@ function do_leaky_paywall_register_form() {
 	$currency = $settings['leaky_paywall_currency'];
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 
+	$userdata = get_userdata( get_current_user_id() );
+	if ( !empty( $userdata ) ) {
+		$email = $userdata->user_email;
+		$username = $userdata->user_login;
+	} else {
+		$email = '';
+		$username = '';
+	}
 	ob_start();
 
 	// show any error messages after form submission
@@ -619,7 +627,7 @@ function do_leaky_paywall_register_form() {
 			 
 			  <p class="form-row">
 			    <label for="email_address"><?php printf( __( 'Email Address', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="email_address"/>
+			    <input type="text" size="20" name="email_address" value="<?php echo $email; ?>" <?php echo !empty( $email ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
 
 		  </div>
@@ -630,7 +638,7 @@ function do_leaky_paywall_register_form() {
 
 			  <p class="form-row">
 			    <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="username"/>
+			    <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
 
 			  <p class="form-row">

@@ -1109,3 +1109,18 @@ if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
     }
     
 }
+
+if ( !function_exists( 'get_asites' ) ) {
+	
+	function get_asites() {
+	
+		$return = array();
+		$sites = wp_get_sites();
+		foreach( $sites as $site ) {
+			$return[] = (object) array( 'id' => $site['blog_id'] );
+		}
+		return $return;
+	
+	}
+	
+}
