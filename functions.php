@@ -1707,7 +1707,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 				$results .= apply_filters( 'leaky_paywall_before_subscription_options', '' );
 				
 				$results .= '<div class="leaky_paywall_subscription_options">';
-				foreach( $settings['levels'] as $level_id => $level ) {
+				foreach( apply_filters( 'leaky_paywall_subscription_levels', $settings['levels'] ) as $level_id => $level ) {
 					
 					if ( !empty( $level['deleted'] ) )
 						continue;
