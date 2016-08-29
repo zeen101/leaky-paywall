@@ -293,6 +293,7 @@ function leaky_paywall_validate_username( $username = '' ) {
  *
  * @since  4.0.0 
  */
+ if ( !function_exists( 'leaky_paywall_card_form' ) ) { 
 function leaky_paywall_card_form() {
 
 	?>
@@ -329,6 +330,7 @@ function leaky_paywall_card_form() {
 	</div>
 		 
 	<?php 
+}
 }
 
 
