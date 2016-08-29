@@ -361,6 +361,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			  		jQuery('#leaky-paywall-payment-form #leaky-paywall-submit').attr("disabled", false );
 
 			  		// jQuery('#leaky-paywall-registration-form').unblock();
+			  		jQuery(".leaky-paywall-message.error").remove();
 			  		jQuery('#leaky-paywall-submit').before('<div class="leaky-paywall-message error"><p class="leaky-paywall-error"><span>' + response.error.message + '</span></p></div>' );
 
 			  		leaky_paywall_stripe_processing = false;
