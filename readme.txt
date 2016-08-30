@@ -78,6 +78,7 @@ You must have:
 * Deprecating wp_get_sites usage for 4.6.x+
 * Removing upgrade path in favor of already existing functionality
 * Fixing Stripe payment form to handle existing logged in users better
+* Add filter for changing the order of the subscription card levels on the subscribe page
 
 = 4.0.6 =
 * Fix for multisite subsites not showing payment data
