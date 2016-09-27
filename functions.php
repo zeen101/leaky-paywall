@@ -1464,12 +1464,20 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			$return .= '<th>' . __( 'Site', 'issuem-leaky-paywall' ) . '</th>';
 			$return .= '<td id="issuem-leaky-paywall-subsciption-row-' . $row_key . '-site">';
 			$return .= '<select id="site" name="levels[' . $row_key . '][site]">';
-	        $return .= '  <option value="all" ' . selected( 'all', $level['site'], false ) . '>' . __( 'All Sites', 'issuem-leaky-paywall' ) . '</option>';
-			$sites = get_sites();
-			foreach( $sites as $site ) {
-				$site_details = get_blog_details( $site->id );
-				$return .= '  <option value="' . $site->id . '" ' . selected( $site->id, $level['site'], false ) . '>' . $site_details->blogname . '</option>';
+
+			if ( is_super_admin() ) {
+		        $return .= '<option value="all" ' . selected( 'all', $level['site'], false ) . '>' . __( 'All Sites', 'issuem-leaky-paywall' ) . '</option>';
+				$sites = get_sites();
+				foreach( $sites as $site ) {
+					$site_details = get_blog_details( $site->id );
+					$return .= '<option value="' . $site->id . '" ' . selected( $site->id, $level['site'], false ) . '>' . $site_details->blogname . '</option>';
+				}
+			} else {
+				$site_details = get_blog_details( get_current_blog_id() );
+				$return .= '<option value="' . get_current_blog_id() . '" ' . selected( get_current_blog_id(), $level['site'], false ) . '>' . $site_details->blogname . '</option>';
 			}
+
+	       
 	        $return .= '</select>';
 			$return .= '</td>';
 			$return .= '</tr>';
