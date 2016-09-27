@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.7
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,11 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.1.1 =
+* Show only sites in leaky paywall settings to super admins only
+* Fixing bug causing deleted plans to permanently delete, instead of just being marked as deleted
+* Update level site settings so the chosen site is selected in the dropdown after saving the plugin settings
 
 = 4.1.0 =
 * Deprecating wp_get_sites usage for 4.6.x+
