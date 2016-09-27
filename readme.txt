@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.7
-Stable tag: 4.0.6
+Stable tag: 4.1.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,12 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.1.0 =
+* Deprecating wp_get_sites usage for 4.6.x+
+* Removing upgrade path in favor of already existing functionality
+* Fixing Stripe payment form to handle existing logged in users better
+* Add filter for changing the order of the subscription card levels on the subscribe page
 
 = 4.0.6 =
 * Fix for multisite subsites not showing payment data
