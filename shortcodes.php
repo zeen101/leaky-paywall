@@ -378,12 +378,12 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 
 			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'Password', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'New Password', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-password1" name="password1" value="" />';
 			$results .= '</p>';
 
 			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'Password (again)', 'issuem-leaky-paywall' ) . '</label>';
+			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'New Password (again)', 'issuem-leaky-paywall' ) . '</label>';
 			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-gift-subscription-password2" name="password2" value="" />';
 			$results .= '</p>';
 			
