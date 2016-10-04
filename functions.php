@@ -2101,7 +2101,7 @@ if ( !function_exists( 'leaky_paywall_supported_currencies' ) ) {
 			'HUF' => array( 'symbol' => 'Ft', 'label' => __( 'Hungarian forint', 'issuem-leaky-paywall' ) ),
 			'IDR' => array( 'symbol' => 'Rp', 'label' => __( 'Indonesian rupiah', 'issuem-leaky-paywall' ) ),
 			'ILS' => array( 'symbol' => '&#8362;', 'label' => __( 'Israeli new sheqel', 'issuem-leaky-paywall' ) ),
-			'INR' => array( 'symbol' => '&#8329;', 'label' => __( 'Indian rupee', 'issuem-leaky-paywall' ) ),
+			'INR' => array( 'symbol' => '&#8377;', 'label' => __( 'Indian rupee', 'issuem-leaky-paywall' ) ),
 			'ISK' => array( 'symbol' => 'kr', 'label' => __( 'Icelandic króna', 'issuem-leaky-paywall' ) ),
 			'JMD' => array( 'symbol' => 'J$', 'label' => __( 'Jamaican dollar', 'issuem-leaky-paywall' ) ),
 			'JPY' => array( 'symbol' => '&#165;', 'label' => __( 'Japanese yen', 'issuem-leaky-paywall' ) ),
