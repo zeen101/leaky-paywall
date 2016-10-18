@@ -64,7 +64,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-button="subscribe" 
 						data-no_note="1" 
 						data-no_shipping="1" 
-						data-custom="' . esc_js( $user_email ) . '-' . esc_js( $level_id ) . '"
+						data-custom="' . esc_js( $user_email ) . '"
 					></script>';
 											
 	} else {
@@ -85,7 +85,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-no_note="1" 
 						data-no_shipping="1" 
 						data-shipping="0" 
-						data-custom="' . esc_js( $user_email ) . '-' . esc_js( $level_id ) . '"
+						data-custom="' . esc_js( $user_email ) . '"
 					></script>';
 	
 	}

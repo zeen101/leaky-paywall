@@ -230,7 +230,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			if ( !empty( $_REQUEST['txn_type'] ) ) {
 			    
 				$args= array(
-					'level_id' 			=> isset( $_REQUEST['item_number'] ) ? $_REQUEST['item_number'] : $_REQUEST['custom'], //should be universal for all PayPal IPNs we're capturing
+					'level_id' 		=> $_REQUEST['item_number'], //should be universal for all PayPal IPNs we're capturing
 					'description' 		=> $_REQUEST['item_name'], //should be universal for all PayPal IPNs we're capturing
 					'payment_gateway' 	=> 'paypal_standard',
 				);
