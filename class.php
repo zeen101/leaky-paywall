@@ -2076,7 +2076,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				?>
 				<div id="missing-paypal-settings" class="update-nag">
 					<?php
-					$settings_link = esc_url( add_query_arg( array( 'page' => 'issuem-leaky-paywall' ), admin_url( 'admin.php' ) ) );
+					$settings_link = esc_url( add_query_arg( array( 'page' => 'issuem-leaky-paywall', 'tab' => 'payments' ), admin_url( 'admin.php' ) ) );
 					printf( __( 'You must complete your PayPal setup to continue using the Leaky Paywall Plugin. %s.', 'issuem-leaky-paywall' ), '<a class="btn" href="' . $settings_link . '">' . __( 'Complete Your Setup Now', 'issuem-leaky-paywall' ) . '</a>' );
 					?>
 				</div>
