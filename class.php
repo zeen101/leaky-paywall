@@ -622,7 +622,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		}
 		
 		/**
-		 * Create and Display IssueM settings page
+		 * Create and Display Leaky Paywall settings page
 		 *
 		 * @since 1.0.0
 		 */
@@ -632,133 +632,168 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$settings = $this->get_settings();
 			$settings_saved = false;
 
+			if(isset($_GET['tab'])) {
+				$tab = $_GET['tab'];
+			} else if ( $_GET['page'] == 'issuem-leaky-paywall' ) {
+				$tab = 'general';
+			} else {
+				$tab = "";
+			}
+
+			$settings_tabs = array( 'general', 'subscriptions', 'payments', 'emails', 'licenses' );
+
+
 			if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) ) {
+
+				if ( $tab == 'general' ) {
+
+					if ( !empty( $_REQUEST['site_wide_enabled'] ) ) {
+						update_site_option( 'issuem-leaky-paywall-site-wide', true );
+					} else {
+						update_site_option( 'issuem-leaky-paywall-site-wide', false );
+					}
+
+					if ( !empty( $_REQUEST['page_for_login'] ) )
+						$settings['page_for_login'] = $_REQUEST['page_for_login'];
+						
+					if ( !empty( $_REQUEST['page_for_subscription'] ) )
+						$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
+
+					if ( !empty( $_REQUEST['page_for_register'] ) )
+						$settings['page_for_register'] = $_REQUEST['page_for_register'];
+
+					if ( !empty( $_REQUEST['page_for_after_subscribe'] ) )
+						$settings['page_for_after_subscribe'] = $_REQUEST['page_for_after_subscribe'];
+						
+					if ( !empty( $_REQUEST['page_for_profile'] ) )
+						$settings['page_for_profile'] = $_REQUEST['page_for_profile'];
+						
+					if ( !empty( $_REQUEST['login_method'] ) )
+						$settings['login_method'] = $_REQUEST['login_method'];
+
+					if ( !empty( $_REQUEST['subscribe_login_message'] ) )
+						$settings['subscribe_login_message'] = trim( $_REQUEST['subscribe_login_message'] );
+						
+					if ( !empty( $_REQUEST['subscribe_upgrade_message'] ) )
+						$settings['subscribe_upgrade_message'] = trim( $_REQUEST['subscribe_upgrade_message'] );
+						
+					if ( !empty( $_REQUEST['css_style'] ) )
+						$settings['css_style'] = $_REQUEST['css_style'];
+				}
 										
-				if ( !empty( $_REQUEST['page_for_login'] ) )
-					$settings['page_for_login'] = $_REQUEST['page_for_login'];
-					
-				if ( !empty( $_REQUEST['page_for_subscription'] ) )
-					$settings['page_for_subscription'] = $_REQUEST['page_for_subscription'];
-
-				if ( !empty( $_REQUEST['page_for_register'] ) )
-					$settings['page_for_register'] = $_REQUEST['page_for_register'];
-
-				if ( !empty( $_REQUEST['page_for_after_subscribe'] ) )
-					$settings['page_for_after_subscribe'] = $_REQUEST['page_for_after_subscribe'];
-					
-				if ( !empty( $_REQUEST['page_for_profile'] ) )
-					$settings['page_for_profile'] = $_REQUEST['page_for_profile'];
-					
-				if ( !empty( $_REQUEST['login_method'] ) )
-					$settings['login_method'] = $_REQUEST['login_method'];
 				
-				if ( !empty( $_REQUEST['post_types'] ) )
-					$settings['post_types'] = $_REQUEST['post_types'];
-					
-				if ( isset( $_REQUEST['free_articles'] ) )
-					$settings['free_articles'] = trim( $_REQUEST['free_articles'] );
-					
-				if ( !empty( $_REQUEST['site_name'] ) )
-					$settings['site_name'] = trim( $_REQUEST['site_name'] );
-					
-				if ( !empty( $_REQUEST['from_name'] ) )
-					$settings['from_name'] = trim( $_REQUEST['from_name'] );
-					
-				if ( !empty( $_REQUEST['from_email'] ) )
-					$settings['from_email'] = trim( $_REQUEST['from_email'] );
+				if ( $tab == 'emails' ) {
 
-				if ( !empty( $_REQUEST['new_email_subject'] ) )
-					$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
+					if ( !empty( $_REQUEST['site_name'] ) )
+						$settings['site_name'] = trim( $_REQUEST['site_name'] );
 
-				if ( !empty( $_REQUEST['new_email_body'] ) )
-					$settings['new_email_body'] = trim( $_REQUEST['new_email_body'] );
-					
-				if ( !empty( $_REQUEST['cookie_expiration'] ) )
-					$settings['cookie_expiration'] = trim( $_REQUEST['cookie_expiration'] );
-					
-				if ( !empty( $_REQUEST['cookie_expiration_interval'] ) )
-					$settings['cookie_expiration_interval'] = trim( $_REQUEST['cookie_expiration_interval'] );
+					if ( !empty( $_REQUEST['from_name'] ) )
+						$settings['from_name'] = trim( $_REQUEST['from_name'] );
+						
+					if ( !empty( $_REQUEST['from_email'] ) )
+						$settings['from_email'] = trim( $_REQUEST['from_email'] );
 
-				if ( !empty( $_REQUEST['leaky_paywall_currency'] ) )
-					$settings['leaky_paywall_currency'] = trim( $_REQUEST['leaky_paywall_currency'] );
-					
-				if ( !empty( $_REQUEST['restrict_pdf_downloads'] ) )
-					$settings['restrict_pdf_downloads'] = $_REQUEST['restrict_pdf_downloads'];
-				else
-					$settings['restrict_pdf_downloads'] = 'off';
-					
-				if ( !empty( $_REQUEST['subscribe_login_message'] ) )
-					$settings['subscribe_login_message'] = trim( $_REQUEST['subscribe_login_message'] );
-					
-				if ( !empty( $_REQUEST['subscribe_upgrade_message'] ) )
-					$settings['subscribe_upgrade_message'] = trim( $_REQUEST['subscribe_upgrade_message'] );
-					
-				if ( !empty( $_REQUEST['css_style'] ) )
-					$settings['css_style'] = $_REQUEST['css_style'];
-					
-				if ( !empty( $_REQUEST['test_mode'] ) )
-					$settings['test_mode'] = $_REQUEST['test_mode'];
-				else
-					$settings['test_mode'] = apply_filters( 'zeen101_demo_test_mode', 'off' );
-					
-				if ( !empty( $_REQUEST['payment_gateway'] ) )
-					$settings['payment_gateway'] = $_REQUEST['payment_gateway'];
-				else
-					$settings['payment_gateway'] = array( 'stripe' );
-					
-				if ( !empty( $_REQUEST['live_secret_key'] ) )
-					$settings['live_secret_key'] = apply_filters( 'zeen101_demo_stripe_live_secret_key', trim( $_REQUEST['live_secret_key'] ) );
-					
-				if ( !empty( $_REQUEST['live_publishable_key'] ) )
-					$settings['live_publishable_key'] = apply_filters( 'zeen101_demo_stripe_live_publishable_key', trim( $_REQUEST['live_publishable_key'] ) );
-					
-				if ( !empty( $_REQUEST['test_secret_key'] ) )
-					$settings['test_secret_key'] = apply_filters( 'zeen101_demo_stripe_test_secret_key', trim( $_REQUEST['test_secret_key'] ) );
-					
-				if ( !empty( $_REQUEST['test_publishable_key'] ) )
-					$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', trim( $_REQUEST['test_publishable_key'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_live_email'] ) )
-					$settings['paypal_live_email'] = apply_filters( 'zeen101_demo_paypal_live_email', trim( $_REQUEST['paypal_live_email'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_live_api_username'] ) )
-					$settings['paypal_live_api_username'] = apply_filters( 'zeen101_demo_paypal_live_api_username', trim( $_REQUEST['paypal_live_api_username'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_live_api_password'] ) )
-					$settings['paypal_live_api_password'] = apply_filters( 'zeen101_demo_paypal_live_api_password', trim( $_REQUEST['paypal_live_api_password'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_live_api_secret'] ) )
-					$settings['paypal_live_api_secret'] = apply_filters( 'zeen101_demo_paypal_live_api_secret', trim( $_REQUEST['paypal_live_api_secret'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_sand_email'] ) )
-					$settings['paypal_sand_email'] = apply_filters( 'zeen101_demo_paypal_sand_email', trim( $_REQUEST['paypal_sand_email'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_sand_api_username'] ) )
-					$settings['paypal_sand_api_username'] = apply_filters( 'zeen101_demo_paypal_sand_api_username', trim( $_REQUEST['paypal_sand_api_username'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_sand_api_password'] ) )
-					$settings['paypal_sand_api_password'] = apply_filters( 'zeen101_demo_paypal_sand_api_password', trim( $_REQUEST['paypal_sand_api_password'] ) );
-					
-				if ( !empty( $_REQUEST['paypal_sand_api_secret'] ) )
-					$settings['paypal_sand_api_secret'] = apply_filters( 'zeen101_demo_paypal_sand_api_secret', trim( $_REQUEST['paypal_sand_api_secret'] ) );
-				
-				if ( !empty( $_REQUEST['restrictions'] ) )
-					$settings['restrictions'] = $_REQUEST['restrictions'];
-				else
-					$settings['restrictions'] = array();
-					
-				if ( !empty( $_REQUEST['levels'] ) ) {
-					$settings['levels'] = $_REQUEST['levels'];
-				} else {
-					$settings['levels'] = array();
+					if ( !empty( $_REQUEST['new_email_subject'] ) )
+						$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
+
+					if ( !empty( $_REQUEST['new_email_body'] ) )
+						$settings['new_email_body'] = trim( $_REQUEST['new_email_body'] );
+
 				}
 
-				if ( !empty( $_REQUEST['site_wide_enabled'] ) ) {
-					update_site_option( 'issuem-leaky-paywall-site-wide', true );
-				} else {
-					update_site_option( 'issuem-leaky-paywall-site-wide', false );
-				}
+					
 				
+					
+				
+				
+				if ( $tab == 'subscriptions' ) {
+
+					if ( !empty( $_REQUEST['post_types'] ) )
+						$settings['post_types'] = $_REQUEST['post_types'];
+						
+					if ( isset( $_REQUEST['free_articles'] ) )
+						$settings['free_articles'] = trim( $_REQUEST['free_articles'] );
+
+					if ( !empty( $_REQUEST['cookie_expiration'] ) )
+						$settings['cookie_expiration'] = trim( $_REQUEST['cookie_expiration'] );
+						
+					if ( !empty( $_REQUEST['cookie_expiration_interval'] ) )
+						$settings['cookie_expiration_interval'] = trim( $_REQUEST['cookie_expiration_interval'] );
+
+					if ( !empty( $_REQUEST['restrict_pdf_downloads'] ) )
+						$settings['restrict_pdf_downloads'] = $_REQUEST['restrict_pdf_downloads'];
+					else
+						$settings['restrict_pdf_downloads'] = 'off';
+
+
+					if ( !empty( $_REQUEST['restrictions'] ) ) {
+						$settings['restrictions'] = $_REQUEST['restrictions'];
+					} else {
+						$settings['restrictions'] = array();
+					}
+
+					if ( !empty( $_REQUEST['levels'] ) ) {
+						$settings['levels'] = $_REQUEST['levels'];
+					} 
+
+				}
+
+				if ( $tab == 'payments' ) {
+
+					if ( !empty( $_REQUEST['test_mode'] ) )
+						$settings['test_mode'] = $_REQUEST['test_mode'];
+					else
+						$settings['test_mode'] = apply_filters( 'zeen101_demo_test_mode', 'off' );
+						
+					if ( !empty( $_REQUEST['payment_gateway'] ) )
+						$settings['payment_gateway'] = $_REQUEST['payment_gateway'];
+					else
+						$settings['payment_gateway'] = array( 'stripe' );
+						
+					if ( !empty( $_REQUEST['live_secret_key'] ) )
+						$settings['live_secret_key'] = apply_filters( 'zeen101_demo_stripe_live_secret_key', trim( $_REQUEST['live_secret_key'] ) );
+						
+					if ( !empty( $_REQUEST['live_publishable_key'] ) )
+						$settings['live_publishable_key'] = apply_filters( 'zeen101_demo_stripe_live_publishable_key', trim( $_REQUEST['live_publishable_key'] ) );
+						
+					if ( !empty( $_REQUEST['test_secret_key'] ) )
+						$settings['test_secret_key'] = apply_filters( 'zeen101_demo_stripe_test_secret_key', trim( $_REQUEST['test_secret_key'] ) );
+						
+					if ( !empty( $_REQUEST['test_publishable_key'] ) )
+						$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', trim( $_REQUEST['test_publishable_key'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_live_email'] ) )
+						$settings['paypal_live_email'] = apply_filters( 'zeen101_demo_paypal_live_email', trim( $_REQUEST['paypal_live_email'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_live_api_username'] ) )
+						$settings['paypal_live_api_username'] = apply_filters( 'zeen101_demo_paypal_live_api_username', trim( $_REQUEST['paypal_live_api_username'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_live_api_password'] ) )
+						$settings['paypal_live_api_password'] = apply_filters( 'zeen101_demo_paypal_live_api_password', trim( $_REQUEST['paypal_live_api_password'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_live_api_secret'] ) )
+						$settings['paypal_live_api_secret'] = apply_filters( 'zeen101_demo_paypal_live_api_secret', trim( $_REQUEST['paypal_live_api_secret'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_sand_email'] ) )
+						$settings['paypal_sand_email'] = apply_filters( 'zeen101_demo_paypal_sand_email', trim( $_REQUEST['paypal_sand_email'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_sand_api_username'] ) )
+						$settings['paypal_sand_api_username'] = apply_filters( 'zeen101_demo_paypal_sand_api_username', trim( $_REQUEST['paypal_sand_api_username'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_sand_api_password'] ) )
+						$settings['paypal_sand_api_password'] = apply_filters( 'zeen101_demo_paypal_sand_api_password', trim( $_REQUEST['paypal_sand_api_password'] ) );
+						
+					if ( !empty( $_REQUEST['paypal_sand_api_secret'] ) )
+						$settings['paypal_sand_api_secret'] = apply_filters( 'zeen101_demo_paypal_sand_api_secret', trim( $_REQUEST['paypal_sand_api_secret'] ) );
+
+					if ( !empty( $_REQUEST['leaky_paywall_currency'] ) )
+						$settings['leaky_paywall_currency'] = trim( $_REQUEST['leaky_paywall_currency'] );
+						
+
+				}
+					
+				
+
 				$settings = apply_filters( 'leaky_paywall_update_settings_settings', $settings );
 				
 				$this->update_settings( $settings );
@@ -771,7 +806,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			if ( $settings_saved ) {
 				
 				// update settings notification ?>
-				<div class="updated"><p><strong><?php _e( "zeen101's Leaky Paywall Settings Updated.", 'issuem-leaky-paywall' );?></strong></p></div>
+				<div class="updated"><p><strong><?php _e( "Settings Updated", 'issuem-leaky-paywall' );?></strong></p></div>
 				<?php
 				
 			}
@@ -785,8 +820,33 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
             
                 <form id="issuem" method="post" action="">
             
-                    <h2 style='margin-bottom: 10px;' ><?php _e( "zeen101's Leaky Paywall Settings", 'issuem-leaky-paywall' ); ?></h2>
+                    <h1 style='margin-bottom: 2px;' ><?php _e( "Leaky Paywall", 'issuem-leaky-paywall' ); ?></h1>
+
+                    	<?php 
+                    	if ( in_array($tab, $settings_tabs) )
+                    		{
+                    		?>
+                    		<h2 class="nav-tab-wrapper" style="margin-bottom: 10px;">
+                    			
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall');?>" class="nav-tab<?php if($tab == 'general') { ?> nav-tab-active<?php } ?>"><?php _e('General', 'issuem-leaky-paywall');?></a>
+
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=subscriptions');?>" class="nav-tab<?php if($tab == 'subscriptions') { ?> nav-tab-active<?php } ?>"><?php _e('Subscriptions', 'issuem-leaky-paywall');?></a>
+                    				
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=payments');?>" class="nav-tab<?php if($tab == 'payments') { ?> nav-tab-active<?php } ?>"><?php _e('Payments', 'issuem-leaky-paywall');?></a>
+
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=emails');?>" class="nav-tab<?php if($tab == 'emails') { ?> nav-tab-active<?php } ?>"><?php _e('Emails', 'issuem-leaky-paywall');?></a>
+
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=licenses');?>" class="nav-tab<?php if($tab == 'licenses') { ?> nav-tab-active<?php } ?>"><?php _e('Licenses', 'issuem-leaky-paywall');?></a>
+                    			
+                    		</h2>
+                    	<?php } // endif ?>
   		
+						
+
+						<?php if ( $tab == 'general' ) : ?>
+  		
+						<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+
 						<?php if ( is_multisite_premium() && is_super_admin() ) { ?>
   		
 						<div id="site-wide-option" class="postbox">
@@ -815,8 +875,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    </div>
   		
 						<?php } ?>
-  		
-						<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
 	                    
 	                    <div id="modules" class="postbox">
 	                    
@@ -859,6 +917,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s. This page displays the account information for subscribers.', 'issuem-leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
 	                                </td>
 	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'After Subscribe Page', 'issuem-leaky-paywall' ); ?></th>
+	                                <td>
+									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
+	                                <p class="description"><?php _e( 'Page to redirect to after a user subscribes', 'issuem-leaky-paywall' ); ?></p>
+	                                </td>
+	                            </tr>
 	                           
 	                        	<tr>
 	                                <th><?php _e( 'Subscribe or Login Message', 'issuem-leaky-paywall' ); ?></th>
@@ -890,14 +956,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                </td>
 	                            </tr>
 
-	                            <tr>
-	                                <th><?php _e( 'After Subscribe Page', 'issuem-leaky-paywall' ); ?></th>
-	                                <td>
-									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
-	                                <p class="description"><?php _e( 'Page to redirect to after a user subscribes', 'issuem-leaky-paywall' ); ?></p>
-	                                </td>
-	                            </tr>
-	                            
 	                        </table>
 	                                                                          
 	                        <p class="submit">
@@ -907,6 +965,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </div>
 	                        
 	                    </div>
+
+	                    <?php endif; ?>
+
+	                    <?php if ( $tab == 'emails' ) : ?>
 	                    
 	                    <div id="modules" class="postbox">
 	                    
@@ -960,6 +1022,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </div>
 	                        
 	                    </div>
+
+	                    <?php endif; ?>
+
+	                    <?php if ( $tab == 'payments' ) : ?>
 	                                        
 	                    <div id="modules" class="postbox leaky-paywall-gateway-settings">
 	                    
@@ -1183,7 +1249,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                
 			            </div>
 
-	                    <?php // end currency options ?>
+	                    <?php endif; // payment tabs ?>
+
+
+	                    <?php if ( $tab == 'subscriptions' ) : ?>
 	                    
 	                    <div id="modules" class="postbox leaky-paywall-restriction-settings">
 	                    
@@ -1274,6 +1343,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	
 								<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
 	                        	<?php 
+
+	                        	// echo '<pre>';
+	                        	// print_r( $settings );
+	                        	// echo '</pre>';
+
 	                        	$last_key = -1;
 	                        	if ( !empty( $settings['levels'] ) ) {             		
 
@@ -1324,14 +1398,33 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </div>
 	                        
 	                    </div>
+
+	                   
+
+	                     
+
+	                    <?php endif; ?>
+
+	                     <?php if ( $tab == 'licenses' ) : ?>
+
+	                    	<h2>Licenses could go here <a href="#">Buy our add-ons</a></h2>
+
+	                    	<?php  do_action( 'leaky_paywall_settings_form', $settings ); ?>
+
+	                    <?php endif; ?>
 	                    
-	                    <?php  do_action( 'leaky_paywall_settings_form', $settings ); ?>
+	                   
                     
                 </form>
+
+
                 
             </div>
+
             </div>
+
             </div>
+             <h3>Anvil add in the sidebar</h3>
 			</div>
 			<?php
 			
