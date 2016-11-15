@@ -1930,11 +1930,41 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 	
 		if ( 1 < $interval_count )
 			$interval .= 's';
+
+		switch ( $interval ) {
+			case 'day':
+				$interval_str = __( 'day', 'leaky-paywall' );
+			break;
+			case 'days':
+				$interval_str = __( 'days', 'leaky-paywall' );
+			break;
+			case 'week':
+				$interval_str = __( 'week', 'leaky-paywall' );
+			break;
+			case 'weeks':
+				$interval_str = __( 'weeks', 'leaky-paywall' );
+			break;
+			case 'month':
+				$interval_str = __( 'month', 'leaky-paywall' );
+			break;
+			case 'months':
+				$interval_str = __( 'months', 'leaky-paywall' );
+			break;
+			case 'year':
+				$interval_str = __( 'year', 'leaky-paywall' );
+			break;
+			case 'years':
+				$interval_str = __( 'years', 'leaky-paywall' );
+			break;
+			default:
+				$interval_str = $interval;
+			break;
+		}
 		
 		if ( 1 == $interval_count )
-			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval;
+			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_str;
 		else
-			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval;
+			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval_str;
 		
 	}
 }
