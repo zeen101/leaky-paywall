@@ -1424,7 +1424,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
             </div>
 
             </div>
-             <h3>Anvil add in the sidebar</h3>
+             <div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
+				<a target="_blank" href="https://anvil.pub/"><img width="300" src="http://howto.pub/wp-content/uploads/2016/08/anvil-sidebar-ad.jpg" alt="Anvil"></a>
+             </div>
 			</div>
 			<?php
 			
