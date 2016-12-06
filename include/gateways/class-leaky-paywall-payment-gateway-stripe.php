@@ -176,6 +176,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$customer_id = $cu->id;
 
+		// @todo: if for some reason the customer id is empty at this point, we need to bail and not create a user
+
 		$meta_args = array(
 			'level_id'			=> $this->level_id,
 			'subscriber_id' 	=> $customer_id,
