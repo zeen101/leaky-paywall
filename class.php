@@ -967,6 +967,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                    <?php do_action('leaky_paywall_after_general_settings'); ?>
 
+	                    <?php do_action( 'leaky_paywall_settings_form', $settings ); // here for backwards compatibility ?>
+
 	                    <p class="submit">
                             <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
                         </p>
@@ -1421,8 +1423,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<h2>Licenses could go here <a href="#">Buy our add-ons</a></h2>
 
 	                    	<?php do_action('leaky_paywall_after_licenses_settings'); ?>
-
-	                    	<?php do_action( 'leaky_paywall_settings_form', $settings ); ?>
 
 	                    <?php endif; ?>
 
