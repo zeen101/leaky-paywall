@@ -829,20 +829,22 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                     		?>
                     		<h2 class="nav-tab-wrapper" style="margin-bottom: 10px;">
                     			
-                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall');?>" class="nav-tab<?php if($tab == 'general') { ?> nav-tab-active<?php } ?>"><?php _e('General', 'issuem-leaky-paywall');?></a>
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall');?>" class="nav-tab<?php if($current_tab == 'general') { ?> nav-tab-active<?php } ?>"><?php _e('General', 'issuem-leaky-paywall');?></a>
 
-                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=subscriptions');?>" class="nav-tab<?php if($tab == 'subscriptions') { ?> nav-tab-active<?php } ?>"><?php _e('Subscriptions', 'issuem-leaky-paywall');?></a>
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=subscriptions');?>" class="nav-tab<?php if($current_tab == 'subscriptions') { ?> nav-tab-active<?php } ?>"><?php _e('Subscriptions', 'issuem-leaky-paywall');?></a>
                     				
-                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=payments');?>" class="nav-tab<?php if($tab == 'payments') { ?> nav-tab-active<?php } ?>"><?php _e('Payments', 'issuem-leaky-paywall');?></a>
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=payments');?>" class="nav-tab<?php if($current_tab == 'payments') { ?> nav-tab-active<?php } ?>"><?php _e('Payments', 'issuem-leaky-paywall');?></a>
 
-                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=emails');?>" class="nav-tab<?php if($tab == 'emails') { ?> nav-tab-active<?php } ?>"><?php _e('Emails', 'issuem-leaky-paywall');?></a>
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=emails');?>" class="nav-tab<?php if($current_tab == 'emails') { ?> nav-tab-active<?php } ?>"><?php _e('Emails', 'issuem-leaky-paywall');?></a>
 
-                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=licenses');?>" class="nav-tab<?php if($tab == 'licenses') { ?> nav-tab-active<?php } ?>"><?php _e('Licenses', 'issuem-leaky-paywall');?></a>
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=licenses');?>" class="nav-tab<?php if($current_tab == 'licenses') { ?> nav-tab-active<?php } ?>"><?php _e('Licenses', 'issuem-leaky-paywall');?></a>
+
+                    			<?php do_action( 'leaky_paywall_settings_tabs_links', $current_tab ); ?>
                     			
                     		</h2>
                     	<?php } // endif ?>
   		
-						
+						<?php do_action('leaky_paywall_before_settings', $current_tab ); ?>
 
 						<?php if ( $current_tab == 'general' ) : ?>
 
@@ -1420,7 +1422,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                     	<?php do_action('leaky_paywall_before_licenses_settings'); ?>
 
-	                    	<h2>Licenses could go here <a href="#">Buy our add-ons</a></h2>
+	                    	<h2><a href="https://zeen101.com/for-developers/leaky-paywall-add-ons/">Find out more about our add-ons</a></h2>
 
 	                    	<?php do_action('leaky_paywall_after_licenses_settings'); ?>
 
