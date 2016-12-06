@@ -637,15 +637,16 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			} else if ( $_GET['page'] == 'issuem-leaky-paywall' ) {
 				$tab = 'general';
 			} else {
-				$tab = "";
+				$tab = '';
 			}
 
-			$settings_tabs = array( 'general', 'subscriptions', 'payments', 'emails', 'licenses' );
+			$settings_tabs = apply_filters('leaky_paywall_settings_tabs', array( 'general', 'subscriptions', 'payments', 'emails', 'licenses' ) );
 
+			$current_tab = apply_filters( 'leaky_paywall_current_tab', $tab, $settings_tabs );
 
 			if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) ) {
 
-				if ( $tab == 'general' ) {
+				if ( $current_tab == 'general' ) {
 
 					if ( !empty( $_REQUEST['site_wide_enabled'] ) ) {
 						update_site_option( 'issuem-leaky-paywall-site-wide', true );
@@ -682,7 +683,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				}
 										
 				
-				if ( $tab == 'emails' ) {
+				if ( $current_tab == 'emails' ) {
 
 					if ( !empty( $_REQUEST['site_name'] ) )
 						$settings['site_name'] = trim( $_REQUEST['site_name'] );
@@ -706,7 +707,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				
 				
-				if ( $tab == 'subscriptions' ) {
+				if ( $current_tab == 'subscriptions' ) {
 
 					if ( !empty( $_REQUEST['post_types'] ) )
 						$settings['post_types'] = $_REQUEST['post_types'];
@@ -738,7 +739,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 				}
 
-				if ( $tab == 'payments' ) {
+				if ( $current_tab == 'payments' ) {
 
 					if ( !empty( $_REQUEST['test_mode'] ) )
 						$settings['test_mode'] = $_REQUEST['test_mode'];
@@ -823,7 +824,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                     <h1 style='margin-bottom: 2px;' ><?php _e( "Leaky Paywall", 'issuem-leaky-paywall' ); ?></h1>
 
                     	<?php 
-                    	if ( in_array($tab, $settings_tabs) )
+                    	if ( in_array($current_tab, $settings_tabs) )
                     		{
                     		?>
                     		<h2 class="nav-tab-wrapper" style="margin-bottom: 10px;">
@@ -843,9 +844,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
   		
 						
 
-						<?php if ( $tab == 'general' ) : ?>
-  		
-						<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+						<?php if ( $current_tab == 'general' ) : ?>
+
+						<?php do_action('leaky_paywall_before_general_settings'); ?>
 
 						<?php if ( is_multisite_premium() && is_super_admin() ) { ?>
   		
@@ -956,19 +957,25 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                </td>
 	                            </tr>
 
+	                            <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
+
 	                        </table>
-	                                                                          
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
-	
+                                               
 	                        </div>
 	                        
 	                    </div>
 
+	                    <?php do_action('leaky_paywall_after_general_settings'); ?>
+
+	                    <p class="submit">
+                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+
 	                    <?php endif; ?>
 
-	                    <?php if ( $tab == 'emails' ) : ?>
+	                    <?php if ( $current_tab == 'emails' ) : ?>
+
+	                    <?php do_action('leaky_paywall_before_email_settings'); ?>
 	                    
 	                    <div id="modules" class="postbox">
 	                    
@@ -1012,20 +1019,26 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
 	                                </td>
 	                            </tr>
+
+	                            <?php wp_nonce_field( 'issuem_leaky_email_options', 'issuem_leaky_email_options_nonce' ); ?>
 	                            
 	                        </table>
 	                        
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
-	
 	                        </div>
 	                        
 	                    </div>
 
+	                    <?php do_action('leaky_paywall_after_email_settings'); ?>
+
+	                    <p class="submit">
+                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
+
 	                    <?php endif; ?>
 
-	                    <?php if ( $tab == 'payments' ) : ?>
+	                    <?php if ( $current_tab == 'payments' ) : ?>
+
+	                    <?php do_action('leaky_paywall_before_payments_settings'); ?>
 	                                        
 	                    <div id="modules" class="postbox leaky-paywall-gateway-settings">
 	                    
@@ -1036,6 +1049,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <div class="inside">
 		                        
 		                    <table id="leaky_paywall_test_option" class="form-table">
+
+		                    	
 			                    
 	                            <tr class="gateway-options">
 	                            	<th><?php _e( "Test Mode?", 'issuem-leaky-paywall' ); ?></th>
@@ -1199,11 +1214,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <?php $leaky_paywall_gateway_options = ob_get_clean(); ?>
 	                        <?php echo apply_filters( 'leaky_paywall_settings_page_gateway_options', $leaky_paywall_gateway_options ); ?>
 	                        
-	                        <?php do_action( 'leaky_paywall_payments_settings', $settings ); ?>
+	                       
 
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
+	                        
 	
 	                        </div>
 	                        
@@ -1235,24 +1248,25 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'issuem-leaky-paywall' ); ?></p>
 			                        </td>
 			                    </tr>
-			                    
-			                    
-			                    
+
 			                </table>
-			
-			                                                                  
-			                <p class="submit">
-			                    <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-			                </p>
-			
+
 			                </div>
 			                
 			            </div>
 
+			            <p class="submit">
+		                    <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+		                </p>
+
+			            <?php do_action( 'leaky_paywall_after_payments_settings' ); ?>
+
 	                    <?php endif; // payment tabs ?>
 
 
-	                    <?php if ( $tab == 'subscriptions' ) : ?>
+	                    <?php if ( $current_tab == 'subscriptions' ) : ?>
+
+	                    <?php do_action('leaky_paywall_before_subscriptions_settings'); ?>
 	                    
 	                    <div id="modules" class="postbox leaky-paywall-restriction-settings">
 	                    
@@ -1323,10 +1337,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            
 	                        </table>
 	
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
-	                        
 	                        </div>
 	                        
 	                    </div>
@@ -1391,29 +1401,31 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                        ?>
 
-	                        <p class="submit">
-	                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
-	                        </p>
-	
 	                        </div>
 	                        
 	                    </div>
-
 	                   
+						<?php do_action('leaky_paywall_after_subscriptions_settings'); ?>
 
+						<p class="submit">
+                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                        </p>
 	                     
 
 	                    <?php endif; ?>
 
-	                     <?php if ( $tab == 'licenses' ) : ?>
+	                     <?php if ( $current_tab == 'licenses' ) : ?>
+
+	                     	<?php do_action('leaky_paywall_before_licenses_settings'); ?>
 
 	                    	<h2>Licenses could go here <a href="#">Buy our add-ons</a></h2>
 
-	                    	<?php  do_action( 'leaky_paywall_settings_form', $settings ); ?>
+	                    	<?php do_action('leaky_paywall_after_licenses_settings'); ?>
+
+	                    	<?php do_action( 'leaky_paywall_settings_form', $settings ); ?>
 
 	                    <?php endif; ?>
-	                    
-	                   
+
                     
                 </form>
 
