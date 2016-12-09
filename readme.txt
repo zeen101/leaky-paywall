@@ -2,8 +2,8 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
-Tested up to: 4.7
-Stable tag: 4.1.5
+Tested up to: 4.8
+Stable tag: 4.2.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,9 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.2.0 =
+* Settings Page Rebuild
 
 = 4.1.5 =
 * Fixing debug output code on Stripe card decline
