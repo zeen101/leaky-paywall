@@ -213,8 +213,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		}
 		
 		$site = '';
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		$settings = get_leaky_paywall_settings();
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 	    $payload['cmd'] = '_notify-validate';
 
 	    foreach( $_POST as $key => $value ) {
