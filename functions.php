@@ -1710,7 +1710,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 		if ( empty( $results ) ) {
 					
 			$has_allowed_value = false;
-			$results .= '<h2>' . __( 'Subscription Options', 'issuem-leaky-paywall' ) . '</h2>';
+			$results .= '<h2 class="subscription-options-title">' . __( 'Subscription Options', 'issuem-leaky-paywall' ) . '</h2>';
 
 			$results .= apply_filters( 'leaky_paywall_subscription_options_header', '' );
 			
