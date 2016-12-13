@@ -236,9 +236,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$settings = get_leaky_paywall_settings();
 
 		if ( $stripe_event->livemode == false ) {
-			$mode == 'test';
+			$mode = 'test';
 		} else {
-			$mode == 'live';
+			$mode = 'live';
 		}
 
 		if ( isset( $stripe_event->type ) ) {
@@ -255,6 +255,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		            if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $stripe_object->customer ) ) {
 		                $site = '_' . $site_id;
 		            }
+		        } else {
+		        	$site = '';
 		        }
 		
 		        //https://stripe.com/docs/api#event_types
