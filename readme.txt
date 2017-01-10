@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.2.0
+Stable tag: 4.3.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,12 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.3.0 =
+* Including User object w/ wp_login action call
+* Fix mode bug in paypal webhook processing
+* Add css class to subscription options h2 tag
+* Fix mode bug during Stripe webhook processing
 
 = 4.2.0 =
 * Settings Page Rebuild
