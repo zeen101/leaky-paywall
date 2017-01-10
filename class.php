@@ -234,8 +234,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							}
 							$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 														
-							if ( !empty( $_COOKIE['issuem_lp' . $site] ) )
+							if ( !empty( $_COOKIE['issuem_lp' . $site] ) ) {
 								$available_content = maybe_unserialize( stripslashes( $_COOKIE['issuem_lp' . $site] ) );
+							}
 							
 							if ( empty( $available_content[$restricted_post_type] ) )
 								$available_content[$restricted_post_type] = array();							
@@ -273,11 +274,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								}
 							
 							}
-							
+
 							$serialized_available_content = maybe_serialize( $available_content );
-							setcookie( 'issuem_lp' . $site, $serialized_available_content, $expiration, '/' );
-							$_COOKIE['issuem_lp' . $site] = $serialized_available_content;
-							
+
+							$cookie = setcookie( 'issuem_lp' . $site, $serialized_available_content, $expiration, '/' );
+							$_COOKIE['issuem_lp' . $site] = $serialized_available_content;	
+						
 						}
 						
 						return; //We don't need to process anything else after this

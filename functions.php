@@ -314,6 +314,26 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 		$canceled = false;
 		$expired = false;
 		$sites = array( '' ); //Empty String for non-Multisite, so we cycle through "sites" one time with no $site set
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+		if ( empty( $email ) ) {
+			$user = wp_get_current_user();
+			if ( $user->ID == 0 ) { // no user
+				return false;
+			}
+		} else {
+			if ( is_email( $email ) ) {
+				$user = get_user_by( 'email', $email );
+
+				if ( !$user ) { // no user found with that email address
+					return false;
+				}
+
+			} else {
+				return false;
+			}
+		}
+		
 		if ( is_multisite_premium() ) {
 			if ( is_null( $blog_id ) ){
 				global $blog_id;			
@@ -331,18 +351,6 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			}
 		}
 		
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-		
-		if ( empty( $email ) ) {
-			$user = wp_get_current_user();
-		} else {
-			if ( is_email( $email ) ) {
-				$user = get_user_by( 'email', $email );
-			} else {
-				return false;
-			}
-		}
-		
 		foreach ( $sites as $site ) {
 		
 			$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
@@ -350,57 +358,92 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 			$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 			$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-			
-			if ( !$paid ) {
-				
-				if ( 'stripe' === $payment_gateway ) {
 
-					if ( ! class_exists( 'Stripe' ) ) {
-						require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
-					}
-			
-					if ( $mode == 'test' ) {
-						$secret_key = isset( $settings['test_secret_key'] ) ? trim( $settings['test_secret_key'] ) : '';
-					} else {
-						$secret_key = isset( $settings['live_secret_key'] ) ? trim( $settings['live_secret_key'] ) : '';
-					}
-			
-					Stripe::setApiKey( $secret_key );
+			if ( $payment_gateway !== 'stripe' ) {
+
+				switch( $payment_status ) {
+				
+					case 'Active':
+					case 'active':
+					case 'refunded':
+					case 'refund':
+						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+							return 'unlimited';
+						}
+							
+						if ( strtotime( $expires ) < time() ) {
+							$expired = $expires;
+						} else {
+							$paid = true;
+						}
+						break;
+					case 'cancelled':
+					case 'canceled':
+						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+							$expired = true;
+						} else {
+							$canceled = true;
+						}
+					case 'reversed':
+					case 'buyer_complaint':
+					case 'denied' :
+					case 'expired' :
+					case 'failed' :
+					case 'voided' :
+					case 'deactivated' :
+						continue;
+						break;
 					
-					try {
-						if ( empty( $subscriber_id ) ) {
-							switch( $payment_status ) {
-								case 'Active':
-								case 'active':
-								case 'refunded':
-								case 'refund':
-									if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-										return 'unlimited';
-									}
-									
-									if ( strtotime( $expires ) < time() ) {
-										$expired = $expires;
-									} else {
-										$paid = true;
-									}
-									break;
-								case 'cancelled':
-								case 'canceled':
-									if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-										$expired = true;
-									} else {
-										$canceled = true;
-									}
-								case 'reversed':
-								case 'buyer_complaint':
-								case 'denied' :
-								case 'expired' :
-								case 'failed' :
-								case 'voided' :
-								case 'deactivated' :
-									continue;
-									break;
-							}
+				}		
+
+			} else {
+
+				// check with Stripe to make sure the user has an active subscription
+				if ( ! class_exists( 'Stripe' ) ) {
+					require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
+				}
+				
+				if ( $mode == 'test' ) {
+					$secret_key = isset( $settings['test_secret_key'] ) ? trim( $settings['test_secret_key'] ) : '';
+				} else {
+					$secret_key = isset( $settings['live_secret_key'] ) ? trim( $settings['live_secret_key'] ) : '';
+				}
+				
+				Stripe::setApiKey( $secret_key );
+				
+				try {
+					if ( empty( $subscriber_id ) ) {
+						switch( $payment_status ) {
+							case 'Active':
+							case 'active':
+							case 'refunded':
+							case 'refund':
+								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+									return 'unlimited';
+								}
+								
+								if ( strtotime( $expires ) < time() ) {
+									$expired = $expires;
+								} else {
+									$paid = true;
+								}
+								break;
+							case 'cancelled':
+							case 'canceled':
+								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+									$expired = true;
+								} else {
+									$canceled = true;
+								}
+							case 'reversed':
+							case 'buyer_complaint':
+							case 'denied' :
+							case 'expired' :
+							case 'failed' :
+							case 'voided' :
+							case 'deactivated' :
+								continue;
+								break;
 						}
 						
 						$cu = Stripe_Customer::retrieve( $subscriber_id );
@@ -435,139 +478,26 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 								$paid = true;
 							}
 						}
-					} catch ( Exception $e ) {
-						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
+
 					}
-					
-				} else if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
-					
-					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-						return 'unlimited';
-					}
-					
-					if ( !empty( $plan ) && 'active' == $payment_status ) {
-						return 'subscription';
-					}
-						
-					switch( $payment_status ) {
-					
-						case 'active':
-						case 'refunded':
-						case 'refund':
-							if ( strtotime( $expires ) < time() ) {
-								$expired = $expires;
-							} else {
-								$paid = true;
-							}
-							break;
-						case 'cancelled':
-						case 'canceled':
-							$canceled = true;
-						case 'reversed':
-						case 'buyer_complaint':
-						case 'denied' :
-						case 'expired' :
-						case 'failed' :
-						case 'voided' :
-						case 'deactivated' :
-							continue;
-							break;
-						
-					}
-					
-				} else if ( 'manual' === $payment_gateway ) {
-						
-					switch( $payment_status ) {
-					
-						case 'Active':
-						case 'active':
-						case 'refunded':
-						case 'refund':
-							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-								return 'unlimited';
-							}
-								
-							if ( strtotime( $expires ) < time() ) {
-								$expired = $expires;
-							} else {
-								$paid = true;
-							}
-							break;
-						case 'cancelled':
-						case 'canceled':
-							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-								$expired = true;
-							} else {
-								$canceled = true;
-							}
-						case 'reversed':
-						case 'buyer_complaint':
-						case 'denied' :
-						case 'expired' :
-						case 'failed' :
-						case 'voided' :
-						case 'deactivated' :
-							continue;
-							break;
-						
-					}			
-					
-				} else if ( 'free_registration' === $payment_gateway ) {
-					
-					switch( $payment_status ) {
-					
-						case 'Active':
-						case 'active':
-						case 'refunded':
-						case 'refund':
-							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-								return 'unlimited';
-							}
-								
-							if ( strtotime( $expires ) < time() ) {
-								$expired = $expires;
-							} else {
-								$paid = true;
-							}
-							break;
-						case 'cancelled':
-						case 'canceled':
-							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-								$expired = true;
-							} else {
-								$canceled = true;
-							}
-						case 'reversed':
-						case 'buyer_complaint':
-						case 'denied' :
-						case 'expired' :
-						case 'failed' :
-						case 'voided' :
-						case 'deactivated' :
-							continue;
-							break;
-					
-					}
-					
-				} else {
-	
-					$paid = apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
-					
+
+				} catch ( Exception $e ) {
+					$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
 				}
-				
+
 			}
-			
-		}
+	
+		} // end foreach
 
 		if ( $canceled ) {
-			return false;
+			$paid = false;
 		}
 
 		if ( $expired ) {
-			return false;
+			$paid = false;
 		}
 	
-		return $paid;
+		return apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
 		
 	}
 	
