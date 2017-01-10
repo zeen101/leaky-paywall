@@ -1220,10 +1220,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <?php $leaky_paywall_gateway_options = ob_get_clean(); ?>
 	                        <?php echo apply_filters( 'leaky_paywall_settings_page_gateway_options', $leaky_paywall_gateway_options ); ?>
 	                        
-	                       
+	                        <?php do_action( 'leaky_paywall_after_enabled_gateways', $settings ); ?>
 
-	                        
-	
 	                        </div>
 	                        
 	                    </div>
@@ -1265,7 +1263,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                    <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
 		                </p>
 
-			            <?php do_action( 'leaky_paywall_after_payments_settings' ); ?>
+			            <?php do_action( 'leaky_paywall_after_payments_settings', $settings ); ?>
 
 	                    <?php endif; // payment tabs ?>
 
