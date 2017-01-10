@@ -167,7 +167,7 @@ function leaky_paywall_process_registration() {
 			// log the new user in
 			wp_setcookie( $user_data['login'], $user_data['password'], true );
 			wp_set_current_user( $user_data['id'], $user_data['login'] );
-			do_action( 'wp_login', $user_data['login'] );
+			do_action( 'wp_login', $user_data['login'], $user_data );
 
 			// send the newly created user to the appropriate page after logging them in
         	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
