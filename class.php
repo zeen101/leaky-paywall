@@ -797,7 +797,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 				
 
-				$settings = apply_filters( 'leaky_paywall_update_settings_settings', $settings );
+				$settings = apply_filters( 'leaky_paywall_update_settings_settings', $settings, $current_tab );
 				
 				$this->update_settings( $settings );
 				$settings_saved = true;
