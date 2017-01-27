@@ -671,7 +671,16 @@ function do_leaky_paywall_register_form() {
 
 		  ?>
 
-		  <input type="hidden" name="level_price" value="<?php echo number_format( $level['price'], 2 ); ?>"/>
+		  <?php 
+		  	if ( $level['price'] > 0 ) {
+		  		$level_price = number_format( $level['price'], 2 );
+		  	} else {
+		  		$level_price = 0;
+		  	}
+
+		  ?>
+
+		  <input type="hidden" name="level_price" value="<?php echo $level_price; ?>"/>
 		  <input type="hidden" name="currency" value="<?php echo $currency; ?>"/>
 		  <input type="hidden" name="description" value="<?php echo $level['label']; ?>"/>
 		  <input type="hidden" name="level_id" value="<?php echo $level_id; ?>"/>
