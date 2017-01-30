@@ -267,6 +267,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		                break;
 		            case 'charge.failed' :
 		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+		                do_action( 'leaky_paywall_failed_payment', $user );
 		                break;
 		            case 'charge.refunded' :
 		                if ( $stripe_object->refunded )
@@ -288,6 +289,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		                
 		            case 'invoice.payment_failed' :
 		                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+		                    do_action( 'leaky_paywall_failed_payment', $user );
 		                break;
 		            
 		            case 'customer.subscription.updated' :
