@@ -627,8 +627,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				
 			do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
 
-			// We only need to send a new user email to newly created users. If userdata is an object, then the user already exists in the system and they have already received a new user email. 
-			if ( is_array( $userdata ) ) {
+			if ( $userdata ) {
 				leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
 			}
 			
@@ -826,7 +825,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled' );
 
 							do_action('leaky_paywall_cancelled_subscriber', $user );
-							
+
 						} else {
 						
 							$form .= '<p>' . sprintf( __( 'ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
@@ -2258,5 +2257,22 @@ function leaky_paywall_csv_to_array( $filename = '', $delimiter = ',' ) {
 		fclose($handle);
 	}
 	return $data;
+
+}
+
+
+function leaky_paywall_old_form_value( $input, $echo = true ) {
+
+	$value = '';
+
+	if ( isset( $_POST[$input] ) && $_POST[$input] ) {
+		$value = esc_attr( $_POST[$input] );
+	}
+
+	if ( $echo ) {
+		echo $value;
+	} else {
+		return $value;
+	}
 
 }
