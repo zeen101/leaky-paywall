@@ -435,6 +435,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 								} else {
 									$canceled = true;
 								}
+								break;
 							case 'reversed':
 							case 'buyer_complaint':
 							case 'denied' :
@@ -445,7 +446,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 								continue;
 								break;
 						}
-						
+					} else {
 						$cu = Stripe_Customer::retrieve( $subscriber_id );
 						
 						if ( !empty( $cu ) ) {
@@ -478,7 +479,6 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 								$paid = true;
 							}
 						}
-
 					}
 
 				} catch ( Exception $e ) {
