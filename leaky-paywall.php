@@ -71,6 +71,9 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'metaboxes.php' );
 		require_once( 'include/admin/dashboard-widgets.php' );
 
+		// license key
+		include( LEAKY_PAYWALL_PATH . 'include/license-key.php' );
+
 		// error tracking
 		include( LEAKY_PAYWALL_PATH . 'include/error-tracking.php' );
 
