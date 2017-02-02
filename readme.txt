@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.3.0
+Stable tag: 4.4.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,18 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.4.0 =
+* Refactor License Key Settings
+* Add leaky_paywall_failed_payment action for paypal webhooks
+* Add leaky_paywall_failed_payment action for Stripe webhooks
+* Update check for new leaky paywall subscriber email to be sent so that it works again with the Strip credit card form
+* Add leaky_paywall_cancelled_subscriber action after a subscriber has cancelled
+* Fix bug with cancel link not showing on user profile
+* Add current_tab value to leaky_paywall_update_settings_settings filter
+* Fix number format error for free subscriptions on registration form
+* Add hook after enabled payment gateway settings
+* Refactor leaky_paywall_has_user_paid function
 
 = 4.3.0 =
 * Including User object w/ wp_login action call
