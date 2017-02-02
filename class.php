@@ -1423,7 +1423,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                     	<?php do_action('leaky_paywall_before_licenses_settings'); ?>
 
 	                    	<h2><a href="https://zeen101.com/for-developers/leaky-paywall-add-ons/">Find out more about our add-ons</a></h2>
-
+							
+							<?php wp_nonce_field( 'verify', 'leaky_paywall_license_wpnonce' ); ?>
+							
 	                    	<?php do_action('leaky_paywall_after_licenses_settings'); ?>
 
 	                    <?php endif; ?>
