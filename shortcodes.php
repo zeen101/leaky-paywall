@@ -604,7 +604,15 @@ function do_leaky_paywall_register_form() {
 			?>
 				</ul>
 			</li>
-			<li><strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> $<?php echo number_format( $level['price'], 2 ); ?></li>
+			<li>
+				<?php if ( $level['price'] > 0 ) {
+					$total = '$' . number_format( $level['price'], 2 );
+				} else {
+					$total = 'Free';
+				} ?>
+
+				<strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo $total; ?>
+			</li>
 		</ul>
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
