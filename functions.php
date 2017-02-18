@@ -1909,7 +1909,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
     	
     	// if the args come through as a WP User object, then the user already exists in the system and we don't know their password
         if ( !empty( $args ) && is_array( $args ) ) {
-            $password = $args['user_pass'];
+            $password = $args['password'];
         } else {
 	        $password = '';
         }
