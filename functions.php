@@ -1232,6 +1232,8 @@ if ( !function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 	
 	                // Clear buffer
 	                flush();
+
+	                do_action( 'leaky_paywall_before_download_pdf', $url );
 	
 	                // Deliver the file: readfile, curl, redirect
 	                if ( ini_get( 'allow_url_fopen' ) ) {
