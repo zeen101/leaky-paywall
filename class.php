@@ -700,7 +700,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
 
 					if ( !empty( $_REQUEST['new_email_body'] ) )
-						$settings['new_email_body'] = trim( $_REQUEST['new_email_body'] );
+						$settings['new_email_body'] = wp_kses_post( $_REQUEST['new_email_body'] );
 
 				}
 
