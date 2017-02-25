@@ -1921,6 +1921,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
         $user_info = get_userdata( $user_id );
         $message = '';
         $admin_message = '';
+        $headers = array();
 
         $admin_emails = array();
         $admin_emails = get_option( 'admin_email' );
@@ -1929,37 +1930,29 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
         $from_name  = isset( $settings['from_name'] ) ? $settings['from_name'] : $site_name;
         $from_email = isset( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
 
-        $headers  = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
-        $headers .= "Reply-To: ". $from_email . "\r\n";
+        $headers[]  = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>";
+        $headers[] = "Reply-To: " . $from_email;
+        $headers[] = "Content-Type: text/html; charset=UTF-8";
 
         switch ( $status ) {
 
             case 'new' :
-
-                // new user subscribe email
-                $message = '<html>
-                                <head>
-                                	<title>' . $settings['new_email_subject']  . '</title>
-                                </head>
-                                <body>' . $settings['new_email_body'] . '</body>
-                            </html>';
-
+				
+				$message = $settings['new_email_body'];
 
                 if ( isset( $args ) ) {
                     // $message .= "\r\n" . 'Your username is: ' . $args['user_login'] . "\r\n";
                     // $message .= "\r\n" . 'Your temporary password is: ' . $password . '. Please log in and update your password.';
                 }
 
-                add_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
-
                 $filtered_subject = leaky_paywall_filter_email_tags( $settings['new_email_subject'], $user_id, $user_info->display_name, $password );
                 $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );
-                
+
+                $filtered_message = wpautop( make_clickable( $filtered_message ) );
+
 				if ( 'traditional' === $settings['login_method'] ) {
                     wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
 				}
-
-                remove_filter( 'wp_mail_content_type', 'leaky_paywall_set_email_content_type' );
 
                 // new user subscribe admin email
                 $admin_message = 'A new user has signed up on ' . $site_name . '. Congratulations!';
