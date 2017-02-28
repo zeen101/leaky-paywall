@@ -585,26 +585,37 @@ function do_leaky_paywall_register_form() {
 
 		<h3><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
 
-		<ul>
+		<ul class="leaky-paywall-subscription-details">
 			<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['label']; ?></li>
 			<li><strong><?php printf( __( 'Subscription Length:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . 's'; ?>
 			<li><strong><?php printf( __( 'Recurring:', 'leaky-paywall' ) ); ?> </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
 			<li><strong><?php printf( __( 'Content Access:', 'leaky-paywall' ) ); ?></strong>
-				<ul>
+				
 			<?php 
+				$content_access_description = '<ul>';
 				foreach( $level['post_types'] as $type ) {
 
 					if ( $type['allowed'] == 'unlimited' ) {
-						echo '<li>' . ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's</li>';
+						$content_access_description .= '<li>' . ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's</li>';
 					} else {
-						echo '<li>' . $type['allowed_value'] . ' ' . $type['post_type'] . 's</li>';
+						$content_access_description .= '<li>' . $type['allowed_value'] . ' ' . $type['post_type'] . 's</li>';
 					}
 					
 				}	
-			?>
-				</ul>
+				$content_access_description .= '</ul>';
+				echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level );
+			?>	
+			
 			</li>
-			<li><strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> $<?php echo number_format( $level['price'], 2 ); ?></li>
+			<li>
+				<?php if ( $level['price'] > 0 ) {
+					$total = '$' . number_format( $level['price'], 2 );
+				} else {
+					$total = 'Free';
+				} ?>
+
+				<strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo __( $total, 'leaky-paywall' ); ?>
+			</li>
 		</ul>
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">

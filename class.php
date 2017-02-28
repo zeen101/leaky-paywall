@@ -489,31 +489,31 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		 */
 		function get_settings() {
 
-			$default_email_body = 'PLEASE EDIT THIS CONTENT - You can use simple html… but no images yet.
+			$default_email_body = 'PLEASE EDIT THIS CONTENT - You can use simple html, including images.
 
-			<p>Thank you for subscribing to %sitename% and welcome to our community!</p>
+			Thank you for subscribing to %sitename% and welcome to our community!
 
-			<p>Your account is activated.</p>
+			Your account is activated.
 
-			<p>As a member you will gain more insight into the topics you care about, gain access to the latest articles, and you will gain a greater understanding of the events that are shaping our time. With a Digital Subscription, you also get our official Mobile App for FREE. Get the apps here: http://OurPublication.com/apps</p>
+			As a member you will gain more insight into the topics you care about, gain access to the latest articles, and you will gain a greater understanding of the events that are shaping our time. With a Digital Subscription, you also get our official Mobile App for FREE. Get the apps here: http://OurPublication.com/apps
 
-			<p><b>How to login:</b></p>
+			<b>How to login:</b>
 
 			Go to: http://OurPublication.com/my-account/ (this is the “Page for Profile” setting in Leaky Paywall Settings)
-			<br>Username: %username%</br>
-			<br>Password: %password%</br>
+			Username: %username%
+			Password: %password%
 
-			<p>Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication </p>
+			Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication 
 
-			<p>TWEET: I just subscribed to Our Publication. Join up and be awesome! www.ourpublication.com</p>
+			TWEET: I just subscribed to Our Publication. Join up and be awesome! www.ourpublication.com
 
-			<p>Facebook https://www.facebook.com/ourpublication/</p>
+			Facebook https://www.facebook.com/ourpublication/
 
-			<p>Instagram https://www.instagram.com/ourpublication/</p>
+			Instagram https://www.instagram.com/ourpublication/
 
-			<p>LinkedIn https://www.linkedin.com/groups/12345678</p>
+			LinkedIn https://www.linkedin.com/groups/12345678
 
-			<p>We love feedback… please help us make your publication better by emailing info@ourpublication.pub … and thanks again!</p>';
+			We love feedback… please help us make your publication better by emailing info@ourpublication.pub … and thanks again!';
 			
 			$defaults = array( 
 				'page_for_login'				=> 0, /* Site Specific */
@@ -700,7 +700,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
 
 					if ( !empty( $_REQUEST['new_email_body'] ) )
-						$settings['new_email_body'] = trim( $_REQUEST['new_email_body'] );
+						$settings['new_email_body'] = wp_kses_post( $_REQUEST['new_email_body'] );
 
 				}
 
