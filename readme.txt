@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.4.0
+Stable tag: 4.5.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,14 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.5.0 =
+* Add filter to expires in has_user_paid function for corporate subscriptions
+* Update email template to allow for images and html
+* Add action leaky_paywall_before_download_pdf before a restricted pdf is downloaded
+* Add leaky_paywall_cancel_subscription_description for altering text on cancel pagee
+* Add leaky_paywall_content_access_description filter for altering text on register form subscription description
+* Fix number format error in subscription details on free level
 
 = 4.4.0 =
 * Refactor License Key Settings
