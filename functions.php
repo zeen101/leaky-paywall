@@ -367,6 +367,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'active':
 					case 'refunded':
 					case 'refund':
+						$expires = apply_filters( 'leaky_paywall_has_user_paid_expires', $expires, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
 						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 							return 'unlimited';
 						}
