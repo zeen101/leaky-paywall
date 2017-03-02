@@ -1961,10 +1961,12 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
                     wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
 				}
 
-                // new user subscribe admin email
-                $admin_message = 'A new user has signed up on ' . $site_name . '. Congratulations!';
+				if ( 'off' === $settings['new_subscriber_admin_email'] ) {
+					// new user subscribe admin email
+					$admin_message = apply_filters( 'leaky_paywall_new_subscriber_admin_email', 'A new user has signed up on ' . $site_name . '. Congratulations!', $user_info );
 
-                wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'issuem-leaky-paywall' ), $site_name ), $admin_message, $headers );                        
+					wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'issuem-leaky-paywall' ), $site_name ), $admin_message, $headers );           
+				}
 
             break;
 

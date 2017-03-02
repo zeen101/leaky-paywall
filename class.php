@@ -531,6 +531,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
 				'new_email_subject'				=> '',
 				'new_email_body'				=> $default_email_body,
+				'new_subscriber_admin_email'	=> 'off',
 				'payment_gateway'				=> array( 'stripe_checkout' ),
 				'test_mode'						=> 'off',
 				'live_secret_key'				=> '',
@@ -698,6 +699,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					if ( !empty( $_REQUEST['new_email_body'] ) )
 						$settings['new_email_body'] = wp_kses_post( $_REQUEST['new_email_body'] );
+
+					if ( !empty( $_REQUEST['new_subscriber_admin_email'] ) )
+						$settings['new_subscriber_admin_email'] = $_REQUEST['new_subscriber_admin_email'];
+					else
+						$settings['new_subscriber_admin_email'] = 'off';
 
 				}
 
@@ -1022,6 +1028,15 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
 	                                </td>
 	                            </tr>
+
+	                            <table id="leaky_paywall_test_option" class="form-table">
+
+		                            <tr>
+		                            	<th><?php _e( "Disable New User Notifications", 'issuem-leaky-paywall' ); ?></th>
+		                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> Disable the email sent to an admin when a new subscriber is added to Leaky Paywall.</td>
+		                            </tr>
+		                            
+			                    </table>
 
 	                            <?php wp_nonce_field( 'issuem_leaky_email_options', 'issuem_leaky_email_options_nonce' ); ?>
 	                            
