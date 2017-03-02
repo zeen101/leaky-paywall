@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.5.0
+Stable tag: 4.5.1
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,12 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.5.1 =
+* Add option for disabling admin notification email when a new subscriber is added to leaky paywall
+* Add a filter for editing the text of the admin email
+* Fix bug that was setting the incorrect value for restrictions
+
 
 = 4.5.0 =
 * Add filter to expires in has_user_paid function for corporate subscriptions
