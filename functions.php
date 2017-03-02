@@ -976,7 +976,13 @@ if ( !function_exists( 'leaky_paywall_subscriber_restrictions' ) ) {
 	function leaky_paywall_subscriber_restrictions() {
 	
 		$settings = get_leaky_paywall_settings();
-		$restrictions = array( $settings['restrictions']['post_types'] ); //defaults
+
+		if ( isset( $settings['restrictions']['post_types'] ) ) {
+			$restrictions = $settings['restrictions']['post_types']; //defaults
+		} else {
+			$restrictions = '';
+		}
+		
 		if ( is_multisite_premium() ) {
 			$restriction_levels = leaky_paywall_subscriber_current_level_ids();
 			if ( !empty( $restriction_levels ) ) {
