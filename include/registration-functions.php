@@ -72,6 +72,12 @@ function leaky_paywall_process_registration() {
 				'user_registered'		=> date( 'Y-m-d H:i:s' )
 			) 
 		);
+
+		if ( !empty( $user_data['id'] ) ) {
+			// log the new user in
+			wp_set_current_user( $user_data['id'] );
+			wp_set_auth_cookie( $user_data['login'], true );
+		}
 	}
 
 	if ( empty( $user_data['id'] ) ) {
@@ -164,11 +170,6 @@ function leaky_paywall_process_registration() {
 
 			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
 
-			// log the new user in
-			wp_setcookie( $user_data['login'], $user_data['password'], true );
-			wp_set_current_user( $user_data['id'], $user_data['login'] );
-			do_action( 'wp_login', $user_data['login'], $user_data );
-
 			// send the newly created user to the appropriate page after logging them in
         	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
                 wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
@@ -216,8 +217,6 @@ function leaky_paywall_validate_user_data() {
 		$user['email']		      = $userdata->user_email;
 		$user['first_name']       = sanitize_text_field( $_POST['first_name']);
 		$user['last_name']        = sanitize_text_field( $_POST['last_name']);
-		$user['password']         = sanitize_text_field( $_POST['password'] );
-		$user['confirm_password'] = sanitize_text_field( $_POST['confirm_password'] );
 		$user['need_new']	= false;
 	}
 
@@ -241,12 +240,12 @@ function leaky_paywall_validate_user_data() {
 		leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky_paywall' ), 'register' );
 	}
 	
-	if ( empty( $user['password'] ) ) {
+	if ( ! is_user_logged_in() && empty( $user['password'] ) ) {
 		// password is empty
 		leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky_paywall' ), 'register' );
 	}
 	
-	if ( $user['password'] !== $user['confirm_password'] ) {
+	if ( ! is_user_logged_in() && $user['password'] !== $user['confirm_password'] ) {
 		// passwords do not match
 		leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky_paywall' ), 'register' );
 	}

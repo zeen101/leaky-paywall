@@ -650,6 +650,8 @@ function do_leaky_paywall_register_form() {
 			    <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
+			  
+			  <?php if ( !is_user_logged_in() ) { ?>
 
 			  <p class="form-row">
 			    <label for="password"><?php printf( __( 'Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
@@ -660,6 +662,8 @@ function do_leaky_paywall_register_form() {
 			    <label for="confirm_password"><?php printf( __( 'Confirm Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="password" size="20" name="confirm_password"/>
 			  </p>
+			  
+			  <?php } ?>
 
 		  </div>
 
