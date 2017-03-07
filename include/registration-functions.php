@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @since 4.0.0
  */
 function leaky_paywall_process_registration() {
-
+	
 	if ( !isset( $_POST['leaky_paywall_register_nonce'] ) ) {
 		return;
 	}	
@@ -30,8 +30,6 @@ function leaky_paywall_process_registration() {
 	}
 
 	$settings = get_leaky_paywall_settings();
-
-	global $user_ID;
 
 	$level_id = isset( $_POST['level_id'] ) ? absint( $_POST['level_id'] ) : false;
 
@@ -76,7 +74,7 @@ function leaky_paywall_process_registration() {
 		if ( !empty( $user_data['id'] ) ) {
 			// log the new user in
 			wp_set_current_user( $user_data['id'] );
-			wp_set_auth_cookie( $user_data['login'], true );
+			wp_set_auth_cookie( $user_data['id'], true );
 		}
 	}
 
@@ -186,10 +184,7 @@ function leaky_paywall_process_registration() {
 		
 	}
 }
-
-
-
-add_action( 'init', 'leaky_paywall_process_registration', 100 );
+add_action( 'init', 'leaky_paywall_process_registration', 10 );
 
 
 /** 
@@ -217,7 +212,7 @@ function leaky_paywall_validate_user_data() {
 		$user['email']		      = $userdata->user_email;
 		$user['first_name']       = sanitize_text_field( $_POST['first_name']);
 		$user['last_name']        = sanitize_text_field( $_POST['last_name']);
-		$user['need_new']	= false;
+		$user['need_new']         = false;
 	}
 
 	if ( empty( $user['first_name'] ) ) {

@@ -573,9 +573,13 @@ function do_leaky_paywall_register_form() {
 	if ( !empty( $userdata ) ) {
 		$email = $userdata->user_email;
 		$username = $userdata->user_login;
+		$first = $userdata->first_name;
+		$last = $userdata->last_name;
 	} else {
 		$email = '';
 		$username = '';
+		$first = leaky_paywall_old_form_value( 'first_name', false );
+		$last = leaky_paywall_old_form_value( 'last_name', false );
 	}
 	ob_start();
 
@@ -627,12 +631,12 @@ function do_leaky_paywall_register_form() {
 
 			  <p class="form-row">
 			    <label for="first_name"><?php printf( __( 'First Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="first_name" value="<?php leaky_paywall_old_form_value('first_name'); ?>" />
+			    <input type="text" size="20" name="first_name" value="<?php echo $first; ?>" />
 			  </p>
 
 			  <p class="form-row">
 			    <label for="last_name"><?php printf( __( 'Last Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="last_name" value="<?php leaky_paywall_old_form_value('last_name'); ?>"/>
+			    <input type="text" size="20" name="last_name" value="<?php echo $last; ?>"/>
 			  </p>
 			 
 			  <p class="form-row">
