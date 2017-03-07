@@ -184,7 +184,7 @@ function leaky_paywall_process_registration() {
 		
 	}
 }
-add_action( 'init', 'leaky_paywall_process_registration', 10 );
+add_action( 'init', 'leaky_paywall_process_registration', 100 );
 
 
 /** 
