@@ -165,7 +165,7 @@ function leaky_paywall_process_registration() {
 			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
 
 			// log the new user in
-			wp_setcookie( $user_data['login'], $user_data['password'], true );
+			wp_set_auth_cookie( $user_data['id'], true);
 			wp_set_current_user( $user_data['id'], $user_data['login'] );
 			do_action( 'wp_login', $user_data['login'], $user_data );
 
