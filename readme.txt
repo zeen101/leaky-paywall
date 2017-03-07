@@ -1,15 +1,58 @@
 === Leaky Paywall for WordPress ===
-Contributors: layotte, endocreative
+Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
-Requires at least: 3.0
-Tested up to: 4.3
-Stable tag: 3.1.2
+Requires at least: 3.3
+Tested up to: 4.8
+Stable tag: 4.5.1
+Tags: leaky paywall, membership, metered paywall, metered access 
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
+The #1 metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
 
 == Description ==
 
-A premium leaky paywall add-on for WordPress. More info at http://leakypw.com
+[Leaky Paywall](https://zeen101.com/leaky-paywall) is perfect for bloggers, news, and magazine sites that need content to be discovered in Google search and shared socially on Facebook and the rest. Set your meter to allow X number of free articles before requiring a subscription.
+
+Pioneered by the Financial Times, popularized by the New York Times and used by 1000’s of publishers large and small, the metered paywall is now the most successful paywall approach in the publishing industry.
+
+**Leaky Paywall integrates with**
+
+* [IssueM](http://zeen101.com/issuem) issue publishing: Our IssueM plugin allows publishers to manage live web issues that are mobile, search engine, and social sharing friendly. Issues and articles reach today’s modern reader. Now you can promote and sell subscriptions to special or traditional recurring issues. 
+
+* iOS and Android apps! Leaky Paywall integrates with [UniPress](http://getunipress.com) to give your subscribers native mobile apps for the best reading experience available today. Your subscribers will have automatic access to your content in the app after subscribing with Leaky Paywall. All content and apps are managed right in WordPress for true 1 click publishing.
+
+**Features**
+
+* Metered paywall: Let your readers read X number of free articles before they need to subscribe
+* Get found in Google: Allows all your content to be indexed by search engines
+* Viral sharing: All your articles can be shared 1000s of times in social media
+* Sell live web issues: Integrates with [IssueM](https://zeen101.com/issuem) to sell access to individual special issues or traditional weekly, monthly, quarterly, etc issues
+* iOS and Android app publishing: Integrates with [UniPress](https://getunipress.com/) to easily give your subscribers access to apps and sell subscriptions in the app stores
+* Build your email list with a Free subscription level
+* Granular content restriction: Optionally set any article as subscriber only or always free/public
+* Much more
+
+**Add-ons available here [https://zeen101.com/leakypaywall/leaky-paywall-add-ons/](https://zeen101.com/leakypaywall/leaky-paywall-add-ons/)**
+
+* Native iOS and Android apps 
+* Offer multiple subscription levels 
+* Coupons
+* Gift Subscriptions
+* IP Exceptions
+* Corporate subscriptions via domain name EG abcbiz.com or top level domain EG .edu, .gov
+* Reporting Tool
+* File restrictions
+* MailChimp/MailPoet subscriber list signups
+* Article Countdown Nag							
+* More
+
+For documentation see: [https://zeen101.com/documentation](http://zeen101.com/documentation)
+
+We love contributions! Head over to our GitHub page if your feeling inspired [https://github.com/zeen101/leaky-paywall](https://github.com/zeen101/leaky-paywall)
+
+
+A plugin for WordPress that allows you to sell metered access to your content. More info at [https://zeen101.com/](https://zeen101.com/)
 
 == Installation ==
 
@@ -30,6 +73,152 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.5.1 =
+* Add option for disabling admin notification email when a new subscriber is added to leaky paywall
+* Add a filter for editing the text of the admin email
+* Fix bug that was setting the incorrect value for restrictions
+
+
+= 4.5.0 =
+* Add filter to expires in has_user_paid function for corporate subscriptions
+* Update email template to allow for images and html
+* Add action leaky_paywall_before_download_pdf before a restricted pdf is downloaded
+* Add leaky_paywall_cancel_subscription_description for altering text on cancel pagee
+* Add leaky_paywall_content_access_description filter for altering text on register form subscription description
+* Fix number format error in subscription details on free level
+
+= 4.4.0 =
+* Refactor License Key Settings
+* Add leaky_paywall_failed_payment action for paypal webhooks
+* Add leaky_paywall_failed_payment action for Stripe webhooks
+* Update check for new leaky paywall subscriber email to be sent so that it works again with the Strip credit card form
+* Add leaky_paywall_cancelled_subscriber action after a subscriber has cancelled
+* Fix bug with cancel link not showing on user profile
+* Add current_tab value to leaky_paywall_update_settings_settings filter
+* Fix number format error for free subscriptions on registration form
+* Add hook after enabled payment gateway settings
+* Refactor leaky_paywall_has_user_paid function
+
+= 4.3.0 =
+* Including User object w/ wp_login action call
+* Fix mode bug in paypal webhook processing
+* Add css class to subscription options h2 tag
+* Fix mode bug during Stripe webhook processing
+
+= 4.2.0 =
+* Settings Page Rebuild
+
+= 4.1.5 =
+* Fixing debug output code on Stripe card decline
+
+= 4.1.4 =
+* Updating translation strings and POT file
+
+= 4.1.3 =
+* Fixing bug in PayPal processing
+
+= 4.1.2 = 
+* Fixing India Rupee sign
+* Updating some verbage on the Profile Page for passwords
+
+= 4.1.1 =
+* Show only sites in leaky paywall settings to super admins only
+* Fixing bug causing deleted plans to permanently delete, instead of just being marked as deleted
+* Update level site settings so the chosen site is selected in the dropdown after saving the plugin settings
+
+= 4.1.0 =
+* Deprecating wp_get_sites usage for 4.6.x+
+* Removing upgrade path in favor of already existing functionality
+* Fixing Stripe payment form to handle existing logged in users better
+* Add filter for changing the order of the subscription card levels on the subscribe page
+
+= 4.0.6 =
+* Fix for multisite subsites not showing payment data
+* Adding Created column to subscribers table
+* Fixing default sort order in subscribers table
+
+= 4.0.5 =
+* Update registration form to correctly calculate coupon discounts
+
+= 4.0.4 =
+* Do not show Payment Information for non-recurring payments
+
+= 4.0.3 =
+* Fix a bug in Stripe onetime payment, causing HUGE payments
+* Fix credit card form display
+* Style updates and code cleanup
+
+= 4.0.2 =
+* Set defaults for visibility metaboxes
+* Fixing bug w/ Stripe cancellations not displaying content if not yet expired
+* Checking for zero based level ID in registration form output w/ LP subscription shortcode
+
+= 4.0.1 =
+* Hide dashboard widget from non-admin users
+* Set stripe key based on mode inside of has_user_paid function
+
+= 4.0.0 =
+* Payment Gateway Redux
+* Free Subscriptions Updates
+* Default Gateway Stripe Popup
+* Added Credit Card Form for Stripe
+* Cleanup PayPal processing
+* Cleanup Bulk Import Code
+* General Code Cleanup
+
+= 3.8.0 =
+
+* Add recent subscribers dashboard widget
+* Add a check to the new subscriber email to make sure the user does not already exist in the system
+* Add leaky_paywall_after_new_subscriber_form action on subscriber page
+* Adding HTTP Version to PayPal API calls... fixing get current user function calls
+* Fixing deprecated function call
+* Add bulk csv uploader to subscribers pagee
+
+= 3.7.0 =
+* Setup 'rememberme' to true for set_auth_cookie calls
+* Adding support for Zero-Decimal currencies in Stripe
+
+= 3.6.0 =
+* Update add ons page with publisher bundle banner
+* Fixing bug when detecting empty users and level IDs
+* Fixing bug when updating subscriber information
+* Adding filters for new payment gateways
+* Adding text to profile shortcode for unpaid accounts to resubscribe.
+
+= 3.5.0 =
+* Fixing bug in PayPal IPN EOT/Suspend/Cancel
+* General Code cleanup
+* Add after subscribe page redirect after a new user is created
+
+= 3.4.0 =
+* Adding text-domain
+* Updating POT file
+
+= 3.3.1 =
+* Fixing Bulk Importer bug
+
+= 3.3.0 =
+* Remove reference to EDD updater class
+* Add function to build post type row in access options when add new post type button is clicked
+* Removing EDD Updater references
+
+= 3.2.1 =
+* Fix: Don't show deleted levels on frontend
+
+= 3.2.0 =
+* Release to Public on WordPress.org
+* Create Add-ons page
+* Fix for int/string compare on subscription options shortcode
+* Expiration Fix
+* Adding new filters and actions
+* General code cleanup
+* General styling cleanup
+
+= 3.1.3 =
+* Fixed bug causing updater to always say there is an update
+
 = 3.1.2 =
 * Fixed bug when manual payments are unlimited
 * Fixed bug with trim() vs empty() calls on content availability

@@ -43,8 +43,6 @@
     text-align: center;
 }
 
-.leaky-paywall-payment-form { display: none; }
-
 .leaky_paywall_subscription_option.current-level {
     border: 2px solid #007711;
     box-shadow: 0 0 20px #3e8e51;
@@ -95,4 +93,42 @@
 
 .paypal-description {
 	font-size: .8em;
+}
+
+.leaky-paywall-field-label {
+	display: block;
+}
+
+.leaky-paywall-payment-button a {
+	display: block;
+	min-height: 20px;
+	background: #32A3E4;
+	color: #fff;
+	padding: 7px 15px;
+	border-radius: 4px;
+	text-decoration: none;
+}
+.leaky-paywall-payment-button a:hover {
+	color: #fff;
+	background: #52B2E9;
+}
+
+.leaky_paywall_message {
+	border-radius: 4px;
+}
+
+.leaky_paywall_message.error {
+	background: #FFAAAA;
+	border: 1px solid #FF5555;
+	padding: 10px;
+}
+
+.leaky_paywall_message.error p {
+	margin-bottom: 5px;
+	font-size: .875em;
+	color: #333;
+}
+
+.leaky-paywall-payment-form .form-row label {
+	display: block;
 }

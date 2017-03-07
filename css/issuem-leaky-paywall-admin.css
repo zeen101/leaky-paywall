@@ -98,3 +98,30 @@ select.select_level_post_type, select.select_level_site {
 .leaky_paywall_hidden {
 	display: none;	
 }
+
+
+td.available-addon {
+	border: 1px solid #ccc;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    max-width: 340px;
+    min-width: 250px;
+    vertical-align: top;
+    width: 33%;
+    background: #fff;
+}
+
+div.available-addon-inner {
+	margin: 20px;
+}
+
+.leaky-paywall-dashboard-table {
+	width: 100%;
+}
+
+.leaky-paywall-dashboard-table th {
+	text-align: left;
+	font-weight: bold;
+}
+.leaky-paywall-dashboard-table td {
+	padding-bottom: 5px;
+}
