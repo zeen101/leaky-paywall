@@ -567,6 +567,8 @@ function do_leaky_paywall_register_form() {
 	}
 
 	$currency = $settings['leaky_paywall_currency'];
+	$currencies = leaky_paywall_supported_currencies();
+
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 
 	$userdata = get_userdata( get_current_user_id() );
@@ -613,7 +615,7 @@ function do_leaky_paywall_register_form() {
 			</li>
 			<li>
 				<?php if ( $level['price'] > 0 ) {
-					$total = '$' . number_format( $level['price'], 2 );
+					$total = $currencies[$currency]['symbol'] . number_format( $level['price'], 2 );
 				} else {
 					$total = 'Free';
 				} ?>
