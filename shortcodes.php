@@ -64,6 +64,8 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 			} else if ( !empty( $settings['page_for_subscription'] ) ) {
 				$page_link = get_page_link( $settings['page_for_subscription'] );
 			}
+
+			$results .= apply_filters( 'leaky_paywall_before_login_form', '' );
 		
 			add_action( 'login_form_bottom', 'leaky_paywall_add_lost_password_link' );
 			$args = array(
