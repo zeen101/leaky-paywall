@@ -146,7 +146,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
             'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
         );
         	
-        $stripe_plan = Stripe_Plan::create( $args );
+        $stripe_plan = Stripe_Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args ) );
 
         $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
         update_leaky_paywall_settings( $settings );
