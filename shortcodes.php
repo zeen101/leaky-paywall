@@ -624,6 +624,7 @@ function do_leaky_paywall_register_form() {
 
 				<strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo __( $total, 'leaky-paywall' ); ?>
 			</li>
+			<?php do_action( 'leaky_paywall_after_your_subscription_details', $level ); ?>
 		</ul>
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
