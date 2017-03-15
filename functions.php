@@ -2283,3 +2283,23 @@ function leaky_paywall_old_form_value( $input, $echo = true ) {
 	}
 
 }
+
+
+/**
+ * Get the current site's selected currency symbol
+ *
+ * @since 4.5.2
+ * @return string
+ */
+if ( ! function_exists( 'leaky_paywall_get_current_currency_symbol' ) ) {
+
+	function leaky_paywall_get_current_currency_symbol() {
+
+		$settings = get_leaky_paywall_settings();
+		$currency = $settings['leaky_paywall_currency'];
+		$currencies = leaky_paywall_supported_currencies();
+
+		return $currencies[$currency]['symbol'];
+
+	}
+}
