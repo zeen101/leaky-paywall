@@ -674,7 +674,7 @@ function do_leaky_paywall_register_form() {
 
 		  </div>
 
-		  <?php do_action( 'leaky_paywall_after_password_registration_field' ); ?>
+		  <?php do_action( 'leaky_paywall_after_password_registration_field', $level_id, $level ); ?>
 
 		  <?php 
 
