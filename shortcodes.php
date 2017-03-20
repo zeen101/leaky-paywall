@@ -610,7 +610,7 @@ function do_leaky_paywall_register_form() {
 					
 				}	
 				$content_access_description .= '</ul>';
-				echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level );
+				echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level, $level_id );
 			?>	
 			
 			</li>
