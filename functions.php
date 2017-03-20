@@ -1945,7 +1945,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
             case 'new' :
 				
-				$message = $settings['new_email_body'];
+				$message = apply_filters( 'leaky_paywall_new_email_message', $settings['new_email_body'], $user_id );
 
                 if ( isset( $args ) ) {
                     // $message .= "\r\n" . 'Your username is: ' . $args['user_login'] . "\r\n";
