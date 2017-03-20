@@ -229,7 +229,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
 			
-			$results .= '<table>';
+			$results .= '<table class="leaky-paywall-profile-subscription-details">';
 			$results .= '<thead>';
 			$results .= '<tr>';
 			$results .= '	<th>' . __( 'Status', 'issuem-leaky-paywall' ) . '</th>';
