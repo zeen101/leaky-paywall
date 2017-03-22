@@ -86,11 +86,17 @@ function leaky_paywall_process_registration() {
 	
 	if ( $user_data['id'] ) {
 
+		if ( isset( $_POST['plan_id'] ) ) {
+			$plan_id = sanitize_text_field( $_POST['plan_id'] );
+		} else {
+			$plan_id = '';
+		}
+
 		$meta = array(
 			'level_id' 			=> $level_id,
 			'price' 			=> sanitize_text_field( $_POST['level_price'] ),
 			'description' 		=> sanitize_text_field( $_POST['description'] ),
-			'plan' 				=> sanitize_text_field( $_POST['plan_id'] ),
+			'plan' 				=> $plan_id,
 			'created' 			=> date( 'Y-m-d H:i:s' ),
 			'subscriber_id' 	=> '',
 			'payment_gateway' 	=> $gateway,
@@ -136,7 +142,7 @@ function leaky_paywall_process_registration() {
 				'last_name'			=> $user_data['last_name'],
 				'level_id'			=> $meta['level_id'],
 				'level_price'		=> sanitize_text_field( $_POST['level_price'] ),
-				'plan_id'			=> sanitize_text_field( $_POST['plan_id'] ),
+				'plan_id'			=> $plan_id,
 				'currency'			=> $settings['leaky_paywall_currency'],
 				'length'			=> sanitize_text_field( $_POST['interval_count'] ),
 				'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
