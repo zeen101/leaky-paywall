@@ -124,7 +124,7 @@ function leaky_paywall_process_registration() {
 			
 		}
 		
-		do_action( 'leaky_paywall_form_processing', $_POST, $user_data['id'], $meta['price'], $mode, $site );
+		do_action( 'leaky_paywall_form_processing', $_POST, $user_data['id'], $meta['price'], $mode, $site, $level_id );
 
 		if ( $meta['price'] > '0' ) {
 
