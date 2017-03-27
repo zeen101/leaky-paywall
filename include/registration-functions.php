@@ -152,11 +152,11 @@ function leaky_paywall_process_registration() {
 				'post_data'			=> $_POST
 			);
 
-			// send all data to the gateway for processing
-			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data ) );
-
 			// send email notification 
 			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
+
+			// send all data to the gateway for processing
+			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data ) );
 
 		} else {
 			// process a free subscription
