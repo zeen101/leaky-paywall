@@ -48,7 +48,7 @@ function leaky_paywall_process_registration() {
 	$user_data = leaky_paywall_validate_user_data();
 
 	// Validate extra fields in gateways
-	do_action( 'leaky_paywall_form_errors', $_POST );
+	do_action( 'leaky_paywall_form_errors', $_POST, $level_id );
 
 	// retrieve all error messages, if any
 	$errors = leaky_paywall_errors()->get_error_messages();
