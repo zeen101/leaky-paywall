@@ -286,7 +286,7 @@ function leaky_paywall_validate_user_data() {
  */
 function leaky_paywall_validate_username( $username = '' ) {
 	$sanitized = sanitize_user( $username, false );
-	$valid = ( $sanitized == $username );
+	$valid = ( $sanitized == strtolower( $username ) );
 	return (bool) apply_filters( 'leaky_paywall_validate_username', $valid, $username );
 }
 
