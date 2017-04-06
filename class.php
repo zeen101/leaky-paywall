@@ -26,19 +26,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		 */
 		function __construct() {
 		
-			if ( function_exists( 'sessions_status' ) ) {
-				if ( PHP_SESSION_NONE === session_status() )
-					session_start();
-			} else if ( function_exists( 'session_id' ) ){
-				if ( '' === session_id() )
-					session_start();
-			} else {
-				session_start();
-			}
-		
 			$settings = $this->get_settings();
 			
 			add_action( 'admin_notices', array( $this, 'update_notices' ) );
+			
+			add_action( 'admin_notices', array( $this, 'stripe_tls_notice' ) );
 		
 			add_action( 'admin_init', array( $this, 'upgrade' ) );
 			
@@ -54,8 +46,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
-			
-			
 			
 			if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
 				
@@ -2099,6 +2089,37 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					}
 				}
 			}
+		}
+		
+		function stripe_tls_notice() {
+			
+			$settings = $this->get_settings();
+			
+            if ( in_array( 'stripe', $settings['payment_gateway'] ) || in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
+	         	
+                if ( ! class_exists( 'Stripe' ) ) {
+                        require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
+                }
+
+	         	$secret_key = empty( $settings['live_secret_key'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+
+                Stripe::setApiKey( $secret_key );
+				Stripe::$apiBase = "https://api-tls12.stripe.com";
+				
+				try {
+					Stripe_Charge::all();
+				} catch ( Stripe_ApiConnectionError $e ) {
+					?>
+					<div id="leaky-paywall-stripe-tls-error-nag" class="update-nag">
+						<?php
+						_e( 'TLS 1.2 is not supported. You will need to upgrade your server settings to use Stripe.' );
+						?>
+					</div>
+					<?php
+				}
+	            
+			}
+			
 		}
 		
 		function paypal_standard_secure_notice() {
