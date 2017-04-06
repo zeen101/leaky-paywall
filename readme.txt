@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.5.2
+Stable tag: 4.6.0
 Tags: leaky paywall, membership, metered paywall, metered access 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,21 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.6.0 =
+* Adding Stripe TLS notice
+* Fix bug in validate username when user uses a capital letter
+* Send email notification in registration function
+* Add level_id to leaky_paywall_form_processing and leaky_paywall_form_errors actions
+* Add level arguement to leaky_paywall_create_stripe_plan filter
+* Fix index error on content variable
+* Fix index error if no plan id is submitted with registration form
+* Add filter for email message
+* Shortcode customizations
+* Add action leaky_paywall_after_your_subscription_details for adding additional items to the Your Subscription section on the registration form page
+* Add function for getting the currency symbol
+* Add leaky_paywall_create_stripe_plan filter to adjust details before creating a stripe plan
+* Add filter before login form for display content to non logged in users
 
 = 4.5.2 =
 * Removing deprected function usage wp_setcookie() to wp_set_auth_cookie()
