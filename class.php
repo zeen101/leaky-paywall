@@ -2112,7 +2112,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					?>
 					<div id="leaky-paywall-stripe-tls-error-nag" class="update-nag">
 						<?php
-						_e( 'TLS 1.2 is not supported. You will need to upgrade your server settings to use Stripe.' );
+						_e( 'TLS 1.2 is not supported. Please contact your host and ask them to update your server settings to use TLS 2.0 or higher.' );
 						?>
 					</div>
 					<?php
