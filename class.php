@@ -2095,29 +2095,31 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			$settings = $this->get_settings();
 			
-            if ( in_array( 'stripe', $settings['payment_gateway'] ) || in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
+            		if ( in_array( 'stripe', $settings['payment_gateway'] ) || in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
 	         	
-                if ( ! class_exists( 'Stripe' ) ) {
-                        require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
-                }
+                		if ( ! class_exists( 'Stripe' ) ) {
+                        		require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
+                		}
 
-	         	$secret_key = empty( $settings['live_secret_key'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+	         		$secret_key = empty( $settings['live_secret_key'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 
-                Stripe::setApiKey( $secret_key );
-				Stripe::$apiBase = "https://api-tls12.stripe.com";
-				
-				try {
-					Stripe_Charge::all();
-				} catch ( Stripe_ApiConnectionError $e ) {
-					?>
-					<div id="leaky-paywall-stripe-tls-error-nag" class="update-nag">
-						<?php
-						_e( 'TLS 1.2 is not supported. Please contact your host and ask them to update your server settings to use TLS 2.0 or higher.' );
+				if ( !empty( $secret_key ) ) {
+					Stripe::setApiKey( $secret_key );
+					Stripe::$apiBase = "https://api-tls12.stripe.com";
+					
+					try {
+						Stripe_Charge::all();
+					} catch ( Stripe_ApiConnectionError $e ) {
 						?>
-					</div>
-					<?php
-				}
+						<div id="leaky-paywall-stripe-tls-error-nag" class="update-nag">
+							<?php
+							_e( 'TLS 1.2 is not supported. Please contact your host and ask them to update your server settings to use TLS 2.0 or higher.' );
+							?>
+						</div>
+						<?php
+					}
 	            
+				}
 			}
 			
 		}
