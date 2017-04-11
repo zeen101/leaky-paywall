@@ -929,7 +929,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td>
 	                    				<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_login_message'] ); ?></textarea>
 	                                    <p class="description">
-	                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}} {{SUBSCRIBE_URL}}  {{LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
+	                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_URL}}  {{LOGIN_URL}}", 'issuem-leaky-paywall' ); ?>
 	                                    </p>
 	                                </td>
 	                            </tr>
@@ -939,7 +939,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td>
 	                    				<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="3"><?php echo stripslashes( $settings['subscribe_upgrade_message'] ); ?></textarea>
 	                                    <p class="description">
-	                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_LOGIN_URL}} {{SUBSCRIBE_URL}}", 'issuem-leaky-paywall' ); ?>
+	                                    <?php _e( "Available replacement variables: {{SUBSCRIBE_URL}}", 'issuem-leaky-paywall' ); ?>
 	                                    </p>
 	                                </td>
 	                            </tr>
