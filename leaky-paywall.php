@@ -11,7 +11,7 @@ Plugin Name: Leaky Paywall
 Plugin URI: https://zeen101.com/
 Description: The #1 metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
 Author: zeen101 Development Team
-Version: 4.6.0
+Version: 4.6.1
 Author URI: https://zeen101.com/
 Tags: memberships, subscriptions, restrict access, restrict content, paywall, stripe, paypal
 Text Domain: issuem-leaky-paywall
@@ -23,7 +23,7 @@ if ( !defined( 'ZEEN101_STORE_URL' ) )
 	
 define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 		'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION',	'4.6.0' );
+define( 'LEAKY_PAYWALL_VERSION',	'4.6.1' );
 define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
 define( 'LEAKY_PAYWALL_URL',		plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
