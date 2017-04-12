@@ -1704,29 +1704,32 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= apply_filters( 'leaky_paywall_subscription_options_allowed_content', $allowed_content, $level_id, $level );
 					$results .= '</div>';
 					
-					$currency = $settings['leaky_paywall_currency'];
-					$currencies = leaky_paywall_supported_currencies();
+					$subscription_price = '';
 					
-					$results .= '<div class="leaky_paywall_subscription_price">';
-					$results .= '<p>';
+					$subscription_price .= '<div class="leaky_paywall_subscription_price">';
+					$subscription_price .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$results .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), $currencies[$currency]['symbol'], number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
-							$results .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
+							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
-							$results .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), $currencies[$currency]['symbol'], number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
-							$results .= apply_filters( 'leaky_paywall_before_subscription_options_non_recurring_price', '' );
+							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_non_recurring_price', '' );
 						}
 						
 						if ( !empty( $level['trial_period'] ) ) {
-							$results .= '<span class="leaky-paywall-trial-period">' . sprintf( __( 'Free for the first %s day(s)', 'issuem-leaky-paywall' ), $level['trial_period'] ) . '</span>';
+							$subscription_price .= '<span class="leaky-paywall-trial-period">' . sprintf( __( 'Free for the first %s day(s)', 'issuem-leaky-paywall' ), $level['trial_period'] ) . '</span>';
 						}
 					} else {
-						$results .= '<strong>' . __( 'Free', 'issuem-leaky-paywall' ) . '</strong>';
+						$subscription_price .= '<strong>' . __( 'Free', 'issuem-leaky-paywall' ) . '</strong>';
 					}
+
 					
-					$results .= '</p>';
-					$results .= '</div>';
+					$subscription_price .= '</p>';
+					$subscription_price .= '</div>';
+
+					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_price', $subscription_price, $level_id, $level );
+					
 					
 					//Don't show payment options if the users is currently subscribed to this level
 					if ( !in_array( $level_id, $current_level_ids ) ) {
