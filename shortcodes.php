@@ -616,12 +616,12 @@ function do_leaky_paywall_register_form() {
 			</li>
 			<li>
 				<?php if ( $level['price'] > 0 ) {
-					$total = '$' . number_format( $level['price'], 2 );
+					$total = leaky_paywall_get_current_currency_symbol() . number_format( $level['price'], 2 );
 				} else {
 					$total = 'Free';
 				} ?>
 
-			    <strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo $currencies[$settings['leaky_paywall_currency']]['symbol']; echo number_format( $level['price'], 2 ); ?>
+			    <strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_your_subscription_total', $total, $level ); ?>
 			</li>
 		</ul>
 
