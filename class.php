@@ -1255,6 +1255,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                        </td>
 			                    </tr>
 
+			                    <?php do_action( 'leaky_paywall_after_currency_settings', $settings ); ?>
+
 			                </table>
 
 			                </div>
