@@ -30,7 +30,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 			add_action( 'admin_notices', array( $this, 'update_notices' ) );
 			
-			add_action( 'admin_notices', array( $this, 'stripe_tls_notice' ) );
+			add_action( 'http_api_curl', array( $this, 'force_ssl_version' ) );
 		
 			add_action( 'admin_init', array( $this, 'upgrade' ) );
 			
@@ -1844,9 +1844,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    </tr>
                     </tbody>
                 </table>
-             	
-
-             	
 
             </div>
 
@@ -2093,39 +2090,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			}
 		}
 		
-		function stripe_tls_notice() {
-			
-			$settings = $this->get_settings();
-			
-            		if ( in_array( 'stripe', $settings['payment_gateway'] ) || in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
-	         	
-                		if ( ! class_exists( 'Stripe' ) ) {
-                        		require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
-                		}
-
-	         		$secret_key = empty( $settings['live_secret_key'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-
-				if ( !empty( $secret_key ) ) {
-					Stripe::setApiKey( $secret_key );
-					Stripe::$apiBase = "https://api-tls12.stripe.com";
-					
-					try {
-						Stripe_Charge::all();
-					} catch ( Stripe_ApiConnectionError $e ) {
-						?>
-						<div id="leaky-paywall-stripe-tls-error-nag" class="update-nag">
-							<?php
-							_e( 'TLS 1.2 is not supported. Please contact your host and ask them to update your server settings to use TLS 2.0 or higher.' );
-							?>
-						</div>
-						<?php
-					}
-	            
-				}
-			}
-			
-		}
-		
 		function paypal_standard_secure_notice() {
 			if ( current_user_can( 'manage_options' ) ) {
 				?>
@@ -2140,54 +2104,84 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		}
 		
 		/**
-	 * Displays latest RSS item from Zeen101.com on Subscriber page
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $views
-	 */
-	function display_zeen101_dot_com_leaky_rss_item() {
-
-		$current_user = wp_get_current_user();
-
-		$hide = get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
-
-		if ( $hide == 1 ) {
-			return;
-		} 
-
-		if ( $last_rss_item = get_option( 'last_zeen101_dot_com_leaky_rss_item', true ) ) {
-			
-			echo '<div class="notice notice-success">';
-			echo $last_rss_item;
-			echo '<p><a href="#" class="lp-notice-link" data-notice="rss_item" data-type="dismiss">Dismiss</a></p>';
-			echo '</div>';
+		 * Displays latest RSS item from Zeen101.com on Subscriber page
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $views
+		 */
+		function display_zeen101_dot_com_leaky_rss_item() {
+	
+			$current_user = wp_get_current_user();
+	
+			$hide = get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
+	
+			if ( $hide == 1 ) {
+				return;
+			} 
+	
+			if ( $last_rss_item = get_option( 'last_zeen101_dot_com_leaky_rss_item', true ) ) {
+				
+				echo '<div class="notice notice-success">';
+				echo $last_rss_item;
+				echo '<p><a href="#" class="lp-notice-link" data-notice="rss_item" data-type="dismiss">Dismiss</a></p>';
+				echo '</div>';
+				
+			}
 			
 		}
+
+		/**
+		 * Process ajax calls for notice links
+		 *
+		 * @since 2.0.3
+		 */
+		function ajax_process_notice_link() {
+	
+			$nonce = $_POST['nonce'];
+	
+			if ( ! wp_verify_nonce( $nonce, 'leaky-paywall-notice-nonce' ) )
+				die ( 'Busted!'); 
+	
+			$current_user = wp_get_current_user();
+	
+			update_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', 1 );
+	
+			echo get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
+	
+			exit;
+	
+		}
 		
-	}
-
-	/**
-	 * Process ajax calls for notice links
-	 *
-	 * @since 2.0.3
-	 */
-	function ajax_process_notice_link() {
-
-		$nonce = $_POST['nonce'];
-
-		if ( ! wp_verify_nonce( $nonce, 'leaky-paywall-notice-nonce' ) )
-			die ( 'Busted!'); 
-
-		$current_user = wp_get_current_user();
-
-		update_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', 1 );
-
-		echo get_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', true );
-
-		exit;
-
-	}
+		/**
+		 * Force SSL version to TLS1.2 when using cURL
+		 *
+		 * Thanks roykho (WooCommerce Commit)
+		 * Thanks olivierbellone (Stripe Engineer)
+		 * @param resource $curl the handle
+		 * @return null
+		 */
+		public function force_ssl_version( $curl ) {
+			if ( ! $curl ) {
+				return;
+			}
+	
+			if ( OPENSSL_VERSION_NUMBER >= 0x1000100f ) {
+				if ( ! defined( 'CURL_SSLVERSION_TLSv1_2' ) ) {
+					// Note the value 6 comes from its position in the enum that
+					// defines it in cURL's source code.
+					define( 'CURL_SSLVERSION_TLSv1_2', 6 ); // constant not defined in PHP < 5.5
+				}
+			
+				curl_setopt( $curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
+			} else {
+				if ( ! defined( 'CURL_SSLVERSION_TLSv1' ) ) {
+					define( 'CURL_SSLVERSION_TLSv1', 1 ); // constant not defined in PHP < 5.5
+				}
+	
+				curl_setopt( $curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1 );
+			}
+		}
 
 	}
 	
