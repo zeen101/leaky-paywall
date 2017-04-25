@@ -229,16 +229,16 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
 			
-			$results .= '<table class="leaky-paywall-profile-subscription-details">';
-			$results .= '<thead>';
-			$results .= '<tr>';
-			$results .= '	<th>' . __( 'Status', 'issuem-leaky-paywall' ) . '</th>';
-			$results .= '	<th>' . __( 'Type', 'issuem-leaky-paywall' ) . '</th>';
-			$results .= '	<th>' . __( 'Payment Method', 'issuem-leaky-paywall' ) . '</th>';
-			$results .= '	<th>' . __( 'Expiration', 'issuem-leaky-paywall' ) . '</th>';
-			$results .= '	<th>' . __( 'Cancel?', 'issuem-leaky-paywall' ) . '</th>';
-			$results .= '</tr>';
-			$results .= '</thead>';
+			$profile_table = '<table class="leaky-paywall-profile-subscription-details">';
+			$profile_table .= '<thead>';
+			$profile_table .= '<tr>';
+			$profile_table .= '	<th>' . __( 'Status', 'issuem-leaky-paywall' ) . '</th>';
+			$profile_table .= '	<th>' . __( 'Type', 'issuem-leaky-paywall' ) . '</th>';
+			$profile_table .= '	<th>' . __( 'Payment Method', 'issuem-leaky-paywall' ) . '</th>';
+			$profile_table .= '	<th>' . __( 'Expiration', 'issuem-leaky-paywall' ) . '</th>';
+			$profile_table .= '	<th>' . __( 'Cancel?', 'issuem-leaky-paywall' ) . '</th>';
+			$profile_table .= '</tr>';
+			$profile_table .= '</thead>';
 			foreach( $sites as $site ) {
 				$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 				
@@ -278,16 +278,17 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				}
 				
 				if ( !empty( $status ) && !empty( $level_name ) && !empty( $payment_gateway ) && !empty( $expires ) ) {
-					$results .= '<tbody>';
-					$results .= '	<td>' . ucfirst( $status ) . '</td>';
-					$results .= '	<td>' . $level_name . '</td>';
-					$results .= '	<td>' . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . '</td>';
-					$results .= '	<td>' . $expires . '</td>';
-					$results .= '	<td>' . $cancel . '</td>';
-					$results .= '</tbody>';
+					$profile_table .= '<tbody>';
+					$profile_table .= '	<td>' . ucfirst( $status ) . '</td>';
+					$profile_table .= '	<td>' . $level_name . '</td>';
+					$profile_table .= '	<td>' . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . '</td>';
+					$profile_table .= '	<td>' . $expires . '</td>';
+					$profile_table .= '	<td>' . $cancel . '</td>';
+					$profile_table .= '</tbody>';
 				}
 			}
-			$results .= '</table>';
+			$profile_table .= '</table>';
+			$results .= apply_filters( 'leaky_paywall_profile_table', $profile_table, $user, $sites, $mode, $settings );
 			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_end', '' );
 			
 			//Your Mobile Devices
