@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.6.1
+Stable tag: 4.7.0
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,14 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.7.0 =
+* Removing Stripe TLS warning in favor of forcing TLS version using WooCommerce's solution (thanks Woo)
+* Add filter to adjust leaky paywall profile table
+* Add country names to currency list and a hook for adding settings in the currency settings section
+* Add leaky_paywall_your_subscription_total filter
+* Add filter to adjust subscription price on subscribe cards
+* Removing SUBSCRIBE_LOGIN_URL from text description (still works in code)
 
 = 4.6.1 =
 * Fix causing admin to break when first activation LP w/ no Stripe Key set
