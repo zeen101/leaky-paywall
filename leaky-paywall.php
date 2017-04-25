@@ -9,11 +9,11 @@
 /*
 Plugin Name: Leaky Paywall
 Plugin URI: https://zeen101.com/
-Description: The #1 metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
+Description: The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
 Author: zeen101 Development Team
 Version: 4.6.1
 Author URI: https://zeen101.com/
-Tags: memberships, subscriptions, restrict access, restrict content, paywall, stripe, paypal
+Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: issuem-leaky-paywall
 */
 

@@ -4,11 +4,11 @@ Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
 Stable tag: 4.6.1
-Tags: leaky paywall, membership, metered paywall, metered access 
+Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The #1 metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
+The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
 
 == Description ==
 
