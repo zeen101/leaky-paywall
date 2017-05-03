@@ -100,7 +100,7 @@ function leaky_paywall_process_registration() {
 			'created' 			=> date( 'Y-m-d H:i:s' ),
 			'subscriber_id' 	=> '',
 			'payment_gateway' 	=> $gateway,
-		), $user );
+		), $user_data );
 
 		$level = get_leaky_paywall_subscription_level( $level_id );
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';

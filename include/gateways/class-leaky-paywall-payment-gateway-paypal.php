@@ -166,6 +166,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 						$user_id = leaky_paywall_new_subscriber( NULL, $user_email, $customer_id, $args );
 					}
 
+					do_action( 'leaky_paywall_paypal_signup', $user_id );
+
 					wp_set_current_user( $user_id );
 					wp_set_auth_cookie( $user_id, true );
 					
