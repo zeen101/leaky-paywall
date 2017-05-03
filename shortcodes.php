@@ -321,16 +321,16 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						);
 						
 						if ( !empty( $_POST['username'] ) ) {
-							$args['user_login'] = $_POST['username'];
+							$args['user_login'] = sanitize_text_field( $_POST['username'] );
 						}
 						
 						if ( !empty( $_POST['displayname'] ) ) {
-							$args['display_name'] = $_POST['displayname'];
+							$args['display_name'] = sanitize_text_field( $_POST['displayname'] );
 						}
 						
 						if ( !empty( $_POST['email'] ) ) {
 							if ( is_email( $_POST['email'] ) ) {
-								$args['user_email'] = $_POST['email'];
+								$args['user_email'] = sanitize_text_field( $_POST['email'] );
 							} else {
 								throw new Exception( __( 'Invalid email address.', 'issuem-leaky-paywall' ) );
 							}
@@ -338,7 +338,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						
 						if ( !empty( $_POST['password1'] ) && !empty( $_POST['password2'] ) ) {
 							if ( $_POST['password1'] === $_POST['password2'] ) {
-								wp_set_password( $_POST['password1'], $user->ID );
+								wp_set_password( sanitize_text_field( $_POST['password1'] ), $user->ID );
 							} else {
 								throw new Exception( __( 'Passwords do not match.', 'issuem-leaky-paywall' ) );
 							}
@@ -351,6 +351,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						} else {
 							$user = get_userdata( $user_id ); //Refresh the user object				
 							$results .= '<p class="save">' . __( 'Profile Changes Saved.', 'issuem-leaky-paywall' ) . '</p>';
+
+							do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args );
+							
 						}		
 						
 					}
