@@ -92,7 +92,7 @@ function leaky_paywall_process_registration() {
 			$plan_id = '';
 		}
 
-		$meta = array(
+		$meta = apply_filters( 'leaky_paywall_registration_user_meta', array(
 			'level_id' 			=> $level_id,
 			'price' 			=> sanitize_text_field( $_POST['level_price'] ),
 			'description' 		=> sanitize_text_field( $_POST['description'] ),
@@ -100,7 +100,7 @@ function leaky_paywall_process_registration() {
 			'created' 			=> date( 'Y-m-d H:i:s' ),
 			'subscriber_id' 	=> '',
 			'payment_gateway' 	=> $gateway,
-		);
+		), $user );
 
 		$level = get_leaky_paywall_subscription_level( $level_id );
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';

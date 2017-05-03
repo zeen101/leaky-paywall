@@ -657,63 +657,62 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 	 */
 	function leaky_paywall_update_subscriber( $hash='deprecated', $email, $customer_id, $meta_args ) {
 				
-		if ( is_email( $email ) ) {
-			$settings = get_leaky_paywall_settings();
+		if ( !is_email( $email ) ) {
+			return false;
+		}
 			
-			if ( is_multisite_premium() && !is_main_site( $meta_args['site'] ) ) {
-				$site = '_' . $meta_args['site'];
-			} else {
-				$site = '';
-			}
-			unset( $meta_args['site'] );
-			
-			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-			
-			$expires = '0000-00-00 00:00:00';
-			
-			if ( is_user_logged_in() && !is_admin() ) {
-				//Update the existing user
-				$user_id = get_current_user_id();
-			} elseif ( $user = get_user_by( 'email', $email ) ) { 
-				//the user already exists
-				//grab the ID for later
-				$user_id = $user->ID;
-			} else {
-				return false; //User does not exist, cannot update
-			}
-			
-			if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
-				$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
-			} else if ( !empty( $meta_args['expires'] ) ) {
-				$expires = $meta_args['expires'];
-			}
-			
-			$meta = array(
-				'level_id' 			=> $meta_args['level_id'],
-				'subscriber_id' 	=> $customer_id,
-				'price' 			=> $meta_args['price'],
-				'description' 		=> $meta_args['description'],
-				'plan' 				=> $meta_args['plan'],
-				'expires' 			=> $expires,
-				'payment_gateway' 	=> $meta_args['payment_gateway'],
-				'payment_status' 	=> $meta_args['payment_status'],
-			);
-			
-			$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id, $meta_args );
+		$settings = get_leaky_paywall_settings();
 		
-			foreach( $meta as $key => $value ) {
-				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
-			}
-			
-			$user_id = wp_update_user( array( 'ID' => $user_id, 'user_email' => $email ) );
-				
-			do_action( 'leaky_paywall_update_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
+		if ( is_multisite_premium() && !is_main_site( $meta_args['site'] ) ) {
+			$site = '_' . $meta_args['site'];
+		} else {
+			$site = '';
+		}
+		unset( $meta_args['site'] );
 		
-			return $user_id;
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
+		$expires = '0000-00-00 00:00:00';
+		
+		if ( is_user_logged_in() && !is_admin() ) {
+			//Update the existing user
+			$user_id = get_current_user_id();
+		} elseif ( $user = get_user_by( 'email', $email ) ) { 
+			//the user already exists
+			//grab the ID for later
+			$user_id = $user->ID;
+		} else {
+			return false; //User does not exist, cannot update
 		}
 		
-		return false;
+		if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
+			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
+		} else if ( !empty( $meta_args['expires'] ) ) {
+			$expires = $meta_args['expires'];
+		}
+		
+		$meta = array(
+			'level_id' 			=> $meta_args['level_id'],
+			'subscriber_id' 	=> $customer_id,
+			'price' 			=> $meta_args['price'],
+			'description' 		=> $meta_args['description'],
+			'plan' 				=> $meta_args['plan'],
+			'expires' 			=> $expires,
+			'payment_gateway' 	=> $meta_args['payment_gateway'],
+			'payment_status' 	=> $meta_args['payment_status'],
+		);
+		
+		$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id, $meta_args );
+	
+		foreach( $meta as $key => $value ) {
+			update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
+		}
+		
+		$user_id = wp_update_user( array( 'ID' => $user_id, 'user_email' => $email ) );
+			
+		do_action( 'leaky_paywall_update_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
+	
+		return $user_id;
 		
 	}
 	
