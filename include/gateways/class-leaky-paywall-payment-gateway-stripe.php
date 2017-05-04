@@ -382,6 +382,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			  jQuery(document).ready(function($) {
 
 			  	$('#leaky-paywall-payment-form').on('submit', function(e) {
+
+			  		var method = $('#leaky-paywall-payment-form').find( 'input[name="payment_method"]:checked' ).val();
+
+			  		if ( method != 'stripe' ) {
+			  			return;
+			  		}
  
 			  		if ( ! leaky_paywall_stripe_processing ) {
 
@@ -410,6 +416,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 
 			</script>
+
+			<input id="payment_method_stripe" class="input-radio" name="payment_method" value="stripe" checked="checked" data-order_button_text="" type="radio">
+
+			<label for="payment_method_stripe"> Credit Card </label>
 
 		<?php 
 		leaky_paywall_card_form();

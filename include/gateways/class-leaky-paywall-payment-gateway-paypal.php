@@ -45,6 +45,157 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 	}
 
+	public function fields() 
+	{
+
+		$settings = get_leaky_paywall_settings();
+		
+		if ( $settings['enable_paypal_on_registration'] != 'on' ) {
+			return;
+		}
+
+		ob_start(); ?>
+
+		<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="Subscribe with PayPal" type="radio">
+
+		<label for="payment_method_paypal"> Paypal <img width="150" src="https://www.paypalobjects.com/webstatic/mktg/logo/AM_mc_vs_dc_ae.jpg"></label>
+
+		<?php // echo leaky_paywall_paypal_button( $level, $level_id ); ?>
+
+		<script>
+			jQuery(document).ready(function($) {
+
+				var method = $('#leaky-paywall-payment-form').find('input[name="payment_method"]:checked').val();
+				var button = $('#leaky-paywall-submit');
+
+				if ( method == 'paypal_standard' ) {
+					$('.leaky-paywall-card-details').slideUp();
+					button.text('Subscribe with Paypal');
+				}
+
+				$('#leaky-paywall-payment-form input[name="payment_method"]').change(function() {
+
+					var method = $('#leaky-paywall-payment-form').find('input[name="payment_method"]:checked').val();
+
+					if ( method == 'paypal_standard' ) {
+						$('.leaky-paywall-card-details').slideUp();
+						button.text('Subscribe with Paypal');
+					} else {
+						$('.leaky-paywall-card-details').slideDown();
+						button.text('Subscribe');
+					}
+
+				});
+
+				$('#leaky-paywall-payment-form').on('submit', function(e) {
+
+					var method = $('#leaky-paywall-payment-form').find('input[name="payment_method"]:checked').val();
+
+					if ( method == 'paypal_standard' ) {
+						// alert('save data and send to paypal');
+						// e.preventDefault();
+					}
+
+				});
+
+
+			});
+
+		</script>
+		<?php 
+		return ob_get_clean();	
+	}
+
+	public function scripts() 
+	{
+		?>
+		<!-- <script src="https://www.paypalobjects.com/api/checkout.js" data-version-4></script> -->
+		<?php 
+	}
+
+	/**
+	 * Process registration
+	 *
+	 * @since 4.0.0
+	 */
+	public function process_signup() {
+
+		// echo '<pre>';
+		// print_r( $_POST );
+		// echo '</pre>';
+
+		// for recurring, cmb = _xclick-subscriptions
+
+		// https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
+
+		$settings = get_leaky_paywall_settings();
+		$paypal_sandbox = 'off' === $settings['test_mode'] ? '' : 'sandbox';
+
+		$paypal_args = http_build_query( $this->get_paypal_args(), '', '&' );
+
+		if ( $paypal_sandbox ) {
+			$url = 'https://www.sandbox.paypal.com/cgi-bin/webscr?test_ipn=1&' . $paypal_args;
+		} else {
+			$url = 'https://www.paypal.com/cgi-bin/webscr?' . $paypal_args;
+		}
+
+		wp_redirect( $url );
+
+		exit;
+
+		// send data to paypal
+
+	}
+
+	protected function get_paypal_args() {
+
+		$settings = get_leaky_paywall_settings();
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$paypal_sandbox = 'off' === $settings['test_mode'] ? '' : 'sandbox';
+		$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+		$currency = $settings['leaky_paywall_currency'];
+		$current_user = wp_get_current_user();
+		
+		$args = array(
+			'cmd' => '_cart',
+			'business'      => $paypal_account,
+			'no_note'       => 1,
+			'currency_code' => $currency,
+			'charset'       => 'utf-8',
+			'rm'            => is_ssl() ? 2 : 1,
+			'upload'        => 1,
+			'return'        => esc_url_raw( add_query_arg( 'leaky-paywall-confirm', 'paypal_standard', get_page_link( $settings['page_for_after_subscribe'] ) ) ),
+			'cancel_return' => esc_url_raw( add_query_arg( 'leaky-paywall-paypal-standard-cancel-return', '1', get_page_link( $settings['page_for_profile'] ) ) ),
+			// 'page_style'    => $this->gateway->get_option( 'page_style' ),
+			// 'image_url'     => esc_url_raw( $this->gateway->get_option( 'image_url' ) ),
+			'paymentaction' => 'sale',
+			'bn'            => 'LeakyPaywall_Cart',
+			'invoice'       => 'LP-' . $this->level_id . '-' . wp_rand(99, 999),
+			'custom'        => $this->email,
+			'notify_url'    => esc_url_raw( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ),
+			'first_name'    => $this->first_name,
+			'last_name'     => $this->last_name,
+			// 'address1'      => $this->limit_length( $order->get_billing_address_1(), 100 ),
+			// 'address2'      => $this->limit_length( $order->get_billing_address_2(), 100 ),
+			// 'city'          => $this->limit_length( $order->get_billing_city(), 40 ),
+			// 'state'         => $this->get_paypal_state( $order->get_billing_country(), $order->get_billing_state() ),
+			// 'zip'           => $this->limit_length( wc_format_postcode( $order->get_billing_postcode(), $order->get_billing_country() ), 32 ),
+			// 'country'       => $this->limit_length( $order->get_billing_country(), 2 ),
+			'email'         => $this->email,
+			'notify_url'	=> add_query_arg( 'listener', 'IPN', get_site_url() . '/' ),
+			'return' => add_query_arg( 'leaky-paywall-confirm', 'paypal_standard', get_site_url() . '/' ),
+			'amount_1' => $this->amount,
+			'quantity_1'	=> 1,
+			'item_name_1'	=> $this->level_name,
+			'item_number_1'	=> $this->level_id,
+			'custom'	=> $this->email,
+			'no_shipping'	=> 1
+		);
+
+		return $args;
+
+	}
+
 	/**
 	 * Process registration and payment confirmation after returning from PayPal
 	 *

@@ -528,6 +528,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'live_publishable_key'			=> '',
 				'test_secret_key'				=> '',
 				'test_publishable_key'			=> '',
+				'enable_paypal_on_registration' => 'off',
 				'paypal_live_email'				=> '',
 				'paypal_live_api_username'		=> '',
 				'paypal_live_api_password'		=> '',
@@ -757,7 +758,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						
 					if ( !empty( $_REQUEST['test_publishable_key'] ) )
 						$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', trim( $_REQUEST['test_publishable_key'] ) );
-						
+					
+					
+
+					if ( !empty( $_REQUEST['enable_paypal_on_registration'] ) )
+						$settings['enable_paypal_on_registration'] = $_REQUEST['enable_paypal_on_registration'];
+					else
+						$settings['enable_paypal_on_registration'] = apply_filters( 'zeen101_demo_enable_paypal_on_registration', 'off' );
+
 					if ( !empty( $_REQUEST['paypal_live_email'] ) )
 						$settings['paypal_live_email'] = apply_filters( 'zeen101_demo_paypal_live_email', trim( $_REQUEST['paypal_live_email'] ) );
 						
@@ -1099,7 +1107,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        
 	                        <table id="leaky_paywall_stripe_options" class="form-table">
 	                        
-		                        <tr><th><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></th><td></td></tr>
+		                        <tr><th colspan="2"><h3><?php _e( 'Stripe Settings', 'issuem-leaky-paywall' ); ?></h3></th></tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Secret Key', 'issuem-leaky-paywall' ); ?></th>
@@ -1141,8 +1149,15 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                                            
 		                        <table id="leaky_paywall_paypal_options" class="gateway-options form-table">
 		                        
-			                        <tr><th><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></th><td></td></tr>
-		                        
+			                        <tr><th colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'issuem-leaky-paywall' ); ?></h3></th></tr>
+		                        	
+		                        	<tr>
+		                                <th><?php _e( 'Enable Paypal on the Registration Form', 'issuem-leaky-paywall' ); ?></th>
+		                                <td>
+		                                	<input type="checkbox" id="enable_paypal_on_registration" name="enable_paypal_on_registration" <?php checked( 'on', $settings['enable_paypal_on_registration'] ); ?> /> If not checked, the paypal button will be displayed on the subscribe cards instead.
+		                                </td>
+		                            </tr>
+
 		                        	<tr>
 		                                <th><?php _e( 'Merchant ID', 'issuem-leaky-paywall' ); ?></th>
 		                                <td>

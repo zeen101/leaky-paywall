@@ -34,10 +34,15 @@ function leaky_paywall_process_registration() {
 	$level_id = isset( $_POST['level_id'] ) ? absint( $_POST['level_id'] ) : false;
 
 	// get the selected payment method
+	// leaving this here for backwards compatibility
 	if ( ! isset( $_POST['gateway'] ) ) {
 		$gateway = 'paypal';
 	} else {
 		$gateway = sanitize_text_field( $_POST['gateway'] );
+	}
+
+	if ( isset( $_POST['payment_method'] ) ) {
+		$gateway = sanitize_text_field( $_POST['payment_method'] );
 	}
 	
 	/** 
@@ -301,32 +306,34 @@ function leaky_paywall_card_form() {
 
 	<div class="leaky-paywall-card-details">
 
-	  <h3><?php printf( __( 'Payment Information', 'leaky-paywall' ) ); ?></h3>
+	 <fieldset id="leaky-paywall-credit-card-form">
 
-	  <p class="form-row">
-	    <label><?php printf( __( 'Name on Card', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-	    <input type="text" size="20" name="card_name" class="card-name" />
-	  </p>
+		  <p class="form-row">
+		    <label><?php printf( __( 'Name on Card', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+		    <input type="text" size="20" name="card_name" class="card-name" />
+		  </p>
 
-	  <p class="form-row">
-	    <label><?php printf( __( 'Card Number', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-	    <input type="text" size="20" name="card_num" class="card-num" />
-	  </p>
+		  <p class="form-row">
+		    <label><?php printf( __( 'Card Number', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+		    <input type="text" size="20" name="card_num" class="card-num" />
+		  </p>
 
-	  <p class="form-row">
-	    <label><?php printf( __( 'CVC', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-	    <input type="text" size="4" name="cvc" class="cvc" />
-	  </p>
+		  <p class="form-row">
+		    <label><?php printf( __( 'CVC', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+		    <input type="text" size="4" name="cvc" class="cvc" />
+		  </p>
 
-	  <p class="form-row">
-	    <label><?php printf( __( 'Card Zip or Postal Code', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-	    <input type="text" size="20" name="card_zip" class="card-zip" />
-	  </p>
+		  <p class="form-row">
+		    <label><?php printf( __( 'Card Zip or Postal Code', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+		    <input type="text" size="20" name="card_zip" class="card-zip" />
+		  </p>
 
-	  <p class="form-row">
-	    <label><?php printf( __( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-	    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
-	  </p>
+		  <p class="form-row">
+		    <label><?php printf( __( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+		    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
+		  </p>
+
+	  </fieldset>
 
 	</div>
 		 

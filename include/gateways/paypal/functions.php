@@ -20,7 +20,7 @@ function leaky_paywall_paypal_subscription_cards( $payment_options, $level, $lev
 
 	$settings = get_leaky_paywall_settings();
 
-	if ( in_array( 'paypal_standard', array_keys( $enabled_gateways ) ) ) {
+	if ( in_array( 'paypal_standard', array_keys( $enabled_gateways ) ) && $settings['enable_paypal_on_registration'] != 'on' ) {
 		$output = leaky_paywall_paypal_button( $level, $level_id );
 	}
 
