@@ -132,3 +132,11 @@
 .leaky-paywall-payment-form .form-row label {
 	display: block;
 }
+
+.leaky-paywall-payment-method-container {
+	margin-bottom: 20px;
+}
+
+.leaky-paywall-payment-method-container img {
+	margin-left: 20px;
+}

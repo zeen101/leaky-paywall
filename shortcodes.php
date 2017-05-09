@@ -717,8 +717,12 @@ function do_leaky_paywall_register_form() {
 
 		  <input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>
 
-		  <h3><?php printf( __( 'Payment Information', 'leaky-paywall' ) ); ?></h3>
-
+		  <?php if ( $level_price > 0 ) {
+		  	?>
+		  	<h3><?php printf( __( 'Payment Information', 'leaky-paywall' ) ); ?></h3>
+		  	<?php 
+		  } ?>
+		  
 		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways ); ?>
 
 		  <div class="leaky-paywall-checkout-button">

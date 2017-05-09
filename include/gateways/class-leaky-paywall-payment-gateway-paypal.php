@@ -54,14 +54,21 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			return;
 		}
 
+		$level_id = esc_html( $_GET['level_id'] );
+		$level = get_leaky_paywall_subscription_level( $level_id );
+
+		if ( $level['price'] == 0 ) {
+			return;
+		}
+
 		ob_start(); ?>
 
-		<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="Subscribe with PayPal" type="radio">
+		<div class="leaky-paywall-payment-method-container">
+			<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="Subscribe with PayPal" type="radio">
 
-		<label for="payment_method_paypal"> Paypal <img width="150" src="https://www.paypalobjects.com/webstatic/mktg/logo/AM_mc_vs_dc_ae.jpg"></label>
-
-		<?php // echo leaky_paywall_paypal_button( $level, $level_id ); ?>
-
+			<label for="payment_method_paypal"> Paypal <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_150x38.png" alt="PayPal Logo"></label>
+		</div>
+		
 		<script>
 			jQuery(document).ready(function($) {
 
