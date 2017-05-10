@@ -131,7 +131,37 @@ function leaky_paywall_process_registration() {
 		
 		do_action( 'leaky_paywall_form_processing', $_POST, $user_data['id'], $meta['price'], $mode, $site, $level_id );
 
-		if ( $meta['price'] > '0' ) {
+		if ( leaky_paywall_is_free_registration( $meta ) ) {
+
+			// process a free subscription
+			
+			$subscription_data = array(
+				'length'			=> sanitize_text_field( $_POST['interval_count'] ),
+				'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
+				'site'				=> $site,
+				'mode'				=> $mode
+			);
+
+			leaky_paywall_set_expiration_date( $user_data['id'], apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
+
+			// send email notification 
+			// @todo add a free version of the email notification, not just new
+			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
+
+			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
+
+			// send the newly created user to the appropriate page after logging them in
+        	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+                wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+        	} else if ( !empty( $settings['page_for_profile'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+			} else if ( !empty( $settings['page_for_subscription'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+			}
+			
+			exit;
+
+		} else {
 
 			if ( !empty( $discount ) ) {
 				// record usage of discount code
@@ -161,37 +191,10 @@ function leaky_paywall_process_registration() {
 			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
 
 			// send all data to the gateway for processing
-			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data ) );
+			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
 
-		} else {
-			// process a free subscription
-			
-			$subscription_data = array(
-				'length'			=> sanitize_text_field( $_POST['interval_count'] ),
-				'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
-				'site'				=> $site,
-				'mode'				=> $mode
-			);
-
-			leaky_paywall_set_expiration_date( $user_data['id'], $subscription_data );
-
-			// send email notification 
-			// @todo add a free version of the email notification, not just new
-			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
-
-			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
-
-			// send the newly created user to the appropriate page after logging them in
-        	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-                wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
-        	} else if ( !empty( $settings['page_for_profile'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
-			} else if ( !empty( $settings['page_for_subscription'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
-			}
-			
-			exit;
 		}
+		
 
 		// @todo: move login and redirect code here so that it doesn't have to be included in each payment gateway
 		

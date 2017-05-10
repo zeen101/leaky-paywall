@@ -518,13 +518,15 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 			return;
 		}
 
-		if ( !empty( $data['length_unit'] ) && isset( $data['length'] ) && 1 <= $data['length'] ) {
+		if ( $data['expires'] ) {
+			$expires = $data['expires'];
+		} else if ( !empty( $data['length_unit'] ) && isset( $data['length'] ) && 1 <= $data['length'] ) {
 			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $data['length'] . ' ' . $data['length_unit'] ) ); //we're generous, give them the whole day!
 		} else {
 			$expires = '0000-00-00 00:00:00';
 		}
 
-		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $data['mode'] . '_expires' . $data['site'], $expires );
+		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $data['mode'] . '_expires' . $data['site'], apply_filters( 'leaky_paywall_set_expiration_date', $expires, $data, $user_id ) );
 
 	}
 
@@ -2302,6 +2304,27 @@ if ( ! function_exists( 'leaky_paywall_get_current_currency_symbol' ) ) {
 		$currencies = leaky_paywall_supported_currencies();
 
 		return $currencies[$currency]['symbol'];
+
+	}
+}
+
+/**
+ * Check if the current registration has an amount equal to zero (and thus free)
+ *
+ * @since 4.7.1
+ * @return bool
+ */
+if ( ! function_exists( 'leaky_paywall_is_free_registration' ) ) {
+
+	function leaky_paywall_is_free_registration( $meta ) {
+
+		if ( $meta['price'] > 0 ) {
+			$is_free = false;
+		} else {
+			$is_free = true;
+		}
+
+		return apply_filters( 'leaky_paywall_is_free_registration', $is_free, $meta );
 
 	}
 }
