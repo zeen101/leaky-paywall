@@ -80,6 +80,9 @@ function leaky_paywall_plugins_loaded() {
 		// registration
 		include( LEAKY_PAYWALL_PATH . 'include/registration-functions.php' );
 
+		// helper classes
+		include( LEAKY_PAYWALL_PATH . 'include/class-restrictions.php' );
+
 		// gateways
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/stripe/functions.php' );

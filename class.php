@@ -43,6 +43,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
 				
 			add_action( 'wp', array( $this, 'process_requests' ) );
+
+			add_action( 'init', array( $this, 'run' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] )
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'issuem_pdf_attachment_url' ), 10, 2 );
@@ -57,6 +59,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				
 			}
 			
+		}
+
+		public function run() 
+		{
+
+			$restrictions = new Leaky_Paywall_Restrictions();
+			$restrictions->run();
 		}
 		
 		function issuem_pdf_attachment_url( $attachment_url, $attachment_id ) {
@@ -454,9 +463,21 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		 * @since 1.0.0
 		 */
 		function frontend_scripts() {
+
+			$settings = $this->get_settings();
 			
 			wp_enqueue_style( 'issuem-leaky-paywall', LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', LEAKY_PAYWALL_VERSION );
 
+			if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+				wp_enqueue_script( 'js_cookie_js', LEAKY_PAYWALL_URL . 'js/js-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
+				wp_enqueue_script( 'leaky_paywall_cookie_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
+
+				wp_localize_script( 'leaky_paywall_cookie_js', 'leaky_paywall_cookie_ajax',
+		            array( 
+		            	'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' )
+		             ) 
+		        );
+			}
 			
 		}
 		
@@ -539,6 +560,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'paypal_sand_api_secret'		=> '',
 				'leaky_paywall_currency'		=> 'USD',
 				'restrict_pdf_downloads' 		=> 'off',
+				'enable_js_cookie_restrictions' => 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
 						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
@@ -728,6 +750,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					} else {
 						$settings['restrictions'] = array();
 					}
+
+					if ( !empty( $_POST['enable_js_cookie_restrictions'] ) )
+						$settings['enable_js_cookie_restrictions'] = $_POST['enable_js_cookie_restrictions'];
+					else
+						$settings['enable_js_cookie_restrictions'] = 'off';
 
 					if ( !empty( $_REQUEST['levels'] ) ) {
 						$settings['levels'] = $_REQUEST['levels'];
@@ -1357,6 +1384,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				                    	</p>
 			                        </td>
 		                        </tr>
+
+		                        <tr class="restriction-options">
+	                                <th><?php _e( 'Enable Alternative Restriction Handling', 'issuem-leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> Only check this if your host uses heavy caching and the paywall notice isn't displaying. (Not Recommended)</td>
+	                            </tr>
 	                            
 	                        </table>
 	
