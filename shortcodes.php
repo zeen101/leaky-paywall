@@ -594,7 +594,7 @@ function do_leaky_paywall_register_form() {
 	leaky_paywall_show_error_messages( 'register' );
 		?>
 
-		<h3><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
+		<h3 class="leaky-paywall-subscription-details-title"><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
 
 		<ul class="leaky-paywall-subscription-details">
 			<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['label']; ?></li>
@@ -628,6 +628,8 @@ function do_leaky_paywall_register_form() {
 			    <strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_your_subscription_total', $total, $level ); ?>
 			</li>
 		</ul>
+
+		<?php do_action( 'leaky_paywall_before_registration_form', $level ); ?>
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
 		  <span class="payment-errors"></span>

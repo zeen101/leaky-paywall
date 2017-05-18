@@ -2328,3 +2328,27 @@ if ( ! function_exists( 'leaky_paywall_is_free_registration' ) ) {
 
 	}
 }
+
+
+function leaky_paywall_log( $data, $event ) {
+
+	$str = '';
+
+	if ( is_object( $data ) ) {
+		$data = json_decode(json_encode($data), true);
+	}
+
+	if ( is_array( $data ) ) {
+		foreach( $data as $key => $value ) {
+			$str .= $key . ': ' . $value . ',';
+		}
+	} else {
+		$str = $data;
+	}
+
+	$file = plugin_dir_path( __FILE__ ) . '/lp-log.txt'; 
+	$open = fopen( $file, "a" ); 
+	$write = fputs( $open, $event . " - " . current_time('mysql') . "\r\n" . $str . "\r\n" ); 
+	fclose( $open );
+
+}

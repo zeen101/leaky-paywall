@@ -554,6 +554,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'paypal_live_api_username'		=> '',
 				'paypal_live_api_password'		=> '',
 				'paypal_live_api_secret'		=> '',
+				'paypal_image_url'				=> '',
 				'paypal_sand_email'				=> '',
 				'paypal_sand_api_username'		=> '',
 				'paypal_sand_api_password'		=> '',
@@ -804,6 +805,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						
 					if ( !empty( $_REQUEST['paypal_live_api_secret'] ) )
 						$settings['paypal_live_api_secret'] = apply_filters( 'zeen101_demo_paypal_live_api_secret', trim( $_REQUEST['paypal_live_api_secret'] ) );
+
+					if ( !empty( $_REQUEST['paypal_image_url'] ) )
+						$settings['paypal_image_url'] = trim( $_REQUEST['paypal_image_url'] );
 						
 					if ( !empty( $_REQUEST['paypal_sand_email'] ) )
 						$settings['paypal_sand_email'] = apply_filters( 'zeen101_demo_paypal_sand_email', trim( $_REQUEST['paypal_sand_email'] ) );
@@ -1212,6 +1216,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                                <th><?php _e( 'API Signature', 'issuem-leaky-paywall' ); ?></th>
 		                                <td>
 		                                	<input type="text" id="paypal_live_api_secret" class="regular-text" name="paypal_live_api_secret" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_api_secret'] ) ); ?>" />
+		                                </td>
+		                            </tr>
+
+		                            <tr>
+		                                <th><?php _e( 'Image URL', 'issuem-leaky-paywall' ); ?></th>
+		                                <td>
+		                                	<input type="text" id="paypal_image_url" class="regular-text" name="paypal_image_url" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_image_url'] ) ); ?>" />
+		                                	<p class="description"><?php _e( 'Enter the URL to a 150x50px image displayed as your logo in the upper left corner of the Paypal checkout pages.', 'issuem-leaky-paywall' ); ?></p>
 		                                </td>
 		                            </tr>
 		                            

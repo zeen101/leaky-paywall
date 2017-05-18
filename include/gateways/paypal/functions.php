@@ -85,6 +85,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-no_note="1" 
 						data-no_shipping="1" 
 						data-shipping="0" 
+						data-image_url="' . esc_js( $settings['paypal_image_url'] ) . '"
 						data-custom="' . esc_js( $user_email ) . '"
 					></script>';
 	
