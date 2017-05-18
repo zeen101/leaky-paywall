@@ -638,17 +638,17 @@ function do_leaky_paywall_register_form() {
 
 			  <h3><?php printf( __( 'Your Details', 'leaky-paywall' ) ); ?></h3>
 
-			  <p class="form-row">
+			  <p class="form-row first-name">
 			    <label for="first_name"><?php printf( __( 'First Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="first_name" value="<?php echo $first; ?>" />
 			  </p>
 
-			  <p class="form-row">
+			  <p class="form-row last-name">
 			    <label for="last_name"><?php printf( __( 'Last Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="last_name" value="<?php echo $last; ?>"/>
 			  </p>
 			 
-			  <p class="form-row">
+			  <p class="form-row email-address">
 			    <label for="email_address"><?php printf( __( 'Email Address', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="email_address" value="<?php echo $email; ?>" <?php echo !empty( $email ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
@@ -659,19 +659,19 @@ function do_leaky_paywall_register_form() {
 
 			  <h3><?php printf( __( 'Account Details', 'leaky-paywall' ) ); ?></h3>
 
-			  <p class="form-row">
+			  <p class="form-row username">
 			    <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
 			  
 			  <?php if ( !is_user_logged_in() ) { ?>
 
-			  <p class="form-row">
+			  <p class="form-row password">
 			    <label for="password"><?php printf( __( 'Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="password" size="20" name="password"/>
 			  </p>
 
-			  <p class="form-row">
+			  <p class="form-row confirm-password">
 			    <label for="confirm_password"><?php printf( __( 'Confirm Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
 			    <input type="password" size="20" name="confirm_password"/>
 			  </p>
