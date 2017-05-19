@@ -490,11 +490,11 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 	
 		} // end foreach
 
-		if ( $canceled ) {
+		if ( is_bool( $canceled ) && $canceled ) {
 			$paid = false;
 		}
 
-		if ( $expired ) {
+		if ( is_bool( $expired ) && $expired ) {
 			$paid = false;
 		}
 	
