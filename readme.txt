@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.7.0
+Stable tag: 4.8.0
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,11 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.8.0 =
+* Fix bug when Stripe Expired set, but account not expired
+* Added JS/AJAX Version of Leaky Paywall (beta functionality)
+* Added various filters, classes, hooks, etc.
 
 = 4.7.0 =
 * Removing Stripe TLS warning in favor of forcing TLS version using WooCommerce's solution (thanks Woo)
