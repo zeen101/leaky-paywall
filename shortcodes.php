@@ -273,6 +273,8 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 					$cancel = sprintf( __( '<a href="%s">cancel</a>', 'issuem-leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
+				} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
+					$cancel = 'You have cancelled your subscription, but your account will remain active until your expiration date.';
 				} else {
 					$cancel = '&nbsp;';
 				}
@@ -525,6 +527,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 						break; //We only want the first match
 					}
 				}
+			} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
+				$results .= '<h2>' . __( 'Your Subscription Has Been Cancelled', 'issuem-leaky-paywall' ) . '</h2>';
+				$results .= '<p>' . sprintf( __( 'You have cancelled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 			} else {
 				
 				$results .= '<h2>' . __( 'Your Account is Not Currently Active', 'issuem-leaky-paywall' ) . '</h2>';
