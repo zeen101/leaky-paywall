@@ -261,7 +261,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
                 }
                 
                 if ( !empty( $subscriber_id ) ) {
-                    $cu = Stripe_Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
+                    $cu = \Stripe\Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
                 }
                 
                 if ( empty( $cu ) ) {
@@ -269,7 +269,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
                         try {
                             $subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
                             if ( !empty( $subscriber_id ) ) {
-                                $cu = Stripe_Customer::retrieve( $subscriber_id );
+                                $cu = \Stripe\Customer::retrieve( $subscriber_id );
                             } else {
                                 throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'issuem-leaky-paywall' ) );
                             }
@@ -311,13 +311,13 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
                         }
                         
                     } else {
-                        $cu = Stripe_Customer::create( $customer_array );
+                        $cu = \Stripe\Customer::create( $customer_array );
                     }
                     
                 } else {
                     
                     if ( empty( $cu ) ) {
-                        $cu = Stripe_Customer::create( $customer_array );
+                        $cu = \Stripe\Customer::create( $customer_array );
                     } else {
                         $cu->cards->create( array( 'card' => $token ) );
                     }
@@ -329,7 +329,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
                     $charge_array['currency']    = apply_filters( 'leaky_paywall_stripe_currency', $currency );
                     $charge_array['description'] = $level['label'];
                     
-                    $charge = Stripe_Charge::create( $charge_array );
+                    $charge = \Stripe\Charge::create( $charge_array );
                 }
                                 
                 $customer_id = $cu->id;
@@ -963,7 +963,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
                 if ( !empty( $level['plan_id'] ) ) {
                     //We need to verify that the plan_id matches the level details, otherwise we need to update it
                     try {
-                        $stripe_plan = Stripe_Plan::retrieve( $level['plan_id'] );
+                        $stripe_plan = \Stripe\Plan::retrieve( $level['plan_id'] );
                     }
                     catch( Exception $e ) {
                         $stripe_plan = false;
@@ -988,7 +988,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
                         'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
                     );
                     
-                    $stripe_plan = Stripe_Plan::create( $args );
+                    $stripe_plan = \Stripe\Plan::create( $args );
                     $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
                     update_leaky_paywall_settings( $settings );
                                     

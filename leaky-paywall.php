@@ -82,6 +82,7 @@ function leaky_paywall_plugins_loaded() {
 
 		// helper classes
 		include( LEAKY_PAYWALL_PATH . 'include/class-restrictions.php' );
+		include( LEAKY_PAYWALL_PATH . 'include/class-lp-export.php' );
 
 		// gateways
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php' );
@@ -92,6 +93,10 @@ function leaky_paywall_plugins_loaded() {
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-stripe-checkout.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-paypal.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateways.php' );
+
+		if ( ! class_exists( 'Stripe' ) ) {
+			require_once LEAKY_PAYWALL_PATH . 'include/stripe/init.php';
+		}
 
 		//Internationalization
 		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );

@@ -41,8 +41,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		}
 
 		if ( ! class_exists( 'Stripe' ) ) {
-			require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
-			
+			require_once LEAKY_PAYWALL_PATH . 'include/stripe/init.php';
 		}
 
 	}
@@ -59,7 +58,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
             return;
 		}
 
-		Stripe::setApiKey( $this->secret_key );
+		\Stripe\Stripe::setApiKey( $this->secret_key );
 
 		$paid   = false;
 		$customer_exists = false;
@@ -85,7 +84,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 
 			if ( !empty( $subscriber_id ) ) {
-				$cu = Stripe_Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
+				$cu = \Stripe\Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
 			}
 
 			if ( empty( $cu ) ) {
@@ -93,7 +92,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					try {
 						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 						if ( !empty( $subscriber_id ) ) {
-							$cu = Stripe_Customer::retrieve( $subscriber_id );
+							$cu = \Stripe\Customer::retrieve( $subscriber_id );
 						} else {
 							throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'issuem-leaky-paywall' ) );
 						}
@@ -141,14 +140,14 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				} else {
 
 					// new customer, and this will charge them?
-					$cu = Stripe_Customer::create( $customer_array );
+					$cu = \Stripe\Customer::create( $customer_array );
 				}
 
 			} else {
 
 				// Create a Customer
 				if ( empty( $cu ) ) {
-					$cu = Stripe_Customer::create( $customer_array );
+					$cu = \Stripe\Customer::create( $customer_array );
 				} else {
 					$cu->sources->create( array( 'source' => $_POST['stripeToken'] ) );
 				}
@@ -160,7 +159,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					'description' => $this->level_name,
 				);
 
-				$charge = Stripe_Charge::create( $charge_array );
+				$charge = \Stripe\Charge::create( $charge_array );
 
 			}
 

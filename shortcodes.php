@@ -397,7 +397,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			
 			$results .= wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true, false );
 			
-			$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Update Profile Information', 'issuem-leaky-paywall' ) . '"  /></p>'; 
+			$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Save Profile Changes', 'issuem-leaky-paywall' ) . '"  /></p>'; 
 			$results .= '</form>';
 			$results .= apply_filters( 'leaky_paywall_profile_your_profile_end', '' );
 			

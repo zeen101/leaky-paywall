@@ -116,12 +116,18 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
     $stripe_plan = false;
     $time = time();
 
-    Stripe::setApiKey( $plan_args['secret_key'] );
+    try {
+    	\Stripe\Stripe::setApiKey( $plan_args['secret_key'] );
+    } catch (Exception $e) {
+    	return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
+			
+    }
+    
 
 	if ( !empty( $level['plan_id'] ) ) {
 		//We need to verify that the plan_id matches the level details, otherwise we need to update it
 		try {
-            $stripe_plan = Stripe_Plan::retrieve( $level['plan_id'] );
+            $stripe_plan = \Stripe\Plan::retrieve( $level['plan_id'] );
         }
         catch( Exception $e ) {
             $stripe_plan = false;
@@ -146,7 +152,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
             'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
         );
         	
-        $stripe_plan = Stripe_Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
+        $stripe_plan = \Stripe\Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
 
         $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
         update_leaky_paywall_settings( $settings );
