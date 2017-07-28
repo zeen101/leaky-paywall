@@ -147,7 +147,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		$levels = leaky_paywall_get_levels();
 		$lev = isset( $_GET['filter-level'] ) ? esc_attr( $_GET['filter-level'] ) : 'all';	
-		
+		$stat = isset( $_GET['filter-status'] ) ? esc_attr( $_GET['filter-status'] ) : 'all';	
 		?>
 		
 		<div class="alignleft actions">
@@ -160,6 +160,15 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					}
 				?>
 			</select>
+
+			<label for="filter-by-status" class="screen-reader-text">Filter by status</label>
+			<select name="filter-status" id="filter-by-status">
+				<option value="all" <?php selected( $stat, 'all' ); ?>>All Statuses</option>
+				<option value="active" <?php selected( $stat, 'active' ); ?>>Active</option>
+				<option value="deactivated" <?php selected( $stat, 'deactivated' ); ?>>Deactivated</option>
+				<option value="canceled" <?php selected( $stat, 'canceled' ); ?>>Canceled</option>
+			</select>
+
 			<input name="filter_action" id="subscriber-query-submit" class="button" value="Filter" type="submit">
 		</div>
 		

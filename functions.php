@@ -1239,6 +1239,22 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 				
 			}
 
+			if ( isset( $_GET['filter-status'] ) && 'lpsubs' == $_GET['user-type'] ) {
+
+				$status = esc_attr( $_GET['filter-status'] );
+
+				if ( 'all' != $status ) {
+
+					$args['meta_query'][] = array(
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+						'value'   => $status,
+						'compare' => 'LIKE',
+					);
+
+				}
+				
+			}
+
 			$users = get_users( $args );
 			return $users;
 
