@@ -1223,7 +1223,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 			if ( !empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] )
 				unset( $args['meta_query'] );
 
-			if ( !empty( $_GET['filter-level'] ) && 'lpsubs' == $_GET['user-type'] ) {
+			if ( isset( $_GET['filter-level'] ) && 'lpsubs' == $_GET['user-type'] ) {
 
 				$level = esc_attr( $_GET['filter-level'] );
 

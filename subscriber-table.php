@@ -147,7 +147,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		$levels = leaky_paywall_get_levels();
 		$lev = isset( $_GET['filter-level'] ) ? esc_attr( $_GET['filter-level'] ) : 'all';	
-
+		
 		?>
 		
 		<div class="alignleft actions">
