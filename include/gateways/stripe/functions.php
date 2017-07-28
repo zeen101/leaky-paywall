@@ -119,8 +119,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
     try {
     	\Stripe\Stripe::setApiKey( $plan_args['secret_key'] );
     } catch (Exception $e) {
-    	return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
-			
+    	return new WP_Error( 'missing_api_key', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
     }
     
 
@@ -151,9 +150,13 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
             'currency'          => esc_js( $plan_args['currency'] ),
             'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
         );
-        	
-        $stripe_plan = \Stripe\Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
-
+        
+        try {
+        	$stripe_plan = \Stripe\Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
+        } catch (Exception $e) {
+        	$stripe_plan = false;
+        }
+        
         $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
         update_leaky_paywall_settings( $settings );
    
