@@ -229,6 +229,16 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						case 'wp_user_login':
 							echo "<td $attributes>"; ?>
 								<strong><?php echo $user->user_login; ?></strong>
+
+								<?php 
+								// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing
+								if ( class_exists( 'user_switching' ) ) {
+									if ( $link = user_switching::maybe_switch_url( $user ) ) {
+										echo '<br><a href="' . esc_url( $link ) . '">' . esc_html__( 'Switch&nbsp;To', 'issuem-leaky-paywall' ) . '</a>';
+									}
+								}
+								
+								?>
 							</td>
 						<?php
 						break;
