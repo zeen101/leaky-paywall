@@ -136,6 +136,34 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		submit_button( __( 'Apply' ), 'primary', false, false );
 		echo '</div>';
+
+	}
+
+	public function extra_tablenav( $which ) {
+
+		if ( $which != 'top' ) {
+			return;
+		}
+
+		$levels = leaky_paywall_get_levels();
+		$lev = isset( $_GET['filter-level'] ) ? esc_attr( $_GET['filter-level'] ) : 'all';	
+
+		?>
+		
+		<div class="alignleft actions">
+			<label for="filter-by-level" class="screen-reader-text">Filter by level</label>
+			<select name="filter-level" id="filter-by-level">
+				<option value="all" <?php selected( $lev, 'all' ); ?>>All Levels</option>
+				<?php 
+					foreach( $levels as $key => $level ) {
+						echo '<option ' . selected( $key, $lev, false ) . ' value="' . $key . '">' . $level['label'] . '</option>';
+					}
+				?>
+			</select>
+			<input name="filter_action" id="subscriber-query-submit" class="button" value="Filter" type="submit">
+		</div>
+		
+		<?php 
 	}
 
 	function display_rows() {

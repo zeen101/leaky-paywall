@@ -717,6 +717,43 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 	
 }
 
+
+/**
+ * Get all valid and active Leaky Paywall levels
+ *
+ * @since 4.9.0
+ *
+ * @return array List of active levels
+ */
+function leaky_paywall_get_levels() {
+
+	$settings = get_leaky_paywall_settings();
+	$blog_id = get_current_blog_id();
+
+	$level_list = array();
+
+	foreach( $settings['levels'] as $key => $level ) {
+		
+		if ( !empty( $level['deleted'] ) ) {
+			continue;
+		}
+
+		if ( is_multisite_premium() && !empty( $level['site'] ) && 'all' != $level['site'] && $blog_id != $level['site'] ) {
+			continue;
+		}
+
+		if ( !is_numeric( $key ) ) {
+			continue;
+		}
+
+		$level_list[$key] = $level;
+
+	}
+
+	return $level_list;
+}
+
+
 if ( !function_exists( 'leaky_paywall_translate_payment_gateway_slug_to_name' ) ) {
 	
 	function leaky_paywall_translate_payment_gateway_slug_to_name( $slug ) {
@@ -1185,7 +1222,23 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 			
 			if ( !empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] )
 				unset( $args['meta_query'] );
-			
+
+			if ( !empty( $_GET['filter-level'] ) && 'lpsubs' == $_GET['user-type'] ) {
+
+				$level = esc_attr( $_GET['filter-level'] );
+
+				if ( 'all' != $level ) {
+
+					$args['meta_query'][] = array(
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+						'value'   => $level,
+						'compare' => 'LIKE',
+					);
+
+				}
+				
+			}
+
 			$users = get_users( $args );
 			return $users;
 
