@@ -381,7 +381,13 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function process_webhooks() {
 
-		if( ! isset( $_GET['listener'] ) || strtoupper( $_GET['listener'] ) != 'IPN' ) {
+		// this listener won't get set if the user cancel's their account in paypal...
+		// if( ! isset( $_GET['listener'] ) || strtoupper( $_GET['listener'] ) != 'IPN' ) {
+		// 	return;
+		// }
+
+		// so we are using this instead
+		if ( ! isset( $_POST['txn_type'] ) ) {
 			return;
 		}
 
