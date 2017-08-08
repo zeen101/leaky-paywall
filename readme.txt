@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.8.0
+Stable tag: 4.9.0
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,20 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.9.0 =
+* Add fix for paypal subscription cancel webhook notification not getting processed
+* Remove avatar from subscriber table
+* Add check for user switching plugin
+* Add integration with user switching plugin by adding a switch to link to the lp subscriber table if the plugin exists
+* Add status filter to subscriber table
+* Update level filter to work with zero as a level id
+* Add level filter to subscriber table
+* Fix fatal error on checkout form in stripe fields if keys are set incorrectly
+* Update stripe calls through code for v5.1.1 of stripe library
+* Update stripe php library to 5.1.1
+* Add default case for stripe event check if the event name returned does not match any of the cases
+* Update the wording on the profile page for users who have cancelled their subscription but are still active because their expiration date has not passed
 
 = 4.8.0 =
 * Fix bug when Stripe Expired set, but account not expired
