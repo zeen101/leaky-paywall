@@ -94,6 +94,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$users_columns = array(
 			'wp_user_login' => __( 'WordPress Username', 'issuem-leaky-paywall' ),
 			'email'         => __( 'E-mail', 'issuem-leaky-paywall' ),
+			'name'         => __( 'Name', 'issuem-leaky-paywall' ),
 			'level_id' 		=> __( 'Level ID', 'issuem-leaky-paywall' ),
 			'susbcriber_id' => __( 'Subscriber ID', 'issuem-leaky-paywall' ),
 			'price'         => __( 'Price', 'issuem-leaky-paywall' ),
@@ -246,6 +247,14 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$edit_link = esc_url( add_query_arg( 'edit', urlencode( $user->user_email ) ) );
 							echo "<td $attributes>"; ?>
 								<strong><a href="<?php echo $edit_link; ?>" class="edit"><?php echo $user->user_email; ?></a></strong>
+							</td>
+						<?php
+						break;
+						
+						case 'name':
+						
+							echo "<td $attributes>"; ?>
+								<?php echo $user->first_name; ?> <?php echo $user->last_name; ?>
 							</td>
 						<?php
 						break;
