@@ -14,7 +14,7 @@ Author: zeen101 Development Team
 Version: 4.9.0
 Author URI: https://zeen101.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
-Text Domain: issuem-leaky-paywall
+Text Domain: leaky-paywall
 */
 
 //Define global variables...
@@ -99,7 +99,7 @@ function leaky_paywall_plugins_loaded() {
 		}
 
 		//Internationalization
-		load_plugin_textdomain( 'issuem-leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
+		load_plugin_textdomain( 'leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
 			
 	}
 
