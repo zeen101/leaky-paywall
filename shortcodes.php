@@ -72,7 +72,7 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 				'echo' => false,
 				'redirect' => $page_link,
 			);
-			$results .= wp_login_form( $args );
+			$results .= wp_login_form( apply_filters( 'leaky_paywall_login_form_args', $args ) );
 		
 		}
 		
