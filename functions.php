@@ -1915,7 +1915,7 @@ if ( !function_exists( 'leaky_paywall_add_lost_password_link' ) ) {
 	function leaky_paywall_add_lost_password_link() {
 
 		$settings = get_leaky_paywall_settings();
-		return '<a href="' . wp_lostpassword_url() . '">' . __( 'Lost Password?', 'issuem-leaky-paywall' ) . '</a>';
+		return '<a href="' . wp_lostpassword_url() . '">' . __( 'Lost Password?', 'leaky-paywall' ) . '</a>';
 
 	}
 
