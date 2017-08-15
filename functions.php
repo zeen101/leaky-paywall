@@ -361,6 +361,12 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 			if ( $payment_gateway !== 'stripe' ) {
 
+				if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
+					if ( !empty( $plan ) && 'active' == $payment_status ) {
+						return 'subscription';
+					}
+				}
+
 				switch( $payment_status ) {
 				
 					case 'Active':
