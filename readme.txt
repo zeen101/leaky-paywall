@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.9.0
+Stable tag: 4.9.1
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,16 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.9.1 =
+* Add translation for credit card label
+* Add cancel link back to my account page for paypal subscribers
+* Add translation files for nederlands
+* Udpate domain path to translations
+* Update stripe
+* Update translation text domain to work with new translation system
+* Add filter for login form args
+* Add name column to subscriber table
 
 = 4.9.0 =
 * Add fix for paypal subscription cancel webhook notification not getting processed
