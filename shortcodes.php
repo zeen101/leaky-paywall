@@ -599,31 +599,42 @@ function do_leaky_paywall_register_form() {
 	leaky_paywall_show_error_messages( 'register' );
 		?>
 
-		<h3 class="leaky-paywall-subscription-details-title"><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
+		<div class="leaky-paywall-subscription-details-wrapper">
 
-		<ul class="leaky-paywall-subscription-details">
-			<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['label']; ?></li>
-			<li><strong><?php printf( __( 'Subscription Length:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . ( $level['interval_count'] > 1  ? 's' : '' ); ?>
-			<li><strong><?php printf( __( 'Recurring:', 'leaky-paywall' ) ); ?> </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
-			<li><strong><?php printf( __( 'Content Access:', 'leaky-paywall' ) ); ?></strong>
-				
-			<?php 
-				$content_access_description = '<ul>';
-				foreach( $level['post_types'] as $type ) {
+			<h3 class="leaky-paywall-subscription-details-title"><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
 
-					if ( $type['allowed'] == 'unlimited' ) {
-						$content_access_description .= '<li>' . ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's</li>';
-					} else {
-						$content_access_description .= '<li>' . $type['allowed_value'] . ' ' . $type['post_type'] . 's</li>';
-					}
+			<ul class="leaky-paywall-subscription-details">
+				<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['label']; ?></li>
+				<li><strong><?php printf( __( 'Subscription Length:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'] . ( $level['interval_count'] > 1  ? 's' : '' ); ?></li>
+				<li><strong><?php printf( __( 'Recurring:', 'leaky-paywall' ) ); ?> </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? 'Yes' : 'No'; ?></li>
+				<li><strong><?php printf( __( 'Content Access:', 'leaky-paywall' ) ); ?></strong>
 					
-				}	
-				$content_access_description .= '</ul>';
-				echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level, $level_id );
-			?>	
-			
-			</li>
-			<li>
+				<?php 
+					$content_access_description = '';
+					$i = 0;
+					foreach( $level['post_types'] as $type ) {
+
+						if ( $i > 0 ) {
+							$content_access_description .= ', ';
+						}
+
+						if ( $type['allowed'] == 'unlimited' ) {
+							$content_access_description .= ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's';
+						} else {
+							$content_access_description .= $type['allowed_value'] . ' ' . $type['post_type'] . 's';
+						}
+						
+						$i++;
+					}	
+					
+					echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level, $level_id );
+				?>	
+				
+				</li>
+				
+			</ul>
+
+			<p class="leaky-paywall-subscription-total">
 				<?php if ( $level['price'] > 0 ) {
 					$total = leaky_paywall_get_current_currency_symbol() . number_format( $level['price'], 2 );
 				} else {
@@ -631,8 +642,9 @@ function do_leaky_paywall_register_form() {
 				} ?>
 
 			    <strong><?php printf( __( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_your_subscription_total', $total, $level ); ?>
-			</li>
-		</ul>
+			</p>
+
+		</div>
 
 		<?php do_action( 'leaky_paywall_before_registration_form', $level ); ?>
 
