@@ -439,9 +439,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 							if ( empty( $_POST['stripe-cc-name'] ) ) {
 								throw new Exception( __( "Credit Card Cardholder's Name Required", 'issuem-leaky-paywall' ) );
 							}
-															
-							$subscriptions = $cu->subscriptions->all( 'limit=1' );
-	
+
+							$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
+
 							foreach( $subscriptions->data as $susbcription ) {
 								$sub = $cu->subscriptions->retrieve( $susbcription->id );
 								$sub->card = array(
