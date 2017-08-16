@@ -466,8 +466,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 			$settings = $this->get_settings();
 			
-			wp_enqueue_style( 'issuem-leaky-paywall', LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', LEAKY_PAYWALL_VERSION );
-
+			if ( $settings['css_style'] == 'default' ) {
+				wp_enqueue_style( 'issuem-leaky-paywall', LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', LEAKY_PAYWALL_VERSION );
+			}
+			
 			if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
 				wp_enqueue_script( 'js_cookie_js', LEAKY_PAYWALL_URL . 'js/js-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_script( 'leaky_paywall_cookie_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
