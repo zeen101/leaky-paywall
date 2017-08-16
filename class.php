@@ -656,7 +656,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$tab = '';
 			}
 
-			$settings_tabs = apply_filters('leaky_paywall_settings_tabs', array( 'general', 'subscriptions', 'payments', 'emails', 'licenses' ) );
+			$settings_tabs = apply_filters('leaky_paywall_settings_tabs', array( 'general', 'subscriptions', 'payments', 'emails', 'licenses', 'help' ) );
 
 			$current_tab = apply_filters( 'leaky_paywall_current_tab', $tab, $settings_tabs );
 
@@ -876,6 +876,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                     			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=licenses');?>" class="nav-tab<?php if($current_tab == 'licenses') { ?> nav-tab-active<?php } ?>"><?php _e('Licenses', 'issuem-leaky-paywall');?></a>
 
                     			<?php do_action( 'leaky_paywall_settings_tabs_links', $current_tab ); ?>
+
+                    			<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=help');?>" class="nav-tab<?php if($current_tab == 'help') { ?> nav-tab-active<?php } ?>"><?php _e('Help', 'issuem-leaky-paywall');?></a>
                     			
                     		</h2>
                     	<?php } // endif ?>
@@ -1483,7 +1485,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                    <?php endif; ?>
 
-	                     <?php if ( $current_tab == 'licenses' ) : ?>
+	                    <?php if ( $current_tab == 'licenses' ) : ?>
 
 	                     	<?php do_action('leaky_paywall_before_licenses_settings'); ?>
 
@@ -1492,6 +1494,20 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<?php wp_nonce_field( 'verify', 'leaky_paywall_license_wpnonce' ); ?>
 							
 	                    	<?php do_action('leaky_paywall_after_licenses_settings'); ?>
+
+	                    <?php endif; ?>
+
+	                    <?php if ( $current_tab == 'help' ) : ?>
+
+	                     	<?php do_action('leaky_paywall_before_help_settings'); ?>
+
+	                     	<h2>Getting Started</h2>
+
+	                    	<p><a target="_blank" href="https://zeen101.com/documentation/leaky-paywall-getting-started/">Setting Up Leaky Paywall</a></p>
+							
+							<?php wp_nonce_field( 'verify', 'leaky_paywall_help_wpnonce' ); ?>
+							
+	                    	<?php do_action('leaky_paywall_after_help_settings'); ?>
 
 	                    <?php endif; ?>
 
