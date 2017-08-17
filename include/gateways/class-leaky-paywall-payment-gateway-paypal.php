@@ -516,6 +516,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 							}
 							if ( !empty( $user ) && 0 !== $user->ID ) {
 								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
+
+								do_action('leaky_paywall_cancelled_subscriber', $user, 'paypal' );
 							}
 						}
 						return true; //We don't need to process anymore

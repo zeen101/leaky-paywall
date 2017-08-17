@@ -869,7 +869,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled' );
 
-							do_action('leaky_paywall_cancelled_subscriber', $user );
+							do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe' );
 
 						} else {
 						
