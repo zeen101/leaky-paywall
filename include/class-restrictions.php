@@ -57,7 +57,7 @@ class Leaky_Paywall_Restrictions {
 		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 
 		if ( !empty( $_COOKIE['issuem_lp'] ) ) {
-			$available_content = maybe_unserialize( stripslashes( $_COOKIE['issuem_lp'] ) );
+			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp'] ), true );
 		}
 
 		if ( empty( $available_content[$post_type] ) ) {
@@ -128,10 +128,10 @@ class Leaky_Paywall_Restrictions {
 		
 		}
 
-		$serialized_available_content = maybe_serialize( $available_content );
+		$json_available_content = json_encode( $available_content );
 
-		$cookie = setcookie( 'issuem_lp', $serialized_available_content, $expiration, '/' );
-		$_COOKIE['issuem_lp' . $site] = $serialized_available_content;	
+		$cookie = setcookie( 'issuem_lp', $json_available_content, $expiration, '/' );
+		$_COOKIE['issuem_lp' . $site] = $json_available_content;	
 		
 		die();
 

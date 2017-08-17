@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.8
-Stable tag: 4.9.1
+Stable tag: 4.9.2
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,13 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.9.2 =
+* Switching serialize commands to json_en/decode commands, for security reasons
+* add leaky_paywall_cancelled_subscriber hook when a paypal user cancels a subscription
+* add help tab to settings page
+* update html of subscription options details
+* Fix the php warning from stripe/lib/ApiRequestor.php:242 (h/t: [Ku Lok Sun](https://github.com/199911))
 
 = 4.9.1 =
 * Add translation for credit card label
