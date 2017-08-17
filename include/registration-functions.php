@@ -79,7 +79,11 @@ function leaky_paywall_process_registration() {
 		if ( !empty( $user_data['id'] ) ) {
 			// log the new user in
 			wp_set_current_user( $user_data['id'] );
+<<<<<<< Updated upstream
 			wp_set_auth_cookie( $user_data['id'], true );
+=======
+			wp_set_auth_cookie( $user_data['login'], true );
+>>>>>>> Stashed changes
 		}
 	}
 
@@ -190,9 +194,24 @@ function leaky_paywall_process_registration() {
 			// send email notification 
 			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
 
+<<<<<<< Updated upstream
 			// send all data to the gateway for processing
 			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
 
+=======
+			do_action( 'leaky_paywall_after_free_user_created', $user_data['id'], $_POST );
+
+			// send the newly created user to the appropriate page after logging them in
+        	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+                wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
+        	} else if ( !empty( $settings['page_for_profile'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+			} else if ( !empty( $settings['page_for_subscription'] ) ) {
+				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+			}
+			
+			exit;
+>>>>>>> Stashed changes
 		}
 		
 
@@ -228,7 +247,11 @@ function leaky_paywall_validate_user_data() {
 		$user['email']		      = $userdata->user_email;
 		$user['first_name']       = sanitize_text_field( $_POST['first_name']);
 		$user['last_name']        = sanitize_text_field( $_POST['last_name']);
+<<<<<<< Updated upstream
 		$user['need_new']         = false;
+=======
+		$user['need_new']	= false;
+>>>>>>> Stashed changes
 	}
 
 	if ( empty( $user['first_name'] ) ) {
