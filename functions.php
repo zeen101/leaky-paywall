@@ -461,7 +461,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 						
 						if ( !empty( $plan ) ) {
 							if ( isset( $cu->subscriptions ) ) {
-								$subscriptions = $cu->subscriptions->all( 'limit=1' );
+								$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 								foreach( $subscriptions->data as $subscription ) {
 									if ( 'active' === $subscription->status ) {
 										return 'subscription';
@@ -856,8 +856,8 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 						if ( !empty( $cu ) )
 							if ( true === $cu->deleted )
 								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
-								
-						$subscriptions = $cu->subscriptions->all( 'limit=1' );
+
+						$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 
 						foreach( $subscriptions->data as $susbcription ) {
 							$sub = $cu->subscriptions->retrieve( $susbcription->id );

@@ -125,8 +125,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				$customer_array['plan'] = $this->plan_id;
 
 				if ( !empty( $cu ) ) {
-					$subscriptions = $cu->subscriptions->all( 'limit=1' );
-					
+					$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
+
 					if ( !empty( $subscriptions->data ) ) {
 						foreach( $subscriptions->data as $subscription ) {
 							$sub = $cu->subscriptions->retrieve( $subscription->id );
