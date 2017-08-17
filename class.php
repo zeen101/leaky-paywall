@@ -1504,6 +1504,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                     	<h2>Getting Started</h2>
 
 	                    	<p><a target="_blank" href="https://zeen101.com/documentation/leaky-paywall-getting-started/">Setting Up Leaky Paywall</a></p>
+
+	                    	<h2>Support Documentation Articles</h2>
+
+	                    	<p><a target="_blank" href="https://zeen101.com/documentation-category/leaky-paywall/">View All</a></p>
 							
 							<?php wp_nonce_field( 'verify', 'leaky_paywall_help_wpnonce' ); ?>
 							
