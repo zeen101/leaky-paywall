@@ -79,11 +79,7 @@ function leaky_paywall_process_registration() {
 		if ( !empty( $user_data['id'] ) ) {
 			// log the new user in
 			wp_set_current_user( $user_data['id'] );
-<<<<<<< Updated upstream
 			wp_set_auth_cookie( $user_data['id'], true );
-=======
-			wp_set_auth_cookie( $user_data['login'], true );
->>>>>>> Stashed changes
 		}
 	}
 
