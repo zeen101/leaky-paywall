@@ -97,6 +97,6 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 		$results = 'Please enter your Paypal credentials in the Leaky Paywall settings.';
 	}
 	
-	return '<div class="leaky-paywall-paypal-standard-button leaky-paywall-payment-button">' . $results . '</div>' . $settings['enable_paypal_on_registration'];
+	return '<div class="leaky-paywall-paypal-standard-button leaky-paywall-payment-button">' . $results . '</div>';
 	
 }
