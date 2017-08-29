@@ -2049,9 +2049,9 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
             case 'renewal':
 
             	$renewal_subject = 'Thank you for renewing';
-            	$renewal_message = wpautop( make_clickable( 'Thank you for renewing your subscription to ' . $site_name . '! We hope that you continue to enjoy the publication and welcome your feedback, thoughts, and analysis.' );
+            	$renewal_message = wpautop( make_clickable( 'Thank you for renewing your subscription to ' . $site_name . '! We hope that you continue to enjoy the publication and welcome your feedback, thoughts, and analysis.' ) );
             	wp_mail( $user_info->user_email, $renewal_subject, $renewal_message , $headers );
-            	
+
             break;
 
             default:
