@@ -246,7 +246,7 @@ function leaky_paywall_validate_user_data() {
 		leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky_paywall' ), 'register' );
 	}
 	
-	if ( ! leaky_paywall_validate_username( $user['login'] ) ) {
+	if ( ! validate_username( $user['login'] ) ) {
 		// invalid username
 		leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky_paywall' ), 'register' );
 	}
