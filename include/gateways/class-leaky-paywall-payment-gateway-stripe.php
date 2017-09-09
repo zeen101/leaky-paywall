@@ -279,6 +279,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		            case 'charge.dispute.created' :
 		            case 'charge.dispute.updated' :
 		            case 'charge.dispute.closed' :
+		            case 'customer.created' :
+		            case 'customer.source.created' :
+		            case 'invoice.created' :
 		                break;
 		            case 'customer.deleted' :
 		                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
