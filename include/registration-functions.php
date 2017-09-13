@@ -52,6 +52,29 @@ function leaky_paywall_process_registration() {
 	// validate user data
 	$user_data = leaky_paywall_validate_user_data();
 
+	$subscription_data = array(
+		'amount'			=> sanitize_text_field( $_POST['level_price'] ),
+		'description'		=> sanitize_text_field( $_POST['description'] ),
+		'user_id'			=> $user_data['id'],
+		'user_name'			=> $user_data['login'],
+		'user_email'		=> $user_data['email'],
+		'first_name'		=> $user_data['first_name'],
+		'last_name'			=> $user_data['last_name'],
+		'level_id'			=> $level_id,
+		'level_price'		=> sanitize_text_field( $_POST['level_price'] ),
+		'plan_id'			=> $plan_id,
+		'currency'			=> $settings['leaky_paywall_currency'],
+		'length'			=> sanitize_text_field( $_POST['interval_count'] ),
+		'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
+		'recurring'			=> sanitize_text_field( $_POST['recurring'] ),
+		'site'				=> sanitize_text_field( $_POST['site'] ),
+		'new_user'			=> $user_data['need_new'],
+		'post_data'			=> $_POST
+	);
+
+	// send all data to the gateway for processing
+	leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
+
 	// Validate extra fields in gateways
 	do_action( 'leaky_paywall_form_errors', $_POST, $level_id );
 
@@ -65,6 +88,7 @@ function leaky_paywall_process_registration() {
 
 	// create a new user
 	if ( $user_data['need_new'] ) {
+
 		$user_data['id'] = wp_insert_user( array(
 				'user_login'			=> $user_data['login'],
 				'user_pass'				=> $user_data['password'],
@@ -191,7 +215,7 @@ function leaky_paywall_process_registration() {
 			leaky_paywall_email_subscription_status( $user_data['id'], 'new', $user_data );
 
 			// send all data to the gateway for processing
-			leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
+			// leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
 
 		}
 		

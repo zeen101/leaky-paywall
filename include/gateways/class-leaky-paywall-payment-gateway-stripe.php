@@ -165,8 +165,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		} catch ( Exception $e ) {
 
-			return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
-			
+			leaky_paywall_errors()->add( 'stripe_error', __( 'Error Processing Payment. ', 'leaky-paywall' ) . $e->getMessage(), 'register' );
+            return;
+
 		}
 
 		$customer_id = $cu->id;
