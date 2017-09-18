@@ -176,7 +176,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
 		}
 
-		$meta_args = array(
+		$gateway_data = array(
 			'level_id'			=> $this->level_id,
 			'subscriber_id' 	=> $customer_id,
 			'subscriber_email' 	=> $this->email,
@@ -192,9 +192,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'recurring'			=> $this->recurring
 		);
 
-		do_action( 'leaky_paywall_stripe_signup', $meta_args );
+		do_action( 'leaky_paywall_stripe_signup', $gateway_data );
 
-		return $meta_args;
+		return $gateway_data;
 
 	}
 
