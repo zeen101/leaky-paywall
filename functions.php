@@ -608,29 +608,17 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		}
 			
 		if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
-			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
-		} else if ( !empty( $meta_args['expires'] ) ) {
-			$expires = $meta_args['expires'];
-		}			
-		
-		$meta = array(
-			'level_id' 			=> $meta_args['level_id'],
-			'subscriber_id' 	=> $customer_id,
-			'price' 			=> $meta_args['price'],
-			'description' 		=> $meta_args['description'],
-			'plan' 				=> $meta_args['plan'],
-			'created' 			=> date( 'Y-m-d H:i:s' ),
-			'expires' 			=> $expires,
-			'payment_gateway' 	=> $meta_args['payment_gateway'],
-			'payment_status' 	=> $meta_args['payment_status'],
-		);
+			$meta_args['expires'] = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
+		}		
+
+		$meta_args['created'] = date( 'Y-m-d H:i:s' );
 
 		// set free level subscribers to active
-		if ( $meta['price'] == '0' ) {
-			$meta['payment_status'] = 'active';
+		if ( $meta_args['price'] == '0' ) {
+			$meta_args['payment_status'] = 'active';
 		}
 		
-		$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id, $meta_args );
+		$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta_args, $email, $customer_id, $meta_args );
 
 		// remove any extra underscores from site variable
 		$site = str_replace( '__', '_', $site );

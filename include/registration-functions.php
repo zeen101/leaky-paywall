@@ -56,7 +56,6 @@ function leaky_paywall_process_registration() {
 	 * Validate the Form
 	 */
 	
-	// validate user data
 	$user_data = leaky_paywall_validate_user_data();
 
 	if ( isset( $_POST['plan_id'] ) ) {
@@ -64,17 +63,6 @@ function leaky_paywall_process_registration() {
 	} else {
 		$plan_id = '';
 	}
-
-	// leaving this here for backwards compatibility
-	$meta = apply_filters( 'leaky_paywall_registration_user_meta', array(
-		'level_id' 			=> $level_id,
-		'price' 			=> sanitize_text_field( $_POST['level_price'] ),
-		'description' 		=> sanitize_text_field( $_POST['description'] ),
-		'plan' 				=> $plan_id,
-		'created' 			=> date( 'Y-m-d H:i:s' ),
-		'subscriber_id' 	=> '',
-		'payment_gateway' 	=> $gateway,
-	), $user_data );
 
 	$subscription_data = array(
 		'amount'			=> sanitize_text_field( $_POST['level_price'] ),
@@ -85,6 +73,8 @@ function leaky_paywall_process_registration() {
 		'first_name'		=> $user_data['first_name'],
 		'last_name'			=> $user_data['last_name'],
 		'level_id'			=> $level_id,
+		'subscriber_id' 	=> '',
+		'created' 			=> date( 'Y-m-d H:i:s' ),
 		'price'				=> sanitize_text_field( $_POST['level_price'] ),
 		'plan'				=> $plan_id,
 		'currency'			=> $settings['leaky_paywall_currency'],
@@ -98,7 +88,10 @@ function leaky_paywall_process_registration() {
 		'post_data'			=> $_POST
 	);
 
-	// send all data to the gateway for processing
+	/** 
+	 * Send all data to the gateway for processing
+	 */
+
 	$gateway_data = leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
 
 	// Validate extra fields in gateways
@@ -112,8 +105,11 @@ function leaky_paywall_process_registration() {
 		return;
 	}
 
-	// merge all data before creating/updating the subscriber
-	$subscriber_data = array_merge( $user_data, $gateway_data );
+	/** 
+	 * Merge all data before creating/updating the subscriber
+	 */
+
+	$subscriber_data = apply_filters( 'leaky_paywall_registration_user_meta', array_merge( $user_data, $gateway_data ), $user_data );
 
 	if ( is_user_logged_in() || !empty( $subscriber_data['existing_customer'] ) ) {
 		//if the email already exists, we want to update the subscriber, not create a new one
@@ -140,7 +136,9 @@ function leaky_paywall_process_registration() {
 
 	}
 	
-	// send email notification 
+	/** 
+	 * Send email notifications
+	 */
 	leaky_paywall_email_subscription_status( $user_id, $status, $user_data );
 
 	// log the user in
