@@ -589,9 +589,12 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			
 			$password = wp_generate_password();
             $userdata = array(
-			    'user_login' => $login,
-				'user_email' => $email,
-				'user_pass'  => $password,
+			    'user_login' 		=> $login,
+				'user_email' 		=> $email,
+				'user_pass' 		=> $password,
+				'first_name'		=> $meta_args['first_name'],
+				'last_name'			=> $meta_args['last_name'],
+				'display_name'		=> $meta_args['first_name'] . ' ' . $meta_args['last_name'],
 				'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
 			);
 
@@ -600,48 +603,45 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 
 		}
 		
-		if ( !empty( $user_id ) ) {
-			
-			if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
-				$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
-			} else if ( !empty( $meta_args['expires'] ) ) {
-				$expires = $meta_args['expires'];
-			}			
-			
-			$meta = array(
-				'level_id' 			=> $meta_args['level_id'],
-				'subscriber_id' 	=> $customer_id,
-				'price' 			=> $meta_args['price'],
-				'description' 		=> $meta_args['description'],
-				'plan' 				=> $meta_args['plan'],
-				'created' 			=> date( 'Y-m-d H:i:s' ),
-				'expires' 			=> $expires,
-				'payment_gateway' 	=> $meta_args['payment_gateway'],
-				'payment_status' 	=> $meta_args['payment_status'],
-			);
-			
-			$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id, $meta_args );
-
-			// remove any extra underscores from site variable
-			$site = str_replace( '__', '_', $site );
-		
-			foreach( $meta as $key => $value ) {
-
-				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
-				
-			}
-				
-			do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
-
-			if ( $userdata ) {
-				leaky_paywall_email_subscription_status( $user_id, 'new', $userdata );
-			}
-			
-			return $user_id;
-			
+		if ( empty( $user_id ) ) {
+			return false;
 		}
+			
+		if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
+			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
+		} else if ( !empty( $meta_args['expires'] ) ) {
+			$expires = $meta_args['expires'];
+		}			
+		
+		$meta = array(
+			'level_id' 			=> $meta_args['level_id'],
+			'subscriber_id' 	=> $customer_id,
+			'price' 			=> $meta_args['price'],
+			'description' 		=> $meta_args['description'],
+			'plan' 				=> $meta_args['plan'],
+			'created' 			=> date( 'Y-m-d H:i:s' ),
+			'expires' 			=> $expires,
+			'payment_gateway' 	=> $meta_args['payment_gateway'],
+			'payment_status' 	=> $meta_args['payment_status'],
+		);
 
-		return false;
+		// set free level subscribers to active
+		if ( $meta['price'] == '0' ) {
+			$meta['payment_status'] = 'active';
+		}
+		
+		$meta = apply_filters( 'leaky_paywall_new_subscriber_meta', $meta, $email, $customer_id, $meta_args );
+
+		// remove any extra underscores from site variable
+		$site = str_replace( '__', '_', $site );
+	
+		foreach( $meta as $key => $value ) {
+			update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
+		}
+			
+		do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
+		
+		return $user_id;
 		
 	}
 	
@@ -2019,7 +2019,8 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
         switch ( $status ) {
 
-            case 'new' :
+            case 'new':
+            case 'update':
 				
 				$message = apply_filters( 'leaky_paywall_new_email_message', $settings['new_email_body'], $user_id );
 

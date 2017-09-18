@@ -172,53 +172,29 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$customer_id = $cu->id;
 
-		// @todo: if for some reason the customer id is empty at this point, we need to bail and not create a user
+		if ( !$customer_id ) {
+			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
+		}
 
 		$meta_args = array(
 			'level_id'			=> $this->level_id,
 			'subscriber_id' 	=> $customer_id,
 			'subscriber_email' 	=> $this->email,
+			'existing_customer' => $existing_customer,
 			'price' 			=> $this->level_price,
 			'description' 		=> $this->level_name,
 			'payment_gateway' 	=> 'stripe',
 			'payment_status' 	=> 'active',
-			'interval' 			=> $this->length_unit,
-			'interval_count' 	=> $this->length,
+			'length_unit' 		=> $this->length_unit,
+			'length' 			=> $this->length,
 			'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
 			'plan' 				=> !empty( $customer_array['plan'] ) ? $customer_array['plan'] : '',
+			'recurring'			=> $this->recurring
 		);
 
-		if ( is_user_logged_in() || !empty( $existing_customer ) ) {
-			$user_id = leaky_paywall_update_subscriber( NULL,  $this->email, $customer_id, $meta_args ); //if the email already exists, we want to update the subscriber, not create a new one
-		} else {
-			// create the new customer as a leaky paywall subscriber
-			$user_id = leaky_paywall_new_subscriber( NULL,  $this->email, $customer_id, $meta_args );
-		}
+		do_action( 'leaky_paywall_stripe_signup', $meta_args );
 
-		if ( $user_id ) {
-
-			do_action( 'leaky_paywall_stripe_signup', $user_id );
-			
-			// log the user in
-			wp_set_current_user( $user_id );
-			wp_set_auth_cookie( $user_id, true );
-			
-			// redirect user after sign up
-			if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_after_subscribe'] ) );
-			} else if ( !empty( $settings['page_for_profile'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
-			} else if ( !empty( $settings['page_for_subscription'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
-			}
-
-			exit;
-
-		} else {
-
-			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
-
-		}
+		return $meta_args;
 
 	}
 

@@ -40,7 +40,7 @@ function leaky_paywall_send_to_gateway( $gateway, $subscription_data ) {
 
 	$gateway = new $gateway['class']( $subscription_data );
 
-	$gateway->process_signup();
+	return $gateway->process_signup();
 	
 }
 
