@@ -196,7 +196,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'length_unit' 		=> $this->length_unit,
 			'length' 			=> $this->length,
 			'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
-			'plan' 				=> !empty( $customer_array['plan'] ) ? $customer_array['plan'] : '',
+			'plan' 				=> $this->plan_id,
 			'recurring'			=> $this->recurring
 		);
 
