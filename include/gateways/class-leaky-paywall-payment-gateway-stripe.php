@@ -80,17 +80,25 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			if ( is_user_logged_in() && !is_admin() ) {
 				//Update the existing user
 				$user_id = get_current_user_id();
-				$subscriber_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+				if ( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true ) == 'stripe' ) {
+					$subscriber_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+				}
+				
 			}
 
 			if ( !empty( $subscriber_id ) ) {
-				$cu = \Stripe\Customer::retrieve( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
+				$cu = \Stripe\Customer::retrieve( $subscriber_id );
 			}
 
 			if ( empty( $cu ) ) {
 				if ( $user = get_user_by( 'email', $this->email ) ) {
 					try {
-						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+						if ( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true ) == 'stripe' ) {
+							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+						}
+						
 						if ( !empty( $subscriber_id ) ) {
 							$cu = \Stripe\Customer::retrieve( $subscriber_id );
 						} else {
