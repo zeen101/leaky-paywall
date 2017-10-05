@@ -348,7 +348,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				do_action( 'leaky_paywall_paypal_signup', $customer_id );
 				do_action( 'leaky_paywall_paypal_confirm_before_redirect', $customer_id );
 
-				return $gateway_data;
+				leaky_paywall_subscriber_registration( $gateway_data );
 					
 			}
 			catch ( Exception $e ) {

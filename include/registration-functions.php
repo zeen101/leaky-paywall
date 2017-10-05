@@ -103,17 +103,38 @@ function leaky_paywall_process_registration() {
 	 */
 	$subscriber_data = apply_filters( 'leaky_paywall_registration_user_meta', array_merge( $user_data, $gateway_data ), $user_data );
 
+	leaky_paywall_subscriber_registration( $subscriber_data );
+	
+}
+add_action( 'init', 'leaky_paywall_process_registration', 100 );
+
+/**
+ * Complete the registration process after data is processed by gateway.
+ * This allows both the registration form and subscribe card buttons to prepare
+ * the subscriber data as needed, and then hand off the subscriber creation here. 
+ *
+ * @since 4.9.3
+ */
+function leaky_paywall_subscriber_registration( $subscriber_data ) {
+
+	$settings = get_leaky_paywall_settings();
+	$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+	if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
+		$site = '_' . $level['site'];
+	} else {
+		$site = '';
+	}
+
 	/**
 	* Create or update the WP user for this subscriber
 	*/
 	if ( is_user_logged_in() || !empty( $subscriber_data['existing_customer'] ) ) {
-		//if the email already exists, we want to update the subscriber, not create a new one
-		$user_id = leaky_paywall_update_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data ); 
 		$status = 'update';
+		$user_id = leaky_paywall_update_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	} else {
-		// create the new customer as a leaky paywall subscriber
-		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data, $subscriber_data['login'] );
 		$status = 'new';
+		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	}
 
 	if ( empty( $user_id ) ) {
@@ -123,13 +144,10 @@ function leaky_paywall_process_registration() {
 	
 	// set expiration for a free subscription
 	if ( leaky_paywall_is_free_registration( $subscriber_data ) ) {
-
-		leaky_paywall_set_expiration_date( $user_id, $subscriber_data );
 		do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
-
 	}
 
-	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $level_id );
+	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $subscriber_data['level_id'] );
 	
 	// Send email notifications
 	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
@@ -140,13 +158,11 @@ function leaky_paywall_process_registration() {
 	do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
 	// send the newly created user to the appropriate page after logging them in
-	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
+	wp_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
 
 	exit;
-	
-}
-add_action( 'init', 'leaky_paywall_process_registration', 100 );
 
+}
 
 /** 
  * Validate and setup the user data for registration

@@ -307,6 +307,37 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 
 }
 
+if ( !function_exists( 'leaky_paywall_get_current_mode' ) ) {
+	
+	function leaky_paywall_get_current_mode() {
+
+		$settings = get_leaky_paywall_settings();
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+		return apply_filters( 'leaky_paywall_current_mode', $mode );
+		
+	}
+
+}
+
+if ( !function_exists( 'leaky_paywall_get_current_site' ) ) {
+	
+	function leaky_paywall_get_current_site() {
+
+		global $blog_id;
+
+		if ( is_multisite_premium() && !is_main_site( $blog_id ) ) {
+			$site = '_' . $blog_id;
+		} else {
+			$site = '';
+		}
+
+		return apply_filters( 'leaky_paywall_current_site', $site );
+		
+	}
+
+}
+
 if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 	/**
@@ -531,7 +562,10 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 			return;
 		}
 
-		if ( $data['expires'] ) {
+		$site = leaky_paywall_get_current_site();
+		$mode = leaky_paywall_get_current_mode();
+
+		if ( isset( $data['expires'] ) && $data['expires'] ) {
 			$expires = $data['expires'];
 		} else if ( !empty( $data['length_unit'] ) && isset( $data['length'] ) && 1 <= $data['length'] ) {
 			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $data['length'] . ' ' . $data['length_unit'] ) ); //we're generous, give them the whole day!
@@ -539,7 +573,7 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 			$expires = '0000-00-00 00:00:00';
 		}
 
-		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $data['mode'] . '_expires' . $data['site'], apply_filters( 'leaky_paywall_set_expiration_date', $expires, $data, $user_id ) );
+		update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, apply_filters( 'leaky_paywall_set_expiration_date', $expires, $data, $user_id ) );
 
 	}
 
@@ -585,6 +619,12 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		} else {
 
 			//the user doesn't already exist
+
+			// if they submitted a custom login name, use that
+			if ( $meta_args['login'] ) {
+				$login = $meta_args['login'];
+			}
+
 			//create a new user with their email address as their username
 			//grab the ID for later
 			if ( empty( $login ) ) {
@@ -621,10 +661,12 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		if ( empty( $user_id ) ) {
 			return false;
 		}
+
+		leaky_paywall_set_expiration_date( $user_id, $meta_args );
 			
-		if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
-			$meta_args['expires'] = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
-		}		
+		// if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
+		// 	$meta_args['expires'] = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
+		// }		
 
 		$meta_args['created'] = date( 'Y-m-d H:i:s' );
 
@@ -692,12 +734,15 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		} else {
 			return false; //User does not exist, cannot update
 		}
+
+		leaky_paywall_set_expiration_date( $user_id, $meta_args );
+			
 		
-		if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
-			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
-		} else if ( !empty( $meta_args['expires'] ) ) {
-			$expires = $meta_args['expires'];
-		}
+		// if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
+		// 	$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['interval_count'] . ' ' . $meta_args['interval'] ) ); //we're generous, give them the whole day!
+		// } else if ( !empty( $meta_args['expires'] ) ) {
+		// 	$expires = $meta_args['expires'];
+		// }
 		
 		$meta = array(
 			'level_id' 			=> $meta_args['level_id'],
@@ -705,7 +750,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			'price' 			=> $meta_args['price'],
 			'description' 		=> $meta_args['description'],
 			'plan' 				=> $meta_args['plan'],
-			'expires' 			=> $expires,
+			// 'expires' 			=> $expires,
 			'payment_gateway' 	=> $meta_args['payment_gateway'],
 			'payment_status' 	=> $meta_args['payment_status'],
 		);

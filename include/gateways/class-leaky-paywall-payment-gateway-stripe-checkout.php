@@ -43,7 +43,41 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 			require_once LEAKY_PAYWALL_PATH . 'include/stripe/lib/Stripe.php';
 		}
 
-		parent::process_signup();
+		$subscriber_data = parent::process_signup();
+
+		do_action( 'leaky_paywall_after_process_stripe_checkout', $subscriber_data );
+
+		leaky_paywall_subscriber_registration( $subscriber_data );
+
+		/// exit after this
+
+
+		// if ( is_user_logged_in() || !empty( $gateway_data['existing_customer'] ) ) {
+		// 	//if the email already exists, we want to update the subscriber, not create a new one
+		// 	$user_id = leaky_paywall_update_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data ); 
+		// 	$status = 'update';
+		// } else {
+		// 	// create the new customer as a leaky paywall subscriber
+		// 	$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
+		// 	$status = 'new';
+		// }
+
+		// if ( empty( $user_id ) ) {
+		// 	leaky_paywall_errors()->add( 'user_not_created', __( 'A user could not be created. Please check your details and try again.', 'leaky-paywall' ), 'register' );
+		// 	return;
+		// }
+
+		// // Send email notifications
+		// leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
+
+		// // log the user in
+		// leaky_paywall_log_in_user( $user_id );
+
+		
+		// // send the newly created user to the appropriate page after logging them in
+		// wp_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
+
+		// exit;
 
 	}
 
