@@ -588,8 +588,8 @@ function do_leaky_paywall_register_form() {
 		$first = $userdata->first_name;
 		$last = $userdata->last_name;
 	} else {
-		$email = '';
-		$username = '';
+		$email = leaky_paywall_old_form_value( 'email_address', false );
+		$username = leaky_paywall_old_form_value( 'username', false );
 		$first = leaky_paywall_old_form_value( 'first_name', false );
 		$last = leaky_paywall_old_form_value( 'last_name', false );
 	}
@@ -667,7 +667,7 @@ function do_leaky_paywall_register_form() {
 			 
 			  <p class="form-row email-address">
 			    <label for="email_address"><?php printf( __( 'Email Address', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="email_address" value="<?php echo $email; ?>" <?php echo !empty( $email ) ? 'disabled="disabled"' : ''; ?>/>
+			    <input type="text" size="20" name="email_address" value="<?php echo $email; ?>" <?php echo !empty( $email ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
 
 		  </div>
@@ -678,7 +678,7 @@ function do_leaky_paywall_register_form() {
 
 			  <p class="form-row username">
 			    <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) ? 'disabled="disabled"' : ''; ?>/>
+			    <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
 			  
 			  <?php if ( !is_user_logged_in() ) { ?>

@@ -54,20 +54,19 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function process_signup() {
 
 		if( empty( $_POST['stripeToken'] ) ) {
-            leaky_paywall_errors()->add( 'missing_stripe_token', __( 'Error Processing Payment. If you are using an Ad Blocker, please disable it, refresh the page, and try again.', 'issuem-leaky-paywall' ), 'register' );
+            leaky_paywall_errors()->add( 'missing_stripe_token', __( 'Error Processing Payment. If you are using an Ad Blocker, please disable it, refresh the page, and try again.', 'leaky-paywall' ), 'register' );
             return;
 		}
 
 		\Stripe\Stripe::setApiKey( $this->secret_key );
 
+		$cu = false;
 		$paid   = false;
-		$customer_exists = false;
+		$existing_customer = false;
 
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		$level = get_leaky_paywall_subscription_level( $this->level_id );
-
-		$cu = false;
 
 		try {
 
@@ -287,6 +286,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		                break;
 		                
 		            case 'customer.subscription.created' :
+		            	$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
 		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
 		                break;
 		                

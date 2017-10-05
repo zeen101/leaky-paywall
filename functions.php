@@ -297,6 +297,16 @@ if ( !function_exists( 'get_leaky_paywall_email_from_login_hash' ) ) {
 	
 }
 
+if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
+	
+	function leaky_paywall_user_has_access( $user ) {
+
+		return leaky_paywall_has_user_paid( $user->user_email );
+		
+	}
+
+}
+
 if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 	/**
@@ -550,7 +560,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	 * @return mixed $wpdb insert ID or false
 	 */
 	function leaky_paywall_new_subscriber( $hash='deprecated', $email, $customer_id, $meta_args, $login='' ) {
-
+		
 		if ( !is_email( $email ) ) {
 			return false;
 		}
@@ -1979,10 +1989,10 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
     function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
-    	
+
     	// if the args come through as a WP User object, then the user already exists in the system and we don't know their password
         if ( !empty( $args ) && is_array( $args ) ) {
-            $password = $args['user_pass'];
+            $password = $args['password'];
         } else {
 	        $password = '';
         }
@@ -2005,17 +2015,14 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
         $headers[] = "Reply-To: " . $from_email;
         $headers[] = "Content-Type: text/html; charset=UTF-8";
 
+        do_action( 'leaky_paywall_before_email_status', $user_id, $status );
+
         switch ( $status ) {
 
             case 'new':
             case 'update':
 				
 				$message = apply_filters( 'leaky_paywall_new_email_message', $settings['new_email_body'], $user_id );
-
-                if ( isset( $args ) ) {
-                    // $message .= "\r\n" . 'Your username is: ' . $args['user_login'] . "\r\n";
-                    // $message .= "\r\n" . 'Your temporary password is: ' . $password . '. Please log in and update your password.';
-                }
 
                 $filtered_subject = leaky_paywall_filter_email_tags( $settings['new_email_subject'], $user_id, $user_info->display_name, $password );
                 $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );

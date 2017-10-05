@@ -92,17 +92,18 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 	function get_columns() {
 		$users_columns = array(
-			'wp_user_login' => __( 'WordPress Username', 'issuem-leaky-paywall' ),
-			'email'         => __( 'E-mail', 'issuem-leaky-paywall' ),
-			'name'         => __( 'Name', 'issuem-leaky-paywall' ),
-			'level_id' 		=> __( 'Level ID', 'issuem-leaky-paywall' ),
-			'susbcriber_id' => __( 'Subscriber ID', 'issuem-leaky-paywall' ),
-			'price'         => __( 'Price', 'issuem-leaky-paywall' ),
-			'plan'          => __( 'Plan', 'issuem-leaky-paywall' ),
-			'created'       => __( 'Created', 'issuem-leaky-paywall' ),
-			'expires'       => __( 'Expires', 'issuem-leaky-paywall' ),
-			'gateway'       => __( 'Gateway', 'issuem-leaky-paywall' ),
-			'status'        => __( 'Status', 'issuem-leaky-paywall' ),
+			'wp_user_login' => __( 'WordPress Username', 'leaky-paywall' ),
+			'email'         => __( 'E-mail', 'leaky-paywall' ),
+			'name'         => __( 'Name', 'leaky-paywall' ),
+			'level_id' 		=> __( 'Level ID', 'leaky-paywall' ),
+			'susbcriber_id' => __( 'Subscriber ID', 'leaky-paywall' ),
+			'price'         => __( 'Price', 'leaky-paywall' ),
+			'plan'          => __( 'Plan', 'leaky-paywall' ),
+			'created'       => __( 'Created', 'leaky-paywall' ),
+			'expires'       => __( 'Expires', 'leaky-paywall' ),
+			'has_access'    => __( 'Has Access', 'leaky-paywall' ),
+			'gateway'       => __( 'Gateway', 'leaky-paywall' ),
+			'status'        => __( 'Payment Status', 'leaky-paywall' ),
 		);
 		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
 
@@ -235,7 +236,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 								// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing
 								if ( class_exists( 'user_switching' ) ) {
 									if ( $link = user_switching::maybe_switch_url( $user ) ) {
-										echo '<br><a href="' . esc_url( $link ) . '">' . esc_html__( 'Switch&nbsp;To', 'issuem-leaky-paywall' ) . '</a>';
+										echo '<br><a href="' . esc_url( $link ) . '">' . esc_html__( 'Switch&nbsp;To', 'leaky-paywall' ) . '</a>';
 									}
 								}
 								
@@ -344,7 +345,17 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							
 							echo "<td $attributes>" . $expires . '</td>';
 						break;
-	
+
+						case 'has_access':
+							$has_paid = apply_filters( 'leaky_paywall_user_has_access', leaky_paywall_has_user_paid($user), $user );
+
+							if ( $has_paid ) {
+								echo '<td ' . $attributes . '>Yes</td>';
+							} else {
+								echo '<td ' . $attributes . '>No</td>';
+							}
+						break;
+
 						case 'gateway':
 							echo "<td $attributes>" . leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) . '</td>';
 						break;

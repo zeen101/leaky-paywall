@@ -58,13 +58,7 @@ function leaky_paywall_process_registration() {
 	
 	$user_data = leaky_paywall_validate_user_data();
 
-	if ( isset( $_POST['plan_id'] ) ) {
-		$plan_id = sanitize_text_field( $_POST['plan_id'] );
-	} else {
-		$plan_id = '';
-	}
-
-	$subscription_data = array(
+	$subscription_data = apply_filters( 'leaky_paywall_subscription_data', array(
 		'amount'			=> sanitize_text_field( $_POST['level_price'] ),
 		'description'		=> sanitize_text_field( $_POST['description'] ),
 		'user_id'			=> $user_data['id'],
@@ -76,7 +70,7 @@ function leaky_paywall_process_registration() {
 		'subscriber_id' 	=> '',
 		'created' 			=> date( 'Y-m-d H:i:s' ),
 		'price'				=> sanitize_text_field( $_POST['level_price'] ),
-		'plan'				=> $plan_id,
+		'plan'				=> isset( $_POST['plan_id'] ) ? sanitize_text_field( $_POST['plan_id'] ) : '',
 		'currency'			=> $settings['leaky_paywall_currency'],
 		'length'			=> sanitize_text_field( $_POST['interval_count'] ),
 		'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
@@ -86,14 +80,13 @@ function leaky_paywall_process_registration() {
 		'payment_gateway' 	=> $gateway,
 		'mode'				=> $mode,
 		'post_data'			=> $_POST
-	);
+	) );
 
 	/** 
 	 * Send all data to the gateway for processing
 	 */
-
-	$gateway_data = leaky_paywall_send_to_gateway( $gateway, apply_filters( 'leaky_paywall_subscription_data', $subscription_data, $meta ) );
-
+	$gateway_data = leaky_paywall_send_to_gateway( $gateway, $subscription_data );
+	
 	// Validate extra fields in gateways
 	do_action( 'leaky_paywall_form_errors', $_POST, $level_id );
 
@@ -108,56 +101,47 @@ function leaky_paywall_process_registration() {
 	/** 
 	 * Merge all data before creating/updating the subscriber
 	 */
-
 	$subscriber_data = apply_filters( 'leaky_paywall_registration_user_meta', array_merge( $user_data, $gateway_data ), $user_data );
 
+	/**
+	* Create or update the WP user for this subscriber
+	*/
 	if ( is_user_logged_in() || !empty( $subscriber_data['existing_customer'] ) ) {
 		//if the email already exists, we want to update the subscriber, not create a new one
 		$user_id = leaky_paywall_update_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data ); 
 		$status = 'update';
 	} else {
 		// create the new customer as a leaky paywall subscriber
-		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
+		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data, $subscriber_data['login'] );
 		$status = 'new';
 	}
 
 	if ( empty( $user_id ) ) {
+		leaky_paywall_errors()->add( 'user_not_created', __( 'A user could not be created. Please check your details and try again.', 'leaky-paywall' ), 'register' );
 		return;
 	}
 	
 	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $level_id );
 
+	// set expiration for a free subscription
 	if ( leaky_paywall_is_free_registration( $subscriber_data ) ) {
 
-		// set expiration for a free subscription
 		leaky_paywall_set_expiration_date( $user_id, $subscriber_data );
-
 		do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
 
 	}
 	
-	/** 
-	 * Send email notifications
-	 */
-	leaky_paywall_email_subscription_status( $user_id, $status, $user_data );
+	// Send email notifications
+	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
 
 	// log the user in
-	wp_set_current_user( $user_id );
-	wp_set_auth_cookie( $user_id, true );
-
-	// send the newly created user to the appropriate page after logging them in
-	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
-		$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
-	} else if ( !empty( $settings['page_for_profile'] ) ) {
-		$redirect_url = get_page_link( $settings['page_for_profile'] );
-	} else if ( !empty( $settings['page_for_subscription'] ) ) {
-		$redirect_url = get_page_link( $settings['page_for_subscription'] );
-	}
+	leaky_paywall_log_in_user( $user_id );
 
 	do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
-	wp_safe_redirect( apply_filters( 'leaky_paywall_after_registration_redirect', $redirect_url, $subscriber_data ) );
-	
+	// send the newly created user to the appropriate page after logging them in
+	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
+
 	exit;
 	
 }
@@ -633,3 +617,46 @@ if( ! function_exists( 'leaky_paywall_get_month_name' ) ) {
 		return date_i18n( "F", $timestamp );
 	}
 }
+
+/**
+ * Converts the month number to the month name
+ *
+ * @since  4.9.3
+ *
+ * @param  int $user_id ID of the user.
+ */
+if ( ! function_exists( 'leaky_paywall_log_in_user' ) ) {
+	function leaky_paywall_log_in_user( $user_id ) {
+
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id, true );
+
+	}
+}
+
+/**
+ * Converts the month number to the month name
+ *
+ * @since  4.9.3
+ *
+ * @param  array $settings Leaky Paywall settings.
+ * @param  array $subscriber_data data of current subscriber
+ * @return 
+ */
+if ( ! function_exists( 'leaky_paywall_get_redirect_url' ) ) {
+	function leaky_paywall_get_redirect_url( $settings, $subscriber_data ) {
+
+		if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+			$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
+		} else if ( !empty( $settings['page_for_profile'] ) ) {
+			$redirect_url = get_page_link( $settings['page_for_profile'] );
+		} else if ( !empty( $settings['page_for_subscription'] ) ) {
+			$redirect_url = get_page_link( $settings['page_for_subscription'] );
+		}
+
+		return apply_filters( 'leaky_paywall_redirect_url', $redirect_url, $subscriber_data );
+
+	}
+}
+
+
