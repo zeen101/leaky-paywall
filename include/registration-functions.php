@@ -121,8 +121,6 @@ function leaky_paywall_process_registration() {
 		return;
 	}
 	
-	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $level_id );
-
 	// set expiration for a free subscription
 	if ( leaky_paywall_is_free_registration( $subscriber_data ) ) {
 
@@ -130,6 +128,8 @@ function leaky_paywall_process_registration() {
 		do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
 
 	}
+
+	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $level_id );
 	
 	// Send email notifications
 	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
@@ -259,27 +259,27 @@ if( ! function_exists( 'leaky_paywall_card_form' ) ) {
 
 			  <p class="form-row">
 			    <label><?php printf( __( 'Name on Card', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="card_name" class="card-name" />
+			    <input type="text" size="20" name="card_name" class="card-name" value="<?php leaky_paywall_old_form_value( 'card_name' ) ?>" />
 			  </p>
 
 			  <p class="form-row">
 			    <label><?php printf( __( 'Card Number', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="card_num" class="card-num" />
+			    <input type="text" size="20" name="card_num" class="card-num" value="<?php leaky_paywall_old_form_value( 'card_num' ) ?>" />
 			  </p>
 
 			  <p class="form-row">
 			    <label><?php printf( __( 'CVC', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="4" name="cvc" class="cvc" />
+			    <input type="text" size="4" name="cvc" class="cvc" value="<?php leaky_paywall_old_form_value( 'cvc' ) ?>" />
 			  </p>
 
 			  <p class="form-row">
 			    <label><?php printf( __( 'Card Zip or Postal Code', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="card_zip" class="card-zip" />
+			    <input type="text" size="20" name="card_zip" class="card-zip" value="<?php leaky_paywall_old_form_value( 'card_zip' ) ?>" />
 			  </p>
 
 			  <p class="form-row">
 			    <label><?php printf( __( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="2" name="exp_month" class="exp-month" /> /  <input type="text" size="4" name="exp_year" class="exp-year" />
+			    <input type="text" size="2" name="exp_month" class="exp-month" value="<?php leaky_paywall_old_form_value( 'exp_month' ) ?>" /> /  <input type="text" size="4" name="exp_year" class="exp-year" value="<?php leaky_paywall_old_form_value( 'exp_year' ) ?>" />
 			  </p>
 
 		  </fieldset>

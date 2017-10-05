@@ -583,7 +583,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			$user_id = $user->ID;
 			$userdata = get_userdata( $user_id );
 		} else {
-	
+
 			//the user doesn't already exist
 			//create a new user with their email address as their username
 			//grab the ID for later
@@ -596,8 +596,13 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			while ( $user = get_user_by( 'login', $login ) ) { 
 				$login = $user->user_login . '_' . substr( uniqid(), 5 );
 			} 
+
+			if ( $meta_args['password'] ) {
+				$password = $meta_args['password'];
+			} else {
+				$password = wp_generate_password();
+			}
 			
-			$password = wp_generate_password();
             $userdata = array(
 			    'user_login' 		=> $login,
 				'user_email' 		=> $email,
