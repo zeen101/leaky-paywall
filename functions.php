@@ -2082,6 +2082,9 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
         $settings = get_leaky_paywall_settings();
 
+        $mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+
         $user_info = get_userdata( $user_id );
         $message = '';
         $admin_message = '';
@@ -2118,7 +2121,18 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
 				if ( 'off' === $settings['new_subscriber_admin_email'] ) {
 					// new user subscribe admin email
-					$admin_message = apply_filters( 'leaky_paywall_new_subscriber_admin_email', 'A new user has signed up on ' . $site_name . '. Congratulations!', $user_info );
+
+					$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+					$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
+
+					$admin_raw_message = '<p>A new user has signed up on ' . $site_name . '.</p>
+					<ul>
+					<li><strong>Email:</strong> ' . $user_info->user_email . '</li>
+					<li><strong>Subscription:</strong> ' . $level_name . '</li>
+					</ul>
+					';
+
+					$admin_message = apply_filters( 'leaky_paywall_new_subscriber_admin_email', $admin_raw_message, $user_info );
 
 					wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'issuem-leaky-paywall' ), $site_name ), $admin_message, $headers );           
 				}

@@ -616,34 +616,33 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					}
 				}
 
-				$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
-
-				if ( !empty( $transient_data ) ) {
-					foreach( $transient_data as $key => $value ) {
-						$args[$key] = $value;
-					}
-					// $args['password'] = $transient_data['password'];
-					// $args['first_name'] = $transient_data['first_name'];
-					// $args['last_name'] = $transient_data['last_name'];
-					// $args['login'] = $transient_data['login'];
-					
-				}
-				
 				if ( !empty( $user ) ) {
 					//WordPress user exists
 					$args['subscriber_email'] = $user->user_email;
 					$user_id = leaky_paywall_update_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 				} else {
 					//Need to create a new user
+
+					// get data submitted in registration form
+					$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
+
+					if ( !empty( $transient_data ) ) {
+						foreach( $transient_data as $key => $value ) {
+							$args[$key] = $value;
+						}
+					}
+					
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
 					$user_id = leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 
+					// send new user the welcome email
+					leaky_paywall_email_subscription_status( $user_id, 'new', $args );
 				}
 
 				leaky_paywall_log( $args, 'after paypal standard ipn');
 
 				do_action( 'leaky_paywall_after_process_paypal_webhooks', $_REQUEST, $args, $user_id );
-				
+	
 			}
 		
 		} else {
