@@ -669,7 +669,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			'login' => sanitize_text_field( $_POST['username'] )
 		);
 
-		set_transient( $trans_key, $data, 900 );
+		set_transient( $trans_key, apply_filters('leaky_paywall_paypal_transient_data', $data ), 900 );
 
 	}
 
