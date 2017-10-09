@@ -158,7 +158,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 	do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
 	// send the newly created user to the appropriate page after logging them in
-	wp_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
+	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
 
 	exit;
 

@@ -133,6 +133,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		// for recurring, cmb = _xclick-subscriptions
 
+		// save post data to a transient
+		$this->save_data_to_transient();
+
 		// https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
 
 		$settings = get_leaky_paywall_settings();
@@ -396,6 +399,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		$paypal_api_url = !empty( $_REQUEST['test_ipn'] ) ? PAYPAL_PAYMENT_SANDBOX_URL : PAYPAL_PAYMENT_LIVE_URL;
 		$response = wp_remote_post( $paypal_api_url, array( 'body' => $payload, 'httpversion' => '1.1' ) );
 		$body = wp_remote_retrieve_body( $response );
+
+		leaky_paywall_log( $body, 'paypal standard ipn body');
 		
 		if ( 'VERIFIED' === $body ) {
 		
@@ -457,6 +462,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 						}
 						
 						$args['payment_status'] = 'active';	//It's a signup, of course it's active!
+
+						// create new subscriber here
 						break;
 						
 					case 'subscr_payment':
@@ -608,6 +615,19 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 						}
 					}
 				}
+
+				$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
+
+				if ( !empty( $transient_data ) ) {
+					foreach( $transient_data as $key => $value ) {
+						$args[$key] = $value;
+					}
+					// $args['password'] = $transient_data['password'];
+					// $args['first_name'] = $transient_data['first_name'];
+					// $args['last_name'] = $transient_data['last_name'];
+					// $args['login'] = $transient_data['login'];
+					
+				}
 				
 				if ( !empty( $user ) ) {
 					//WordPress user exists
@@ -634,6 +654,35 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		
 		return true;
 		
+	}
+
+	public function save_data_to_transient() 
+	{
+
+		$trans_key = 'paypal-transient-' . $this->email;
+
+		$data = array(
+			'email' => $this->email,
+			'password' => sanitize_text_field( $_POST['password'] ),
+			'first_name' => $this->first_name,
+			'last_name' => $this->last_name,
+			'login' => sanitize_text_field( $_POST['username'] )
+		);
+
+		set_transient( $trans_key, $data, 900 );
+
+	}
+
+	public function get_data_from_transient( $email = '' ) 
+	{
+
+		if ( !$email ) {
+			$email = $this->email;
+		}
+		
+		$trans_key = 'paypal-transient-' . $email;
+		return get_transient( $trans_key );
+
 	}
 
 }

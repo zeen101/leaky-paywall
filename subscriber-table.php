@@ -347,9 +347,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						break;
 
 						case 'has_access':
-							$has_paid = apply_filters( 'leaky_paywall_user_has_access', leaky_paywall_has_user_paid($user), $user );
+							$has_access = leaky_paywall_user_has_access( $user );
 
-							if ( $has_paid ) {
+							if ( $has_access ) {
 								echo '<td ' . $attributes . '>Yes</td>';
 							} else {
 								echo '<td ' . $attributes . '>No</td>';

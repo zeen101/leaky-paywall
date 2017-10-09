@@ -297,11 +297,44 @@ if ( !function_exists( 'get_leaky_paywall_email_from_login_hash' ) ) {
 	
 }
 
+
 if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 	
+	/**
+	 * Determine if a user has access based on their expiration date and their payment status. 
+	 *
+	 * @since 4.9.3
+	 *
+	 * @param object $user object from WordPress database
+	 * @return bool true if the user has access or false if they have either expired or their payment status is set to deactived
+	 */
 	function leaky_paywall_user_has_access( $user ) {
 
-		return leaky_paywall_has_user_paid( $user->user_email );
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+		$unexpired = false;
+
+		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+
+		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+			$unexpired = true;
+		} else {
+			$date_format = get_option( 'date_format' );
+			$expires = mysql2date( $date_format, $expires );
+
+			if ( strtotime( $expires ) > time() ) {
+				$unexpired = true;
+			}
+		}
+
+		if ( $unexpired && $payment_status != 'deactivated' ) {
+			$has_access = true;
+		} else {
+			$has_access = false;
+		}
+
+		return apply_filters( 'leaky_paywall_user_has_access', $has_access, $user );
 		
 	}
 
