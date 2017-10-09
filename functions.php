@@ -2115,7 +2115,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
                 $filtered_message = wpautop( make_clickable( $filtered_message ) );
 
-				if ( 'traditional' === $settings['login_method'] ) {
+				if ( 'traditional' === $settings['login_method']  ) {
                     wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
 				}
 
@@ -2139,6 +2139,19 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
             break;
 
+            case 'renewal_reminder':
+
+            	$message = apply_filters( 'leaky_paywall_renewal_reminder_email_message', $settings['renewal_reminder_email_body'], $user_id );
+
+                $filtered_subject = leaky_paywall_filter_email_tags( $settings['renewal_reminder_email_subject'], $user_id, $user_info->display_name, $password );
+                $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );
+
+                $filtered_message = wpautop( make_clickable( $filtered_message ) );
+
+				if ( 'traditional' === $settings['login_method']  ) {
+                    wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
+				}
+
             case 'renewal':
 
             	$renewal_subject = 'Thank you for renewing';
@@ -2155,6 +2168,76 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
     }
 
 }
+
+
+//Register cron job on plugin activation.
+function leaky_paywall_process_renewal_reminder_schedule(){
+	$timestamp = wp_next_scheduled('leaky_paywall_process_renewal_reminder');
+
+	if($timestamp == false){
+		wp_schedule_event(time(), 'daily', 'leaky_paywall_process_renewal_reminder');
+	}
+}
+register_activation_hook( __FILE__, 'leaky_paywall_process_renewal_reminder_schedule' );
+
+
+// Remove our renewal reminder scheduled event if Leaky Paywall is deactivated
+function leaky_paywall_process_renewal_reminder_deactivation() {
+	wp_clear_scheduled_hook('leaky_paywall_process_renewal_reminder');
+}
+register_deactivation_hook(__FILE__, 'leaky_paywall_process_renewal_reminder_deactivation');
+
+
+
+add_action('leaky_paywall_process_renewal_reminder', 'leaky_paywall_process_renewal_reminder');
+
+// Process renewal reminder email for each Leaky Paywall subscriber
+function leaky_paywall_process_renewal_reminder() {
+	
+	global $blog_id;
+
+	$settings = get_leaky_paywall_settings();
+
+	if ( 'on' === $settings['renewal_reminder_email'] ) {
+		return;
+	}
+
+	$days_before = (int) $settings['renewal_reminder_days_before'];
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+	
+	$args = array(
+		'number' => -1
+	);
+
+	$users = leaky_paywall_subscriber_query( $args, $blog_id );
+
+	if ( empty( $users ) ) {
+		return;
+	}
+
+	foreach($users as $user) {
+
+		$user_id = $user->ID;
+		$expiration = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
+   		$user_info = get_userdata( $user_id );
+		
+		if(!empty($expiration)) {
+		
+		$date1 = date_create($expiration);
+		$date2 = date('Y-m-d H:i:s');
+		$dateDiffer = dateDifference($expiration, date('Y-m-d H:i:s'));
+		$alreadyEmailed = get_user_meta($user->ID, '_issuem_leaky_paywall_renewal_' . $mode . '_emailed' . $site, true) == true ? true : false;
+		
+			if(($dateDiffer <= $daysToRenew) && $alreadyEmailed == false){	
+				
+				leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
+				update_user_meta($user->ID, '_issuem_leaky_paywall_renewal_' . $mode . '_emailed' . $site, true);
+			}
+		}
+	}
+}
+
 
 if ( !function_exists( 'leaky_paywall_set_email_content_type' ) ) {
 

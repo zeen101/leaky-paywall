@@ -544,6 +544,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
 				'new_email_subject'				=> '',
 				'new_email_body'				=> $default_email_body,
+				'renewal_reminder_email'		=> 'off',
+				'renewal_reminder_email_subject'=> '',
+				'renewal_reminder_email_body'	=> '',
+				'renewal_reminder_days_before'   => '7',
 				'new_subscriber_admin_email'	=> 'off',
 				'payment_gateway'				=> array( 'stripe_checkout' ),
 				'test_mode'						=> 'off',
@@ -715,6 +719,23 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					if ( !empty( $_REQUEST['new_email_body'] ) )
 						$settings['new_email_body'] = wp_kses_post( $_REQUEST['new_email_body'] );
+
+					if ( !empty( $_REQUEST['renewal_reminder_email'] ) )
+						$settings['renewal_reminder_email'] = $_REQUEST['renewal_reminder_email'];
+					else
+						$settings['renewal_reminder_email'] = 'off';
+
+					if ( !empty( $_POST['renewal_reminder_email_subject'] ) ) {
+						$settings['renewal_reminder_email_subject'] = wp_kses_post( $_POST['renewal_reminder_email_subject'] );
+					}
+
+					if ( !empty( $_POST['renewal_reminder_email_body'] ) ) {
+						$settings['renewal_reminder_email_body'] = wp_kses_post( $_POST['renewal_reminder_email_body'] );
+					}
+
+					if ( !empty( $_POST['renewal_reminder_days_before'] ) ) {
+						$settings['renewal_reminder_days_before'] = sanitize_text_field( $_POST['renewal_reminder_days_before'] );
+					}
 
 					if ( !empty( $_REQUEST['new_subscriber_admin_email'] ) )
 						$settings['new_subscriber_admin_email'] = $_REQUEST['new_subscriber_admin_email'];
@@ -1044,6 +1065,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['from_email'] ) ); ?>" /></td>
 	                            </tr>
 
+
+	                            <tr>
+	                            	<th><?php _e( "Disable New User Notifications", 'issuem-leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> Disable the email sent to an admin when a new subscriber is added to Leaky Paywall.</td>
+	                            </tr>
+
 	                            <tr><td colspan="2"><h3><?php _e( 'New Subscriber Email', 'issuem-leaky-paywall' ); ?></h3></td></tr>
 
 	                            <tr>
@@ -1062,14 +1089,38 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                </td>
 	                            </tr>
 
-	                            <table id="leaky_paywall_test_option" class="form-table">
+	                            <tr><td colspan="2"><h3><?php _e( 'Renewal Reminder Email', 'leaky-paywall' ); ?></h3></td></tr>
 
-		                            <tr>
-		                            	<th><?php _e( "Disable New User Notifications", 'issuem-leaky-paywall' ); ?></th>
-		                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> Disable the email sent to an admin when a new subscriber is added to Leaky Paywall.</td>
-		                            </tr>
-		                            
-			                    </table>
+	                            <tr>
+	                            	<th><?php _e( "Disable Renewal Reminder Email", 'leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked( 'on', $settings['renewal_reminder_email'] ); ?> /> Disable the renewal reminder email sent to a subscriber</td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Subject', 'leaky-paywall' ); ?></th>
+	                                <td><input type="text" id="renewal_reminder_email_subject" class="regular-text" name="renewal_reminder_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_subject'] ) ); ?>" />
+	                                	
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Body', 'leaky-paywall' ); ?></th>
+	                                <td><textarea id="renewal_reminder_email_body" class="large-text" name="renewal_reminder_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_body'] ) ); ?></textarea>
+	                                <p class="description"><?php _e( 'The email message that is sent to remind subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
+	                                <p class="description"><?php _e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
+	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+			                        <th><?php _e( 'When to Send Reminder', 'leaky-paywall' ); ?></th>
+			                        <td>
+			                        <input type="number" value="<?php echo $settings['renewal_reminder_days_before']; ?>" name="renewal_reminder_days_before" />
+			                        <p class="description"><?php _e( 'Days in advance of a subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
+			                        </td>
+			                    </tr>
+
+	                            
 
 	                            <?php wp_nonce_field( 'issuem_leaky_email_options', 'issuem_leaky_email_options_nonce' ); ?>
 	                            
