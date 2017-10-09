@@ -2115,7 +2115,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
                 $filtered_message = wpautop( make_clickable( $filtered_message ) );
 
-				if ( 'traditional' === $settings['login_method']  ) {
+				if ( 'traditional' === $settings['login_method'] && 'off' === $settings['new_subscriber_email']  ) {
                     wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
 				}
 

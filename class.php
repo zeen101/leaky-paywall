@@ -542,6 +542,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'site_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
+				'new_subscriber_email'			=> 'off',
 				'new_email_subject'				=> '',
 				'new_email_body'				=> $default_email_body,
 				'renewal_reminder_email'		=> 'off',
@@ -713,6 +714,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						
 					if ( !empty( $_REQUEST['from_email'] ) )
 						$settings['from_email'] = trim( $_REQUEST['from_email'] );
+
+					if ( !empty( $_POST['new_subscriber_email'] ) )
+						$settings['new_subscriber_email'] = $_POST['new_subscriber_email'];
+					else
+						$settings['new_subscriber_email'] = 'off';
 
 					if ( !empty( $_REQUEST['new_email_subject'] ) )
 						$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
@@ -1071,64 +1077,96 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> Disable the email sent to an admin when a new subscriber is added to Leaky Paywall.</td>
 	                            </tr>
 
-	                            <tr><td colspan="2"><h3><?php _e( 'New Subscriber Email', 'issuem-leaky-paywall' ); ?></h3></td></tr>
-
-	                            <tr>
-	                                <th><?php _e( 'Subject', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['new_email_subject'] ) ); ?>" />
-	                                	<p class="description"><?php _e( 'The subject line for the email sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
-	                                </td>
-	                            </tr>
-
-	                            <tr>
-	                                <th><?php _e( 'Body', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><textarea id="new_email_body" class="large-text" name="new_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
-	                                <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
-	                                <p class="description"><?php _e( 'Available template tags:', 'issuem-leaky-paywall' ); ?> <br>
-	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
-	                                </td>
-	                            </tr>
-
-	                            <tr><td colspan="2"><h3><?php _e( 'Renewal Reminder Email', 'leaky-paywall' ); ?></h3></td></tr>
-
-	                            <tr>
-	                            	<th><?php _e( "Disable Renewal Reminder Email", 'leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked( 'on', $settings['renewal_reminder_email'] ); ?> /> Disable the renewal reminder email sent to a subscriber</td>
-	                            </tr>
-
-	                            <tr>
-	                                <th><?php _e( 'Subject', 'leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="renewal_reminder_email_subject" class="regular-text" name="renewal_reminder_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_subject'] ) ); ?>" />
-	                                	
-	                                </td>
-	                            </tr>
-
-	                            <tr>
-	                                <th><?php _e( 'Body', 'leaky-paywall' ); ?></th>
-	                                <td><textarea id="renewal_reminder_email_body" class="large-text" name="renewal_reminder_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_body'] ) ); ?></textarea>
-	                                <p class="description"><?php _e( 'The email message that is sent to remind subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
-	                                <p class="description"><?php _e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
-	                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
-	                                </td>
-	                            </tr>
-
-	                            <tr>
-			                        <th><?php _e( 'When to Send Reminder', 'leaky-paywall' ); ?></th>
-			                        <td>
-			                        <input type="number" value="<?php echo $settings['renewal_reminder_days_before']; ?>" name="renewal_reminder_days_before" />
-			                        <p class="description"><?php _e( 'Days in advance of a subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
-			                        </td>
-			                    </tr>
-
-	                            
-
-	                            <?php wp_nonce_field( 'issuem_leaky_email_options', 'issuem_leaky_email_options_nonce' ); ?>
-	                            
 	                        </table>
 	                        
 	                        </div>
 	                        
 	                    </div>
+
+	                    <div id="modules" class="postbox">
+	                    
+	                        <div class="handlediv" title="Click to toggle"><br /></div>
+	                        
+	                        <h3 class="hndle"><span><?php _e( 'New Subscriber Email', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        
+	                        <div class="inside">
+
+	                        	<table id="leaky_paywall_new_subscriber_email_options" class="form-table">
+	                        		
+                        			 <tr>
+                        		    	<th><?php _e( "Disable New Subscriber Email", 'leaky-paywall' ); ?></th>
+                        		        <td><input type="checkbox" id="new_subscriber_email" name="new_subscriber_email" <?php checked( 'on', $settings['new_subscriber_email'] ); ?> /> Disable the new subscriber email sent to a subscriber</td>
+                        		    </tr>
+
+		                        	<tr>
+		                        	    <th><?php _e( 'Subject', 'issuem-leaky-paywall' ); ?></th>
+		                        	    <td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['new_email_subject'] ) ); ?>" />
+		                        	    	<p class="description"><?php _e( 'The subject line for the email sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
+		                        	    </td>
+		                        	</tr>
+
+		                        	<tr>
+		                        	    <th><?php _e( 'Body', 'issuem-leaky-paywall' ); ?></th>
+		                        	    <td><textarea id="new_email_body" class="large-text" name="new_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
+		                        	    <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
+		                        	    <p class="description"><?php _e( 'Available template tags:', 'issuem-leaky-paywall' ); ?> <br>
+		                        	    %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
+		                        	    </td>
+		                        	</tr>
+
+	                        	</table>
+
+	                        </div>
+
+	                    </div>
+
+
+	                     <div id="modules" class="postbox">
+	                    
+	                        <div class="handlediv" title="Click to toggle"><br /></div>
+	                        
+	                        <h3 class="hndle"><span><?php _e( 'Renewal Reminder Email', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        
+	                        <div class="inside">
+
+	                        	<table id="leaky_paywall_renewal_reminder_email_options" class="form-table">
+	                        	
+		                        	 <tr>
+		                            	<th><?php _e( "Disable Renewal Reminder Email", 'leaky-paywall' ); ?></th>
+		                                <td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked( 'on', $settings['renewal_reminder_email'] ); ?> /> Disable the renewal reminder email sent to a subscriber</td>
+		                            </tr>
+
+		                            <tr>
+		                                <th><?php _e( 'Subject', 'leaky-paywall' ); ?></th>
+		                                <td><input type="text" id="renewal_reminder_email_subject" class="regular-text" name="renewal_reminder_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_subject'] ) ); ?>" />
+		                                	
+		                                </td>
+		                            </tr>
+
+		                            <tr>
+		                                <th><?php _e( 'Body', 'leaky-paywall' ); ?></th>
+		                                <td><textarea id="renewal_reminder_email_body" class="large-text" name="renewal_reminder_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_body'] ) ); ?></textarea>
+		                                <p class="description"><?php _e( 'The email message that is sent to remind subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
+		                                <p class="description"><?php _e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
+		                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
+		                                </td>
+		                            </tr>
+
+		                            <tr>
+				                        <th><?php _e( 'When to Send Reminder', 'leaky-paywall' ); ?></th>
+				                        <td>
+				                        <input type="number" value="<?php echo $settings['renewal_reminder_days_before']; ?>" name="renewal_reminder_days_before" />
+				                        <p class="description"><?php _e( 'Days in advance of a subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
+				                        </td>
+				                    </tr>
+
+	                        	</table>
+
+	                        </div>
+
+	                    </div>
+
+	                    <?php wp_nonce_field( 'issuem_leaky_email_options', 'issuem_leaky_email_options_nonce' ); ?>
 
 	                    <?php do_action('leaky_paywall_after_email_settings'); ?>
 
