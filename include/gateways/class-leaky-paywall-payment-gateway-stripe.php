@@ -131,8 +131,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$plan_args = array(
 					'stripe_price'	=> number_format( $level['price'], 2, '', '' ),
-					// @todo add this to Leaky Paywall (or create as function with a filter on the return value)
-					'currency'		=> isset( $_GET['currency'] ) ? esc_attr( $_GET['currency'] ) : $settings['leaky_paywall_currency'], // @changed
+					'currency'	=> leaky_paywall_get_currency(),
 					'secret_key'	=> $this->secret_key
 				);
 
@@ -344,7 +343,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$plan_args = array(
 			'stripe_price'	=> number_format( $level['price'], 2, '', '' ),
-			'currency'		=> $settings['leaky_paywall_currency'],
+			'currency'		=> leaky_paywall_get_currency(),
 			'secret_key'	=> $this->secret_key
 		);
 

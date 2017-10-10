@@ -577,7 +577,7 @@ function do_leaky_paywall_register_form() {
 		$site = '';
 	}
 
-	$currency = $settings['leaky_paywall_currency'];
+	$currency = leaky_paywall_get_currency();
 	$currencies = leaky_paywall_supported_currencies();
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 

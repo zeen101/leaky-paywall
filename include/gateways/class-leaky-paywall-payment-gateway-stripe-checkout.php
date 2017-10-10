@@ -35,7 +35,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 
 		// @todo: Fix: this will ignore coupons
 		$this->amount      = $level['price'];
-		$this->currency    = $settings['leaky_paywall_currency'];
+		$this->currency    = leaky_paywall_get_currency();
 		$this->length_unit = $level['interval'];
 		$this->length      = $level['interval_count'];
 

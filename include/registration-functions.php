@@ -71,7 +71,7 @@ function leaky_paywall_process_registration() {
 		'created' 			=> date( 'Y-m-d H:i:s' ),
 		'price'				=> sanitize_text_field( $_POST['level_price'] ),
 		'plan'				=> isset( $_POST['plan_id'] ) ? sanitize_text_field( $_POST['plan_id'] ) : '',
-		'currency'			=> $settings['leaky_paywall_currency'],
+		'currency'			=> leaky_paywall_get_currency(),
 		'length'			=> sanitize_text_field( $_POST['interval_count'] ),
 		'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
 		'recurring'			=> sanitize_text_field( $_POST['recurring'] ),

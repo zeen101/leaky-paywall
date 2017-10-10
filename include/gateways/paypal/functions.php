@@ -42,7 +42,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 	$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 	$paypal_sandbox = 'off' === $settings['test_mode'] ? '' : 'sandbox';
 	$paypal_account = 'on' === $settings['test_mode'] ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
-	$currency = $settings['leaky_paywall_currency'];
+	$currency = leaky_paywall_get_currency();
 	$current_user = wp_get_current_user();
 	if ( 0 !== $current_user->ID ) {
 		$user_email = $current_user->user_email;

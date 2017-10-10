@@ -41,7 +41,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 
 	$results = '';
 	$settings = get_leaky_paywall_settings();
-	$currency = apply_filters( 'leaky_paywall_stripe_currency', $settings['leaky_paywall_currency'] );
+	$currency = apply_filters( 'leaky_paywall_stripe_currency', leaky_paywall_get_currency() );
 
 	// @todo: make this a function so we can use it on the credit card form too
 	if ( in_array( strtoupper( $currency ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {

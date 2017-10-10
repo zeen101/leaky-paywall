@@ -371,6 +371,26 @@ if ( !function_exists( 'leaky_paywall_get_current_site' ) ) {
 
 }
 
+if ( !function_exists( 'leaky_paywall_get_currency' ) ) {
+	
+	/**
+	 * Get the currency value set in the Leaky Paywall settings
+	 *
+	 * @since 4.9.3
+	 *
+	 * @return string Currency code (i.e USD)
+	 */
+	function leaky_paywall_get_currency() {
+
+		$settings = get_leaky_paywall_settings();
+		$currency = $settings['leaky_paywall_currency'];
+
+		return apply_filters( 'leaky_paywall_currency', $currency );
+		
+	}
+
+}
+
 if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 	/**
@@ -2550,7 +2570,7 @@ if ( ! function_exists( 'leaky_paywall_get_current_currency_symbol' ) ) {
 	function leaky_paywall_get_current_currency_symbol() {
 
 		$settings = get_leaky_paywall_settings();
-		$currency = $settings['leaky_paywall_currency'];
+		$currency = leaky_paywall_get_currency();
 		$currencies = leaky_paywall_supported_currencies();
 
 		return $currencies[$currency]['symbol'];
