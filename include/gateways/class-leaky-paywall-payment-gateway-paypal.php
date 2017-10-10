@@ -127,17 +127,12 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function process_signup() {
 
-		// echo '<pre>';
-		// print_r( $_POST );
-		// echo '</pre>';
-
 		// for recurring, cmb = _xclick-subscriptions
 
 		// save post data to a transient
 		$this->save_data_to_transient();
 
 		// https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
-
 		$settings = get_leaky_paywall_settings();
 		$paypal_sandbox = 'off' === $settings['test_mode'] ? '' : 'sandbox';
 
