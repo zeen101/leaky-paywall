@@ -141,21 +141,8 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
 			|| $level['interval_count'] != $stripe_plan->interval_count
 		) 
 	) {
-		
-		$args = array(
-            'amount'            => esc_js( $plan_args['stripe_price'] ),
-            'interval'          => esc_js( $level['interval'] ),
-            'interval_count'    => esc_js( $level['interval_count'] ),
-            'name'              => esc_js( $level['label'] ) . ' ' . $time,
-            'currency'          => esc_js( $plan_args['currency'] ),
-            'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
-        );
-        
-        try {
-        	$stripe_plan = \Stripe\Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
-        } catch (Exception $e) {
-        	$stripe_plan = false;
-        }
+
+		$stripe_plan = leaky_paywall_create_stripe_plan( $level, $level_id , $plan_args );
         
         $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
         update_leaky_paywall_settings( $settings );
@@ -164,4 +151,33 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
 
     return $stripe_plan;
 
+}
+
+
+/**
+ * Create a stripe plan
+ *
+ * @since 4.9.3
+ */
+function leaky_paywall_create_stripe_plan( $level, $level_id , $plan_args ) {
+
+	$time = time();
+
+	$args = array(
+        'amount'            => esc_js( $plan_args['stripe_price'] ),
+        'interval'          => esc_js( $level['interval'] ),
+        'interval_count'    => esc_js( $level['interval_count'] ),
+        'name'              => esc_js( $level['label'] ) . ' ' . $time,
+        'currency'          => esc_js( $plan_args['currency'] ),
+        'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
+    );
+
+    try {
+    	$stripe_plan = \Stripe\Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
+    } catch (Exception $e) {
+    	$stripe_plan = false;
+    }
+
+    return $stripe_plan;
+    	
 }

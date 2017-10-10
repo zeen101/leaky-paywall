@@ -1615,7 +1615,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
             </div>
              <div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
-				<a target="_blank" href="https://anvil.pub/"><img width="300" src="http://howto.pub/wp-content/uploads/2016/08/anvil-sidebar-ad.jpg" alt="Anvil"></a>
+				<a target="_blank" href="https://zeen101.com/"><img width="300" src="http://howto.pub/wp-content/uploads/2016/08/anvil-sidebar-ad.jpg" alt="Anvil"></a>
              </div>
 			</div>
 			<?php

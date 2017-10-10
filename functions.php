@@ -2108,7 +2108,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
             case 'new':
             case 'update':
 				
-				$message = apply_filters( 'leaky_paywall_new_email_message', $settings['new_email_body'], $user_id );
+				$message = stripslashes( apply_filters( 'leaky_paywall_new_email_message', $settings['new_email_body'], $user_id ) );
 
                 $filtered_subject = leaky_paywall_filter_email_tags( $settings['new_email_subject'], $user_id, $user_info->display_name, $password );
                 $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );
@@ -2141,7 +2141,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
             case 'renewal_reminder':
 
-            	$message = apply_filters( 'leaky_paywall_renewal_reminder_email_message', $settings['renewal_reminder_email_body'], $user_id );
+            	$message = stripslashes( apply_filters( 'leaky_paywall_renewal_reminder_email_message', $settings['renewal_reminder_email_body'], $user_id ) );
 
                 $filtered_subject = leaky_paywall_filter_email_tags( $settings['renewal_reminder_email_subject'], $user_id, $user_info->display_name, $password );
                 $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );
@@ -2151,12 +2151,6 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 				if ( 'traditional' === $settings['login_method']  ) {
                     wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
 				}
-
-            case 'renewal':
-
-            	$renewal_subject = 'Thank you for renewing';
-            	$renewal_message = wpautop( make_clickable( 'Thank you for renewing your subscription to ' . $site_name . '! We hope that you continue to enjoy the publication and welcome your feedback, thoughts, and analysis.' ) );
-            	wp_mail( $user_info->user_email, $renewal_subject, $renewal_message , $headers );
 
             break;
 
@@ -2170,7 +2164,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 }
 
 
-//Register cron job on plugin activation.
+// Register cron job on plugin activation.
 function leaky_paywall_process_renewal_reminder_schedule(){
 	$timestamp = wp_next_scheduled('leaky_paywall_process_renewal_reminder');
 
@@ -2178,7 +2172,7 @@ function leaky_paywall_process_renewal_reminder_schedule(){
 		wp_schedule_event(time(), 'daily', 'leaky_paywall_process_renewal_reminder');
 	}
 }
-register_activation_hook( __FILE__, 'leaky_paywall_process_renewal_reminder_schedule' );
+add_action( 'admin_init', 'leaky_paywall_process_renewal_reminder_schedule' );
 
 
 // Remove our renewal reminder scheduled event if Leaky Paywall is deactivated

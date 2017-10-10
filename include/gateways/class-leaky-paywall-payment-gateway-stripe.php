@@ -126,6 +126,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array );
 
+			// create new stripe plan if this is a recurring level but does not have a plan created yet
+			if ( 'on' === $this->recurring && empty( $this->plan_id ) ) {
+
+				$plan_args = array(
+					'stripe_price'	=> number_format( $level['price'], 2, '', '' ),
+					// @todo add this to Leaky Paywall (or create as function with a filter on the return value)
+					'currency'		=> isset( $_GET['currency'] ) ? esc_attr( $_GET['currency'] ) : $settings['leaky_paywall_currency'], // @changed
+					'secret_key'	=> $this->secret_key
+				);
+
+				$stripe_plan = leaky_paywall_create_stripe_plan( $level, $this->level_id, $plan_args );
+				$this->plan_id = $stripe_plan->id;
+
+			}
+
 			// recurring subscription
 			if ( !empty( $this->recurring ) && 'on' === $this->recurring && !empty( $this->plan_id ) ) {
 
@@ -300,6 +315,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		            	break;
 		
 		        };
+
+		        // create an action for each event fired by stripe
+		        $action = str_replace( '.', '_', $stripe_event->type );
+		        do_action( 'leaky_paywall_stripe_' . $action, $user, $stripe_object );
 		        
 		    }
 		        
