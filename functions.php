@@ -883,7 +883,10 @@ if ( !function_exists( 'leaky_paywall_translate_payment_gateway_slug_to_name' ) 
 				break;
 				
 			case 'manual':
-				$return = __( 'Manually Added', 'issue-leaky-paywall' );
+				$return = __( 'Manually Added', 'leaky-paywall' );
+				break;
+			default:
+				$return = $slug;
 				break;
 			
 		}
