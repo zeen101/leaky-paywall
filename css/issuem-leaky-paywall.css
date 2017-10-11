@@ -140,3 +140,21 @@
 .leaky-paywall-payment-method-container img {
 	margin-left: 20px;
 }
+
+.leaky-paywall-test-mode-wrapper {
+	border: 1px solid red;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+.leaky-paywall-test-mode-text {
+	color: red;
+}
+
+#leaky-paywall-credit-card-form .exp-month {
+	width: 75px;
+}
+
+#leaky-paywall-credit-card-form .exp-year {
+	width: 125px;
+}

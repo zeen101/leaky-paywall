@@ -741,8 +741,20 @@ function do_leaky_paywall_register_form() {
 		  	<h3><?php printf( __( 'Payment Information', 'leaky-paywall' ) ); ?></h3>
 		  	<?php 
 		  } ?>
+
+		  <?php if ( leaky_paywall_get_current_mode() == 'test' ) {
+		  	?>
+		  	<div class="leaky-paywall-test-mode-wrapper">
+		  		<p class="leaky-paywall-test-mode-text">The site is currently in test mode.</p>
+		  	<?php 
+		  } ?>
 		  
 		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways ); ?>
+		  
+		  <?php if ( leaky_paywall_get_current_mode() == 'test' ) {
+		  	?>
+		  	</div>
+		  <?php } ?>
 
 		  <div class="leaky-paywall-checkout-button">
 		  	<button id="leaky-paywall-submit" type="submit"><?php printf( __( 'Subscribe', 'leaky-paywall' ) ); ?></button>
