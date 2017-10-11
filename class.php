@@ -545,7 +545,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'new_subscriber_email'			=> 'off',
 				'new_email_subject'				=> '',
 				'new_email_body'				=> $default_email_body,
-				'renewal_reminder_email'		=> 'off',
+				'renewal_reminder_email'		=> 'on',
 				'renewal_reminder_email_subject'=> '',
 				'renewal_reminder_email_body'	=> '',
 				'renewal_reminder_days_before'   => '7',
@@ -1050,31 +1050,31 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Email Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'Email Settings', 'leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 	                        
 	                        <table id="leaky_paywall_administrator_options" class="form-table">
 	                        
 	                        	<tr>
-	                                <th><?php _e( 'Site Name', 'issuem-leaky-paywall' ); ?></th>
+	                                <th><?php _e( 'Site Name', 'leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="site_name" class="regular-text" name="site_name" value="<?php echo htmlspecialchars( stripcslashes( $settings['site_name'] ) ); ?>" /></td>
 	                            </tr>
 	                        
 	                        	<tr>
-	                                <th><?php _e( 'From Name', 'issuem-leaky-paywall' ); ?></th>
+	                                <th><?php _e( 'From Name', 'leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="from_name" class="regular-text" name="from_name" value="<?php echo htmlspecialchars( stripcslashes( $settings['from_name'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                        	<tr>
-	                                <th><?php _e( 'From Email', 'issuem-leaky-paywall' ); ?></th>
+	                                <th><?php _e( 'From Email', 'leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['from_email'] ) ); ?>" /></td>
 	                            </tr>
 
 
 	                            <tr>
-	                            	<th><?php _e( "Disable New User Notifications", 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> Disable the email sent to an admin when a new subscriber is added to Leaky Paywall.</td>
+	                            	<th><?php _e( "Disable New User Notifications", 'leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> <?php _e( 'Disable the email sent to an admin when a new subscriber is added to Leaky Paywall', 'leaky-paywall' ); ?></td>
 	                            </tr>
 
 	                        </table>
@@ -1087,7 +1087,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'New Subscriber Email', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'New Subscriber Email', 'leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 
@@ -1099,17 +1099,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                         		    </tr>
 
 		                        	<tr>
-		                        	    <th><?php _e( 'Subject', 'issuem-leaky-paywall' ); ?></th>
+		                        	    <th><?php _e( 'Subject', 'leaky-paywall' ); ?></th>
 		                        	    <td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['new_email_subject'] ) ); ?>" />
-		                        	    	<p class="description"><?php _e( 'The subject line for the email sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
+		                        	    	<p class="description"><?php _e( 'The subject line for the email sent to new subscribers.', 'leaky-paywall' ); ?></p>
 		                        	    </td>
 		                        	</tr>
 
 		                        	<tr>
-		                        	    <th><?php _e( 'Body', 'issuem-leaky-paywall' ); ?></th>
+		                        	    <th><?php _e( 'Body', 'leaky-paywall' ); ?></th>
 		                        	    <td><textarea id="new_email_body" class="large-text" name="new_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
-		                        	    <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'issuem-leaky-paywall' ); ?></p>
-		                        	    <p class="description"><?php _e( 'Available template tags:', 'issuem-leaky-paywall' ); ?> <br>
+		                        	    <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'leaky-paywall' ); ?></p>
+		                        	    <p class="description"><?php _e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
 		                        	    %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
 		                        	    </td>
 		                        	</tr>
@@ -1125,7 +1125,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Renewal Reminder Email', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'Renewal Reminder Email', 'leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 
@@ -1171,7 +1171,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    <?php do_action('leaky_paywall_after_email_settings'); ?>
 
 	                    <p class="submit">
-                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall' ) ?>" />
+                            <input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'leaky-paywall' ) ?>" />
                         </p>
 
 	                    <?php endif; ?>
@@ -1184,7 +1184,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Payment Gateway Settings', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'Payment Gateway Settings', 'leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 		                        

@@ -2216,6 +2216,10 @@ function leaky_paywall_process_renewal_reminder() {
 		return;
 	}
 
+	if ( !$settings['renewal_reminder_email_body'] ) {
+		return; // do not send an email if the body of the email is empty
+	}
+
 	$days_before = (int) $settings['renewal_reminder_days_before'];
 	$mode = leaky_paywall_get_current_mode();
 	$site = leaky_paywall_get_current_site();
