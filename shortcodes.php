@@ -757,7 +757,7 @@ function do_leaky_paywall_register_form() {
 		  <?php } ?>
 
 		  <div class="leaky-paywall-checkout-button">
-		  	<button id="leaky-paywall-submit" type="submit"><?php printf( __( 'Subscribe', 'leaky-paywall' ) ); ?></button>
+		  	<button id="leaky-paywall-submit" type="submit"><?php printf( __( apply_filters( 'registration_checkout_button_text', 'Subscribe' ), 'leaky-paywall' ) ); ?></button>
 		  </div>
 		</form>
 
