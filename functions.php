@@ -2205,57 +2205,88 @@ function leaky_paywall_process_renewal_reminder_deactivation() {
 register_deactivation_hook(__FILE__, 'leaky_paywall_process_renewal_reminder_deactivation');
 
 
+if ( !function_exists( 'leaky_paywall_process_renewal_reminder' ) ) {
 
+	/**
+	 * Process renewal reminder email for each Leaky Paywall subscriber
+	 *
+	 * @since 4.9.3
+	 */
+	function leaky_paywall_process_renewal_reminder() {
+		
+		global $blog_id;
+
+		$settings = get_leaky_paywall_settings();
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+
+		if ( 'on' === $settings['renewal_reminder_email'] ) {
+			return;
+		}
+
+		// do not send an email if the body of the email is empty
+		if ( !$settings['renewal_reminder_email_body'] ) {
+			return; 
+		}
+
+		$days_before = (int) $settings['renewal_reminder_days_before'];
+
+		$args = array(
+			'number' => -1
+		);
+
+		$users = leaky_paywall_subscriber_query( $args, $blog_id );
+
+		if ( empty( $users ) ) {
+			return;
+		}
+
+		foreach( $users as $user ) {
+
+			$user_id = $user->ID;
+			$expiration = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
+	   		$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+	   		
+	   		// do not send renewal reminders to users with recurring plans
+	   		if ( !empty($plan) ) {
+	   			continue;
+	   		}
+			
+			// user does not have an expiration date sent, so we can't do the calculations needed
+			if(empty($expiration)) {
+				continue;
+			}
+			
+			$date1 = date_create($expiration);
+			$date2 = date('Y-m-d H:i:s');
+			$date_differ = leaky_paywall_date_difference($expiration, date('Y-m-d H:i:s'));
+			$already_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true) == true ? true : false;
+			
+			if ( ($date_differ <= $daysToRenew) && $already_emailed == false) {	
+				leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
+			}
+			
+		}
+	}
+}
 add_action('leaky_paywall_process_renewal_reminder', 'leaky_paywall_process_renewal_reminder');
 
-// Process renewal reminder email for each Leaky Paywall subscriber
-function leaky_paywall_process_renewal_reminder() {
-	
-	global $blog_id;
+if ( !function_exists( 'leaky_paywall_date_difference' ) ) {
 
-	$settings = get_leaky_paywall_settings();
+	/**
+	 * Calculate the differce between two date values
+	 *
+	 * @since 4.9.3
+	 */
+	function leaky_paywall_date_difference($date_1 , $date_2 , $differenceFormat = '%a' ) {
 
-	if ( 'on' === $settings['renewal_reminder_email'] ) {
-		return;
-	}
-
-	if ( !$settings['renewal_reminder_email_body'] ) {
-		return; // do not send an email if the body of the email is empty
-	}
-
-	$days_before = (int) $settings['renewal_reminder_days_before'];
-	$mode = leaky_paywall_get_current_mode();
-	$site = leaky_paywall_get_current_site();
-	
-	$args = array(
-		'number' => -1
-	);
-
-	$users = leaky_paywall_subscriber_query( $args, $blog_id );
-
-	if ( empty( $users ) ) {
-		return;
-	}
-
-	foreach($users as $user) {
-
-		$user_id = $user->ID;
-		$expiration = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
-   		$user_info = get_userdata( $user_id );
-		
-		if(!empty($expiration)) {
-		
-		$date1 = date_create($expiration);
-		$date2 = date('Y-m-d H:i:s');
-		$dateDiffer = dateDifference($expiration, date('Y-m-d H:i:s'));
-		$alreadyEmailed = get_user_meta($user->ID, '_issuem_leaky_paywall_renewal_' . $mode . '_emailed' . $site, true) == true ? true : false;
-		
-			if(($dateDiffer <= $daysToRenew) && $alreadyEmailed == false){	
-				
-				leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
-				update_user_meta($user->ID, '_issuem_leaky_paywall_renewal_' . $mode . '_emailed' . $site, true);
-			}
-		}
+	    $datetime1 = date_create($date_1);
+	    $datetime2 = date_create($date_2);
+	    
+	    $interval = date_diff($datetime1, $datetime2);
+	    
+	    return $interval->format($differenceFormat);   
 	}
 }
 
@@ -2606,7 +2637,12 @@ if ( ! function_exists( 'leaky_paywall_is_free_registration' ) ) {
 	}
 }
 
-
+/**
+ * Log Leaky Paywall events and data to a file
+ *
+ * @since 4.7.1
+ * @return bool
+ */
 function leaky_paywall_log( $data, $event ) {
 
 	$str = '';
