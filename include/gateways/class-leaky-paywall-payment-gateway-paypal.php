@@ -331,8 +331,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					'description' 		=> $level['label'],
 					'payment_gateway' 	=> 'paypal_standard',
 					'payment_status' 	=> 'active',
-					'length_unit' 		=> $level['interval'],
-					'length' 			=> $level['interval_count'],
+					'interval' 			=> $level['interval'],
+					'interval_count' 	=> $level['interval_count'],
 					'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
 					'plan' 				=> '',
 					'recurring'			=> $level['recurring']

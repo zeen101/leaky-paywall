@@ -206,8 +206,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'description' 		=> $this->level_name,
 			'payment_gateway' 	=> 'stripe',
 			'payment_status' 	=> 'active',
-			'length_unit' 		=> $this->length_unit,
-			'length' 			=> $this->length,
+			'interval' 			=> $this->length_unit,
+			'interval_count' 	=> $this->length,
 			'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
 			'plan' 				=> $this->plan_id,
 			'recurring'			=> $this->recurring

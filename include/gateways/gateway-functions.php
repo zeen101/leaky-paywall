@@ -47,8 +47,8 @@ function leaky_paywall_send_to_gateway( $gateway, $subscription_data ) {
 			'description' => $subscription_data['description'],
 			'payment_gateway' => 'free_registration',
 			'payment_status' => 'active',
-			'length_unit' => $subscription_data['length_unit'],
-			'length' => $subscription_data['length'],
+			'interval' => $subscription_data['interval'],
+			'interval_count' => $subscription_data['interval_count'],
 			'site' => $subscription_data['site'],
 			'plan' => $subscription_data['plan'],
 			'recurring' => false

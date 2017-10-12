@@ -72,8 +72,8 @@ function leaky_paywall_process_registration() {
 		'price'				=> sanitize_text_field( $_POST['level_price'] ),
 		'plan'				=> isset( $_POST['plan_id'] ) ? sanitize_text_field( $_POST['plan_id'] ) : '',
 		'currency'			=> leaky_paywall_get_currency(),
-		'length'			=> sanitize_text_field( $_POST['interval_count'] ),
-		'length_unit'		=> sanitize_text_field( $_POST['interval'] ),
+		'interval_count'	=> sanitize_text_field( $_POST['interval_count'] ),
+		'interval'			=> sanitize_text_field( $_POST['interval'] ),
 		'recurring'			=> sanitize_text_field( $_POST['recurring'] ),
 		'site'				=> sanitize_text_field( $_POST['site'] ),
 		'new_user'			=> $user_data['need_new'],
@@ -142,7 +142,6 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		return;
 	}
 	
-	// set expiration for a free subscription
 	if ( leaky_paywall_is_free_registration( $subscriber_data ) ) {
 		do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
 	}
