@@ -56,7 +56,7 @@ class Leaky_Paywall_Payment_Gateway {
 			$this->last_name 			= $subscription_data['last_name'];
 			$this->currency				= $subscription_data['currency'];
 			$this->amount				= $subscription_data['amount'];
-			$this->length 				= $subscription_data['interval_length'];
+			$this->length 				= $subscription_data['interval_count'];
 			$this->length_unit			= $subscription_data['interval'];
 			$this->level_id 			= $subscription_data['level_id'];
 			$this->level_price 			= $subscription_data['price'];
