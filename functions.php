@@ -620,8 +620,8 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 
 		if ( isset( $data['expires'] ) && $data['expires'] ) {
 			$expires = $data['expires'];
-		} else if ( !empty( $data['length_unit'] ) && isset( $data['length'] ) && 1 <= $data['length'] ) {
-			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $data['length'] . ' ' . $data['length_unit'] ) ); //we're generous, give them the whole day!
+		} else if ( !empty( $data['interval'] ) && isset( $data['interval_count'] ) && 1 <= $data['interval_count'] ) {
+			$expires = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $data['interval_count'] . ' ' . $data['interval'] ) ); //we're generous, give them the whole day!
 		} else {
 			$expires = '0000-00-00 00:00:00';
 		}
