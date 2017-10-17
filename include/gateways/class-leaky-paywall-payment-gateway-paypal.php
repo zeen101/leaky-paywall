@@ -408,6 +408,12 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				);
 
 				$level = get_leaky_paywall_subscription_level( $args['level_id'] );
+
+				// if the level isn't found in Leaky Paywall, we don't want to do edit anything on the user
+				if ( !$level ) {
+					return;
+				}
+				
 				$args['interval'] = $level['interval'];
 				$args['interval_count'] = $level['interval_count'];
 				
