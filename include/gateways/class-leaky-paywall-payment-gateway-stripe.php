@@ -130,7 +130,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			if ( 'on' === $this->recurring && empty( $this->plan_id ) ) {
 
 				$plan_args = array(
-					'stripe_price'	=> number_format( $level['price'], 2, '', '' ),
+					'stripe_price'	=> number_format( $this->level_price, 2, '', '' ),
 					'currency'	=> leaky_paywall_get_currency(),
 					'secret_key'	=> $this->secret_key
 				);

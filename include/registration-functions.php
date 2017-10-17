@@ -141,6 +141,8 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		leaky_paywall_errors()->add( 'user_not_created', __( 'A user could not be created. Please check your details and try again.', 'leaky-paywall' ), 'register' );
 		return;
 	}
+
+	$subscriber_data['user_id'] = $user_id;
 	
 	if ( leaky_paywall_is_free_registration( $subscriber_data ) ) {
 		do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
