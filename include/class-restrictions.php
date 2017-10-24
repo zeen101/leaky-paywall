@@ -82,7 +82,6 @@ class Leaky_Paywall_Restrictions {
 		$is_restricted = false;
 		
 		$restrictions = leaky_paywall_subscriber_restrictions();
-		$site = leaky_paywall_get_current_site();
 		
 		if ( !empty( $restrictions ) ) {
 			
@@ -104,47 +103,11 @@ class Leaky_Paywall_Restrictions {
 			}
 
 		}
-	
-		$level_ids = leaky_paywall_subscriber_current_level_ids();
-		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-		
-		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
-									
-			switch( $visibility['visibility_type'] ) {
-				
-				// using trim() == false instead of empty() for older versions of php 
-				// see note on http://php.net/manual/en/function.empty.php
 
-				case 'only':
-					$only = array_intersect( $level_ids, $visibility['only_visible'] );
-					if ( empty( $only ) ) {
-						add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-						do_action( 'leaky_paywall_is_restricted_content' );
-						return;
-					}
-					break;
-					
-				case 'always':
-					$always = array_intersect( $level_ids, $visibility['always_visible'] );
-					if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
-						return; //always visible, don't need process anymore
-					}
-					break;
-				
-				case 'onlyalways':
-					$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
-					if ( empty( $onlyalways ) ) {
-						add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-						do_action( 'leaky_paywall_is_restricted_content' );
-						return;
-					} else if ( !empty( $onlyalways ) ) {
-						return; //always visible, don't need process anymore
-					}
-					break;
-				
-				
-			}
-			
+		if ( $this->visibility_allows_access( $post ) ) {
+			return;
+		} else {
+			$is_restricted = true;
 		}
 		
 		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
@@ -153,31 +116,16 @@ class Leaky_Paywall_Restrictions {
 			return;
 		}
 			
-		switch ( $settings['cookie_expiration_interval'] ) {
-			case 'hour':
-				$multiplier = 60 * 60; //seconds in an hour
-				break;
-			case 'day':
-				$multiplier = 60 * 60 * 24; //seconds in a day
-				break;
-			case 'week':
-				$multiplier = 60 * 60 * 24 * 7; //seconds in a week
-				break;
-			case 'month':
-				$multiplier = 60 * 60 * 24 * 7 * 4; //seconds in a month (4 weeks)
-				break;
-			case 'year':
-				$multiplier = 60 * 60 * 24 * 7 * 52; //seconds in a year (52 weeks)
-				break;
-		}
-		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
+		$expiration = $this->get_expiration_time();
+		$site = leaky_paywall_get_current_site();
 									
 		if ( !empty( $_COOKIE['issuem_lp' . $site] ) ) {
 			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp' . $site] ), true );
 		}
 		
-		if ( empty( $available_content[$restricted_post_type] ) )
+		if ( empty( $available_content[$restricted_post_type] ) ) {
 			$available_content[$restricted_post_type] = array();							
+		}
 	
 		foreach ( $available_content[$restricted_post_type] as $key => $restriction ) {
 			
@@ -218,6 +166,49 @@ class Leaky_Paywall_Restrictions {
 		$cookie = setcookie( 'issuem_lp' . $site, $json_available_content, $expiration, '/' );
 		$_COOKIE['issuem_lp' . $site] = $json_available_content;	
 		
+	}
+
+	public function visibility_allows_access( $post ) 
+	{
+
+		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
+		$level_ids = leaky_paywall_subscriber_current_level_ids();
+
+		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+
+			switch( $visibility['visibility_type'] ) {
+				
+				case 'only':
+					$only = array_intersect( $level_ids, $visibility['only_visible'] );
+					if ( empty( $only ) ) {
+						add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+						do_action( 'leaky_paywall_is_restricted_content' );
+						return false;
+					}
+					break;
+					
+				case 'always':
+					$always = array_intersect( $level_ids, $visibility['always_visible'] );
+					if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
+						return true; //always visible, don't need process anymore
+					}
+					break;
+				
+				case 'onlyalways':
+					$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
+					if ( empty( $onlyalways ) ) {
+						add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
+						do_action( 'leaky_paywall_is_restricted_content' );
+						return false;
+					} else if ( !empty( $onlyalways ) ) {
+						return true; //always visible, don't need process anymore
+					}
+					break;	
+				
+			}
+
+		}
+
 	}
 
 	public function the_content_paywall( $content ) {
@@ -281,6 +272,35 @@ class Leaky_Paywall_Restrictions {
 		
 		return $message;
 		
+	}
+
+	public function get_expiration_time() 
+	{
+
+		$settings = get_leaky_paywall_settings();
+		
+		switch ( $settings['cookie_expiration_interval'] ) {
+			case 'hour':
+				$multiplier = 60 * 60; //seconds in an hour
+				break;
+			case 'day':
+				$multiplier = 60 * 60 * 24; //seconds in a day
+				break;
+			case 'week':
+				$multiplier = 60 * 60 * 24 * 7; //seconds in a week
+				break;
+			case 'month':
+				$multiplier = 60 * 60 * 24 * 7 * 4; //seconds in a month (4 weeks)
+				break;
+			case 'year':
+				$multiplier = 60 * 60 * 24 * 7 * 52; //seconds in a year (52 weeks)
+				break;
+		}
+
+		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
+
+		return apply_filters( 'leaky_paywall_expiration_time', $expiration );
+
 	}
 
 	public function is_cancel_request() 
