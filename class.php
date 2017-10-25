@@ -42,7 +42,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 			add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
 				
-			add_action( 'wp', array( $this, 'process_php_restrictions' ) );
+			add_action( 'wp', array( $this, 'process_content_restrictions' ) );
 
 			add_action( 'init', array( $this, 'process_js_restrictions' ) );
 			
@@ -69,10 +69,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			$restrictions->process_js();
 		}
 
-		public function process_php_restrictions() 
+		public function process_content_restrictions() 
 		{
 			$restrictions = new Leaky_Paywall_Restrictions();
-			$restrictions->process_php();
+			$restrictions->process();
 		}
 		
 		public function restrict_pdf_attachment_url( $attachment_url, $attachment_id ) {
