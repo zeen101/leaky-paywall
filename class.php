@@ -267,6 +267,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'paypal_sand_api_secret'		=> '',
 				'leaky_paywall_currency'		=> 'USD',
 				'restrict_pdf_downloads' 		=> 'off',
+				'enable_combined_restrictions'  => 'off',
+				'combined_restrictions_total_allowed' => '',
 				'enable_js_cookie_restrictions' => 'off',
 				'restrictions' 	=> array(
 					'post_types' => array(
@@ -480,10 +482,20 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['restrictions'] = array();
 					}
 
+					if ( !empty( $_POST['enable_combined_restrictions'] ) )
+						$settings['enable_combined_restrictions'] = $_POST['enable_combined_restrictions'];
+					else
+						$settings['enable_combined_restrictions'] = 'off';
+
+					if ( !empty( $_REQUEST['combined_restrictions_total_allowed'] ) )
+						$settings['combined_restrictions_total_allowed'] = trim( $_REQUEST['combined_restrictions_total_allowed'] );
+
 					if ( !empty( $_POST['enable_js_cookie_restrictions'] ) )
 						$settings['enable_js_cookie_restrictions'] = $_POST['enable_js_cookie_restrictions'];
 					else
 						$settings['enable_js_cookie_restrictions'] = 'off';
+
+					
 
 					if ( !empty( $_REQUEST['levels'] ) ) {
 						$settings['levels'] = $_REQUEST['levels'];
@@ -1188,6 +1200,19 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				                    	</p>
 			                        </td>
 		                        </tr>
+
+		                        <tr class="restriction-options">
+	                                <th><?php _e( 'Combined Restrictions', 'leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> Use a single value for total content allowed regardless of content type. This uses the content types from the restriction content setting above.</td>
+	                            </tr>
+
+	                            <tr class="restriction-options">
+	                                <th><?php _e( 'Combined Restrictions Total Allowed', 'leaky-paywall' ); ?></th>
+	                                <td>
+	                                	<input type="text" id="combined_restrictions_total_allowed" class="small-text" name="combined_restrictions_total_allowed" value="<?php echo stripcslashes( $settings['combined_restrictions_total_allowed'] ); ?>" /> 
+	                                	<p class="description">If combined restrictions is enabled, the total amount of content items allowed before content is restricted.</p>
+	                                </td>
+	                            </tr>
 
 		                        <tr class="restriction-options">
 	                                <th><?php _e( 'Enable Alternative Restriction Handling', 'issuem-leaky-paywall' ); ?></th>

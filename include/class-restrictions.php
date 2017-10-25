@@ -149,10 +149,7 @@ class Leaky_Paywall_Restrictions {
 			
 		}
 
-		// get this from leaky paywall settings
-		$combined_restrictions = false;
-
-		if ( $combined_restrictions ) {
+		if ( $this->combined_restrictions_enabled() ) {
 			$available_content = $this->combined_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
 		} else {
 			$available_content = $this->default_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
@@ -201,6 +198,19 @@ class Leaky_Paywall_Restrictions {
 
 		return $available_content;
 
+	}
+
+	public function combined_restrictions_enabled() 
+	{
+		
+		$settings = get_leaky_paywall_settings();
+
+		if ( 'on' == $settings['enable_combined_restrictions'] ) {
+			return true;
+		}
+
+		return false;
+		
 	}
 
 	/**
@@ -303,8 +313,10 @@ class Leaky_Paywall_Restrictions {
 	 */
 	public function get_combined_restriction_total_allowed() 
 	{
-		// get this from a setting in LP
-		return 3;
+		$settings = get_leaky_paywall_settings();
+		$total_allowed = $settings['combined_restrictions_total_allowed'];
+
+		return $total_allowed;
 	}
 
 	/**
