@@ -45,6 +45,90 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	public function subscriber_can_view() 
+	{
+
+		if ( !is_singular() ) {
+			return true;
+		}
+
+		global $post;
+		$settings = get_leaky_paywall_settings();
+			
+		// allow admins to view all content
+		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) { 
+			return true;
+		}
+		
+		// We don't ever want to block the login, subscription, etc.
+		if ( $this->is_unblockable_content() ) {
+			return true;
+		}
+
+		if ( $this->visibility_allows_access( $post ) ) {
+			return true;
+		}
+
+		if ( $this->visibility_is_restricted( $post ) ) {
+			return false;
+		}
+
+		$restrictions = $this->get_subscriber_restrictions();
+		
+		$post_type_id = '';
+		$restricted_post_type = '';
+		$is_restricted = false;
+		
+		if ( !empty( $restrictions ) ) {
+			
+			foreach( $restrictions as $key => $restriction ) {
+				
+				if ( is_singular( $restriction['post_type'] ) ) {
+					
+					// this will only be ignored if the allowed value is unlimited ( -1 )
+					if ( 0 <= $restriction['allowed_value'] ) {
+					
+						$post_type_id = $key;
+						$restricted_post_type = $restriction['post_type'];
+						$is_restricted = true;
+						break;
+						
+					}
+					
+				}
+				
+			}
+
+		}
+		
+		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
+		
+		if ( !$is_restricted ) {
+			return true;
+		}
+		
+		$available_content = $this->get_available_content($restricted_post_type);
+
+		if ( $this->combined_restrictions_enabled() ) {
+
+			
+
+			if ( $this->is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
+				return false;
+			}
+		} else {
+
+			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
+				return false;
+			}
+
+		}
+		
+		return true;
+
+	}
+
+	
 	/**
 	 * Determine if the user has pdf access
 	 *
@@ -98,6 +182,10 @@ class Leaky_Paywall_Restrictions {
 			return;
 		}
 
+		if ( $this->visibility_is_restricted( $post ) ) {
+			$this->restrict_content();
+		}
+
 		// determine if current content's post type has a limited allowed value in the restriction settings
 		$restrictions = $this->get_subscriber_restrictions();
 		
@@ -134,25 +222,27 @@ class Leaky_Paywall_Restrictions {
 		}
 			
 		// content that can be accessed because the user has viewed it already
-		$available_content = $this->get_available_content();
-		
-		if ( empty( $available_content[$restricted_post_type] ) ) {
-			$available_content[$restricted_post_type] = array();							
-		}
-
-		// Current post view has expired or it is very old and based on the post ID rather than the expiration time
-		foreach ( $available_content[$restricted_post_type] as $key => $restriction ) {
-			
-			if ( time() > $restriction || 7200 > $restriction ) { 
-				unset( $available_content[$restricted_post_type][$key] );
-			}
-			
-		}
+		$available_content = $this->get_available_content($restricted_post_type);
 
 		if ( $this->combined_restrictions_enabled() ) {
-			$available_content = $this->combined_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
+
+			// maybe update available content array
+			$available_content = $this->update_available_content_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type );
+
+			if ( $this->is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
+				$this->restrict_content();
+			}
+	
+			// $available_content = $this->combined_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
 		} else {
-			$available_content = $this->default_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
+
+			$available_content = $this->update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type );
+
+			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
+				$this->restrict_content();
+			}
+			
+			// $available_content = $this->default_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
 		}
 									
 		$this->set_available_content_cookie( $available_content );
@@ -197,6 +287,49 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		return $available_content;
+
+	}
+
+	public function update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) 
+	{
+		
+		global $post;
+
+		if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
+																		
+			if ( $restrictions[$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) { 
+				
+				// if this post hasn't been added to the available content array, do so now
+				if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
+					$available_content[$restricted_post_type][$post->ID] = $this->get_expiration_time();
+				}
+				
+			} 
+		
+		}
+
+		return $available_content;
+		
+	}
+
+	public function is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) 
+	{
+		
+		global $post;
+
+		if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
+																		
+			if ( $restrictions[$post_type_id]['allowed_value'] <= count( $available_content[$restricted_post_type] ) ) { 
+				
+				if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
+					return true;
+				}
+				
+			} 
+		
+		}
+
+		return false;
 
 	}
 
@@ -252,6 +385,52 @@ class Leaky_Paywall_Restrictions {
 
 		return $available_content;
 
+	}
+
+	public function update_available_content_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) 
+	{
+		global $post;
+
+		$total_allowed = $this->get_combined_restriction_total_allowed();
+		$total_viewed = $this->get_total_content_viewed( $available_content );
+
+		if ( -1 != $restrictions[$post_type_id]['allowed_value'] ) {
+
+			if ( $total_allowed > $total_viewed ) {
+
+				if ( !array_key_exists( $post->ID, $available_content[$restricted_post_type] ) ) {
+					$available_content[$restricted_post_type][$post->ID] = $this->get_expiration_time();
+				}
+
+			} 
+
+		}
+
+		return $available_content;
+	}
+
+
+
+	public function is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) 
+	{
+		global $post;
+		$restricted = false;
+		$total_allowed = $this->get_combined_restriction_total_allowed();
+		$total_viewed = $this->get_total_content_viewed( $available_content );
+
+		if ( -1 != $restrictions[$post_type_id]['allowed_value'] ) {
+
+			if ( $total_allowed <= $total_viewed ) {
+
+				if ( $this->content_never_viewed( $available_content ) ) {
+
+					$restricted = true;
+				}
+
+			} 
+		}
+
+		return $restricted;
 	}
 
 	/**
@@ -326,7 +505,7 @@ class Leaky_Paywall_Restrictions {
 	 *
 	 * @return array $available_content Array of post ids that have been viewed
 	 */
-	public function get_available_content() 
+	public function get_available_content($restricted_post_type) 
 	{
 
 		$site = leaky_paywall_get_current_site();
@@ -335,6 +514,19 @@ class Leaky_Paywall_Restrictions {
 			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp' . $site] ), true );
 		} else {
 			$available_content = array();
+		}
+
+		if ( empty( $available_content[$restricted_post_type] ) ) {
+			$available_content[$restricted_post_type] = array();							
+		}
+
+		// Current post view has expired or it is very old and based on the post ID rather than the expiration time
+		foreach ( $available_content[$restricted_post_type] as $key => $restriction ) {
+			
+			if ( time() > $restriction || 7200 > $restriction ) { 
+				unset( $available_content[$restricted_post_type][$key] );
+			}
+			
 		}
 
 		return apply_filters( 'leaky_paywall_available_content', $available_content );
@@ -381,7 +573,7 @@ class Leaky_Paywall_Restrictions {
 				case 'only':
 					$only = array_intersect( $level_ids, $visibility['only_visible'] );
 					if ( empty( $only ) ) {
-						$this->restrict_content();
+						// $this->restrict_content();
 					}
 					break;
 					
@@ -407,6 +599,28 @@ class Leaky_Paywall_Restrictions {
 
 		return false;
 
+	}
+
+	public function visibility_is_restricted( $post ) 
+	{
+		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
+		$level_ids = leaky_paywall_subscriber_current_level_ids();
+		$is_restricted = false;
+
+		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+
+			if ( $visibility['visibility_type'] == 'only' ) {
+				$only = array_intersect( $level_ids, $visibility['only_visible'] );
+				if ( empty( $only ) ) {
+					$is_restricted = true;
+				}
+			}
+
+			
+
+		}
+
+		return $is_restricted;
 	}
 
 	/**

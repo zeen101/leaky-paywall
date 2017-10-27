@@ -2637,6 +2637,13 @@ if ( ! function_exists( 'leaky_paywall_is_free_registration' ) ) {
 	}
 }
 
+function leaky_paywall_subscriber_can_view() {
+
+	$restricted = new Leaky_Paywall_Restrictions();
+	return $restricted->subscriber_can_view();
+
+}
+
 /**
  * Log Leaky Paywall events and data to a file
  *
