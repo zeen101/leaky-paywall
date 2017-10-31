@@ -303,6 +303,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		                
 		            case 'customer.subscription.created' :
 		            	$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
+		            	update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
 		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
 		                break;
 		                
