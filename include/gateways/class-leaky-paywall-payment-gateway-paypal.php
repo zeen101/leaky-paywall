@@ -343,7 +343,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					$gateway_data['plan'] = $level['interval_count'] . ' ' . strtoupper( substr( $level['interval'], 0, 1 ) );
 				}
 
-				do_action( 'leaky_paywall_paypal_signup', $customer_id );
+				do_action( 'leaky_paywall_paypal_signup', $gateway_data );
 				do_action( 'leaky_paywall_paypal_confirm_before_redirect', $customer_id );
 
 				leaky_paywall_subscriber_registration( $gateway_data );
