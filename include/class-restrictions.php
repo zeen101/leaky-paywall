@@ -111,11 +111,10 @@ class Leaky_Paywall_Restrictions {
 
 		if ( $this->combined_restrictions_enabled() ) {
 
-			
-
 			if ( $this->is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
 				return false;
 			}
+
 		} else {
 
 			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
