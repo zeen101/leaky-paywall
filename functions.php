@@ -737,7 +737,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
 		}
 			
-		do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args );
+		do_action( 'leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args, $userdata );
 		
 		return $user_id;
 		
