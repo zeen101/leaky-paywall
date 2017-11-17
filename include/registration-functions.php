@@ -58,6 +58,14 @@ function leaky_paywall_process_registration() {
 	
 	$user_data = leaky_paywall_validate_user_data();
 
+	// retrieve all error messages, if any
+	$errors = leaky_paywall_errors()->get_error_messages();
+
+	// only send to gateway if their are no errors
+	if ( ! empty( $errors ) ) {
+		return;
+	}
+
 	$subscription_data = apply_filters( 'leaky_paywall_subscription_data', array(
 		'amount'			=> sanitize_text_field( $_POST['level_price'] ),
 		'description'		=> sanitize_text_field( $_POST['description'] ),
