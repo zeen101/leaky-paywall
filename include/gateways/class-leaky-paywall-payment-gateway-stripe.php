@@ -143,8 +143,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			// recurring subscription
 			if ( !empty( $this->recurring ) && 'on' === $this->recurring && !empty( $this->plan_id ) ) {
 
-				$customer_array['plan'] = $this->plan_id;
-
 				if ( !empty( $cu ) ) {
 					$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 
@@ -160,8 +158,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					
 				} else {
 
-					// new customer, and this will charge them?
 					$cu = \Stripe\Customer::create( $customer_array );
+
+					if ( $cu->id ) {
+						$subscription_array = array(
+							'customer'	=> $cu->id,
+							'items' => array(
+								array(
+									'plan' => $this->plan_id
+								),
+							)
+						);
+
+						$subscription = \Stripe\Subscription::create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array ) );
+					}
+					
 				}
 
 			} else {
