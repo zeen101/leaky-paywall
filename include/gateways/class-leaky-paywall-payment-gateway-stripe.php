@@ -210,7 +210,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'interval_count' 	=> $this->length,
 			'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
 			'plan' 				=> $this->plan_id,
-			'recurring'			=> $this->recurring
+			'recurring'			=> $this->recurring,
+			'currency'			=> $this->currency
 		);
 
 		do_action( 'leaky_paywall_stripe_signup', $gateway_data );
@@ -243,6 +244,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		if ( isset( $stripe_event->type ) ) {
 		    
 		    $stripe_object = $stripe_event->data->object;
+
+		    leaky_paywall_log( $stripe_object, 'stripe webhook');
 		
 		    if ( !empty( $stripe_object->customer ) ) {
 		        $user = get_leaky_paywall_subscriber_by_subscriber_id( $stripe_object->customer, $mode );
@@ -319,7 +322,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		        // create an action for each event fired by stripe
 		        $action = str_replace( '.', '_', $stripe_event->type );
 		        do_action( 'leaky_paywall_stripe_' . $action, $user, $stripe_object );
-		        
+		
 		    }
 		        
 		}

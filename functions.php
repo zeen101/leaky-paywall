@@ -2132,8 +2132,9 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
             case 'update':
 				
 				$message = stripslashes( apply_filters( 'leaky_paywall_new_email_message', $settings['new_email_body'], $user_id ) );
+				$subject = stripslashes( apply_filters( 'leaky_paywall_new_email_subject', $settings['new_email_subject'], $user_id ) ); 
 
-                $filtered_subject = leaky_paywall_filter_email_tags( $settings['new_email_subject'], $user_id, $user_info->display_name, $password );
+                $filtered_subject = leaky_paywall_filter_email_tags( $subject, $user_id, $user_info->display_name, $password );
                 $filtered_message = leaky_paywall_filter_email_tags( $message, $user_id, $user_info->display_name, $password );
 
                 $filtered_message = wpautop( make_clickable( $filtered_message ) );
@@ -2635,6 +2636,13 @@ if ( ! function_exists( 'leaky_paywall_is_free_registration' ) ) {
 		return apply_filters( 'leaky_paywall_is_free_registration', $is_free, $meta );
 
 	}
+}
+
+function leaky_paywall_subscriber_can_view() {
+
+	$restricted = new Leaky_Paywall_Restrictions();
+	return $restricted->subscriber_can_view();
+
 }
 
 /**
