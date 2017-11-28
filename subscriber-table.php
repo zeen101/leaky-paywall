@@ -209,9 +209,12 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway', true );
 				}
 				
-				if ( empty( $payment_gateway ) ) {
-					continue;
+				if ( !empty( $_GET['user-type'] ) && 'wpusers' !== $_GET['user-type'] ) {
+					if ( empty( $payment_gateway ) ) {
+						continue;
+					}
 				}
+				
 				?>
 				<tr class="<?php echo $alt; ?>">
 				<?php
