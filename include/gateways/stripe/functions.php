@@ -181,3 +181,22 @@ function leaky_paywall_create_stripe_plan( $level, $level_id , $plan_args ) {
     return $stripe_plan;
     	
 }
+
+/**
+ * Check if the status of a subscription is valid
+ *
+ * @since 4.10.3
+ */
+function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
+
+	$valid_status = array(
+		'active'
+	);
+
+	if ( in_array( $subscription->status, apply_filters( 'leaky_paywall_valid_stripe_subscription_status', $valid_status ) ) ) {
+		return true;
+	}
+
+	return false;
+
+}

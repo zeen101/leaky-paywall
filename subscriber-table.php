@@ -364,11 +364,17 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						break;
 	
 						case 'status':
+							echo "<td $attributes>";
+
 							if ( is_multisite_premium() ) {
-								echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true ) . '</td>';
+								$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 							} else {
-								echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) . '</td>';
+								$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true );
 							}
+
+							echo apply_filters( 'leaky_paywall_subscribers_table_payment_status', $payment_status, $user, $site );
+
+							echo '</td>';
 							
 						break;
 	

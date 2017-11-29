@@ -557,7 +557,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 							if ( isset( $cu->subscriptions ) ) {
 								$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 								foreach( $subscriptions->data as $subscription ) {
-									if ( 'active' === $subscription->status ) {
+									if ( leaky_paywall_is_valid_stripe_subscription( $subscription ) ) {
 										return 'subscription';
 									}
 								}

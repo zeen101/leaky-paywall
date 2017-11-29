@@ -63,6 +63,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$cu = false;
 		$paid   = false;
 		$existing_customer = false;
+		$subscription = '';
 
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -227,7 +228,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		do_action( 'leaky_paywall_stripe_signup', $gateway_data );
 
-		return $gateway_data;
+		return apply_filters( 'leaky_paywall_stripe_gateway_data', $gateway_data, $this, $cu, $subscription );
 
 	}
 
