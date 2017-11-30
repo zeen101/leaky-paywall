@@ -189,11 +189,9 @@ function leaky_paywall_create_stripe_plan( $level, $level_id , $plan_args ) {
  */
 function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
 
-	$valid_status = array(
-		'active'
-	);
+	$valid_status = apply_filters( 'leaky_paywall_valid_stripe_subscription_status', array( 'active' ) );
 
-	if ( in_array( $subscription->status, apply_filters( 'leaky_paywall_valid_stripe_subscription_status', $valid_status ) ) ) {
+	if ( in_array( $subscription->status, $valid_status ) ) {
 		return true;
 	}
 
