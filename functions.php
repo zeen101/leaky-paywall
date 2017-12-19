@@ -1887,7 +1887,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$subscription_price .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( intval($level['price']), 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
 							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
@@ -2673,3 +2673,92 @@ function leaky_paywall_log( $data, $event ) {
 	fclose( $open );
 
 }
+
+add_action( 'show_user_profile', 'leaky_paywall_show_extra_profile_fields' );
+add_action( 'edit_user_profile', 'leaky_paywall_show_extra_profile_fields' );
+
+function leaky_paywall_show_extra_profile_fields( $user ) { 
+
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+	$description = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_description' . $site, true );
+	$gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+	$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+	$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+	$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+	$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+	?>
+
+	<h3>Leaky Paywall</h3>
+
+	<table class="form-table">	
+
+		<tr>
+			<th><label for="twitter">Level ID</label></th>
+
+			<td>
+				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $level_id ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Level Description</label></th>
+
+			<td>
+				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $description ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Payment Gateway</label></th>
+
+			<td>
+				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $gateway ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Payment Status</label></th>
+
+			<td>
+				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $status ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Expires</label></th>
+
+			<td>
+				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $expires ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Plan</label></th>
+
+			<td>
+				<input type="text" name="textwitter" id="twitter" value="<?php echo esc_attr( $plan ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Subscriber ID</label></th>
+
+			<td>
+				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $subscriber_id ); ?>" class="regular-text" /><br />
+				
+			</td>
+		</tr>
+
+	</table>
+<?php }
