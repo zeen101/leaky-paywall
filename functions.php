@@ -2684,6 +2684,9 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 	$site = leaky_paywall_get_current_site();
 
 	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+	if ( $level_id ) {
+		$level = get_leaky_paywall_subscription_level( $level_id );
+	}
 	$description = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_description' . $site, true );
 	$gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 	$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
@@ -2691,6 +2694,9 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 	$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 	$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
+	if ( !$level_id ) {
+		return;
+	}
 	?>
 
 	<h3>Leaky Paywall</h3>
@@ -2701,7 +2707,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 			<th><label for="twitter">Level ID</label></th>
 
 			<td>
-				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $level_id ); ?>" class="regular-text" /><br />
+				<?php echo esc_attr( $level_id ); ?>
 				
 			</td>
 		</tr>
@@ -2710,7 +2716,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 			<th><label for="twitter">Level Description</label></th>
 
 			<td>
-				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $description ); ?>" class="regular-text" /><br />
+				<?php echo $level['label']; ?>
 				
 			</td>
 		</tr>
@@ -2719,7 +2725,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 			<th><label for="twitter">Payment Gateway</label></th>
 
 			<td>
-				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $gateway ); ?>" class="regular-text" /><br />
+				<?php echo esc_attr( $gateway ); ?>
 				
 			</td>
 		</tr>
@@ -2728,7 +2734,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 			<th><label for="twitter">Payment Status</label></th>
 
 			<td>
-				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $status ); ?>" class="regular-text" /><br />
+				<?php echo esc_attr( $status ); ?>
 				
 			</td>
 		</tr>
@@ -2737,28 +2743,38 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 			<th><label for="twitter">Expires</label></th>
 
 			<td>
-				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $expires ); ?>" class="regular-text" /><br />
+				<?php echo esc_attr( $expires ); ?>
 				
 			</td>
 		</tr>
 
-		<tr>
-			<th><label for="twitter">Plan</label></th>
+		<?php if ( $plan ) {
+			?>
+			<tr>
+				<th><label for="twitter">Plan</label></th>
 
-			<td>
-				<input type="text" name="textwitter" id="twitter" value="<?php echo esc_attr( $plan ); ?>" class="regular-text" /><br />
-				
-			</td>
-		</tr>
+				<td>
+					<?php echo esc_attr( $plan ); ?>
+					
+				</td>
+			</tr>
+			<?php 
+		} ?>
+		
 
-		<tr>
-			<th><label for="twitter">Subscriber ID</label></th>
+		<?php if ( $subscriber_id ) {
+			?>
+			<tr>
+				<th><label for="twitter">Subscriber ID</label></th>
 
-			<td>
-				<input type="text" name="twitter" id="twitter" value="<?php echo esc_attr( $subscriber_id ); ?>" class="regular-text" /><br />
-				
-			</td>
-		</tr>
+				<td>
+					<?php echo esc_attr( $subscriber_id ); ?>
+					
+				</td>
+			</tr>
+			<?php 
+		} ?>
+		
 
 	</table>
 <?php }
