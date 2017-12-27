@@ -585,7 +585,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 			}
 	
-		} // end foreach
+		} // end foreach 
 
 		if ( is_bool( $canceled ) && $canceled ) {
 			$paid = false;
