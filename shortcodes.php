@@ -269,7 +269,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 							
 				$paid = leaky_paywall_has_user_paid( $user->user_email, $site );
 				
-				if ( 'subscription' === $paid ) {
+				if ( strcasecmp('active', $status) == 0 ) {
 					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 					$cancel = sprintf( __( '<a href="%s">cancel</a>', 'leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
