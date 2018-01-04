@@ -348,6 +348,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function fields() {
 
+		$stripe_plan = '';
 		$level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
@@ -370,7 +371,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		ob_start();
 		?>
 
-			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan->id; ?>"/>
+			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan ? $stripe_plan->id : ''; ?>"/>
 
 			<script type="text/javascript">
 
