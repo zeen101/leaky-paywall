@@ -192,7 +192,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					'description' => $this->level_name,
 				);
 
-				$charge = \Stripe\Charge::create( $charge_array );
+				$charge = \Stripe\Charge::create( apply_filters( 'leaky_paywall_process_stripe_payment_charge_array', $charge_array ) );
 
 			}
 
