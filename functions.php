@@ -353,19 +353,6 @@ if ( !function_exists( 'leaky_paywall_get_current_mode' ) ) {
 
 }
 
-if ( !function_exists('leaky_paywall_get_current_site_access') ) {
-
-	function leaky_paywall_get_current_site_access() {
-		$user_id = get_current_user_id();
-
-		$settings = get_leaky_paywall_settings();
-		$levels = $settings['levels'];
-
-
-
-	}
-}
-
 if ( !function_exists( 'leaky_paywall_get_current_site' ) ) {
 	
 	function leaky_paywall_get_current_site() {
