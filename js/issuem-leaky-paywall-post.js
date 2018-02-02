@@ -2,7 +2,7 @@ var $leaky_paywall_post = jQuery.noConflict();
 
 $leaky_paywall_post(document).ready(function($) {
 		
-	$( 'select#issuem-leaky-paywall-visibility-type' ).live( 'change', function( event ) {
+	$( '.inside' ).on( 'change', "#issuem-leaky-paywall-visibility-type", function( event ) {
 		var parent = $( this ).parent();
 		if ( 'default' == $( this ).val() ) {
 			$( 'select#issuem-leaky-paywall-only-visible' ).hide();
