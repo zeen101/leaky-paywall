@@ -381,6 +381,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		}
 
 		leaky_paywall_log( $_POST, 'paypal standard ipn');
+		leaky_paywall_log( $_REQUEST, 'request standard ipn');
 		
 		$site = '';
 		$settings = get_leaky_paywall_settings();
@@ -416,7 +417,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				
 				$args['interval'] = $level['interval'];
 				$args['interval_count'] = $level['interval_count'];
-				$args['site'] = $level['site'];
 				
 				if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
 					$site = '_' . $level['site'];
