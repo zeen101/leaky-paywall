@@ -617,21 +617,21 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					}
 				}
 
+				// get data submitted in registration form
+				$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
+
+				if ( !empty( $transient_data ) ) {
+					foreach( $transient_data as $key => $value ) {
+						$args[$key] = $value;
+					}
+				}
+
 				if ( !empty( $user ) ) {
 					//WordPress user exists
 					$args['subscriber_email'] = $user->user_email;
 					$user_id = leaky_paywall_update_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 				} else {
 					//Need to create a new user
-
-					// get data submitted in registration form
-					$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
-
-					if ( !empty( $transient_data ) ) {
-						foreach( $transient_data as $key => $value ) {
-							$args[$key] = $value;
-						}
-					}
 					
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
 					$user_id = leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
