@@ -206,7 +206,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		leaky_paywall_log( $args, 'paypal standard args');
 
-		return $args;
+		return apply_filters( 'leaky_paywall_paypal_args', $args );
 
 	}
 
