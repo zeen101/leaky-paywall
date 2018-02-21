@@ -420,7 +420,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								}
 							}
 														
-							$cu = Stripe_Customer::retrieve( $subscriber_id );
+							$cu = \Stripe\Customer::retrieve( $subscriber_id );
 							if ( !empty( $cu ) )
 								if ( true === $cu->deleted )
 									throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
