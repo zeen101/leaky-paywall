@@ -268,16 +268,17 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				}
 							
 				$paid = leaky_paywall_has_user_paid( $user->user_email, $site );
+				$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 				
-				if ( 'subscription' === $paid ) {
+				if( empty( $expires) || '0000-00-00 00:00:00' === $expiration){
+					$cancel = '&nbsp;';
+				}else if ( strcasecmp('active', $status) == 0 && 'Canceled' !== $plan ) {
 					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 					$cancel = sprintf( __( '<a href="%s">cancel</a>', 'leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
 				} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
 					$cancel = 'You have cancelled your subscription, but your account will remain active until your expiration date.';
-				} else {
-					$cancel = '&nbsp;';
-				}
+				} 
 				
 				if ( !empty( $status ) && !empty( $level_name ) && !empty( $payment_gateway ) && !empty( $expires ) ) {
 					$profile_table .= '<tbody>';
@@ -472,11 +473,11 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				foreach( $sites as $site ) {	
 					$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 					$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+					$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 					$expires = leaky_paywall_has_user_paid( $user->user_email, $site );
 
-					if ( 'subscription' === $expires ) {
+				if ( strcasecmp('active', $status) == 0 ) {
 						$payment_form = '';
-						
 						switch( $payment_gateway ) {
 							
 							case 'stripe':

@@ -585,7 +585,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 			}
 	
-		} // end foreach
+		} // end foreach 
 
 		if ( is_bool( $canceled ) && $canceled ) {
 			$paid = false;
@@ -615,7 +615,12 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 			return;
 		}
 
-		$site = leaky_paywall_get_current_site();
+		if ( is_multisite_premium() && !is_main_site( $data['site'] ) ) {
+			$site = '_' . $data['site'];
+		} else {
+			$site = '';
+		}
+
 		$mode = leaky_paywall_get_current_mode();
 
 		if ( isset( $data['expires'] ) && $data['expires'] ) {
@@ -659,7 +664,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		} else {
 			$site = '';
 		}
-		unset( $meta_args['site'] );
+
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
 		$expires = '0000-00-00 00:00:00';
@@ -716,6 +721,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
+		unset( $meta_args['site'] );
 			
 		// if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
 		// 	$meta_args['expires'] = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
@@ -771,7 +777,6 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		} else {
 			$site = '';
 		}
-		unset( $meta_args['site'] );
 		
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
@@ -789,6 +794,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
+		unset( $meta_args['site'] );
 			
 		
 		// if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
@@ -971,7 +977,9 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 						if ( !empty( $results->status ) && 'canceled' === $results->status ) {
 							
 							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+							//We are creating plans with the site of '_all', even on single sites.  This is a quick fix but needs to be readdressed.
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled' );
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan_all', 'Canceled' );
 
 							do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe' );
 
