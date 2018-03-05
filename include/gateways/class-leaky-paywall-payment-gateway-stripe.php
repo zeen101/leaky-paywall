@@ -451,11 +451,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				<label for="payment_method_stripe"> <?php _e( 'Credit Card', 'leaky-paywall' ); ?> <img width="150" src="<?php echo LEAKY_PAYWALL_URL; ?>images/credit_card_logos_5.gif"></label>
 
 			</div>
-
+			
 		<?php 
-		leaky_paywall_card_form();
-		return ob_get_clean();
-
 	}
 
 	/**

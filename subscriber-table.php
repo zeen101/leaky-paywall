@@ -14,7 +14,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		return current_user_can( 'manage_network_users' );
 	}
 	
-	function prepare_items() {
+	public function prepare_items() {
 		global $usersearch, $wpdb;
 	
 		/**
@@ -36,9 +36,11 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		 */
 		$this->_column_headers = array($columns, $hidden, $sortable);
 
-		$usersearch = isset( $_REQUEST['s'] ) ? $_REQUEST['s'] : '';
+		$usersearch = isset( $_REQUEST['s'] ) ? '*' . $_REQUEST['s'] . '*' : '';
 
-		$users_per_page = $this->get_items_per_page( 'users_network_per_page' );
+		// $users_per_page = $this->get_items_per_page( 'users_network_per_page' );
+		$per_page = ( $this->is_site_users ) ? 'site_users_network_per_page' : 'users_per_page';
+		$users_per_page = $this->get_items_per_page( $per_page );
 
 		$paged = $this->get_pagenum();
 
@@ -57,7 +59,12 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			if ( !isset( $_REQUEST['order'] ) ) {
 				$_GET['order'] = $_REQUEST['order'] = 'DESC';
 			}
-			$args['count_total'] = false;
+			// $args['count_total'] = false;
+		}
+
+
+		if ( $this->is_site_users ) {
+			$args['blog_id'] = $this->site_id;
 		}
 
 		if ( !empty( $_REQUEST['orderby'] ) ) {
@@ -68,20 +75,85 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			$args['order'] = $_REQUEST['order'];
 
 		// Query the user IDs for this page
-		global $blog_id;
-		$results = leaky_paywall_subscriber_query( $args, $blog_id );
+		// global $blog_id;
+		// $results = leaky_paywall_subscriber_query( $args, $blog_id );
 
 		$settings = get_leaky_paywall_settings();
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
-		if ( is_multisite_premium() && is_main_site( $blog_id ) ) {
-			$results = array_merge( $results, leaky_paywall_subscriber_query( $args, false ) );
+		// if ( is_multisite_premium() && is_main_site( $blog_id ) ) {
+		// 	$results = array_merge( $results, leaky_paywall_subscriber_query( $args, false ) );
+		// }
+		
+		// $this->items = $results;
+		// 
+		
+		$args['meta_query'] = array(
+			array(
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id',
+				'compare' => 'EXISTS',
+			),
+		);
+
+		// if ( $usersearch ) {
+			
+		// 	$args['meta_query'][] = array(
+		// 		'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+		// 		'value'   => $_GET['s'],
+		// 		'compare'	=> 'LIKE'
+		// 	);
+		// }
+
+		
+
+		if ( isset( $_GET['filter-level'] ) && 'lpsubs' == $_GET['user-type'] ) {
+
+			$level = esc_attr( $_GET['filter-level'] );
+
+			if ( 'all' != $level ) {
+
+				$args['meta_query'][] = array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+					'value'   => $level,
+					'compare' => 'LIKE',
+				);
+
+			}
+			
 		}
+
+		if ( isset( $_GET['filter-status'] ) && 'lpsubs' == $_GET['user-type'] ) {
+
+			$status = esc_attr( $_GET['filter-status'] );
+
+			if ( 'all' != $status ) {
+
+				$args['meta_query'][] = array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'value'   => $status,
+					'compare' => 'LIKE',
+				);
+
+			}
+			
+		}
+
+		if ( !empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] ) {
+			unset( $args['meta_query'] );
+		}
+
+
+		$wp_user_search = new WP_User_Query( $args );
+		$this->items = $wp_user_search->get_results();
 		
-		$this->items = $results;
-		
-		$args['number'] = 0;
+		// $args['number'] = 0;
+		// $this->set_pagination_args( array(
+		// 	'total_items' => count( leaky_paywall_subscriber_query( $args ) ),
+		// 	'per_page' => $users_per_page,
+		// ) );
+
 		$this->set_pagination_args( array(
-			'total_items' => count( leaky_paywall_subscriber_query( $args ) ),
+			'total_items' => $wp_user_search->get_total(),
 			'per_page' => $users_per_page,
 		) );
 	}
