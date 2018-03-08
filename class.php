@@ -1339,7 +1339,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
             </div>
              <div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
-				<a target="_blank" href="https://zeen101.com/"><img width="300" src="http://howto.pub/wp-content/uploads/2016/08/anvil-sidebar-ad.jpg" alt="Anvil"></a>
+				<a target="_blank" href="https://zeen101.com/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings"><img width="300" src="<?php echo plugin_dir_url( __FILE__ ); ?>images/anvil-sidebar.jpg" alt="Grow your publication into a digital profit engine"></a>
              </div>
 			</div>
 			<?php

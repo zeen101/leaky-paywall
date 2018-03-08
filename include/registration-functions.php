@@ -142,6 +142,12 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		$user_id = leaky_paywall_update_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	} else {
 		$status = 'new';
+
+		// create password here so we can send it to the email
+		if ( !$subscriber_data['password'] ) {
+			$subscriber_data['password'] = wp_generate_password();
+		} 
+		
 		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	}
 

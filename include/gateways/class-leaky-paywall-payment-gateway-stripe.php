@@ -63,6 +63,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$cu = false;
 		$paid   = false;
 		$existing_customer = false;
+		$subscription = '';
 
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
@@ -143,8 +144,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			// recurring subscription
 			if ( !empty( $this->recurring ) && 'on' === $this->recurring && !empty( $this->plan_id ) ) {
 
-				$customer_array['plan'] = $this->plan_id;
-
 				if ( !empty( $cu ) ) {
 					$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 
@@ -160,8 +159,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					
 				} else {
 
-					// new customer, and this will charge them?
 					$cu = \Stripe\Customer::create( $customer_array );
+
+					if ( $cu->id ) {
+						$subscription_array = array(
+							'customer'	=> $cu->id,
+							'items' => array(
+								array(
+									'plan' => $this->plan_id
+								),
+							)
+						);
+
+						$subscription = \Stripe\Subscription::create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array ) );
+					}
+					
 				}
 
 			} else {
@@ -180,7 +192,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					'description' => $this->level_name,
 				);
 
-				$charge = \Stripe\Charge::create( $charge_array );
+				$charge = \Stripe\Charge::create( apply_filters( 'leaky_paywall_process_stripe_payment_charge_array', $charge_array ) );
 
 			}
 
@@ -216,7 +228,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		do_action( 'leaky_paywall_stripe_signup', $gateway_data );
 
-		return $gateway_data;
+		return apply_filters( 'leaky_paywall_stripe_gateway_data', $gateway_data, $this, $cu, $subscription );
 
 	}
 
@@ -336,6 +348,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function fields() {
 
+		$stripe_plan = '';
 		$level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
@@ -358,7 +371,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		ob_start();
 		?>
 
-			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan->id; ?>"/>
+			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan ? $stripe_plan->id : ''; ?>"/>
 
 			<script type="text/javascript">
 
@@ -438,11 +451,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				<label for="payment_method_stripe"> <?php _e( 'Credit Card', 'leaky-paywall' ); ?> <img width="150" src="<?php echo LEAKY_PAYWALL_URL; ?>images/credit_card_logos_5.gif"></label>
 
 			</div>
-
+			
 		<?php 
-		leaky_paywall_card_form();
-		return ob_get_clean();
-
 	}
 
 	/**

@@ -557,7 +557,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 							if ( isset( $cu->subscriptions ) ) {
 								$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 								foreach( $subscriptions->data as $subscription ) {
-									if ( 'active' === $subscription->status ) {
+									if ( leaky_paywall_is_valid_stripe_subscription( $subscription ) ) {
 										return 'subscription';
 									}
 								}
@@ -585,7 +585,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 			}
 	
-		} // end foreach
+		} // end foreach 
 
 		if ( is_bool( $canceled ) && $canceled ) {
 			$paid = false;
@@ -615,7 +615,12 @@ if ( !function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 			return;
 		}
 
-		$site = leaky_paywall_get_current_site();
+		if ( is_multisite_premium() && !is_main_site( $data['site'] ) ) {
+			$site = '_' . $data['site'];
+		} else {
+			$site = '';
+		}
+
 		$mode = leaky_paywall_get_current_mode();
 
 		if ( isset( $data['expires'] ) && $data['expires'] ) {
@@ -659,7 +664,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		} else {
 			$site = '';
 		}
-		unset( $meta_args['site'] );
+
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
 		$expires = '0000-00-00 00:00:00';
@@ -716,6 +721,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
+		unset( $meta_args['site'] );
 			
 		// if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
 		// 	$meta_args['expires'] = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
@@ -771,7 +777,6 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		} else {
 			$site = '';
 		}
-		unset( $meta_args['site'] );
 		
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
@@ -789,6 +794,7 @@ if ( !function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
+		unset( $meta_args['site'] );
 			
 		
 		// if ( !empty( $meta_args['interval'] ) && isset( $meta_args['interval_count'] ) && 1 <= $meta_args['interval_count'] ) {
@@ -971,7 +977,9 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 						if ( !empty( $results->status ) && 'canceled' === $results->status ) {
 							
 							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+							//We are creating plans with the site of '_all', even on single sites.  This is a quick fix but needs to be readdressed.
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled' );
+							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan_all', 'Canceled' );
 
 							do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe' );
 
@@ -1887,7 +1895,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$subscription_price .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( intval($level['price']), 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
 							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
@@ -1908,16 +1916,19 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_price', $subscription_price, $level_id, $level );
 					
 					
+					$subscription_action = '';
 					//Don't show payment options if the users is currently subscribed to this level
 					if ( !in_array( $level_id, $current_level_ids ) ) {
-						$results .= '<div class="leaky_paywall_subscription_payment_options">';
-						$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
-						$results .= '</div>';
+						$subscription_action .= '<div class="leaky_paywall_subscription_payment_options">';
+						$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
+						$subscription_action .= '</div>';
 					} else {
-						$results .= '<div class="leaky_paywall_subscription_current_level">';
-						$results .= __( 'Current Subscription', 'issuem-leaky-paywall' );
-						$results .= '</div>';
+						$subscription_action .= '<div class="leaky_paywall_subscription_current_level">';
+						$subscription_action .= __( 'Current Subscription', 'issuem-leaky-paywall' );
+						$subscription_action .= '</div>';
 					}
+
+					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_action', $subscription_action, $level_id, $current_level_ids, $payment_options );
 					
 					$results .= '</div>';
 				
@@ -2673,3 +2684,108 @@ function leaky_paywall_log( $data, $event ) {
 	fclose( $open );
 
 }
+
+add_action( 'show_user_profile', 'leaky_paywall_show_extra_profile_fields' );
+add_action( 'edit_user_profile', 'leaky_paywall_show_extra_profile_fields' );
+
+function leaky_paywall_show_extra_profile_fields( $user ) { 
+
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+	if ( $level_id ) {
+		$level = get_leaky_paywall_subscription_level( $level_id );
+	}
+	$description = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_description' . $site, true );
+	$gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+	$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+	$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+	$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+	$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+	if ( !$level_id ) {
+		return;
+	}
+	?>
+
+	<h3>Leaky Paywall</h3>
+
+	<table class="form-table">	
+
+		<tr>
+			<th><label for="twitter">Level ID</label></th>
+
+			<td>
+				<?php echo esc_attr( $level_id ); ?>
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Level Description</label></th>
+
+			<td>
+				<?php echo $level['label']; ?>
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Payment Gateway</label></th>
+
+			<td>
+				<?php echo esc_attr( $gateway ); ?>
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Payment Status</label></th>
+
+			<td>
+				<?php echo esc_attr( $status ); ?>
+				
+			</td>
+		</tr>
+
+		<tr>
+			<th><label for="twitter">Expires</label></th>
+
+			<td>
+				<?php echo esc_attr( $expires ); ?>
+				
+			</td>
+		</tr>
+
+		<?php if ( $plan ) {
+			?>
+			<tr>
+				<th><label for="twitter">Plan</label></th>
+
+				<td>
+					<?php echo esc_attr( $plan ); ?>
+					
+				</td>
+			</tr>
+			<?php 
+		} ?>
+		
+
+		<?php if ( $subscriber_id ) {
+			?>
+			<tr>
+				<th><label for="twitter">Subscriber ID</label></th>
+
+				<td>
+					<?php echo esc_attr( $subscriber_id ); ?>
+					
+				</td>
+			</tr>
+			<?php 
+		} ?>
+		
+
+	</table>
+<?php }

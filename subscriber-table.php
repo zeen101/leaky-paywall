@@ -14,7 +14,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		return current_user_can( 'manage_network_users' );
 	}
 	
-	function prepare_items() {
+	public function prepare_items() {
 		global $usersearch, $wpdb;
 	
 		/**
@@ -38,6 +38,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		$usersearch = isset( $_REQUEST['s'] ) ? '*' . $_REQUEST['s'] . '*' : '';
 
+		// $users_per_page = $this->get_items_per_page( 'users_network_per_page' );
 		$per_page = ( $this->is_site_users ) ? 'site_users_network_per_page' : 'users_per_page';
 		$users_per_page = $this->get_items_per_page( $per_page );
 
@@ -58,7 +59,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			if ( !isset( $_REQUEST['order'] ) ) {
 				$_GET['order'] = $_REQUEST['order'] = 'DESC';
 			}
+			// $args['count_total'] = false;
 		}
+
 
 		if ( $this->is_site_users ) {
 			$args['blog_id'] = $this->site_id;
@@ -71,15 +74,44 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		if ( !empty( $_REQUEST['order'] ) )
 			$args['order'] = $_REQUEST['order'];
 
-		$settings = get_leaky_paywall_settings();
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		// Query the user IDs for this page
+		// global $blog_id;
+		// $results = leaky_paywall_subscriber_query( $args, $blog_id );
 
+		$settings = get_leaky_paywall_settings();
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+
+		// if ( is_multisite_premium() && is_main_site( $blog_id ) ) {
+		// 	$results = array_merge( $results, leaky_paywall_subscriber_query( $args, false ) );
+		// }
+		
+		// $this->items = $results;
+		// 
+		
 		$args['meta_query'] = array(
 			array(
-				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id',
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
 				'compare' => 'EXISTS',
 			),
 		);
+
+		// search by subscriber id
+		if ( isset( $_GET['custom_field_search'] ) && 'on' == $_GET['custom_field_search'] ) {
+
+			// if is custom field, then do the following
+			
+			$args['meta_query']['relation'] = 'AND';
+			$args['meta_query'][] = array(
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+				'value'   => $_GET['s'],
+				'compare'	=> 'LIKE'
+			);
+
+			unset( $args['search'] );
+		}
+
+		
 
 		if ( isset( $_GET['filter-level'] ) && 'lpsubs' == $_GET['user-type'] ) {
 
@@ -117,13 +149,86 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			unset( $args['meta_query'] );
 		}
 
+
 		$wp_user_search = new WP_User_Query( $args );
 		$this->items = $wp_user_search->get_results();
 		
+		// $args['number'] = 0;
+		// $this->set_pagination_args( array(
+		// 	'total_items' => count( leaky_paywall_subscriber_query( $args ) ),
+		// 	'per_page' => $users_per_page,
+		// ) );
+
 		$this->set_pagination_args( array(
 			'total_items' => $wp_user_search->get_total(),
 			'per_page' => $users_per_page,
 		) );
+	}
+
+	public function new_prepare_items() 
+	{
+		
+		global $role, $usersearch;
+
+		$usersearch = isset( $_REQUEST['s'] ) ? wp_unslash( trim( $_REQUEST['s'] ) ) : '';
+
+		$role = isset( $_REQUEST['role'] ) ? $_REQUEST['role'] : '';
+
+		$per_page = ( $this->is_site_users ) ? 'site_users_network_per_page' : 'users_per_page';
+		$users_per_page = $this->get_items_per_page( $per_page );
+
+		$paged = $this->get_pagenum();
+
+		if ( 'none' === $role ) {
+			$args = array(
+				'number' => $users_per_page,
+				'offset' => ( $paged-1 ) * $users_per_page,
+				'include' => wp_get_users_with_no_role( $this->site_id ),
+				'search' => $usersearch,
+				'fields' => 'all_with_meta'
+			);
+		} else {
+			$args = array(
+				'number' => $users_per_page,
+				'offset' => ( $paged-1 ) * $users_per_page,
+				'role' => $role,
+				'search' => $usersearch,
+				'fields' => 'all_with_meta'
+			);
+		}
+
+		if ( '' !== $args['search'] )
+			$args['search'] = '*' . $args['search'] . '*';
+
+		if ( $this->is_site_users )
+			$args['blog_id'] = $this->site_id;
+
+		if ( isset( $_REQUEST['orderby'] ) )
+			$args['orderby'] = $_REQUEST['orderby'];
+
+		if ( isset( $_REQUEST['order'] ) )
+			$args['order'] = $_REQUEST['order'];
+
+		/**
+		 * Filters the query arguments used to retrieve users for the current users list table.
+		 *
+		 * @since 4.4.0
+		 *
+		 * @param array $args Arguments passed to WP_User_Query to retrieve items for the current
+		 *                    users list table.
+		 */
+		$args = apply_filters( 'users_list_table_query_args', $args );
+
+		// Query the user IDs for this page
+		$wp_user_search = new WP_User_Query( $args );
+
+		$this->items = $wp_user_search->get_results();
+
+		$this->set_pagination_args( array(
+			'total_items' => $wp_user_search->get_total(),
+			'per_page' => $users_per_page,
+		) );
+
 	}
 
 	function no_items() {
@@ -187,6 +292,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			return;
 		}
 
+		if ( isset( $_GET['user-type'] ) && $_GET['user-type'] != 'lpsubs' ) {
+			return;
+		}
+
 		$levels = leaky_paywall_get_levels();
 		$lev = isset( $_GET['filter-level'] ) ? esc_attr( $_GET['filter-level'] ) : 'all';	
 		$stat = isset( $_GET['filter-status'] ) ? esc_attr( $_GET['filter-status'] ) : 'all';	
@@ -235,7 +344,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		$alt = '';
 
+
 		foreach ( $this->items as $user ) {
+
 			$user = get_user_by( 'email', $user->user_email );
 			$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
@@ -262,6 +373,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				list( $columns, $hidden ) = $this->get_column_info();
 	
 				foreach ( $columns as $column_name => $column_display_name ) {
+
 					$class = "class='$column_name column-$column_name'";
 	
 					$style = '';
@@ -422,6 +534,40 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			</tr>
 			<?php
 		}
+	}
+
+	
+		/**
+	 * Displays the search box.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string $text     The 'submit' button label.
+	 * @param string $input_id ID attribute value for the search input field.
+	 */
+	public function search_box( $text, $input_id ) {
+		if ( empty( $_REQUEST['s'] ) && !$this->has_items() )
+			return;
+
+		$input_id = $input_id . '-search-input';
+
+		if ( ! empty( $_REQUEST['orderby'] ) )
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( $_REQUEST['orderby'] ) . '" />';
+		if ( ! empty( $_REQUEST['order'] ) )
+			echo '<input type="hidden" name="order" value="' . esc_attr( $_REQUEST['order'] ) . '" />';
+		if ( ! empty( $_REQUEST['post_mime_type'] ) )
+			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( $_REQUEST['post_mime_type'] ) . '" />';
+		if ( ! empty( $_REQUEST['detached'] ) )
+			echo '<input type="hidden" name="detached" value="' . esc_attr( $_REQUEST['detached'] ) . '" />';
+		?>
+		<p class="search-box">
+			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo $text; ?>:</label>
+			<input type="checkbox" name="custom_field_search"> Search custom fields</input><br>
+			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php _admin_search_query(); ?>" />
+
+			<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
+		</p>
+		<?php
 	}
 	
 }
