@@ -2,8 +2,8 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
-Tested up to: 4.9
-Stable tag: 4.10.3
+Tested up to: 4.9.2
+Stable tag: 4.10.4
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,15 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.10.4 =
+* Add ability to search subscriber table by subscription and plan ID
+* Update subscriber table query to work with large database of users
+* Add leaky_paywall_paypal_args filter for editing paypal args before sending them to paypal
+* Update nag message and subscribe card styles
+* Add user profile fields for Leaky Paywall to an individual user page in the admin
+* Add hooks and filters needed for trials
+* General bug fixes
 
 = 4.10.3 =
 * Fixed bug causing multiple charges for same checkout
