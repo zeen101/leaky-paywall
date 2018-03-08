@@ -79,7 +79,8 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		// $results = leaky_paywall_subscriber_query( $args, $blog_id );
 
 		$settings = get_leaky_paywall_settings();
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 
 		// if ( is_multisite_premium() && is_main_site( $blog_id ) ) {
 		// 	$results = array_merge( $results, leaky_paywall_subscriber_query( $args, false ) );
@@ -90,19 +91,25 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		
 		$args['meta_query'] = array(
 			array(
-				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id',
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
 				'compare' => 'EXISTS',
 			),
 		);
 
-		// if ( $usersearch ) {
+		// search by subscriber id
+		if ( isset( $_GET['custom_field_search'] ) && 'on' == $_GET['custom_field_search'] ) {
+
+			// if is custom field, then do the following
 			
-		// 	$args['meta_query'][] = array(
-		// 		'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
-		// 		'value'   => $_GET['s'],
-		// 		'compare'	=> 'LIKE'
-		// 	);
-		// }
+			$args['meta_query']['relation'] = 'AND';
+			$args['meta_query'][] = array(
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+				'value'   => $_GET['s'],
+				'compare'	=> 'LIKE'
+			);
+
+			unset( $args['search'] );
+		}
 
 		
 
@@ -141,7 +148,6 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		if ( !empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] ) {
 			unset( $args['meta_query'] );
 		}
-
 
 		$wp_user_search = new WP_User_Query( $args );
 		$this->items = $wp_user_search->get_results();
@@ -460,6 +466,39 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			</tr>
 			<?php
 		}
+	}
+
+		/**
+	 * Displays the search box.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string $text     The 'submit' button label.
+	 * @param string $input_id ID attribute value for the search input field.
+	 */
+	public function search_box( $text, $input_id ) {
+		if ( empty( $_REQUEST['s'] ) && !$this->has_items() )
+			return;
+
+		$input_id = $input_id . '-search-input';
+
+		if ( ! empty( $_REQUEST['orderby'] ) )
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( $_REQUEST['orderby'] ) . '" />';
+		if ( ! empty( $_REQUEST['order'] ) )
+			echo '<input type="hidden" name="order" value="' . esc_attr( $_REQUEST['order'] ) . '" />';
+		if ( ! empty( $_REQUEST['post_mime_type'] ) )
+			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( $_REQUEST['post_mime_type'] ) . '" />';
+		if ( ! empty( $_REQUEST['detached'] ) )
+			echo '<input type="hidden" name="detached" value="' . esc_attr( $_REQUEST['detached'] ) . '" />';
+		?>
+		<p class="search-box">
+			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo $text; ?>:</label>
+			<input type="checkbox" name="custom_field_search"> Search custom fields</input><br>
+			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php _admin_search_query(); ?>" />
+
+			<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
+		</p>
+		<?php
 	}
 	
 }

@@ -1916,16 +1916,19 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_price', $subscription_price, $level_id, $level );
 					
 					
+					$subscription_action = '';
 					//Don't show payment options if the users is currently subscribed to this level
 					if ( !in_array( $level_id, $current_level_ids ) ) {
-						$results .= '<div class="leaky_paywall_subscription_payment_options">';
-						$results .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
-						$results .= '</div>';
+						$subscription_action .= '<div class="leaky_paywall_subscription_payment_options">';
+						$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
+						$subscription_action .= '</div>';
 					} else {
-						$results .= '<div class="leaky_paywall_subscription_current_level">';
-						$results .= __( 'Current Subscription', 'issuem-leaky-paywall' );
-						$results .= '</div>';
+						$subscription_action .= '<div class="leaky_paywall_subscription_current_level">';
+						$subscription_action .= __( 'Current Subscription', 'issuem-leaky-paywall' );
+						$subscription_action .= '</div>';
 					}
+
+					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_action', $subscription_action, $level_id, $current_level_ids, $payment_options );
 					
 					$results .= '</div>';
 				
