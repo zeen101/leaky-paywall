@@ -364,7 +364,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'secret_key'	=> $this->secret_key
 		);
 
-		if ( $level['subscription_length_type'] == 'limited' ) {
+		if ( isset( $level['recurring'] ) && 'on' == $level['recurring'] ) {
 			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
 		}
 
@@ -453,6 +453,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			</div>
 			
 		<?php 
+		leaky_paywall_card_form();
+		return ob_get_clean();
 	}
 
 	/**

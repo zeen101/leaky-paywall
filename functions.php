@@ -1923,9 +1923,9 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
 						$subscription_action .= '</div>';
 					} else {
-						$subscription_action .= '<div class="leaky_paywall_subscription_current_level">';
+						$subscription_action .= '<div class="leaky_paywall_subscription_current_level"><span>';
 						$subscription_action .= __( 'Current Subscription', 'issuem-leaky-paywall' );
-						$subscription_action .= '</div>';
+						$subscription_action .= '</span></div>';
 					}
 
 					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_action', $subscription_action, $level_id, $current_level_ids, $payment_options );
@@ -2789,3 +2789,48 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 
 	</table>
 <?php }
+
+/**
+ * Add settings link to plugin table for Leaky Paywall
+ *
+ * @since 4.10.4
+ * @param  $links default plugin links
+ * @return  array $links
+ */
+function leaky_paywall_plugin_add_settings_link( $links ) {
+    $settings_link = '<a href="admin.php?page=issuem-leaky-paywall">' . __( 'Settings' ) . '</a>';
+    array_unshift( $links, $settings_link );
+  	return $links;
+}
+add_filter( 'plugin_action_links_' . LEAKY_PAYWALL_BASENAME, 'leaky_paywall_plugin_add_settings_link' );
+
+/**
+ * Plugin row meta links for add ons
+ *
+ * @since 4.10.4
+ * @param array $input already defined meta links
+ * @param string $file plugin file path and name being processed
+ * @return array $input
+ */
+function leaky_paywall_plugin_row_meta( $input, $file ) {
+	
+	if ( $file != 'leaky-paywall/leaky-paywall.php' ) {
+		return $input;
+	}
+
+	$lp_link = esc_url( add_query_arg( array(
+			'utm_source'   => 'plugins-page',
+			'utm_medium'   => 'plugin-row',
+			'utm_campaign' => 'admin',
+		), 'https://zeen101.com/for-developers/leakypaywall/leaky-paywall-add-ons/' )
+	);
+
+	$links = array(
+		'<a href="' . $lp_link . '">' . esc_html__( 'Add-Ons', 'leaky-paywall' ) . '</a>',
+	);
+
+	$input = array_merge( $input, $links );
+
+	return $input;
+}
+add_filter( 'plugin_row_meta', 'leaky_paywall_plugin_row_meta', 10, 2 );

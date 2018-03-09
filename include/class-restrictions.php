@@ -196,7 +196,7 @@ class Leaky_Paywall_Restrictions {
 
 			foreach( $restrictions as $key => $restriction ) {
 
-				if ( is_singular( $restriction['post_type'] ) ) {
+				if ( isset( $restriction['post_type'] ) && is_singular( $restriction['post_type'] ) ) {
 
 					// this will only be ignored if the allowed value is unlimited ( -1 )
 					if ( 0 <= $restriction['allowed_value'] ) {
