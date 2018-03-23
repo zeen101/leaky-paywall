@@ -61,16 +61,21 @@ A plugin for WordPress that allows you to sell metered access to your content. M
 
 == Frequently Asked Questions ==
 
-= What are the minimum requirements for zeen101's Leaky Paywall? =
+= How does Leaky Paywall work? =
 
-You must have:
+The Leaky Paywall meter restricts by X number of free articles over a Y time period. days, weeks, months, years. There is a visibility setting on the post edit screen you can use to override the global meter setting. EG: make an article always free or always require a subscription
 
-* WordPress 3.3 or later
-* PHP 5
+= What payment gateways do you support? =
 
-= How is zeen101's Leaky Paywall Licensed? =
+We support Stripe and PayPal by default. CyberSource and ESP requires some setup, and other gateways can be integrated with our API. We highly recommend Stripe to give both you and your subscribers a state-of-the-art experience. 
 
-* Leaky Paywall for WordPress is GPL
+= What kind of subscriptions can I create with Leaky Paywall? =
+
+You can sell daily, weekly, monthly, and annual subscriptions, both one time and recurring. You can also offer a free subscription in exchange for an email address.
+
+= If I deactivate Leaky Paywall will I lose all my subscriber data? =
+
+You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
 
