@@ -1637,7 +1637,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			// leaving for backwards compatibility, but it will deprecated
 			echo apply_filters( 'build_leaky_paywall_subscription_levels_row_addon_filter', '', $level, $row_key );
 
-			do_action( 'after_leaky_paywall_subscription_levels_row', $level, $row_key );
+			do_action( 'leaky_paywall_after_subscription_levels_row', $level, $row_key );
 		
 		echo '</table>';
 
