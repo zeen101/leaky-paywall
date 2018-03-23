@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.9.2
-Stable tag: 4.10.5
+Stable tag: 4.10.6
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -73,6 +73,12 @@ You must have:
 * Leaky Paywall for WordPress is GPL
 
 == Changelog ==
+
+= 4.10.6 =
+* Refactor level row to use action leaky_paywall_after_subscription_levels_row
+* Update password handling
+* Add setting to hide a level from the subscribe cards
+* Add filter to status dropdown on subscriber table
 
 = 4.10.5 =
 * Fix display of price on subscribe cards for recurring levels
