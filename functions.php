@@ -1485,6 +1485,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			'interval_count' 			=> 1,
 			'interval' 					=> 'month',
 			'recurring' 				=> 'off',
+			'hide_subscribe_card'		=> 'off',
 			'plan_id' 					=> '',
 			'post_types' => array(
 				array(
@@ -1525,10 +1526,19 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		    
 			<tr>		
 				<th>
-					<label for="level-recurring-<?php echo $row_key; ?>"><?php _e( 'Recurring?', 'leaky-paywall' ); ?></label>
+					<label for="level-recurring-<?php echo $row_key; ?>"><?php _e( 'Recurring', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
-					<input id="level-recurring-<?php echo $row_key; ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo $row_key; ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> />
+					<input id="level-recurring-<?php echo $row_key; ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo $row_key; ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments
+				</td>
+			</tr>
+
+			<tr>		
+				<th>
+					<label for="level-hide-subscribe-card-<?php echo $row_key; ?>"><?php _e( 'Hide Subscribe Card', 'leaky-paywall' ); ?></label>
+				</th>
+				<td>
+					<input id="level-hide-subscribe-card-<?php echo $row_key; ?>" class="hide-subscribe- card" type="checkbox" name="levels[<?php echo $row_key; ?>][hide_subscribe_card]" value="on" <?php echo checked( 'on', $level['hide_subscribe_card'], false ); ?> /> Do not display subscribe card on subscribe page
 				</td>
 			</tr>
 						
@@ -1884,6 +1894,9 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					if ( !empty( $level['deleted'] ) )
 						continue;
 
+					if ( isset( $level['hide_subscribe_card'] ) && 'on' == $level['hide_subscribe_card'] ) {
+						continue;
+					}
 					
 					
 					if ( is_multisite_premium() && !empty( $level['site'] ) && 'all' != $level['site'] && $blog_id != $level['site'] )
