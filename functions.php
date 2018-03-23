@@ -722,7 +722,10 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
 		unset( $meta_args['site'] );
-		unset( $meta_args['password'] ); // do not want to store their password as plain text
+
+		// do not want to store their password as plain text
+		unset( $meta_args['confirm_password'] );
+		unset( $meta_args['password'] ); 
 			
 		// if ( !empty( $meta_args['length_unit'] ) && isset( $meta_args['length'] ) && 1 <= $meta_args['length'] ) {
 		// 	$meta_args['expires'] = date_i18n( 'Y-m-d 23:59:59', strtotime( '+' . $meta_args['length'] . ' ' . $meta_args['length_unit'] ) ); //we're generous, give them the whole day!
