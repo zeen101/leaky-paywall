@@ -1304,7 +1304,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                        <?php 
 	                        	if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
-	                        		echo '<p class="description">Want more levels? Get our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> add-on.</p>';
+	                        		echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> add-on.</h4>';
+	                        	}
+
+	                        	if ( !is_leaky_paywall_recurring() ) {
+	                        		echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> add-on.</h4>';
 	                        	}
 
 	                        ?>
@@ -1826,6 +1830,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				
 			if ( 0 !== $old_version && version_compare( $old_version, '2.0.2', '<' ) )
 				$this->update_2_0_2();
+
+			if ( !isset( $settings['version'] ) ) {
+				$settings['post_4106'] = true;
+			}
 						
 			$settings['version'] = LEAKY_PAYWALL_VERSION;
 			$settings['db_version'] = LEAKY_PAYWALL_DB_VERSION;

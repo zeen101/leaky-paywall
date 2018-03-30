@@ -1524,15 +1524,19 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				</td>
 			</tr>
 		    
-			<tr>		
-				<th>
-					<label for="level-recurring-<?php echo $row_key; ?>"><?php _e( 'Recurring', 'leaky-paywall' ); ?></label>
-				</th>
-				<td>
-					<input id="level-recurring-<?php echo $row_key; ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo $row_key; ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments
-				</td>
-			</tr>
-
+			<?php if ( is_leaky_paywall_recurring() ) {
+		    	?>
+		    	<tr>		
+		    		<th>
+		    			<label for="level-recurring-<?php echo $row_key; ?>"><?php _e( 'Recurring', 'leaky-paywall' ); ?></label>
+		    		</th>
+		    		<td>
+		    			<input id="level-recurring-<?php echo $row_key; ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo $row_key; ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments
+		    		</td>
+		    	</tr>
+		    	<?php 
+		    } ?>
+			
 			<tr>		
 				<th>
 					<label for="level-hide-subscribe-card-<?php echo $row_key; ?>"><?php _e( 'Hide Subscribe Card', 'leaky-paywall' ); ?></label>
@@ -2879,3 +2883,20 @@ function leaky_paywall_plugin_row_meta( $input, $file ) {
 	return $input;
 }
 add_filter( 'plugin_row_meta', 'leaky_paywall_plugin_row_meta', 10, 2 );
+
+function is_leaky_paywall_recurring() {
+
+	$settings = get_leaky_paywall_settings();
+	$recurring = false;
+
+	if ( !isset( $settings['post_4106'] ) ) {
+		$recurring = true;
+	}
+
+	if ( is_plugin_active( 'leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php' ) ) {
+		$recurring = true;
+	}
+
+	return $recurring;
+	
+}
