@@ -953,7 +953,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 
 				$form .= apply_filters( 'leaky_paywall_cancel_subscription_description', $cancel_description );
 
-				$form .= '<a href="' . esc_url( add_query_arg( array( 'cancel' => 'confirm' ) ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_home_url() . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
+				$form .= '<a href="' . esc_url( add_query_arg( array( 'cancel' => 'confirm' ) ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_page_link( $settings['page_for_profile'] ) . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
 				
 			} else if ( !empty( $_REQUEST['cancel'] ) && 'confirm' === $_REQUEST['cancel'] ) {
 				
@@ -1022,7 +1022,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 			
 		}
 		
-		return $form;
+		return apply_filters( 'leaky_paywall_cancellation_confirmation', $form );
 		
 	}
 	
