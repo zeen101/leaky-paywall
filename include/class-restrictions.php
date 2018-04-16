@@ -31,7 +31,7 @@ class Leaky_Paywall_Restrictions {
 		if ( $has_subscriber_paid ) {
 
 			if ( $this->is_cancel_request() ) {
-				wp_die( leaky_paywall_cancellation_confirmation() );
+				wp_die( leaky_paywall_cancellation_confirmation(), $settings['site_name'] . ' - Cancel Request' );
 			}
 
 			$this->redirect_from_login_page();
@@ -145,11 +145,11 @@ class Leaky_Paywall_Restrictions {
 			leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 		} else {
 
-			$output = '<h3>' . __( 'Unauthorize PDF Download', 'issuem-leaky-paywall' ) . '</h3>';
-			$output .= '<p>' . sprintf( __( 'You must be <a href="%s">logged in</a> with a valid subscription to download Issue PDFs.', 'issuem-leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
-			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
+			$output = '<h3>' . __( 'Unauthorize PDF Download', 'leaky-paywall' ) . '</h3>';
+			$output .= '<p>' . sprintf( __( 'You must be logged in with a valid subscription to download Issue PDFs. Please <a href="%s">log in</a> or <a href="%s">subscribe</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
+			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
 
-			wp_die( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ) );
+			wp_die( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ), $settings['site_name'] . ' - Error' );
 
 		}
 
