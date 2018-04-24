@@ -58,18 +58,8 @@
 }
 
 .leaky_paywall_subscription_current_level {
-    border: 2px solid #007711;
-	background: #3e8e51;
-    -webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	color: #fff;
+	color: #3e8e51;
 	padding: 5px;
-}
-
-.leaky_paywall_subscription_current_level span {
-	color: #fff;
-	font-size: .75em;
 }
 
 .leaky_paywall_subscription_option h3 {

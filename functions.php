@@ -1966,16 +1966,19 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					
 					
 					$subscription_action = '';
+					$subscription_action .= '<div class="leaky_paywall_subscription_payment_options">';
+
 					//Don't show payment options if the users is currently subscribed to this level
-					if ( !in_array( $level_id, $current_level_ids ) ) {
-						$subscription_action .= '<div class="leaky_paywall_subscription_payment_options">';
-						$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
-						$subscription_action .= '</div>';
-					} else {
+					if ( in_array( $level_id, $current_level_ids ) ) {
+						
 						$subscription_action .= '<div class="leaky_paywall_subscription_current_level"><span>';
-						$subscription_action .= __( 'Current Subscription', 'issuem-leaky-paywall' );
+						$subscription_action .= __( 'Your Current Subscription', 'issuem-leaky-paywall' );
 						$subscription_action .= '</span></div>';
-					}
+
+					} 
+
+					$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
+					$subscription_action .= '</div>';
 
 					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_action', $subscription_action, $level_id, $current_level_ids, $payment_options );
 					
