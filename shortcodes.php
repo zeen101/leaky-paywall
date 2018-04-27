@@ -554,6 +554,16 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			
 			$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Save Profile Changes', 'leaky-paywall' ) . '"  /></p>'; 
 			$results .= '</form>';
+
+			if ( 'on' == $settings['enable_user_delete_account'] ) {
+				$results .= '<form id="leaky-paywall-delete-account" action="" method="post">';
+				$results .= '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">Delete Account</button></p>';
+				$results .= wp_nonce_field( 'leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true, false );
+				$results .= '</form>';
+
+				
+			}
+			
 			$results .= apply_filters( 'leaky_paywall_profile_your_profile_end', '' );
 			
 		} else {

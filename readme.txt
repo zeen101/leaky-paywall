@@ -79,6 +79,12 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 
 == Changelog ==
 
+= 4.10.8 =
+* Add filter for adjusting cancellation confirmation text
+* Update title on wp_die calls
+* Allow subscribers to renew their current level from the subscribe page
+* Allow subscribers to delete their account from their account page
+
 = 4.10.7 =
 * Update faq
 * Update upgrade function

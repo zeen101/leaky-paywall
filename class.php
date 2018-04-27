@@ -238,6 +238,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'subscribe_login_message'		=> __( '<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
 				'subscribe_upgrade_message'		=> __( 'You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'issuem-leaky-paywall' ),
 				'css_style'						=> 'default',
+				'enable_user_delete_account'	=> 'off',
 				'site_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
@@ -407,6 +408,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						
 					if ( !empty( $_REQUEST['css_style'] ) )
 						$settings['css_style'] = $_REQUEST['css_style'];
+
+					
+
+					if ( !empty( $_REQUEST['enable_user_delete_account'] ) )
+						$settings['enable_user_delete_account'] = $_REQUEST['enable_user_delete_account'];
+					else
+						$settings['enable_user_delete_account'] = 'off';
 				}
 										
 				
@@ -744,6 +752,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										<option value='none' <?php selected( 'none', $settings['css_style'] ); ?> ><?php _e( 'None', 'issuem-leaky-paywall' ); ?></option>
 									</select>
 	                                </td>
+	                            </tr>
+
+	                            <tr class="general-options">
+	                                <th><?php _e( 'User Account Deletion', 'leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="enable_user_delete_account" name="enable_user_delete_account" <?php checked( 'on', $settings['enable_user_delete_account'] ); ?> /> Allow users to delete their account from the My Profile page</td>
 	                            </tr>
 
 	                            <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>

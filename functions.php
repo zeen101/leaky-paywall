@@ -2903,3 +2903,52 @@ function is_leaky_paywall_recurring() {
 	return $recurring;
 	
 }
+
+
+add_action( 'init', 'leaky_paywall_maybe_delete_user' );
+
+function leaky_paywall_maybe_delete_user() {
+
+	if ( !isset( $_POST['leaky-paywall-delete-account-nonce'] ) ) {
+		return;
+	}
+				
+	if ( !wp_verify_nonce( $_POST['leaky-paywall-delete-account-nonce'], 'leaky-paywall-delete-account' ) ) {
+		return;
+	}
+
+	$settings = get_leaky_paywall_settings();
+
+	require_once(ABSPATH.'wp-admin/includes/user.php' );
+
+	$user = wp_get_current_user();
+
+	if ( in_array('subscriber', $user->roles ) ) {
+
+		wp_delete_user( $user->ID );
+
+		$admin_message = '';
+        $headers = array();
+
+        $admin_emails = array();
+        $admin_emails = get_option( 'admin_email' );
+
+        $site_name  = stripslashes_deep( html_entity_decode( get_bloginfo( 'name' ), ENT_COMPAT, 'UTF-8' ) );
+        $from_name  = isset( $settings['from_name'] ) ? $settings['from_name'] : $site_name;
+        $from_email = isset( $settings['from_email'] ) ? $settings['from_email'] : get_option( 'admin_email' );
+
+        $headers[]  = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>";
+        $headers[] = "Reply-To: " . $from_email;
+        $headers[] = "Content-Type: text/html; charset=UTF-8";
+
+		$admin_message = '<p>The user ' . $user->user_email . ' has deleted their account.</p>';
+
+		wp_mail( $admin_emails, sprintf( __( 'User Account Deleted on %s', 'leaky-paywall' ), $site_name ), $admin_message, $headers );
+
+		wp_die('<p>Your account has been deleted. Your access and information has been removed.</p><p><a href="' . home_url() . '">Continue</a></p>', 'Account Deleted' );
+		
+	}
+
+	wp_die('<p>Your user role cannot be deleted from the My Account page. Please contact a site administrator.</p><p><a href="' . home_url() . '">Continue</a></p>', 'Account Deleted' );
+
+}
