@@ -86,7 +86,7 @@ function leaky_paywall_get_enabled_payment_gateways() {
 
 	}
 
-	return $gateways->enabled_gateways;
+	return apply_filters( 'leaky_paywall_enabled_gateways', $gateways->enabled_gateways );
 }
 
 
