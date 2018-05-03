@@ -1270,9 +1270,27 @@ if ( !function_exists( 'leaky_paywall_subscriber_current_level_ids' ) ) {
 				$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 				$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+				
 				if ( 'active' === $status && is_numeric( $level_id ) ) {
 					$level_ids[] = $level_id;
 				}
+
+				if ( 'trial' === $status && is_numeric( $level_id ) ) {
+					$level_ids[] = $level_id;
+				}
+
+				// if status is cancelled but they aren't expired yet
+				if ( 'canceled' === $status && is_numeric( $level_id ) ) {
+		
+					$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+					$expired_timestamp = strtotime( $expires );
+
+					if ( $expired_timestamp > current_time( 'timestamp' ) ) {
+						$level_ids[] = $level_id;
+					}
+					
+				}
+				
 			}
 		}
 
