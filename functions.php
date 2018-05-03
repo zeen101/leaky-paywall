@@ -679,7 +679,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			//the user doesn't already exist
 
 			// if they submitted a custom login name, use that
-			if ( $meta_args['login'] ) {
+			if ( isset( $meta_args['login'] ) ) {
 				$login = $meta_args['login'];
 			}
 
@@ -695,7 +695,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 				$login = $user->user_login . '_' . substr( uniqid(), 5 );
 			} 
 
-			if ( $meta_args['password'] ) {
+			if ( isset( $meta_args['password'] ) ) {
 				$password = $meta_args['password'];
 			} else {
 				$password = wp_generate_password();
@@ -705,9 +705,9 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			    'user_login' 		=> $login,
 				'user_email' 		=> $email,
 				'user_pass' 		=> $password,
-				'first_name'		=> $meta_args['first_name'],
-				'last_name'			=> $meta_args['last_name'],
-				'display_name'		=> $meta_args['first_name'] . ' ' . $meta_args['last_name'],
+				'first_name'		=> isset( $meta_args['first_name'] ) ? $meta_args['first_name'] : '',
+				'last_name'			=> isset( $meta_args['last_name'] ) ? $meta_args['last_name'] : '',
+				'display_name'		=> isset( $meta_args['first_name'] ) ? $meta_args['first_name'] . ' ' . $meta_args['last_name'] : '',
 				'user_registered'	=> date_i18n( 'Y-m-d H:i:s' ),
 			);
 
