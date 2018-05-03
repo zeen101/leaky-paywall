@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.9.5
-Stable tag: 4.10.8
+Stable tag: 4.10.9
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -81,6 +81,13 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.10.9 =
+* add filter to enabled gateways
+* adjust visibility settings for cancelled subscribers
+* update translation strings for credit card
+* use payment gateways for select option when adding a new subscriber manually
+* add data-locale flag to stripe checkout form to allow for translation
 
 = 4.10.8 =
 * Add filter for adjusting cancellation confirmation text
