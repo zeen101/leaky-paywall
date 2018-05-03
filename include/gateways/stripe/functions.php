@@ -70,6 +70,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 						  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
+								  data-locale="auto"
 								  data-label="' . apply_filters('leaky_paywall_stripe_button_label', 'Subscribe' ) . '" 
 								  data-plan="' . esc_js( $stripe_plan->id ) . '" 
 								  data-currency="' . esc_js( $currency ) . '" 
@@ -90,6 +91,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 					  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
 					  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 							  data-key="' . esc_js( $publishable_key ) . '"
+							  data-locale="auto"
 							  data-label="' . apply_filters('leaky_paywall_stripe_button_label', 'Subscribe' ) . '" 
 							  data-amount="' . esc_js( $stripe_price ) . '" 
 							  data-currency="' . esc_js( $currency ) . '" 
