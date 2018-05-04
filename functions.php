@@ -580,7 +580,7 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					}
 
 				} catch ( Exception $e ) {
-					$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
+					$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) . '</h1>';
 				}
 
 			}
@@ -935,25 +935,25 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 			if ( !empty( $_REQUEST['payment_gateway'] ) ) {
 				$payment_gateway = $_REQUEST['payment_gateway'];
 			} else {
-				return '<p>' . __( 'No payment gateway defined.', 'issuem-leaky-paywall' ) . '</p>';
+				return '<p>' . __( 'No payment gateway defined.', 'leaky-paywall' ) . '</p>';
 			}
 			
 			if ( !empty( $_REQUEST['subscriber_id'] ) ) {
 				$subscriber_id = $_REQUEST['subscriber_id'];
 			} else {
-				return '<p>' . __( 'No subscriber ID defined.', 'issuem-leaky-paywall' ) . '</p>';
+				return '<p>' . __( 'No subscriber ID defined.', 'leaky-paywall' ) . '</p>';
 			}
 			
 			if ( isset( $_REQUEST['cancel'] ) && empty( $_REQUEST['cancel'] ) ) {
 	
-				$form = '<h3>' . __( 'Cancel Subscription', 'issuem-leaky-paywall' ) . '</h3>';
+				$form = '<h3>' . __( 'Cancel Subscription', 'leaky-paywall' ) . '</h3>';
 
-				$cancel_description = '<p>' . __( 'Cancellations take effect at the end of your billing cycle, and we can’t give partial refunds for unused time in the billing cycle. If you still wish to cancel now, you may proceed, or you can come back later.', 'issuem-leaky-paywall' ) . '</p>';
-				$cancel_description .= '<p>' . sprintf( __( ' Thank you for the time you’ve spent subscribed to %s. We hope you’ll return someday. ', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+				$cancel_description = '<p>' . __( 'Cancellations take effect at the end of your billing cycle, and we can’t give partial refunds for unused time in the billing cycle. If you still wish to cancel now, you may proceed, or you can come back later.', 'leaky-paywall' ) . '</p>';
+				$cancel_description .= '<p>' . sprintf( __( ' Thank you for the time you’ve spent subscribed to %s. We hope you’ll return someday. ', 'leaky-paywall' ), $settings['site_name'] ) . '</p>';
 
 				$form .= apply_filters( 'leaky_paywall_cancel_subscription_description', $cancel_description );
 
-				$form .= '<a href="' . esc_url( add_query_arg( array( 'cancel' => 'confirm' ) ) ) . '">' . __( 'Yes, cancel my subscription!', 'issuem-leaky-paywall' ) . '</a> | <a href="' . get_page_link( $settings['page_for_profile'] ) . '">' . __( 'No, get me outta here!', 'issuem-leak-paywall' ) . '</a>';
+				$form .= '<a href="' . esc_url( add_query_arg( array( 'cancel' => 'confirm' ) ) ) . '">' . __( 'Yes, cancel my subscription!', 'leaky-paywall' ) . '</a> | <a href="' . get_page_link( $settings['page_for_profile'] ) . '">' . __( 'No, get me outta here!', 'leak-paywall' ) . '</a>';
 				
 			} else if ( !empty( $_REQUEST['cancel'] ) && 'confirm' === $_REQUEST['cancel'] ) {
 				
@@ -969,7 +969,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 							
 						if ( !empty( $cu ) )
 							if ( true === $cu->deleted )
-								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
+								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'leaky-paywall' ) );
 
 						$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 
@@ -980,7 +980,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 											
 						if ( !empty( $results->status ) && 'canceled' === $results->status ) {
 							
-							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+							$form .= '<p>' . sprintf( __( 'Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'leaky-paywall' ), $settings['site_name'] ) . '</p>';
 							//We are creating plans with the site of '_all', even on single sites.  This is a quick fix but needs to be readdressed.
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled' );
 							update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan_all', 'Canceled' );
@@ -989,15 +989,15 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 
 						} else {
 						
-							$form .= '<p>' . sprintf( __( 'ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+							$form .= '<p>' . sprintf( __( 'ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'leaky-paywall' ), $settings['site_name'] ) . '</p>';
 							
 						}
 						
-						$form .= '<a href="' . get_home_url() . '">' . sprintf( __( 'Return to %s...', 'issuem-leak-paywall' ), $settings['site_name'] ) . '</a>';
+						$form .= '<a href="' . get_home_url() . '">' . sprintf( __( 'Return to %s...', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
 						
 					} catch ( Exception $e ) {
 					
-						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
+						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) . '</h1>';
 						
 					}
 				
@@ -1005,12 +1005,12 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 
 					$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
 					$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
-					$form .= '<p>' . sprintf( __( 'You must cancel your account through PayPal. Please click this unsubscribe button to complete the cancellation process.', 'issuem-leaky-paywall' ), $settings['site_name'] ) . '</p>';
+					$form .= '<p>' . sprintf( __( 'You must cancel your account through PayPal. Please click this unsubscribe button to complete the cancellation process.', 'leaky-paywall' ), $settings['site_name'] ) . '</p>';
 					$form .= '<p><a href="' . $paypal_url . '?cmd=_subscr-find&alias=' . urlencode( $paypal_email ) . '"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_unsubscribe_LG.gif" border="0"></a></p>';
 					
 				} else {
 					
-					$form .= '<p>' . __( 'Unable to determine your payment method. Please contact support for help canceling your account.', 'issuem-leaky-paywall' ) . '</p>';
+					$form .= '<p>' . __( 'Unable to determine your payment method. Please contact support for help canceling your account.', 'leaky-paywall' ) . '</p>';
 					
 				}
 				
@@ -1018,7 +1018,7 @@ if ( !function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 			
 		} else {
 			
-			$form .= '<p>' . __( 'You must be logged in to cancel your account.', 'issuem-leaky-paywall' ) . '</p>';
+			$form .= '<p>' . __( 'You must be logged in to cancel your account.', 'leaky-paywall' ) . '</p>';
 			
 		}
 		
@@ -1061,7 +1061,7 @@ if ( !function_exists( 'send_leaky_paywall_email' ) ) {
 		
 		$headers = 'From: ' . $settings['from_name'] .' <' . $settings['from_email'] . '>' . "\r\n";
 		
-		return wp_mail( $email, __( 'Log into ' . get_bloginfo( 'name' ), 'issuem-leaky-paywall' ), $message, $headers );
+		return wp_mail( $email, __( 'Log into ' . get_bloginfo( 'name' ), 'leaky-paywall' ), $message, $headers );
 		
 	}
 	
@@ -1465,18 +1465,18 @@ if ( !function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 	                die();
 	
 	            } else {
-					$output = '<h3>' . __( 'Error Downloading PDF', 'issuem-leaky-paywall' ) . '</h3>';
+					$output = '<h3>' . __( 'Error Downloading PDF', 'leaky-paywall' ) . '</h3>';
 		
-					$output .= '<p>' . sprintf( __( 'Download Error: Invalid response: %s', 'issuem-leaky-paywall' ), wp_remote_retrieve_response_code( $response ) ) . '</p>';
-					$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'issuem-leak-paywall' ) . '</a>';
+					$output .= '<p>' . sprintf( __( 'Download Error: Invalid response: %s', 'leaky-paywall' ), wp_remote_retrieve_response_code( $response ) ) . '</p>';
+					$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'leaky-paywall' ) . '</a>';
 	            	
 		            wp_die( $output );
 	            }
 	        } else {
-				$output = '<h3>' . __( 'Error Downloading PDF', 'issuem-leaky-paywall' ) . '</h3>';
+				$output = '<h3>' . __( 'Error Downloading PDF', 'leaky-paywall' ) . '</h3>';
 	
-				$output .= '<p>' . sprintf( __( 'Download Error: %s', 'issuem-leaky-paywall' ), $response->get_error_message() ) . '</p>';
-				$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'issuem-leak-paywall' ) . '</a>';
+				$output .= '<p>' . sprintf( __( 'Download Error: %s', 'leaky-paywall' ), $response->get_error_message() ) . '</p>';
+				$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'leak-paywall' ) . '</a>';
             	
 	            wp_die( $output );
 	        }
@@ -1724,8 +1724,8 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		$return  = '<div class="issuem-leaky-paywall-row-post-type">';
 		
 		$return .= '<select class="allowed_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed]">';						
-			$return .= '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited', 'issuem-leaky-paywall' ) . '</option>';
-			$return .= '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limit to...', 'issuem-leaky-paywall' ) . '</option>';
+			$return .= '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited', 'leaky-paywall' ) . '</option>';
+			$return .= '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limit to...', 'leaky-paywall' ) . '</option>';
 		$return .= '</select>';
 			
 		if ( 'unlimited' == $select_post_type['allowed'] ) {
@@ -1735,7 +1735,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		}
 			    
 		$return .= '<div class="allowed_value_div" style="' . $allowed_value_input_style . '">';
-		$return .= '<input type="text" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'issuem-leaky-paywall' ) . '" />';
+		$return .= '<input type="text" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'leaky-paywall' ) . '" />';
 		$return .= '</div>';
 		
 		$return .= '<select class="select_level_post_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
@@ -1808,7 +1808,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		$return  = '<div class="issuem-leaky-paywall-restriction-row">';
 		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
 		$post_types = get_post_types( array(), 'objects' );
-	    $return .= '<label for="restriction-post-type-' . $row_key . '">' . __( 'Number of', 'issuem-leaky-paywall' ) . '</label> ';
+	    $return .= '<label for="restriction-post-type-' . $row_key . '">' . __( 'Number of', 'leaky-paywall' ) . '</label> ';
 		$return .= '<select id="restriction-post-type-' . $row_key . '" name="restrictions[post_types][' . $row_key . '][post_type]">';
 		foreach ( $post_types as $post_type ) {
 		
@@ -1820,7 +1820,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		}
 		$return .= '</select> ';
 		
-	    $return .= '<label for="restriction-allowed-' . $row_key . '">' . __( 'allowed:', 'issuem-leaky-paywall' ) . '</label> ';
+	    $return .= '<label for="restriction-allowed-' . $row_key . '">' . __( 'allowed:', 'leaky-paywall' ) . '</label> ';
 		$return .= '<input id="restriction-allowed-' . $row_key . '" type="text" class="small-text" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" />';
 
 		$return .= '<span class="delete-x delete-restriction-row">&times;</span>';
@@ -1902,7 +1902,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 		if ( empty( $results ) ) {
 					
 			$has_allowed_value = false;
-			$results .= '<h2 class="subscription-options-title">' . __( 'Subscription Options', 'issuem-leaky-paywall' ) . '</h2>';
+			$results .= '<h2 class="subscription-options-title">' . __( 'Subscription Options', 'leaky-paywall' ) . '</h2>';
 
 			$results .= apply_filters( 'leaky_paywall_subscription_options_header', '' );
 			
@@ -1946,9 +1946,9 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						if ( !empty( $post_type_obj ) ) {
 							if ( 0 <= $post_type['allowed_value'] ) {
 								$has_allowed_value = true;
-								$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'issuem-leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
+								$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
 							} else {
-								$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'issuem-leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
+								$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
 							}
 						}
 							
@@ -1962,18 +1962,18 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$subscription_price .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
-							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s', 'issuem-leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s', 'leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_non_recurring_price', '' );
 						}
 						
 						if ( !empty( $level['trial_period'] ) ) {
-							$subscription_price .= '<span class="leaky-paywall-trial-period">' . sprintf( __( 'Free for the first %s day(s)', 'issuem-leaky-paywall' ), $level['trial_period'] ) . '</span>';
+							$subscription_price .= '<span class="leaky-paywall-trial-period">' . sprintf( __( 'Free for the first %s day(s)', 'leaky-paywall' ), $level['trial_period'] ) . '</span>';
 						}
 					} else {
-						$subscription_price .= '<strong>' . __( 'Free', 'issuem-leaky-paywall' ) . '</strong>';
+						$subscription_price .= '<strong>' . __( 'Free', 'leaky-paywall' ) . '</strong>';
 					}
 
 					
@@ -1990,7 +1990,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					if ( in_array( $level_id, $current_level_ids ) ) {
 						
 						$subscription_action .= '<div class="leaky_paywall_subscription_current_level"><span>';
-						$subscription_action .= __( 'Your Current Subscription', 'issuem-leaky-paywall' );
+						$subscription_action .= __( 'Your Current Subscription', 'leaky-paywall' );
 						$subscription_action .= '</span></div>';
 
 					} 
@@ -2116,10 +2116,10 @@ if ( !function_exists( 'leaky_paywall_payment_gateways' ) ) {
 	
 	function leaky_paywall_payment_gateways() {
 		$gateways = array(
-			'manual' 			=> __( 'Manual', 'issuem-leaky-paywall' ),
-			'stripe' 			=> __( 'Stripe', 'issuem-leaky-paywall' ),
-			'paypal_standard' 	=> __( 'PayPal Standard', 'issuem-leaky-paywall' ),
-			'free_registration' => __( 'Free Registration', 'issuem-leaky-paywall' ),
+			'manual' 			=> __( 'Manual', 'leaky-paywall' ),
+			'stripe' 			=> __( 'Stripe', 'leaky-paywall' ),
+			'paypal_standard' 	=> __( 'PayPal Standard', 'leaky-paywall' ),
+			'free_registration' => __( 'Free Registration', 'leaky-paywall' ),
 		);
 		return apply_filters( 'leaky_paywall_subscriber_payment_gateways', $gateways );
 	}
@@ -2130,7 +2130,7 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 	function leaky_paywall_human_readable_interval( $interval_count, $interval ) {
 		
 		if ( 0 >= $interval_count )
-			return __( 'for life', 'issuem-leaky-paywall' );
+			return __( 'for life', 'leaky-paywall' );
 	
 		if ( 1 < $interval_count )
 			$interval .= 's';
@@ -2166,9 +2166,9 @@ if ( !function_exists( 'leaky_paywall_human_readable_interval' ) ) {
 		}
 		
 		if ( 1 == $interval_count )
-			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_str;
+			return __( 'every', 'leaky-paywall' ) . ' ' . $interval_str;
 		else
-			return __( 'every', 'issuem-leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval_str;
+			return __( 'every', 'leaky-paywall' ) . ' ' . $interval_count . ' ' . $interval_str;
 		
 	}
 }
@@ -2239,7 +2239,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
 					$admin_message = apply_filters( 'leaky_paywall_new_subscriber_admin_email', $admin_raw_message, $user_info );
 
-					wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'issuem-leaky-paywall' ), $site_name ), $admin_message, $headers );           
+					wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'leaky-paywall' ), $site_name ), $admin_message, $headers );           
 				}
 
             break;
@@ -2408,144 +2408,144 @@ if ( !function_exists( 'leaky_paywall_supported_currencies' ) ) {
 	
 	function leaky_paywall_supported_currencies() {
 		$currencies = array(
-			'AED' => array( 'symbol' => '&#1583;.&#1573;', 'label' => __( 'UAE dirham', 'issuem-leaky-paywall' ), 'country' => __( 'UAE', 'issuem-leaky-paywall' ) ),
-			'AFN' => array( 'symbol' => 'Afs', 'label' => __( 'Afghan afghani', 'issuem-leaky-paywall' ), 'country' => __( 'Afghanistan', 'issuem-leaky-paywall' ) ),
-			'ALL' => array( 'symbol' => 'L', 'label' => __( 'Albanian lek', 'issuem-leaky-paywall' ), 'country' => __( 'Albania', 'issuem-leaky-paywall' ) ),
-			'AMD' => array( 'symbol' => 'AMD', 'label' => __( 'Armenian dram', 'issuem-leaky-paywall' ), 'country' => __( 'Armenia', 'issuem-leaky-paywall' ) ),
-			'ANG' => array( 'symbol' => 'NA&#402;', 'label' => __( 'Netherlands Antillean gulden', 'issuem-leaky-paywall' ), 'country' => __( 'Netherlands', 'issuem-leaky-paywall' ) ),
-			'AOA' => array( 'symbol' => 'Kz', 'label' => __( 'Angolan kwanza', 'issuem-leaky-paywall' ), 'country' => __( 'Angolia', 'issuem-leaky-paywall' ) ),
-			'ARS' => array( 'symbol' => '$', 'label' => __( 'Argentine peso', 'issuem-leaky-paywall' ), 'country' => __( 'Argentina', 'issuem-leaky-paywall' ) ),
-			'AUD' => array( 'symbol' => '$', 'label' => __( 'Australian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Australia', 'issuem-leaky-paywall' ) ),
-			'AWG' => array( 'symbol' => '&#402;', 'label' => __( 'Aruban florin', 'issuem-leaky-paywall' ), 'country' => __( 'Aruba', 'issuem-leaky-paywall' ) ),
-			'AZN' => array( 'symbol' => 'AZN', 'label' => __( 'Azerbaijani manat', 'issuem-leaky-paywall' ), 'country' => __( 'Azerbaij', 'issuem-leaky-paywall' ) ),
-			'BAM' => array( 'symbol' => 'KM', 'label' => __( 'Bosnia and Herzegovina konvertibilna marka', 'issuem-leaky-paywall' ), 'country' => __( 'Bosnia', 'issuem-leaky-paywall' ) ),
-			'BBD' => array( 'symbol' => 'Bds$', 'label' => __( 'Barbadian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Barbadian', 'issuem-leaky-paywall' ) ),
-			'BDT' => array( 'symbol' => '&#2547;', 'label' => __( 'Bangladeshi taka', 'issuem-leaky-paywall' ), 'country' => __( 'Bangladesh', 'issuem-leaky-paywall' ) ),
-			'BGN' => array( 'symbol' => 'BGN', 'label' => __( 'Bulgarian lev', 'issuem-leaky-paywall' ), 'country' => __( 'Bulgaria', 'issuem-leaky-paywall' ) ),
-			'BIF' => array( 'symbol' => 'FBu', 'label' => __( 'Burundi franc', 'issuem-leaky-paywall' ), 'country' => __( 'Burundi', 'issuem-leaky-paywall' ) ),
-			'BMD' => array( 'symbol' => 'BD$', 'label' => __( 'Bermudian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Bermuda', 'issuem-leaky-paywall' ) ),
-			'BND' => array( 'symbol' => 'B$', 'label' => __( 'Brunei dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Brunei', 'issuem-leaky-paywall' ) ),
-			'BOB' => array( 'symbol' => 'Bs.', 'label' => __( 'Bolivian boliviano', 'issuem-leaky-paywall' ), 'country' => __( 'Bolivia', 'issuem-leaky-paywall' ) ),
-			'BRL' => array( 'symbol' => 'R$', 'label' => __( 'Brazilian real', 'issuem-leaky-paywall' ), 'country' => __( 'Brazil', 'issuem-leaky-paywall' ) ),
-			'BSD' => array( 'symbol' => 'B$', 'label' => __( 'Bahamian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Bahamas', 'issuem-leaky-paywall' ) ),
-			'BWP' => array( 'symbol' => 'P', 'label' => __( 'Botswana pula', 'issuem-leaky-paywall' ), 'country' => __( 'Botswana', 'issuem-leaky-paywall' ) ),
-			'BZD' => array( 'symbol' => 'BZ$', 'label' => __( 'Belize dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Belize', 'issuem-leaky-paywall' ) ),
-			'CAD' => array( 'symbol' => '$', 'label' => __( 'Canadian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Canada', 'issuem-leaky-paywall' ) ),
-			'CDF' => array( 'symbol' => 'F', 'label' => __( 'Congolese franc', 'issuem-leaky-paywall' ), 'country' => __( 'Congo', 'issuem-leaky-paywall' ) ),
-			'CHF' => array( 'symbol' => 'CHF', 'label' => __( 'Swiss franc', 'issuem-leaky-paywall' ), 'country' => __( 'Switzerland', 'issuem-leaky-paywall' ) ),
-			'CLP' => array( 'symbol' => '$', 'label' => __( 'Chilean peso', 'issuem-leaky-paywall' ), 'country' => __( 'Chili', 'issuem-leaky-paywall' ) ),
-			'CNY' => array( 'symbol' => '&#165;', 'label' => __( 'Chinese Yuan Renminbi', 'issuem-leaky-paywall' ),'country' => __( 'Chinese Yuan', 'issuem-leaky-paywall' ) ),
-			'COP' => array( 'symbol' => 'Col$', 'label' => __( 'Colombian peso', 'issuem-leaky-paywall' ),'country' => __( 'Colombia', 'issuem-leaky-paywall' ) ),
-			'CRC' => array( 'symbol' => '&#8353;', 'label' => __( 'Costa Rican colon', 'issuem-leaky-paywall' ),'country' => __( 'Costa Rica', 'issuem-leaky-paywall' ) ),
-			'CVE' => array( 'symbol' => 'Esc', 'label' => __( 'Cape Verdean escudo', 'issuem-leaky-paywall' ),'country' => __( 'Cape Verde', 'issuem-leaky-paywall' ) ),
-			'CZK' => array( 'symbol' => 'K&#269;', 'label' => __( 'Czech koruna', 'issuem-leaky-paywall' ),'country' => __( 'Czech', 'issuem-leaky-paywall' ) ),
-			'DJF' => array( 'symbol' => 'Fdj', 'label' => __( 'Djiboutian franc', 'issuem-leaky-paywall' ),'country' => __( 'Djibouti', 'issuem-leaky-paywall' ) ),
-			'DKK' => array( 'symbol' => 'Kr', 'label' => __( 'Danish krone', 'issuem-leaky-paywall' ),'country' => __( 'Danish', 'issuem-leaky-paywall' ) ),
-			'DOP' => array( 'symbol' => 'RD$', 'label' => __( 'Dominican peso', 'issuem-leaky-paywall' ),'country' => __( 'Dominican Republic', 'issuem-leaky-paywall' ) ),
-			'DZD' => array( 'symbol' => '&#1583;.&#1580;', 'label' => __( 'Algerian dinar', 'issuem-leaky-paywall' ),'country' => __( 'Algeria', 'issuem-leaky-paywall' ) ),
-			'EEK' => array( 'symbol' => 'KR', 'label' => __( 'Estonian kroon', 'issuem-leaky-paywall' ),'country' => __( 'Estonia', 'issuem-leaky-paywall' ) ),
-			'EGP' => array( 'symbol' => '&#163;', 'label' => __( 'Egyptian pound', 'issuem-leaky-paywall' ),'country' => __( 'Egypt', 'issuem-leaky-paywall' ) ),
-			'ETB' => array( 'symbol' => 'Br', 'label' => __( 'Ethiopian birr', 'issuem-leaky-paywall' ),'country' => __( 'Ethiopia', 'issuem-leaky-paywall' ) ),
-			'EUR' => array( 'symbol' => '&#8364;', 'label' => __( 'European Euro', 'issuem-leaky-paywall' ), 'country' => __( 'Euro', 'issuem-leaky-paywall' ) ),
-			'FJD' => array( 'symbol' => 'FJ$', 'label' => __( 'Fijian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Fiji', 'issuem-leaky-paywall' ) ),
-			'FKP' => array( 'symbol' => '&#163;', 'label' => __( 'Falkland Islands pound', 'issuem-leaky-paywall' ), 'country' => __( 'Falkland Islands', 'issuem-leaky-paywall' ) ),
-			'GBP' => array( 'symbol' => '&#163;', 'label' => __( 'British pound', 'issuem-leaky-paywall' ), 'country' => __( 'Great Britian', 'issuem-leaky-paywall' ) ),
-			'GEL' => array( 'symbol' => 'GEL', 'label' => __( 'Georgian lari', 'issuem-leaky-paywall' ), 'country' => __( 'Georgia', 'issuem-leaky-paywall' ) ),
-			'GIP' => array( 'symbol' => '&#163;', 'label' => __( 'Gibraltar pound', 'issuem-leaky-paywall' ), 'country' => __( 'Gibraltar', 'issuem-leaky-paywall' ) ),
-			'GMD' => array( 'symbol' => 'D', 'label' => __( 'Gambian dalasi', 'issuem-leaky-paywall' ), 'country' => __( 'Gambia', 'issuem-leaky-paywall' ) ),
-			'GNF' => array( 'symbol' => 'FG', 'label' => __( 'Guinean franc', 'issuem-leaky-paywall' ), 'country' => __( 'Guinea', 'issuem-leaky-paywall' ) ),
-			'GTQ' => array( 'symbol' => 'Q', 'label' => __( 'Guatemalan quetzal', 'issuem-leaky-paywall' ), 'country' => __( 'Guatemala', 'issuem-leaky-paywall' ) ),
-			'GYD' => array( 'symbol' => 'GY$', 'label' => __( 'Guyanese dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Guyanese', 'issuem-leaky-paywall' ) ),
-			'HKD' => array( 'symbol' => 'HK$', 'label' => __( 'Hong Kong dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Hong Kong', 'issuem-leaky-paywall' ) ),
-			'HNL' => array( 'symbol' => 'L', 'label' => __( 'Honduran lempira', 'issuem-leaky-paywall' ), 'country' => __( 'Honduras', 'issuem-leaky-paywall' ) ),
-			'HRK' => array( 'symbol' => 'kn', 'label' => __( 'Croatian kuna', 'issuem-leaky-paywall' ), 'country' => __( 'Croatia', 'issuem-leaky-paywall' ) ),
-			'HTG' => array( 'symbol' => 'G', 'label' => __( 'Haitian gourde', 'issuem-leaky-paywall' ), 'country' => __( 'Haiti', 'issuem-leaky-paywall' ) ),
-			'HUF' => array( 'symbol' => 'Ft', 'label' => __( 'Hungarian forint', 'issuem-leaky-paywall' ), 'country' => __( 'Hungary', 'issuem-leaky-paywall' ) ),
-			'IDR' => array( 'symbol' => 'Rp', 'label' => __( 'Indonesian rupiah', 'issuem-leaky-paywall' ), 'country' => __( 'Idonesia', 'issuem-leaky-paywall' ) ),
-			'ILS' => array( 'symbol' => '&#8362;', 'label' => __( 'Israeli new sheqel', 'issuem-leaky-paywall' ), 'country' => __( 'Israel', 'issuem-leaky-paywall' ) ),
-			'INR' => array( 'symbol' => '&#8377;', 'label' => __( 'Indian rupee', 'issuem-leaky-paywall' ), 'country' => __( 'India', 'issuem-leaky-paywall' ) ),
-			'ISK' => array( 'symbol' => 'kr', 'label' => __( 'Icelandic króna', 'issuem-leaky-paywall' ), 'country' => __( 'Iceland', 'issuem-leaky-paywall' ) ),
-			'JMD' => array( 'symbol' => 'J$', 'label' => __( 'Jamaican dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Jamaica', 'issuem-leaky-paywall' ) ),
-			'JPY' => array( 'symbol' => '&#165;', 'label' => __( 'Japanese yen', 'issuem-leaky-paywall' ), 'country' => __( 'Japan', 'issuem-leaky-paywall' ) ),
-			'KES' => array( 'symbol' => 'KSh', 'label' => __( 'Kenyan shilling', 'issuem-leaky-paywall' ), 'country' => __( 'Kenya', 'issuem-leaky-paywall' ) ),
-			'KGS' => array( 'symbol' => '&#1089;&#1086;&#1084;', 'label' => __( 'Kyrgyzstani som', 'issuem-leaky-paywall' ), 'country' => __( 'Kyrgyzstan', 'issuem-leaky-paywall' ) ),
-			'KHR' => array( 'symbol' => '&#6107;', 'label' => __( 'Cambodian riel', 'issuem-leaky-paywall' ), 'country' => __( 'Cambodia', 'issuem-leaky-paywall' ) ),
-			'KMF' => array( 'symbol' => 'KMF', 'label' => __( 'Comorian franc', 'issuem-leaky-paywall' ), 'country' => __( 'Comorian', 'issuem-leaky-paywall' ) ),
-			'KRW' => array( 'symbol' => 'W', 'label' => __( 'South Korean won', 'issuem-leaky-paywall' ), 'country' => __( 'South Korea', 'issuem-leaky-paywall' ) ),
-			'KYD' => array( 'symbol' => 'KY$', 'label' => __( 'Cayman Islands dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Cayman Islands', 'issuem-leaky-paywall' ) ),
-			'KZT' => array( 'symbol' => 'T', 'label' => __( 'Kazakhstani tenge', 'issuem-leaky-paywall' ), 'country' => __( 'Kazakhstan', 'issuem-leaky-paywall' ) ),
-			'LAK' => array( 'symbol' => 'KN', 'label' => __( 'Lao kip', 'issuem-leaky-paywall' ), 'country' => __( 'Loa', 'issuem-leaky-paywall' ) ),
-			'LBP' => array( 'symbol' => '&#163;', 'label' => __( 'Lebanese lira', 'issuem-leaky-paywall' ), 'country' => __( 'Lebanese', 'issuem-leaky-paywall' ) ),
-			'LKR' => array( 'symbol' => 'Rs', 'label' => __( 'Sri Lankan rupee', 'issuem-leaky-paywall' ), 'country' => __( 'Sri Lanka', 'issuem-leaky-paywall' ) ),
-			'LRD' => array( 'symbol' => 'L$', 'label' => __( 'Liberian dollar', 'issuem-leaky-paywall' ), 'country' => __( 'Liberia', 'issuem-leaky-paywall' ) ),
-			'LSL' => array( 'symbol' => 'M', 'label' => __( 'Lesotho loti', 'issuem-leaky-paywall' ), 'country' => __( 'Lesotho', 'issuem-leaky-paywall' ) ),
-			'LTL' => array( 'symbol' => 'Lt', 'label' => __( 'Lithuanian litas', 'issuem-leaky-paywall' ), 'country' => __( 'Lithuania', 'issuem-leaky-paywall' ) ),
-			'LVL' => array( 'symbol' => 'Ls', 'label' => __( 'Latvian lats', 'issuem-leaky-paywall' ), 'country' => __( 'Latvia', 'issuem-leaky-paywall' ) ),
-			'MAD' => array( 'symbol' => 'MAD', 'label' => __( 'Moroccan dirham', 'issuem-leaky-paywall' ), 'country' => __( 'Morocco', 'issuem-leaky-paywall' ) ),
-			'MDL' => array( 'symbol' => 'MDL', 'label' => __( 'Moldovan leu', 'issuem-leaky-paywall' ), 'country' => __( 'Moldova', 'issuem-leaky-paywall' ) ),
-			'MGA' => array( 'symbol' => 'FMG', 'label' => __( 'Malagasy ariary', 'issuem-leaky-paywall' ), 'country' => __( 'Malagasy', 'issuem-leaky-paywall' ) ),
-			'MKD' => array( 'symbol' => 'MKD', 'label' => __( 'Macedonian denar', 'issuem-leaky-paywall' ), 'country' => __( 'Macedonia', 'issuem-leaky-paywall' ) ),
-			'MNT' => array( 'symbol' => '&#8366;', 'label' => __( 'Mongolian tugrik', 'issuem-leaky-paywall' ), 'country' => __( 'Mongolia', 'issuem-leaky-paywall' ) ),
-			'MOP' => array( 'symbol' => 'P', 'label' => __( 'Macanese pataca', 'issuem-leaky-paywall' ), 'country' => __( 'Macanese', 'issuem-leaky-paywall' ) ),
-			'MRO' => array( 'symbol' => 'UM', 'label' => __( 'Mauritanian ouguiya', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'MUR' => array( 'symbol' => 'Rs', 'label' => __( 'Mauritian rupee', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'MVR' => array( 'symbol' => 'Rf', 'label' => __( 'Maldivian rufiyaa', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'MWK' => array( 'symbol' => 'MK', 'label' => __( 'Malawian kwacha', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'MXN' => array( 'symbol' => '$', 'label' => __( 'Mexican peso', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'MYR' => array( 'symbol' => 'RM', 'label' => __( 'Malaysian ringgit', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'MZN' => array( 'symbol' => 'MT', 'label' => __( 'Mozambique Metical', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'NAD' => array( 'symbol' => 'N$', 'label' => __( 'Namibian dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'NGN' => array( 'symbol' => '&#8358;', 'label' => __( 'Nigerian naira', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'NIO' => array( 'symbol' => 'C$', 'label' => __( 'Nicaraguan Córdoba', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'NOK' => array( 'symbol' => 'kr', 'label' => __( 'Norwegian krone', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'NPR' => array( 'symbol' => 'NRs', 'label' => __( 'Nepalese rupee', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'NZD' => array( 'symbol' => 'NZ$', 'label' => __( 'New Zealand dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PAB' => array( 'symbol' => 'B./', 'label' => __( 'Panamanian balboa', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PEN' => array( 'symbol' => 'S/.', 'label' => __( 'Peruvian nuevo sol', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PGK' => array( 'symbol' => 'K', 'label' => __( 'Papua New Guinean kina', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PHP' => array( 'symbol' => '&#8369;', 'label' => __( 'Philippine peso', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PKR' => array( 'symbol' => 'Rs.', 'label' => __( 'Pakistani rupee', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PLN' => array( 'symbol' => 'z&#322;', 'label' => __( 'Polish zloty', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'PYG' => array( 'symbol' => '&#8370;', 'label' => __( 'Paraguayan guarani', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'QAR' => array( 'symbol' => 'QR', 'label' => __( 'Qatari riyal', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'RON' => array( 'symbol' => 'L', 'label' => __( 'Romanian leu', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'RSD' => array( 'symbol' => 'din.', 'label' => __( 'Serbian dinar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'RUB' => array( 'symbol' => 'R', 'label' => __( 'Russian ruble', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'RWF' => array( 'symbol' => 'R&#8355;', 'label' => __( 'Rwandan Franc' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SAR' => array( 'symbol' => 'SR', 'label' => __( 'Saudi riyal', 'issuem-leaky-paywall' ) ),
-			'SBD' => array( 'symbol' => 'SI$', 'label' => __( 'Solomon Islands dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SCR' => array( 'symbol' => 'SR', 'label' => __( 'Seychellois rupee', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SEK' => array( 'symbol' => 'kr', 'label' => __( 'Swedish krona', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SGD' => array( 'symbol' => 'S$', 'label' => __( 'Singapore dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SHP' => array( 'symbol' => '&#163;', 'label' => __( 'Saint Helena pound', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SLL' => array( 'symbol' => 'Le', 'label' => __( 'Sierra Leonean leone', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SOS' => array( 'symbol' => 'Sh.', 'label' => __( 'Somali shilling', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SRD' => array( 'symbol' => '$', 'label' => __( 'Surinamese dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'STD' => array( 'symbol' => 'STD', 'label' => __( 'São Tomé and Príncipe Dobra', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SVC' => array( 'symbol' => '$', 'label' => __( 'El Salvador Colon', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'SZL' => array( 'symbol' => 'E', 'label' => __( 'Swazi lilangeni', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'THB' => array( 'symbol' => '&#3647;', 'label' => __( 'Thai baht', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'TJS' => array( 'symbol' => 'TJS', 'label' => __( 'Tajikistani somoni', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'TOP' => array( 'symbol' => 'T$', 'label' => __( "Tonga Pa'anga", 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'TRY' => array( 'symbol' => 'TRY', 'label' => __( 'Turkish new lira', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'TTD' => array( 'symbol' => 'TT$', 'label' => __( 'Trinidad and Tobago dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'TWD' => array( 'symbol' => 'NT$', 'label' => __( 'New Taiwan dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'TZS' => array( 'symbol' => 'TZS', 'label' => __( 'Tanzanian shilling', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'UAH' => array( 'symbol' => 'UAH', 'label' => __( 'Ukrainian hryvnia', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'UGX' => array( 'symbol' => 'USh', 'label' => __( 'Ugandan shilling', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'USD' => array( 'symbol' => '$', 'label' => __( 'United States dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'UYU' => array( 'symbol' => '$U', 'label' => __( 'Uruguayan peso', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'UZS' => array( 'symbol' => 'UZS', 'label' => __( 'Uzbekistani som', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'VND' => array( 'symbol' => '&#8363;', 'label' => __( 'Vietnamese dong', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'VUV' => array( 'symbol' => 'VT', 'label' => __( 'Vanuatu vatu', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'WST' => array( 'symbol' => 'WS$', 'label' => __( 'Samoan tala', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'XAF' => array( 'symbol' => 'CFA', 'label' => __( 'Central African CFA franc', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'XCD' => array( 'symbol' => 'EC$', 'label' => __( 'East Caribbean dollar', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'XOF' => array( 'symbol' => 'CFA', 'label' => __( 'West African CFA franc', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'XPF' => array( 'symbol' => 'F', 'label' => __( 'CFP franc', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'YER' => array( 'symbol' => 'YER', 'label' => __( 'Yemeni rial', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'ZAR' => array( 'symbol' => 'R', 'label' => __( 'South African rand', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
-			'ZMW' => array( 'symbol' => 'ZK', 'label' => __( 'Zambian kwacha', 'issuem-leaky-paywall' ), 'country' => __( '', 'issuem-leaky-paywall' ) ),
+			'AED' => array( 'symbol' => '&#1583;.&#1573;', 'label' => __( 'UAE dirham', 'leaky-paywall' ), 'country' => __( 'UAE', 'leaky-paywall' ) ),
+			'AFN' => array( 'symbol' => 'Afs', 'label' => __( 'Afghan afghani', 'leaky-paywall' ), 'country' => __( 'Afghanistan', 'leaky-paywall' ) ),
+			'ALL' => array( 'symbol' => 'L', 'label' => __( 'Albanian lek', 'leaky-paywall' ), 'country' => __( 'Albania', 'leaky-paywall' ) ),
+			'AMD' => array( 'symbol' => 'AMD', 'label' => __( 'Armenian dram', 'leaky-paywall' ), 'country' => __( 'Armenia', 'leaky-paywall' ) ),
+			'ANG' => array( 'symbol' => 'NA&#402;', 'label' => __( 'Netherlands Antillean gulden', 'leaky-paywall' ), 'country' => __( 'Netherlands', 'leaky-paywall' ) ),
+			'AOA' => array( 'symbol' => 'Kz', 'label' => __( 'Angolan kwanza', 'leaky-paywall' ), 'country' => __( 'Angolia', 'leaky-paywall' ) ),
+			'ARS' => array( 'symbol' => '$', 'label' => __( 'Argentine peso', 'leaky-paywall' ), 'country' => __( 'Argentina', 'leaky-paywall' ) ),
+			'AUD' => array( 'symbol' => '$', 'label' => __( 'Australian dollar', 'leaky-paywall' ), 'country' => __( 'Australia', 'leaky-paywall' ) ),
+			'AWG' => array( 'symbol' => '&#402;', 'label' => __( 'Aruban florin', 'leaky-paywall' ), 'country' => __( 'Aruba', 'leaky-paywall' ) ),
+			'AZN' => array( 'symbol' => 'AZN', 'label' => __( 'Azerbaijani manat', 'leaky-paywall' ), 'country' => __( 'Azerbaij', 'leaky-paywall' ) ),
+			'BAM' => array( 'symbol' => 'KM', 'label' => __( 'Bosnia and Herzegovina konvertibilna marka', 'leaky-paywall' ), 'country' => __( 'Bosnia', 'leaky-paywall' ) ),
+			'BBD' => array( 'symbol' => 'Bds$', 'label' => __( 'Barbadian dollar', 'leaky-paywall' ), 'country' => __( 'Barbadian', 'leaky-paywall' ) ),
+			'BDT' => array( 'symbol' => '&#2547;', 'label' => __( 'Bangladeshi taka', 'leaky-paywall' ), 'country' => __( 'Bangladesh', 'leaky-paywall' ) ),
+			'BGN' => array( 'symbol' => 'BGN', 'label' => __( 'Bulgarian lev', 'leaky-paywall' ), 'country' => __( 'Bulgaria', 'leaky-paywall' ) ),
+			'BIF' => array( 'symbol' => 'FBu', 'label' => __( 'Burundi franc', 'leaky-paywall' ), 'country' => __( 'Burundi', 'leaky-paywall' ) ),
+			'BMD' => array( 'symbol' => 'BD$', 'label' => __( 'Bermudian dollar', 'leaky-paywall' ), 'country' => __( 'Bermuda', 'leaky-paywall' ) ),
+			'BND' => array( 'symbol' => 'B$', 'label' => __( 'Brunei dollar', 'leaky-paywall' ), 'country' => __( 'Brunei', 'leaky-paywall' ) ),
+			'BOB' => array( 'symbol' => 'Bs.', 'label' => __( 'Bolivian boliviano', 'leaky-paywall' ), 'country' => __( 'Bolivia', 'leaky-paywall' ) ),
+			'BRL' => array( 'symbol' => 'R$', 'label' => __( 'Brazilian real', 'leaky-paywall' ), 'country' => __( 'Brazil', 'leaky-paywall' ) ),
+			'BSD' => array( 'symbol' => 'B$', 'label' => __( 'Bahamian dollar', 'leaky-paywall' ), 'country' => __( 'Bahamas', 'leaky-paywall' ) ),
+			'BWP' => array( 'symbol' => 'P', 'label' => __( 'Botswana pula', 'leaky-paywall' ), 'country' => __( 'Botswana', 'leaky-paywall' ) ),
+			'BZD' => array( 'symbol' => 'BZ$', 'label' => __( 'Belize dollar', 'leaky-paywall' ), 'country' => __( 'Belize', 'leaky-paywall' ) ),
+			'CAD' => array( 'symbol' => '$', 'label' => __( 'Canadian dollar', 'leaky-paywall' ), 'country' => __( 'Canada', 'leaky-paywall' ) ),
+			'CDF' => array( 'symbol' => 'F', 'label' => __( 'Congolese franc', 'leaky-paywall' ), 'country' => __( 'Congo', 'leaky-paywall' ) ),
+			'CHF' => array( 'symbol' => 'CHF', 'label' => __( 'Swiss franc', 'leaky-paywall' ), 'country' => __( 'Switzerland', 'leaky-paywall' ) ),
+			'CLP' => array( 'symbol' => '$', 'label' => __( 'Chilean peso', 'leaky-paywall' ), 'country' => __( 'Chili', 'leaky-paywall' ) ),
+			'CNY' => array( 'symbol' => '&#165;', 'label' => __( 'Chinese Yuan Renminbi', 'leaky-paywall' ),'country' => __( 'Chinese Yuan', 'leaky-paywall' ) ),
+			'COP' => array( 'symbol' => 'Col$', 'label' => __( 'Colombian peso', 'leaky-paywall' ),'country' => __( 'Colombia', 'leaky-paywall' ) ),
+			'CRC' => array( 'symbol' => '&#8353;', 'label' => __( 'Costa Rican colon', 'leaky-paywall' ),'country' => __( 'Costa Rica', 'leaky-paywall' ) ),
+			'CVE' => array( 'symbol' => 'Esc', 'label' => __( 'Cape Verdean escudo', 'leaky-paywall' ),'country' => __( 'Cape Verde', 'leaky-paywall' ) ),
+			'CZK' => array( 'symbol' => 'K&#269;', 'label' => __( 'Czech koruna', 'leaky-paywall' ),'country' => __( 'Czech', 'leaky-paywall' ) ),
+			'DJF' => array( 'symbol' => 'Fdj', 'label' => __( 'Djiboutian franc', 'leaky-paywall' ),'country' => __( 'Djibouti', 'leaky-paywall' ) ),
+			'DKK' => array( 'symbol' => 'Kr', 'label' => __( 'Danish krone', 'leaky-paywall' ),'country' => __( 'Danish', 'leaky-paywall' ) ),
+			'DOP' => array( 'symbol' => 'RD$', 'label' => __( 'Dominican peso', 'leaky-paywall' ),'country' => __( 'Dominican Republic', 'leaky-paywall' ) ),
+			'DZD' => array( 'symbol' => '&#1583;.&#1580;', 'label' => __( 'Algerian dinar', 'leaky-paywall' ),'country' => __( 'Algeria', 'leaky-paywall' ) ),
+			'EEK' => array( 'symbol' => 'KR', 'label' => __( 'Estonian kroon', 'leaky-paywall' ),'country' => __( 'Estonia', 'leaky-paywall' ) ),
+			'EGP' => array( 'symbol' => '&#163;', 'label' => __( 'Egyptian pound', 'leaky-paywall' ),'country' => __( 'Egypt', 'leaky-paywall' ) ),
+			'ETB' => array( 'symbol' => 'Br', 'label' => __( 'Ethiopian birr', 'leaky-paywall' ),'country' => __( 'Ethiopia', 'leaky-paywall' ) ),
+			'EUR' => array( 'symbol' => '&#8364;', 'label' => __( 'European Euro', 'leaky-paywall' ), 'country' => __( 'Euro', 'leaky-paywall' ) ),
+			'FJD' => array( 'symbol' => 'FJ$', 'label' => __( 'Fijian dollar', 'leaky-paywall' ), 'country' => __( 'Fiji', 'leaky-paywall' ) ),
+			'FKP' => array( 'symbol' => '&#163;', 'label' => __( 'Falkland Islands pound', 'leaky-paywall' ), 'country' => __( 'Falkland Islands', 'leaky-paywall' ) ),
+			'GBP' => array( 'symbol' => '&#163;', 'label' => __( 'British pound', 'leaky-paywall' ), 'country' => __( 'Great Britian', 'leaky-paywall' ) ),
+			'GEL' => array( 'symbol' => 'GEL', 'label' => __( 'Georgian lari', 'leaky-paywall' ), 'country' => __( 'Georgia', 'leaky-paywall' ) ),
+			'GIP' => array( 'symbol' => '&#163;', 'label' => __( 'Gibraltar pound', 'leaky-paywall' ), 'country' => __( 'Gibraltar', 'leaky-paywall' ) ),
+			'GMD' => array( 'symbol' => 'D', 'label' => __( 'Gambian dalasi', 'leaky-paywall' ), 'country' => __( 'Gambia', 'leaky-paywall' ) ),
+			'GNF' => array( 'symbol' => 'FG', 'label' => __( 'Guinean franc', 'leaky-paywall' ), 'country' => __( 'Guinea', 'leaky-paywall' ) ),
+			'GTQ' => array( 'symbol' => 'Q', 'label' => __( 'Guatemalan quetzal', 'leaky-paywall' ), 'country' => __( 'Guatemala', 'leaky-paywall' ) ),
+			'GYD' => array( 'symbol' => 'GY$', 'label' => __( 'Guyanese dollar', 'leaky-paywall' ), 'country' => __( 'Guyanese', 'leaky-paywall' ) ),
+			'HKD' => array( 'symbol' => 'HK$', 'label' => __( 'Hong Kong dollar', 'leaky-paywall' ), 'country' => __( 'Hong Kong', 'leaky-paywall' ) ),
+			'HNL' => array( 'symbol' => 'L', 'label' => __( 'Honduran lempira', 'leaky-paywall' ), 'country' => __( 'Honduras', 'leaky-paywall' ) ),
+			'HRK' => array( 'symbol' => 'kn', 'label' => __( 'Croatian kuna', 'leaky-paywall' ), 'country' => __( 'Croatia', 'leaky-paywall' ) ),
+			'HTG' => array( 'symbol' => 'G', 'label' => __( 'Haitian gourde', 'leaky-paywall' ), 'country' => __( 'Haiti', 'leaky-paywall' ) ),
+			'HUF' => array( 'symbol' => 'Ft', 'label' => __( 'Hungarian forint', 'leaky-paywall' ), 'country' => __( 'Hungary', 'leaky-paywall' ) ),
+			'IDR' => array( 'symbol' => 'Rp', 'label' => __( 'Indonesian rupiah', 'leaky-paywall' ), 'country' => __( 'Idonesia', 'leaky-paywall' ) ),
+			'ILS' => array( 'symbol' => '&#8362;', 'label' => __( 'Israeli new sheqel', 'leaky-paywall' ), 'country' => __( 'Israel', 'leaky-paywall' ) ),
+			'INR' => array( 'symbol' => '&#8377;', 'label' => __( 'Indian rupee', 'leaky-paywall' ), 'country' => __( 'India', 'leaky-paywall' ) ),
+			'ISK' => array( 'symbol' => 'kr', 'label' => __( 'Icelandic króna', 'leaky-paywall' ), 'country' => __( 'Iceland', 'leaky-paywall' ) ),
+			'JMD' => array( 'symbol' => 'J$', 'label' => __( 'Jamaican dollar', 'leaky-paywall' ), 'country' => __( 'Jamaica', 'leaky-paywall' ) ),
+			'JPY' => array( 'symbol' => '&#165;', 'label' => __( 'Japanese yen', 'leaky-paywall' ), 'country' => __( 'Japan', 'leaky-paywall' ) ),
+			'KES' => array( 'symbol' => 'KSh', 'label' => __( 'Kenyan shilling', 'leaky-paywall' ), 'country' => __( 'Kenya', 'leaky-paywall' ) ),
+			'KGS' => array( 'symbol' => '&#1089;&#1086;&#1084;', 'label' => __( 'Kyrgyzstani som', 'leaky-paywall' ), 'country' => __( 'Kyrgyzstan', 'leaky-paywall' ) ),
+			'KHR' => array( 'symbol' => '&#6107;', 'label' => __( 'Cambodian riel', 'leaky-paywall' ), 'country' => __( 'Cambodia', 'leaky-paywall' ) ),
+			'KMF' => array( 'symbol' => 'KMF', 'label' => __( 'Comorian franc', 'leaky-paywall' ), 'country' => __( 'Comorian', 'leaky-paywall' ) ),
+			'KRW' => array( 'symbol' => 'W', 'label' => __( 'South Korean won', 'leaky-paywall' ), 'country' => __( 'South Korea', 'leaky-paywall' ) ),
+			'KYD' => array( 'symbol' => 'KY$', 'label' => __( 'Cayman Islands dollar', 'leaky-paywall' ), 'country' => __( 'Cayman Islands', 'leaky-paywall' ) ),
+			'KZT' => array( 'symbol' => 'T', 'label' => __( 'Kazakhstani tenge', 'leaky-paywall' ), 'country' => __( 'Kazakhstan', 'leaky-paywall' ) ),
+			'LAK' => array( 'symbol' => 'KN', 'label' => __( 'Lao kip', 'leaky-paywall' ), 'country' => __( 'Loa', 'leaky-paywall' ) ),
+			'LBP' => array( 'symbol' => '&#163;', 'label' => __( 'Lebanese lira', 'leaky-paywall' ), 'country' => __( 'Lebanese', 'leaky-paywall' ) ),
+			'LKR' => array( 'symbol' => 'Rs', 'label' => __( 'Sri Lankan rupee', 'leaky-paywall' ), 'country' => __( 'Sri Lanka', 'leaky-paywall' ) ),
+			'LRD' => array( 'symbol' => 'L$', 'label' => __( 'Liberian dollar', 'leaky-paywall' ), 'country' => __( 'Liberia', 'leaky-paywall' ) ),
+			'LSL' => array( 'symbol' => 'M', 'label' => __( 'Lesotho loti', 'leaky-paywall' ), 'country' => __( 'Lesotho', 'leaky-paywall' ) ),
+			'LTL' => array( 'symbol' => 'Lt', 'label' => __( 'Lithuanian litas', 'leaky-paywall' ), 'country' => __( 'Lithuania', 'leaky-paywall' ) ),
+			'LVL' => array( 'symbol' => 'Ls', 'label' => __( 'Latvian lats', 'leaky-paywall' ), 'country' => __( 'Latvia', 'leaky-paywall' ) ),
+			'MAD' => array( 'symbol' => 'MAD', 'label' => __( 'Moroccan dirham', 'leaky-paywall' ), 'country' => __( 'Morocco', 'leaky-paywall' ) ),
+			'MDL' => array( 'symbol' => 'MDL', 'label' => __( 'Moldovan leu', 'leaky-paywall' ), 'country' => __( 'Moldova', 'leaky-paywall' ) ),
+			'MGA' => array( 'symbol' => 'FMG', 'label' => __( 'Malagasy ariary', 'leaky-paywall' ), 'country' => __( 'Malagasy', 'leaky-paywall' ) ),
+			'MKD' => array( 'symbol' => 'MKD', 'label' => __( 'Macedonian denar', 'leaky-paywall' ), 'country' => __( 'Macedonia', 'leaky-paywall' ) ),
+			'MNT' => array( 'symbol' => '&#8366;', 'label' => __( 'Mongolian tugrik', 'leaky-paywall' ), 'country' => __( 'Mongolia', 'leaky-paywall' ) ),
+			'MOP' => array( 'symbol' => 'P', 'label' => __( 'Macanese pataca', 'leaky-paywall' ), 'country' => __( 'Macanese', 'leaky-paywall' ) ),
+			'MRO' => array( 'symbol' => 'UM', 'label' => __( 'Mauritanian ouguiya', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'MUR' => array( 'symbol' => 'Rs', 'label' => __( 'Mauritian rupee', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'MVR' => array( 'symbol' => 'Rf', 'label' => __( 'Maldivian rufiyaa', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'MWK' => array( 'symbol' => 'MK', 'label' => __( 'Malawian kwacha', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'MXN' => array( 'symbol' => '$', 'label' => __( 'Mexican peso', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'MYR' => array( 'symbol' => 'RM', 'label' => __( 'Malaysian ringgit', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'MZN' => array( 'symbol' => 'MT', 'label' => __( 'Mozambique Metical', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'NAD' => array( 'symbol' => 'N$', 'label' => __( 'Namibian dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'NGN' => array( 'symbol' => '&#8358;', 'label' => __( 'Nigerian naira', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'NIO' => array( 'symbol' => 'C$', 'label' => __( 'Nicaraguan Córdoba', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'NOK' => array( 'symbol' => 'kr', 'label' => __( 'Norwegian krone', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'NPR' => array( 'symbol' => 'NRs', 'label' => __( 'Nepalese rupee', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'NZD' => array( 'symbol' => 'NZ$', 'label' => __( 'New Zealand dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PAB' => array( 'symbol' => 'B./', 'label' => __( 'Panamanian balboa', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PEN' => array( 'symbol' => 'S/.', 'label' => __( 'Peruvian nuevo sol', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PGK' => array( 'symbol' => 'K', 'label' => __( 'Papua New Guinean kina', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PHP' => array( 'symbol' => '&#8369;', 'label' => __( 'Philippine peso', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PKR' => array( 'symbol' => 'Rs.', 'label' => __( 'Pakistani rupee', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PLN' => array( 'symbol' => 'z&#322;', 'label' => __( 'Polish zloty', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'PYG' => array( 'symbol' => '&#8370;', 'label' => __( 'Paraguayan guarani', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'QAR' => array( 'symbol' => 'QR', 'label' => __( 'Qatari riyal', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'RON' => array( 'symbol' => 'L', 'label' => __( 'Romanian leu', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'RSD' => array( 'symbol' => 'din.', 'label' => __( 'Serbian dinar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'RUB' => array( 'symbol' => 'R', 'label' => __( 'Russian ruble', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'RWF' => array( 'symbol' => 'R&#8355;', 'label' => __( 'Rwandan Franc' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SAR' => array( 'symbol' => 'SR', 'label' => __( 'Saudi riyal', 'leaky-paywall' ) ),
+			'SBD' => array( 'symbol' => 'SI$', 'label' => __( 'Solomon Islands dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SCR' => array( 'symbol' => 'SR', 'label' => __( 'Seychellois rupee', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SEK' => array( 'symbol' => 'kr', 'label' => __( 'Swedish krona', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SGD' => array( 'symbol' => 'S$', 'label' => __( 'Singapore dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SHP' => array( 'symbol' => '&#163;', 'label' => __( 'Saint Helena pound', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SLL' => array( 'symbol' => 'Le', 'label' => __( 'Sierra Leonean leone', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SOS' => array( 'symbol' => 'Sh.', 'label' => __( 'Somali shilling', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SRD' => array( 'symbol' => '$', 'label' => __( 'Surinamese dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'STD' => array( 'symbol' => 'STD', 'label' => __( 'São Tomé and Príncipe Dobra', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SVC' => array( 'symbol' => '$', 'label' => __( 'El Salvador Colon', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'SZL' => array( 'symbol' => 'E', 'label' => __( 'Swazi lilangeni', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'THB' => array( 'symbol' => '&#3647;', 'label' => __( 'Thai baht', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'TJS' => array( 'symbol' => 'TJS', 'label' => __( 'Tajikistani somoni', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'TOP' => array( 'symbol' => 'T$', 'label' => __( "Tonga Pa'anga", 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'TRY' => array( 'symbol' => 'TRY', 'label' => __( 'Turkish new lira', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'TTD' => array( 'symbol' => 'TT$', 'label' => __( 'Trinidad and Tobago dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'TWD' => array( 'symbol' => 'NT$', 'label' => __( 'New Taiwan dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'TZS' => array( 'symbol' => 'TZS', 'label' => __( 'Tanzanian shilling', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'UAH' => array( 'symbol' => 'UAH', 'label' => __( 'Ukrainian hryvnia', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'UGX' => array( 'symbol' => 'USh', 'label' => __( 'Ugandan shilling', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'USD' => array( 'symbol' => '$', 'label' => __( 'United States dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'UYU' => array( 'symbol' => '$U', 'label' => __( 'Uruguayan peso', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'UZS' => array( 'symbol' => 'UZS', 'label' => __( 'Uzbekistani som', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'VND' => array( 'symbol' => '&#8363;', 'label' => __( 'Vietnamese dong', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'VUV' => array( 'symbol' => 'VT', 'label' => __( 'Vanuatu vatu', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'WST' => array( 'symbol' => 'WS$', 'label' => __( 'Samoan tala', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'XAF' => array( 'symbol' => 'CFA', 'label' => __( 'Central African CFA franc', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'XCD' => array( 'symbol' => 'EC$', 'label' => __( 'East Caribbean dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'XOF' => array( 'symbol' => 'CFA', 'label' => __( 'West African CFA franc', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'XPF' => array( 'symbol' => 'F', 'label' => __( 'CFP franc', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'YER' => array( 'symbol' => 'YER', 'label' => __( 'Yemeni rial', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'ZAR' => array( 'symbol' => 'R', 'label' => __( 'South African rand', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'ZMW' => array( 'symbol' => 'ZK', 'label' => __( 'Zambian kwacha', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
 		);
 	
 		return apply_filters( 'leaky_paywall_supported_currencies', $currencies );
