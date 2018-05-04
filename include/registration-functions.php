@@ -241,7 +241,7 @@ function leaky_paywall_validate_user_data() {
 		
 		if ( email_exists( $user['email'] ) ) {
 			//Email address already registered
-			leaky_paywall_errors()->add( 'email_used', __( 'Email already registered', 'leaky_paywall' ), 'register' );
+			leaky_paywall_errors()->add( 'email_used', __( 'Email already registered. Please <a href="' . get_page_link( $settings['page_for_login'] ) . '">login</a>', 'leaky_paywall' ), 'register' );
 		}
 		
 		if ( username_exists( $user['login'] ) ) {
