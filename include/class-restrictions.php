@@ -6,6 +6,17 @@
 class Leaky_Paywall_Restrictions {
 
 	/**
+	* Cookie Prefix based on host
+	*/
+	public function __construct() {
+		if (isset($_SERVER['PANTHEON_ENVIRONMENT'])) {
+			$this->cookie_prefix = 'STYXKEY_';
+		} else {
+			$this->cookie_prefix = '';
+		}
+	}
+
+	/**
 	 * Kick off the restriction process
 	 *
 	 * @since 4.10.3
@@ -509,8 +520,8 @@ class Leaky_Paywall_Restrictions {
 
 		$site = leaky_paywall_get_current_site();
 
-		if ( !empty( $_COOKIE['issuem_lp' . $site] ) ) {
-			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp' . $site] ), true );
+		if ( !empty( $_COOKIE[$this->cookie_prefix.'issuem_lp' . $site] ) ) {
+			$available_content = json_decode( stripslashes( $this->cookie_prefix.'issuem_lp' . $site] ), true );
 		} else {
 			$available_content = array();
 		}
@@ -545,8 +556,8 @@ class Leaky_Paywall_Restrictions {
 		$site = leaky_paywall_get_current_site();
 		$json_available_content = json_encode( $available_content );
 
-		$cookie = setcookie( 'issuem_lp' . $site, $json_available_content, $this->get_expiration_time(), '/' );
-		$_COOKIE['issuem_lp' . $site] = $json_available_content;
+		$cookie = setcookie( $this->cookie_prefix.'issuem_lp' . $site, $json_available_content, $this->get_expiration_time(), '/' );
+		$_COOKIE[$this->cookie_prefix.'issuem_lp' . $site] = $json_available_content;
 
 	}
 
@@ -986,8 +997,8 @@ class Leaky_Paywall_Restrictions {
 		}
 		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 
-		if ( !empty( $_COOKIE['issuem_lp'] ) ) {
-			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp'] ), true );
+		if ( !empty( $_COOKIE[$this->cookie_prefix.'issuem_lp'] ) ) {
+			$available_content = json_decode( stripslashes( $_COOKIE[$this->cookie_prefix.'issuem_lp'] ), true );
 		}
 
 		if ( empty( $available_content[$post_type] ) ) {
@@ -1060,8 +1071,8 @@ class Leaky_Paywall_Restrictions {
 
 		$json_available_content = json_encode( $available_content );
 
-		$cookie = setcookie( 'issuem_lp', $json_available_content, $expiration, '/' );
-		$_COOKIE['issuem_lp' . $site] = $json_available_content;
+		$cookie = setcookie( $this->cookie_prefix.'issuem_lp', $json_available_content, $expiration, '/' );
+		$_COOKIE[$this->cookie_prefix.'issuem_lp' . $site] = $json_available_content;
 
 		die();
 
