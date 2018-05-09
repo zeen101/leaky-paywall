@@ -1962,10 +1962,10 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$subscription_price .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s (recurring)', 'leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . sprintf( __( '%s %s (recurring)', 'leaky-paywall' ), leaky_paywall_get_level_display_price( $level ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
-							$subscription_price .= '<strong>' . sprintf( __( '%s%s %s', 'leaky-paywall' ), leaky_paywall_get_current_currency_symbol(), number_format( $level['price'], 2 ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . sprintf( __( '%s %s', 'leaky-paywall' ), leaky_paywall_get_level_display_price( $level ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_non_recurring_price', '' );
 						}
 						
@@ -2969,4 +2969,50 @@ function leaky_paywall_maybe_delete_user() {
 
 	wp_die('<p>Your user role cannot be deleted from the My Account page. Please contact a site administrator.</p><p><a href="' . home_url() . '">Continue</a></p>', 'Account Deleted' );
 
+}
+
+function leaky_paywall_get_level_display_price( $level ) {
+
+	$settings = get_leaky_paywall_settings();
+
+	$currency_position = $settings['leaky_paywall_currency_position'];
+	$thousand_separator = $settings['leaky_paywall_thousand_separator'];
+	$decimal_separator = $settings['leaky_paywall_decimal_separator'];
+	$decimal_number = empty( $settings['leaky_paywall_decimal_number'] ) ? '0' : $settings['leaky_paywall_decimal_number'];
+	$currency_symbol = leaky_paywall_get_current_currency_symbol();
+
+	$price = floatval( $level['price'] );
+	$broken_price = explode('.', $price);
+
+	$before_decimal = $broken_price[0];
+	$after_decimal = substr( isset( $broken_price[1] ) ? $broken_price[1] : '', 0, $decimal_number );
+
+	if ( $price > 0 ) {
+
+		$decimal = $after_decimal ? $decimal_separator : '';
+		$formatted_number = number_format( $before_decimal, 0, '', $thousand_separator ) . $decimal . $after_decimal;
+
+		switch ( $currency_position ) {
+			case 'left':
+				$display_price = $currency_symbol . $formatted_number;
+				break;
+			case 'right':
+				$display_price = $formatted_number . $currency_symbol;
+				break;
+			case 'left_space':
+				$display_price = $currency_symbol . ' ' . $formatted_number;
+				break;
+			case 'right_space':
+				$display_price =$formatted_number . ' ' .  $currency_symbol;
+				break;
+			default:
+				$display_price = $currency_symbol . $formatted_number;
+				break;
+		}
+		
+	} else {
+		$display_price = 'Free';
+	}
+
+	return apply_filters( 'leaky_paywall_display_price', $display_price, $level );
 }

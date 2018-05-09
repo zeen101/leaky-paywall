@@ -267,6 +267,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'paypal_sand_api_password'		=> '',
 				'paypal_sand_api_secret'		=> '',
 				'leaky_paywall_currency'		=> 'USD',
+				'leaky_paywall_currency_position'		=> 'left',
+				'leaky_paywall_thousand_separator'	=> ',',
+				'leaky_paywall_decimal_separator'	=> '.',
+				'leaky_paywall_decimal_number'	=> '2',
 				'restrict_pdf_downloads' 		=> 'off',
 				'enable_combined_restrictions'  => 'off',
 				'combined_restrictions_total_allowed' => '',
@@ -576,6 +580,25 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					if ( !empty( $_REQUEST['leaky_paywall_currency'] ) )
 						$settings['leaky_paywall_currency'] = trim( $_REQUEST['leaky_paywall_currency'] );
+
+					if ( isset( $_POST['leaky_paywall_currency_position'] ) ) {
+						$settings['leaky_paywall_currency_position'] = trim( $_POST['leaky_paywall_currency_position'] );
+					}
+
+					if ( isset( $_POST['leaky_paywall_thousand_separator'] ) ) {
+						$settings['leaky_paywall_thousand_separator'] = trim( $_POST['leaky_paywall_thousand_separator'] );
+					}
+
+					if ( isset( $_POST['leaky_paywall_decimal_separator'] ) ) {
+						$settings['leaky_paywall_decimal_separator'] = trim( $_POST['leaky_paywall_decimal_separator'] );
+					}
+
+					if ( isset( $_POST['leaky_paywall_decimal_number'] ) ) {
+						$settings['leaky_paywall_decimal_number'] = trim( $_POST['leaky_paywall_decimal_number'] );
+					}
+
+					
+					
 						
 
 				}
@@ -1136,7 +1159,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			                <table id="leaky_paywall_currency_options" class="form-table">
 			                
 			                    <tr>
-			                        <th><?php _e( 'Currency', 'issuem-leaky-paywall' ); ?></th>
+			                        <th><?php _e( 'Currency', 'leaky-paywall' ); ?></th>
 			                        <td>
 			                        	<select id="leaky_paywall_currency" name="leaky_paywall_currency">
 				                        	<?php
@@ -1146,7 +1169,41 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 											}
 				                        	?>
 			                        	</select>
-			                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'issuem-leaky-paywall' ); ?></p>
+			                        	<p class="description"><?php _e( 'This controls which currency payment gateways will take payments in.', 'leaky-paywall' ); ?></p>
+			                        </td>
+			                    </tr>
+
+			                    <tr>
+			                        <th><?php _e( 'Currency Position', 'leaky-paywall' ); ?></th>
+			                        <td>
+			                        	<select id="leaky_paywall_currency_position" name="leaky_paywall_currency_position">
+
+			                        		<option value="left" <?php selected( 'left', $settings['leaky_paywall_currency_position'] ); ?>>Left ($99.99)</option>
+			                        		<option value="right" <?php selected( 'right', $settings['leaky_paywall_currency_position'] ); ?>>Right (99.99$)</option>
+			                        		<option value="left_space" <?php selected( 'left_space', $settings['leaky_paywall_currency_position'] ); ?>>Left with space ($ 99.99)</option>
+			                        		<option value="right_space" <?php selected( 'right_space', $settings['leaky_paywall_currency_position'] ); ?>>Right with space (99.99 $)</option>
+			                        	</select>
+			                        </td>
+			                    </tr>
+
+			                    <tr>
+			                        <th><?php _e( 'Thousand Separator', 'leaky-paywall' ); ?></th>
+			                        <td>
+			                        	<input type="text" class="small-text" id="leaky_paywall_thousand_separator" name="leaky_paywall_thousand_separator" value="<?php echo $settings['leaky_paywall_thousand_separator']; ?>">
+			                        </td>
+			                    </tr>
+
+			                    <tr>
+			                        <th><?php _e( 'Decimal Separator', 'leaky-paywall' ); ?></th>
+			                        <td>
+			                        	<input type="text" class="small-text" id="leaky_paywall_decimal_separator" name="leaky_paywall_decimal_separator" value="<?php echo $settings['leaky_paywall_decimal_separator']; ?>">
+			                        </td>
+			                    </tr>
+
+			                    <tr>
+			                        <th><?php _e( 'Number of Decimals', 'leaky-paywall' ); ?></th>
+			                        <td>
+			                        	<input type="number" class="small-text" id="leaky_paywall_decimal_number" name="leaky_paywall_decimal_number" value="<?php echo $settings['leaky_paywall_decimal_number']; ?>" min="0" step="1">
 			                        </td>
 			                    </tr>
 
