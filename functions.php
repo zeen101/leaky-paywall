@@ -1550,6 +1550,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		    		</th>
 		    		<td>
 		    			<input id="level-recurring-<?php echo $row_key; ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo $row_key; ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments
+		    			<input type="hidden" id="level-plan_id-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][plan_id]" value="<?php echo $level['plan_id']; ?>">
 		    		</td>
 		    	</tr>
 		    	<?php 
