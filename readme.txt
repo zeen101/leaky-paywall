@@ -88,6 +88,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 * stop creating stripe extra plans when saving settings
 * add currency options for formatting displayed prices
 * add login link to email exists error on registration form
+* fix password display on email for stripe checkout gateway
 
 = 4.10.9 =
 * add filter to enabled gateways
