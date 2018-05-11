@@ -17,11 +17,11 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 		$settings = get_leaky_paywall_settings();
 		
 		$defaults = array(
-			'heading'			=> __( 'Email address:', 'issuem-leaky-paywall' ),
-			'description' 		=> __( 'Check your email for a link to log in.', 'issuem-leaky-paywall' ),
-			'email_sent' 		=> __( 'Email sent. Please check your email for the login link.', 'issuem-leaky-paywall' ),
-			'error_msg' 		=> __( 'Error sending login email, please try again later.', 'issuem-leaky-paywall' ),
-			'missing_email_msg' => __( 'Please supply a valid email address.', 'issuem-leaky-paywall' ),
+			'heading'			=> __( 'Email address:', 'leaky-paywall' ),
+			'description' 		=> __( 'Check your email for a link to log in.', 'leaky-paywall' ),
+			'email_sent' 		=> __( 'Email sent. Please check your email for the login link.', 'leaky-paywall' ),
+			'error_msg' 		=> __( 'Error sending login email, please try again later.', 'leaky-paywall' ),
+			'missing_email_msg' => __( 'Please supply a valid email address.', 'leaky-paywall' ),
 		);
 	
 		// Merge defaults with passed atts
@@ -53,7 +53,7 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 			$results .= '<h2>' . $heading . '</h2>';
 			$results .= '<form action="" method="post">';
 			$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
-			$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'issuem-leaky-paywall' ) . '" />';
+			$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'leaky-paywall' ) . '" />';
 			$results .= '</form>';
 			$results .= '<h3>' . $description . '</h3>';
 	
@@ -101,8 +101,8 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		
 		$defaults = array(
-			'login_heading' 	=> __( 'Enter your email address to start your subscription:', 'issuem-leaky-paywall' ),
-			'login_desc' 		=> __( 'Check your email for a link to start your subscription.', 'issuem-leaky-paywall' ),
+			'login_heading' 	=> __( 'Enter your email address to start your subscription:', 'leaky-paywall' ),
+			'login_desc' 		=> __( 'Check your email for a link to start your subscription.', 'leaky-paywall' ),
 		);
 
 		// Merge defaults with passed atts
@@ -152,26 +152,26 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 							}
 							
 							if ( 'free_registration' != $payment_gateway ) {
-								$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>', 'issuem-leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
+								$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>', 'leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
 							}
 							break;
 							
 						case 'unlimited':
-							$results .= __( 'You are a lifetime subscriber!', 'issuem-leaky-paywall' );
+							$results .= __( 'You are a lifetime subscriber!', 'leaky-paywall' );
 							break;
 					
 						case 'canceled':
-							$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'issuem-leaky-paywall' ), $settings['site_name'] );
+							$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'leaky-paywall' ), $settings['site_name'] );
 							break;
 							
 						default:
-							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'issuem-leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
+							$results .= sprintf( __( 'You are subscribed via %s until %s.', 'leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option('date_format'), strtotime( $expires ) ) );
 							
 					}
 					
 					$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_end', '' );
 					
-					$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'issuem-leaky-paywall' ) . '</a></p>';
+					$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'leaky-paywall' ) . '</a></p>';
 					
 					break; //We only want one
 									
@@ -253,7 +253,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 				if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
-					$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
+					$level_name = __( 'Undefined', 'leaky-paywall' );
 				} else {
 					$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
 				}
@@ -340,7 +340,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 							$cu = \Stripe\Customer::retrieve( $subscriber_id );
 							if ( !empty( $cu ) )
 								if ( true === $cu->deleted )
-									throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'issuem-leaky-paywall' ) );
+									throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'leaky-paywall' ) );
 									
 							if ( empty( $_POST['stripe-cc-number'] ) ) {
 								throw new Exception( __( 'Credit Card Number Required', 'leaky-paywall' ) );
@@ -403,22 +403,22 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								$payment_form .= '<form id="leaky-paywall-update-credit-card" action="" method="post">';
 								
 								$payment_form .= '<p>';
-								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-name">' . __( "Cardholder's Name", 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-name">' . __( "Cardholder's Name", 'leaky-paywall' ) . '</label>';
 								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-name" name="stripe-cc-name" value="" />';
 								$payment_form .= '</p>';
 
 								$payment_form .= '<p>';
-								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-number">' . __( 'Card Number', 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-number">' . __( 'Card Number', 'leaky-paywall' ) . '</label>';
 								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-number" name="stripe-cc-number" value="" />';
 								$payment_form .= '</p>';
 
 								$payment_form .= '<p>';
-								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-cvc">' . __( 'Security Code (CVC)', 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-cvc">' . __( 'Security Code (CVC)', 'leaky-paywall' ) . '</label>';
 								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-cc-cvc" name="stripe-cc-cvc" value="" />';
 								$payment_form .= '</p>';
 		
 								$payment_form .= '<p>';
-								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-expiration">' . __( 'Expiration Date (MM/YYYY)', 'issuem-leaky-paywall' ) . '</label>';
+								$payment_form .= '<label class="lp-field-label" for="leaky-paywall-cc-expiration">' . __( 'Expiration Date (MM/YYYY)', 'leaky-paywall' ) . '</label>';
 								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input exp-month" id="leaky-paywall-cc-exp-month" name="stripe-cc-exp-month" value="" />';
 								$payment_form .= '&nbsp;/&nbsp;';
 								$payment_form .= '<input type="text" class="issuem-leaky-paywall-field-input exp-year" id="leaky-paywall-cc-exp-year" name="stripe-cc-exp-year" value="" />';
