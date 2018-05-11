@@ -5,6 +5,9 @@
 */
 class Leaky_Paywall_Restrictions {
 
+	/** @var string Name of the restriction cookie */
+	private $cookie_name = 'issuem_lp';
+
 	/**
 	 * Kick off the restriction process
 	 *
@@ -507,10 +510,8 @@ class Leaky_Paywall_Restrictions {
 	public function get_available_content($restricted_post_type)
 	{
 
-		$site = leaky_paywall_get_current_site();
-
-		if ( !empty( $_COOKIE['issuem_lp' . $site] ) ) {
-			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp' . $site] ), true );
+		if ( !empty( $_COOKIE[$this->get_cookie_name()] ) ) {
+			$available_content = json_decode( stripslashes( $_COOKIE[$this->get_cookie_name()] ), true );
 		} else {
 			$available_content = array();
 		}
@@ -542,11 +543,10 @@ class Leaky_Paywall_Restrictions {
 	public function set_available_content_cookie( $available_content )
 	{
 
-		$site = leaky_paywall_get_current_site();
 		$json_available_content = json_encode( $available_content );
 
-		$cookie = setcookie( 'issuem_lp' . $site, $json_available_content, $this->get_expiration_time(), '/' );
-		$_COOKIE['issuem_lp' . $site] = $json_available_content;
+		$cookie = setcookie( $this->get_cookie_name(), $json_available_content, $this->get_expiration_time(), '/' );
+		$_COOKIE[$this->get_cookie_name()] = $json_available_content;
 
 	}
 
@@ -986,8 +986,8 @@ class Leaky_Paywall_Restrictions {
 		}
 		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 
-		if ( !empty( $_COOKIE['issuem_lp'] ) ) {
-			$available_content = json_decode( stripslashes( $_COOKIE['issuem_lp'] ), true );
+		if ( !empty( $_COOKIE[$this->get_cookie_name()] ) ) {
+			$available_content = json_decode( stripslashes( $_COOKIE[$this->get_cookie_name()] ), true );
 		}
 
 		if ( empty( $available_content[$post_type] ) ) {
@@ -1060,11 +1060,24 @@ class Leaky_Paywall_Restrictions {
 
 		$json_available_content = json_encode( $available_content );
 
-		$cookie = setcookie( 'issuem_lp', $json_available_content, $expiration, '/' );
-		$_COOKIE['issuem_lp' . $site] = $json_available_content;
+		$cookie = setcookie( $this->get_cookie_name(), $json_available_content, $expiration, '/' );
+		$_COOKIE[$this->get_cookie_name()] = $json_available_content;
 
 		die();
 
+	}
+
+	/**
+	 * Get the cookie name used for Leaky Paywall restrictions
+	 *
+	 * @since 4.10.10
+	 *
+	 * @return string
+	 */
+	public function get_cookie_name() 
+	{
+		$site = leaky_paywall_get_current_site();
+		return apply_filters( 'leaky_paywall_restriction_cookie_name', $this->cookie_name . $site );
 	}
 
 }
