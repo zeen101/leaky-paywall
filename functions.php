@@ -2224,7 +2224,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 				if ( 'off' === $settings['new_subscriber_admin_email'] ) {
 					// new user subscribe admin email
 
-					$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+					$level_id = get_user_meta( $user_info->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
 					$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
 
 					$admin_raw_message = '<p>A new user has signed up on ' . $site_name . '.</p>
