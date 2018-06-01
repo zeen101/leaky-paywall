@@ -425,13 +425,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				if ( $current_tab == 'emails' ) {
 
 					if ( !empty( $_REQUEST['site_name'] ) )
-						$settings['site_name'] = trim( $_REQUEST['site_name'] );
+						$settings['site_name'] = sanitize_text_field( $_REQUEST['site_name'] );
 
 					if ( !empty( $_REQUEST['from_name'] ) )
-						$settings['from_name'] = trim( $_REQUEST['from_name'] );
+						$settings['from_name'] = sanitize_text_field( $_REQUEST['from_name'] );
 						
 					if ( !empty( $_REQUEST['from_email'] ) )
-						$settings['from_email'] = trim( $_REQUEST['from_email'] );
+						$settings['from_email'] = sanitize_text_field( $_REQUEST['from_email'] );
 
 					if ( !empty( $_POST['new_subscriber_email'] ) )
 						$settings['new_subscriber_email'] = $_POST['new_subscriber_email'];
@@ -439,7 +439,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['new_subscriber_email'] = 'off';
 
 					if ( !empty( $_REQUEST['new_email_subject'] ) )
-						$settings['new_email_subject'] = trim( $_REQUEST['new_email_subject'] );
+						$settings['new_email_subject'] = sanitize_text_field( $_REQUEST['new_email_subject'] );
 
 					if ( !empty( $_REQUEST['new_email_body'] ) )
 						$settings['new_email_body'] = wp_kses_post( $_REQUEST['new_email_body'] );
@@ -450,7 +450,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['renewal_reminder_email'] = 'off';
 
 					if ( !empty( $_POST['renewal_reminder_email_subject'] ) ) {
-						$settings['renewal_reminder_email_subject'] = wp_kses_post( $_POST['renewal_reminder_email_subject'] );
+						$settings['renewal_reminder_email_subject'] = sanitize_text_field( $_POST['renewal_reminder_email_subject'] );
 					}
 
 					if ( !empty( $_POST['renewal_reminder_email_body'] ) ) {
