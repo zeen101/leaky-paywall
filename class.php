@@ -1335,12 +1335,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								<tr><td id="issuem-leaky-paywall-subscription-level-rows" colspan="2">
 	                        	<?php 
 
-	                        	// echo '<pre>';
-	                        	// print_r( $settings );
-	                        	// echo '</pre>';
 
 	                        	$last_key = -1;
-	                        	if ( !empty( $settings['levels'] ) ) {             		
+	                        	if ( !empty( $settings['levels'] ) ) {  	
 
 	                        		$deleted = array();
 

@@ -2530,7 +2530,7 @@ if ( !function_exists( 'leaky_paywall_supported_currencies' ) ) {
 			'TZS' => array( 'symbol' => 'TZS', 'label' => __( 'Tanzanian shilling', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
 			'UAH' => array( 'symbol' => 'UAH', 'label' => __( 'Ukrainian hryvnia', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
 			'UGX' => array( 'symbol' => 'USh', 'label' => __( 'Ugandan shilling', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
-			'USD' => array( 'symbol' => '$', 'label' => __( 'United States dollar', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
+			'USD' => array( 'symbol' => '$', 'label' => __( 'United States dollar', 'leaky-paywall' ), 'country' => __( 'United States', 'leaky-paywall' ) ),
 			'UYU' => array( 'symbol' => '$U', 'label' => __( 'Uruguayan peso', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
 			'UZS' => array( 'symbol' => 'UZS', 'label' => __( 'Uzbekistani som', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
 			'VND' => array( 'symbol' => '&#8363;', 'label' => __( 'Vietnamese dong', 'leaky-paywall' ), 'country' => __( '', 'leaky-paywall' ) ),
