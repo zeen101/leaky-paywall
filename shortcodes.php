@@ -394,7 +394,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 					$expires = leaky_paywall_has_user_paid( $user->user_email, $site );
 
-				if ( strcasecmp('active', $status) == 0 ) {
+				if ( strcasecmp('active', $status) == 0 || strcasecmp('deactivated', $status) == 0 ) {
 						$payment_form = '';
 						switch( $payment_gateway ) {
 							
