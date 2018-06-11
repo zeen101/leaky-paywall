@@ -169,9 +169,9 @@ function leaky_paywall_create_stripe_plan( $level, $level_id , $plan_args ) {
         'amount'            => esc_js( $plan_args['stripe_price'] ),
         'interval'          => esc_js( $level['interval'] ),
         'interval_count'    => esc_js( $level['interval_count'] ),
-        'name'              => esc_js( $level['label'] ) . ' ' . $time,
+        'name'              => esc_js( leaky_paywall_normalize_chars( $level['label'] ) ) . ' ' . $time,
         'currency'          => esc_js( $plan_args['currency'] ),
-        'id'                => sanitize_title_with_dashes( $level['label'] ) . '-' . $time,
+        'id'                => sanitize_title_with_dashes( leaky_paywall_normalize_chars( $level['label'] ) ) . '-' . $time,
     );
 
     try {
