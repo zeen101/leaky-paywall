@@ -2437,7 +2437,7 @@ if ( !function_exists( 'leaky_paywall_supported_currencies' ) ) {
 			'CVE' => array( 'symbol' => 'Esc', 'label' => __( 'Cape Verdean escudo', 'leaky-paywall' ),'country' => __( 'Cape Verde', 'leaky-paywall' ) ),
 			'CZK' => array( 'symbol' => 'K&#269;', 'label' => __( 'Czech koruna', 'leaky-paywall' ),'country' => __( 'Czech', 'leaky-paywall' ) ),
 			'DJF' => array( 'symbol' => 'Fdj', 'label' => __( 'Djiboutian franc', 'leaky-paywall' ),'country' => __( 'Djibouti', 'leaky-paywall' ) ),
-			'DKK' => array( 'symbol' => 'Kr', 'label' => __( 'Danish krone', 'leaky-paywall' ),'country' => __( 'Danish', 'leaky-paywall' ) ),
+			'DKK' => array( 'symbol' => 'kr', 'label' => __( 'Danish krone', 'leaky-paywall' ),'country' => __( 'Danish', 'leaky-paywall' ) ),
 			'DOP' => array( 'symbol' => 'RD$', 'label' => __( 'Dominican peso', 'leaky-paywall' ),'country' => __( 'Dominican Republic', 'leaky-paywall' ) ),
 			'DZD' => array( 'symbol' => '&#1583;.&#1580;', 'label' => __( 'Algerian dinar', 'leaky-paywall' ),'country' => __( 'Algeria', 'leaky-paywall' ) ),
 			'EEK' => array( 'symbol' => 'KR', 'label' => __( 'Estonian kroon', 'leaky-paywall' ),'country' => __( 'Estonia', 'leaky-paywall' ) ),
