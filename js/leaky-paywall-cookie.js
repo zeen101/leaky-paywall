@@ -21,10 +21,9 @@
 
 					$.get(leaky_paywall_cookie_ajax.ajaxurl, data, function(data) {
 						var response;
-
+	
 						if ( data ) {
-							console.log(data);
-							
+
 							response = JSON.parse(data);
 
 							if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {

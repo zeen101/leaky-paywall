@@ -1058,7 +1058,6 @@ class Leaky_Paywall_Restrictions {
 			$available_content = $this->update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id );
 		
 			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id ) ) {
-
 				echo json_encode( $this->the_content_paywall_message() );
 			}
 
