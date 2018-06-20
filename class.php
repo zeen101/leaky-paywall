@@ -1312,8 +1312,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 
 		                        <tr class="restriction-options">
-	                                <th><?php _e( 'Enable Alternative Restriction Handling', 'issuem-leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> Only check this if your host uses heavy caching and the paywall notice isn't displaying. (Not Recommended)</td>
+	                                <th><?php _e( 'Alternative Restriction Handling', 'leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> Only enable this if your using a caching plugin or your host uses heavy caching and the paywall notice isn't displaying on your site.</td>
 	                            </tr>
 	                            
 	                        </table>
@@ -1326,7 +1326,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Subscription Levels', 'issuem-leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'Subscription Levels', 'leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div id="leaky_paywall_subscription_level_options" class="inside">
 	                        
