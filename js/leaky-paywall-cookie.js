@@ -20,15 +20,25 @@
 					};
 
 					$.get(leaky_paywall_cookie_ajax.ajaxurl, data, function(data) {
-						response = JSON.parse(data);
-						if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {
+						var response;
+
+						if ( data ) {
+							console.log(data);
 							
-							var content = $('article .entry-content');
-							
-							content.before(response);
-							content.remove();
-							
+							response = JSON.parse(data);
+
+							if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {
+								
+								var content = $('article .entry-content');
+								
+								content.before(response);
+								content.remove();
+								
+							}
+
 						}
+						
+						
 					});
 
 				}

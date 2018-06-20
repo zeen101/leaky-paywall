@@ -993,12 +993,12 @@ class Leaky_Paywall_Restrictions {
 
 
 		if ( $this->is_unblockable_content() ) {
-			echo 'do not show paywall';
+			echo json_ecode( 'do not show paywall' );
 			exit();
 		}
 
 		if ( $this->visibility_allows_access( $post_obj ) ) {
-			echo 'do not show paywall';
+			echo json_ecode( 'do not show paywall' );
 			exit();
 		}
 
@@ -1038,7 +1038,7 @@ class Leaky_Paywall_Restrictions {
 		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
 
 		if ( !$is_restricted ) {
-			echo 'do not show paywall';
+			echo json_ecode( 'do not show paywall' );
 		}
 
 		// content that can be accessed because the user has viewed it already
