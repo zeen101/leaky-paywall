@@ -991,14 +991,19 @@ class Leaky_Paywall_Restrictions {
 		$settings = get_leaky_paywall_settings();
 		$restrictions = $this->get_subscriber_restrictions();
 
+		// allow admins to view all content
+		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
+			echo json_encode( 'do not show paywall' );
+			exit();
+		}
 
 		if ( $this->is_unblockable_content() ) {
-			echo json_ecode( 'do not show paywall' );
+			echo json_encode( 'do not show paywall' );
 			exit();
 		}
 
 		if ( $this->visibility_allows_access( $post_obj ) ) {
-			echo json_ecode( 'do not show paywall' );
+			echo json_encode( 'do not show paywall' );
 			exit();
 		}
 
