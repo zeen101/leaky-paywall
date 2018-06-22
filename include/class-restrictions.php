@@ -1043,7 +1043,7 @@ class Leaky_Paywall_Restrictions {
 		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
 
 		if ( !$is_restricted ) {
-			echo json_ecode( 'do not show paywall' );
+			echo json_encode( 'do not show paywall' );
 		}
 
 		// content that can be accessed because the user has viewed it already
