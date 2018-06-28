@@ -1959,7 +1959,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$subscription_price .= '<p>';
 					if ( !empty( $level['price'] ) ) {
 						if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] && apply_filters( 'leaky_paywall_subscription_options_price_recurring_on', true, $current_level ) ) {
-							$subscription_price .= '<strong>' . sprintf( __( '%s %s (recurring)', 'leaky-paywall' ), leaky_paywall_get_level_display_price( $level ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
+							$subscription_price .= '<strong>' . leaky_paywall_get_level_display_price( $level ) . ' ' . leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) . ' ' . __( '(recurring)' ) . '</strong>';
 							$subscription_price .= apply_filters( 'leaky_paywall_before_subscription_options_recurring_price', '' );
 						} else {
 							$subscription_price .= '<strong>' . sprintf( __( '%s %s', 'leaky-paywall' ), leaky_paywall_get_level_display_price( $level ), leaky_paywall_human_readable_interval( $level['interval_count'], $level['interval'] ) ) . '</strong>';
