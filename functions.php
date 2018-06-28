@@ -2984,6 +2984,10 @@ function leaky_paywall_get_level_display_price( $level ) {
 	$before_decimal = $broken_price[0];
 	$after_decimal = substr( isset( $broken_price[1] ) ? $broken_price[1] : '', 0, $decimal_number );
 
+	if ( !$after_decimal && $decimal_number == 2 ) {
+		$after_decimal = '00';
+	}
+
 	if ( $price > 0 ) {
 
 		$decimal = $after_decimal ? $decimal_separator : '';
