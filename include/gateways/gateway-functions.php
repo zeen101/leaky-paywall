@@ -211,7 +211,7 @@ function leaky_paywall_free_subscription_cards( $payment_options, $level, $level
 
 	$settings = get_leaky_paywall_settings();
 
-	$output = '<div class="leaky-paywall-payment-button"><a href="' . get_page_link( $settings['page_for_register'] ) . '?level_id=' . $level_id . '">Subscribe</a></div>';
+	$output = '<div class="leaky-paywall-payment-button"><a href="' . get_page_link( $settings['page_for_register'] ) . '?level_id=' . $level_id . '">' . __( 'Subscribe', 'leaky-paywall' ) . '</a></div>';
 
 	return $payment_options . $output; 
 }
