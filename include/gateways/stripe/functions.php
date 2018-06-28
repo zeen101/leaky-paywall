@@ -75,7 +75,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
 								  data-locale="auto"
-								  data-label="' . apply_filters('leaky_paywall_stripe_button_label', __( 'Subscribe' ) ) . '" 
+								  data-label="' . apply_filters('leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '" 
 								  data-plan="' . esc_js( $stripe_plan->id ) . '" 
 								  data-currency="' . esc_js( $currency ) . '" 
 								  data-description="' . esc_js( $level['label'] ) . '">
@@ -96,7 +96,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 					  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 							  data-key="' . esc_js( $publishable_key ) . '"
 							  data-locale="auto"
-							  data-label="' . apply_filters('leaky_paywall_stripe_button_label', __( 'Subscribe' ) ) . '" 
+							  data-label="' . apply_filters('leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '" 
 							  data-amount="' . esc_js( $stripe_price ) . '" 
 							  data-currency="' . esc_js( $currency ) . '" 
 							  data-description="' . esc_js( $level['label'] ) . '">
