@@ -112,7 +112,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 
 			if ( !empty( $cu ) ) {
-				if ( true === $cu->deleted ) {
+				if ( property_exists( $cu, 'deleted' ) && true === $cu->deleted ) {
 					$cu = array();
 				} else {
 					$existing_customer = true;

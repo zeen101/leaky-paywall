@@ -151,7 +151,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 
 		$wp_user_search = new WP_User_Query( $args );
-		$this->items = $wp_user_search->get_results();
+		$results = $wp_user_search->get_results();
 		
 		// $args['number'] = 0;
 		// $this->set_pagination_args( array(
