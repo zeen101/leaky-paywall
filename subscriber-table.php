@@ -437,7 +437,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 							$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 							if ( false === $level_id || empty( $settings['levels'][$level_id]['label'] ) ) {
-								$level_name = __( 'Undefined', 'issuem-leaky-paywall' );
+								$level_name = __( 'Undefined', 'leaky-paywall' );
 							} else {
 								$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
 							}
@@ -471,9 +471,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							}
 							
 							if ( empty( $plan ) ) {
-								$plan = __( 'Non-Recurring', 'issuem-leaky-paywall' );	
+								$plan = __( 'Non-Recurring', 'leaky-paywall' );	
 							} else if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
-								$plan = sprintf( __( 'Recurring every %s', 'issuem-leaky-paywall' ), str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ) );
+								$plan = sprintf( __( 'Recurring every %s', 'leaky-paywall' ), str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ) );
 							}
 							
 							echo "<td $attributes>" . $plan . '</td>';
@@ -504,7 +504,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
 							
 							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
-								$expires = __( 'Never', 'issuem-leaky-paywall' );
+								$expires = __( 'Never', 'leaky-paywall' );
 							} else {
 								$date_format = get_option( 'date_format' );
 								$expires = mysql2date( $date_format, $expires );

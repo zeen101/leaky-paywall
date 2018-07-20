@@ -102,7 +102,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 						if ( !empty( $subscriber_id ) ) {
 							$cu = \Stripe\Customer::retrieve( $subscriber_id );
 						} else {
-							throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'issuem-leaky-paywall' ) );
+							throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'leaky-paywall' ) );
 						}
 					}
 					catch( Exception $e ) {

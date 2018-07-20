@@ -261,10 +261,10 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				switch( strtolower( $transaction_status ) ) {
 					
 					case 'denied' :
-						throw new Exception( __( 'Error: PayPal denied this payment.', 'issuem-leaky-paywall' ) );
+						throw new Exception( __( 'Error: PayPal denied this payment.', 'leaky-paywall' ) );
 						break;
 					case 'failed' :
-						throw new Exception( __( 'Error: Payment failed.', 'issuem-leaky-paywall' ) );
+						throw new Exception( __( 'Error: Payment failed.', 'leaky-paywall' ) );
 						break;
 					case 'completed':
 					case 'success':
@@ -305,10 +305,10 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					}
 						
 					if ( $transaction_id != $response_array['TRANSACTIONID'] )
-						throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'issuem-leaky-paywall' ) );
+						throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'leaky-paywall' ) );
 					
 					if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) )
-						throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
+						throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
 					
 				} else {
 					
@@ -351,7 +351,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			}
 			catch ( Exception $e ) {
 				
-				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
+				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) );
 
 			}
 			

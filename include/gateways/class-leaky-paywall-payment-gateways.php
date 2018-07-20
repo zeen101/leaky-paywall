@@ -55,18 +55,18 @@ class Leaky_Paywall_Payment_Gateways {
 			// 	'class'			=> 'Leaky_Paywall_Payment_Gateway_Manual'
 			// ),
 			'paypal_standard'	=> array(
-				'label'		=> __( 'PayPal', 'issuem-leaky-paywall' ),
-				'admin_label'	=> __( 'PayPal Standard', 'issuem-leaky-paywall' ),
+				'label'		=> __( 'PayPal', 'leaky-paywall' ),
+				'admin_label'	=> __( 'PayPal Standard', 'leaky-paywall' ),
 				'class'			=> __( 'Leaky_Paywall_Payment_Gateway_PayPal' )
 			),
 			'stripe'	=> array(
-				'label'		=> __( 'Credit / Debit Card', 'issuem-leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Credit / Debit Card Form', 'issuem-leaky-paywall' ),
+				'label'		=> __( 'Credit / Debit Card', 'leaky-paywall' ),
+				'admin_label'	=> __( 'Stripe Credit / Debit Card Form', 'leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe'
 			),
 			'stripe_checkout'	=> array(
-				'label'		=> __( 'Stripe Checkout', 'issuem-leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Checkout Popup', 'issuem-leaky-paywall' ),
+				'label'		=> __( 'Stripe Checkout', 'leaky-paywall' ),
+				'admin_label'	=> __( 'Stripe Checkout Popup', 'leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
 			)
 		);
@@ -102,7 +102,7 @@ class Leaky_Paywall_Payment_Gateways {
 
 		if ( empty( $enabled ) ) {
 
-			$enabled['paypal_standard'] = __( 'PayPal Standard', 'issuem-leaky-paywall' );
+			$enabled['paypal_standard'] = __( 'PayPal Standard', 'leaky-paywall' );
 
 		}
 
