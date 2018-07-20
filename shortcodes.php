@@ -591,7 +591,7 @@ function do_leaky_paywall_register_form() {
 	$level_id = isset($_GET['level_id']) ? $_GET['level_id'] : null;
 
 	if ( is_null( $level_id ) ) {
-		$content = '<p>Please <a href="' . get_page_link( $settings['page_for_subscription'] ) . '">go to the subscribe page</a> to choose a subscription level.</p>';
+		$content = '<p>' . __( 'Please', 'leaky-paywall' ) . ' <a href="' . get_page_link( $settings['page_for_subscription'] ) . '">' . __( 'go to the subscribe page', 'leaky-paywall' ) . '</a> ' . __( 'to choose a subscription level.', 'leaky-paywall' ) . '</p>';
 		return $content;
 	}
 
