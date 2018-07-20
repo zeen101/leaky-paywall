@@ -416,7 +416,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				
 				$args['interval'] = $level['interval'];
 				$args['interval_count'] = $level['interval_count'];
--				$args['site'] = $level['site'];
+				$args['site'] = $level['site'];
 				
 				if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
 					$site = '_' . $level['site'];
