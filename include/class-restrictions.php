@@ -677,6 +677,10 @@ class Leaky_Paywall_Restrictions {
 		add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
 		//Add the_content filter back for futhre the_content calls
 
+		if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
+			$content = substr( get_the_content( get_the_ID() ), 0, intval( $settings['custom_excerpt_length'] ) );
+		}
+
 		$message = $this->the_content_paywall_message();
 		$new_content = $content . $message;
 

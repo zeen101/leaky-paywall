@@ -230,6 +230,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'page_for_register'				=> 0, /* Site Specific */
 				'page_for_after_subscribe'		=> 0,
 				'page_for_profile'				=> 0, /* Site Specific */
+				'custom_excerpt_length'			=> '',
 				'login_method'					=> 'traditional', //default over passwordless
 				'post_types'					=> ACTIVE_ISSUEM ? array( 'article' ) : array( 'post' ), /* Site Specific */
 				'free_articles'					=> 2,
@@ -400,6 +401,18 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					if ( isset( $_POST['page_for_profile'] ) ) {
 						$settings['page_for_profile'] = absint( $_POST['page_for_profile'] );
 					}
+
+					if ( isset( $_POST['custom_excerpt_length'] ) ) {
+						
+						if ( strlen( $_POST['custom_excerpt_length'] ) > 0 ) {
+							$settings['custom_excerpt_length'] = intval( $_POST['custom_excerpt_length'] );
+						} else {	
+							$settings['custom_excerpt_length'] = '';
+						}
+						
+					}
+
+
 						
 					if ( !empty( $_REQUEST['login_method'] ) )
 						$settings['login_method'] = $_REQUEST['login_method'];
@@ -744,6 +757,16 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
 	                                <p class="description"><?php _e( 'Page a subscriber is redirected to after they subscribe.', 'leaky-paywall' ); ?></p>
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Custom Excerpt Length', 'leaky-paywall' ); ?></th>
+	                                <td>
+										<input type="number" id="custom_excerpt_length" class="small-text" name="custom_excerpt_length" value="<?php echo esc_attr( $settings['custom_excerpt_length'] ); ?>">
+	                                    <p class="description">
+	                                    	<?php _e( "Amount of content (in characters) to show before displaying the subscribe nag. If nothing is entered then the full excerpt is displayed.", 'leaky-paywall' ); ?>
+	                                    </p>	
 	                                </td>
 	                            </tr>
 	                           

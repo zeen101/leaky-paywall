@@ -230,7 +230,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			}			
 			$user = wp_get_current_user();
 			
-			$results .= '<p>' . sprintf( __( 'Welcome %s, you are currently logged in. <a href="%s">Click here to log out.</a>', 'leaky-paywall' ) . '</p>', $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
+			$results .= '<p class="leaky-paywall-logout-link">' . sprintf( __( 'Welcome %s, you are currently logged in. <a href="%s">Click here to log out.</a>', 'leaky-paywall' ) . '</p>', $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
 			
 			//Your Subscription
 			$results .= '<h2 class="leaky-paywall-profile-subscription-title">' . __( 'Your Subscription', 'leaky-paywall' ) . '</h2>';
