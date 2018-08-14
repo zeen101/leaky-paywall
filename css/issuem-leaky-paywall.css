@@ -201,3 +201,11 @@
 #leaky-paywall-credit-card-form .exp-year, #leaky-paywall-update-credit-card .exp-year {
 	width: 125px;
 }
+
+.issuem-leaky-paywall-subscriber-info {
+	margin-bottom: 20px;
+}
+
+#leaky-paywall-profile .issuem-leaky-paywall-field-input {
+	min-width: 300px;
+}
