@@ -342,18 +342,19 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		global $current_site, $blog_id;
 		$settings = get_leaky_paywall_settings();
 	
+		// create a generic array so that single site installs will iterate through the sites loop below
+		$sites = array( '_all' );
+	
 		if ( is_multisite_premium() ) {
 			global $blog_id;			
-			if ( !is_main_site( $blog_id ) ) {
-				$sites = array( '_all', '_' . $blog_id );
-			} else {
-				$sites = array( '_all', '_' . $blog_id, '' );
-			}
-		} else {
-			// create a generic array so that single site installs will iterate through the sites loop below
-			$sites = array( '_all' );
-		}
 
+			if ( !is_main_site( $blog_id ) ) {
+				$sites = array( '_' . $blog_id );
+			} else {
+				$sites = array( '_' . $blog_id, '' );
+			}
+		}
+		
 		$alt = '';
 
 
