@@ -178,15 +178,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			} else {
 
-				$sourceId = '';
+				$source_id = '';
 
 				// Create a Customer
 				if ( empty( $cu ) ) {
 					$cu = \Stripe\Customer::create( $customer_array );
-					$sourceId = $cu->default_source;
+					$source_id = $cu->default_source;
 				} else {
 					$source = $cu->sources->create( array( 'source' => $_POST['stripeToken'] ) );
-					$sourceId = $source->id;
+					$source_id = $source->id;
 				}
 			
 				$charge_array = array(
@@ -194,7 +194,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					'amount'      => number_format( $this->amount, 2, '', '' ),
 					'currency'    => apply_filters( 'leaky_paywall_stripe_currency', strtolower( $this->currency ) ),
 					'description' => $this->level_name,
-					'source' 	  => $sourceId
+					'source' 	  => $source_id
 				);
 
 				$charge = \Stripe\Charge::create( apply_filters( 'leaky_paywall_process_stripe_payment_charge_array', $charge_array ) );
