@@ -71,6 +71,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
 		require_once( 'include/admin/dashboard-widgets.php' );
+		require_once( 'include/admin/lp-transaction.php' );
 
 		// license key
 		include( LEAKY_PAYWALL_PATH . 'include/license-key.php' );

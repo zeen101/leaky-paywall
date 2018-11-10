@@ -717,6 +717,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		}
 		
 		if ( empty( $user_id ) ) {
+			leaky_paywall_log( $meta_args, 'could not create user');
 			return false;
 		}
 

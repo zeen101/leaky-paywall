@@ -130,7 +130,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		// for recurring, cmb = _xclick-subscriptions
 
 		// save post data to a transient
-		$this->save_data_to_transient();
+		// $this->save_data_to_transient();
+		$this->save_data_to_transaction();
+
 
 		// https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
 		$settings = get_leaky_paywall_settings();
@@ -619,12 +621,14 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				}
 
 				// get data submitted in registration form
-				$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
+				$transaction_id = $this->get_transaction_id_from_email( $_REQUEST['custom'] );
 
-				if ( !empty( $transient_data ) ) {
-					foreach( $transient_data as $key => $value ) {
-						$args[$key] = $value;
-					}
+				if ( $transaction_id ) {
+					$args['password'] = get_post_meta( $transaction_id, '_password', true );
+					delete_post_meta( $transaction_id, '_password' ); // dont want this in the database
+					$args['first_name'] = get_post_meta( $transaction_id, '_first_name', true );
+					$args['last_name'] = get_post_meta( $transaction_id, '_last_name', true );
+					$args['login'] = get_post_meta( $transaction_id, '_login', true );
 				}
 
 				if ( !empty( $user ) ) {
@@ -672,6 +676,59 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		set_transient( $trans_key, apply_filters('leaky_paywall_paypal_transient_data', $data ), 900 );
 
+	}
+
+	public function save_data_to_transaction()
+	{
+		
+		$transaction = array(
+			'post_title'    => 'Transaction for ' . $this->email,
+			'post_content'  => '',
+			'post_status'   => 'publish',
+			'post_author'   => 1,
+			'post_type'		=> 'lp_transaction'
+		);
+		
+		// Insert the post into the database
+		$transaction_id = wp_insert_post( $transaction );
+
+		update_post_meta( $transaction_id, '_email', $this->email );
+		update_post_meta( $transaction_id, '_password', sanitize_text_field( $_POST['password'] ) );
+		update_post_meta( $transaction_id, '_first_name', $this->first_name );
+		update_post_meta( $transaction_id, '_last_name', $this->last_name );
+		update_post_meta( $transaction_id, '_login', sanitize_text_field( $_POST['username'] ) );
+		update_post_meta( $transaction_id, '_level_id', $this->level_id );
+		update_post_meta( $transaction_id, '_gateway', 'paypal' );
+		update_post_meta( $transaction_id, '_currency', $this->currency );
+		
+
+	}	
+
+	public function get_transaction_id_from_email( $email )
+	{
+
+		$transaction_id = '';
+
+		$args = array(
+			'post_type'	=> 'lp_transaction',
+			'number_of_posts'	=> 1,
+			'meta_query' => array(
+				array(
+					'key'     => '_email',
+					'value'   => $email,
+					'compare' => '=',
+				),
+			),
+		);
+
+		$transactions = get_posts( $args );
+
+		if ( !empty( $transactions ) ) {
+			$transaction = $transactions[0];
+			$transaction_id = $transaction->ID;
+		}
+
+		return $transaction_id;
 	}
 
 	public function get_data_from_transient( $email = '' ) 
