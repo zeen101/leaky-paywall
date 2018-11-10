@@ -170,6 +170,9 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 	// log the user in
 	leaky_paywall_log_in_user( $user_id );
 
+	$transaction = new LP_Transaction( $subscriber_data );
+	$transaction->create();
+
 	do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
 	// send the newly created user to the appropriate page after logging them in
