@@ -580,6 +580,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			
 				if ( !empty( $_REQUEST['custom'] ) && is_email( $_REQUEST['custom'] ) ) {
 					$user = get_user_by( 'email', $_REQUEST['custom'] );
+					$email = $_REQUEST['custom'];
 					if ( empty( $user ) ) {
 						$user = get_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['custom'], $mode );
 						if ( is_multisite_premium() ) {
@@ -592,6 +593,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					
 				if ( empty( $user ) && !empty( $_REQUEST['payer_email'] ) && is_email( $_REQUEST['payer_email'] ) ) {
 					$user = get_user_by( 'email', $_REQUEST['payer_email'] );
+					$email = $_REQUEST['payer_email'];
 					if ( empty( $user ) ) {
 						$user = get_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['payer_email'], $mode );
 						if ( is_multisite_premium() ) {
@@ -629,6 +631,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					$args['first_name'] = get_post_meta( $transaction_id, '_first_name', true );
 					$args['last_name'] = get_post_meta( $transaction_id, '_last_name', true );
 					$args['login'] = get_post_meta( $transaction_id, '_login', true );
+				} else {
+					$this->save_data_to_transaction($email);
 				}
 
 				if ( !empty( $user ) ) {
@@ -678,11 +682,17 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 	}
 
-	public function save_data_to_transaction()
+	public function save_data_to_transaction( $email = '' )
 	{
+
+		if ( $email ) {
+			$transaction_email = $email;
+		} else {
+			$transaction_email = $this->email;
+		}
 		
 		$transaction = array(
-			'post_title'    => 'Transaction for ' . $this->email,
+			'post_title'    => 'Transaction for ' . $transaction_email,
 			'post_content'  => '',
 			'post_status'   => 'publish',
 			'post_author'   => 1,
@@ -691,17 +701,53 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		
 		// Insert the post into the database
 		$transaction_id = wp_insert_post( $transaction );
-
-		update_post_meta( $transaction_id, '_email', $this->email );
-		update_post_meta( $transaction_id, '_password', sanitize_text_field( $_POST['password'] ) );
-		update_post_meta( $transaction_id, '_first_name', $this->first_name );
-		update_post_meta( $transaction_id, '_last_name', $this->last_name );
-		update_post_meta( $transaction_id, '_login', sanitize_text_field( $_POST['username'] ) );
-		update_post_meta( $transaction_id, '_level_id', $this->level_id );
-		update_post_meta( $transaction_id, '_gateway', 'paypal' );
-		update_post_meta( $transaction_id, '_currency', $this->currency );
 		
 
+		if ( isset( $_POST['password'] ) ) {
+			$transaction_password = sanitize_text_field( $_POST['password'] );
+		} else {
+			$transaction_password = '';	
+		}
+
+		if ( isset( $_POST['username'] ) ) {
+			$username = sanitize_text_field( $_POST['username'] );
+		} else {
+			$username = '';	
+		}
+
+		if ( isset( $this->first_name ) ) {
+			$first_name = $this->first_name;
+		} else {
+			$first_name = '';
+		}
+
+		if ( isset( $this->last_name ) ) {
+			$last_name = $this->last_name;
+		} else {
+			$last_name = '';
+		}
+
+		if ( isset( $_REQUEST['item_number'] ) ) {
+			$level_id = $_REQUEST['item_number'];
+		} else {
+			$level_id = $this->level_id;
+		}
+
+		if ( isset( $this->currency ) ) {
+			$currency = $this->currency;
+		} else {
+			$currency = $_REQUEST['mc_currency'];
+		}
+
+		update_post_meta( $transaction_id, '_email', $transaction_email );
+		update_post_meta( $transaction_id, '_password', $transaction_password );
+		update_post_meta( $transaction_id, '_first_name', $first_name );
+		update_post_meta( $transaction_id, '_last_name', $last_name );
+		update_post_meta( $transaction_id, '_login', $username );
+		update_post_meta( $transaction_id, '_level_id', $level_id );
+		update_post_meta( $transaction_id, '_gateway', 'paypal' );
+		update_post_meta( $transaction_id, '_currency', $currency );
+		
 	}	
 
 	public function get_transaction_id_from_email( $email )
