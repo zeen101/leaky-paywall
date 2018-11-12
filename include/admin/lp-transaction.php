@@ -58,6 +58,9 @@ class LP_Transaction_Post_Type {
         
         $box1_title = get_post_meta( $post->ID, '_apc_box1_title', true );
 
+        $level_id = esc_attr( get_post_meta( $post->ID, '_level_id', true ) );
+        $level = get_leaky_paywall_subscription_level( $level_id );
+
         wp_nonce_field( 'lp_transaction_meta_box_nonce', 'meta_box_nonce' ); 
         ?>
         <table class="form-table">
@@ -100,7 +103,15 @@ class LP_Transaction_Post_Type {
 						<label for="apc_box1_description">Level ID </label>
 					</th>
 					<td>
-                        <?php echo esc_attr( get_post_meta( $post->ID, '_level_id', true ) ); ?>
+                        <?php echo $level_id . ' - ' . $level['label']; ?>
+					</td>
+				</tr>
+                <tr valign="top">
+					<th scope="row">
+						<label for="apc_box1_description">Price </label>
+					</th>
+					<td>
+                        <?php echo esc_attr( get_post_meta( $post->ID, '_price', true ) ); ?>
 					</td>
 				</tr>
                 <tr valign="top">
