@@ -127,6 +127,8 @@ class LP_Transaction_Post_Type {
             </tbody>
         </table>
 
+        <?php do_action( 'leaky_paywall_after_transaction_meta_box', $post ); ?>
+
         <?php 
 
     }
