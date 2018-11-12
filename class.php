@@ -95,7 +95,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ) );
 						
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
-									
+			
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
+			
 			add_submenu_page( false, __( 'Update', 'leaky-paywall' ), __( 'Update', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
 
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Add-Ons', 'leaky-paywall' ), __( 'Add-Ons', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-addons', array( $this, 'addons_page' ) );

@@ -6,19 +6,14 @@
 class LP_Transaction_Post_Type {
 	
 	function __construct()	{
-        add_action( 'admin_menu', array( $this, 'admin_menu' ), 15 );
         add_action( 'init', array( $this, 'register_post_type' ) );
         add_action( 'add_meta_boxes', array( $this, 'meta_box_create' ) );
         add_action( 'save_post', array( $this, 'save_meta') );
     }
-    
-    public function admin_menu()
-    {
-        add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
-    }
 
 	public function register_post_type()
     {
+
         $labels = array(
             'name'               => 'Transaction',
             'singular_name'      => 'Transaction',
@@ -39,10 +34,11 @@ class LP_Transaction_Post_Type {
         $args = array(
             'labels'             => $labels,
             'description'        => __( 'Leaky Paywall Transactions', 'leaky-paywall' ),
-            'public'             => true,
-            'publicly_queryable' => true,
+            'public'             => false,
+            'publicly_queryable' => false,
+            'exclude_fromsearch' 	=> true,
             'show_ui'            => true,
-            'show_in_menu'       => true,
+            'show_in_menu'       => false,
             'query_var'          => true,
             'capability_type'    => 'post',
             'has_archive'        => true,
