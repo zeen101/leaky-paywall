@@ -164,14 +164,15 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
 	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $subscriber_data['level_id'] );
 	
+	$transaction = new LP_Transaction( $subscriber_data );
+	$transaction_id = $transaction->create();
+	$subscriber_data['transaction_id'] = $transaction_id;
+
 	// Send email notifications
 	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
 
 	// log the user in
 	leaky_paywall_log_in_user( $user_id );
-
-	$transaction = new LP_Transaction( $subscriber_data );
-	$transaction->create();
 
 	do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
@@ -688,7 +689,7 @@ if ( ! function_exists( 'leaky_paywall_get_redirect_url' ) ) {
 			$redirect_url = get_page_link( $settings['page_for_subscription'] );
 		}
 
-		return apply_filters( 'leaky_paywall_redirect_url', $redirect_url, $subscriber_data );
+		return apply_filters( 'leaky_paywall_redirect_url', add_query_arg( 'lp_txn_id', $subscriber_data['transaction_id'], $redirect_url ), $subscriber_data );
 
 	}
 }

@@ -58,6 +58,8 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_currency', $this->currency );
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
 
+		return $transaction_id;
+		
 	}
 
 }
