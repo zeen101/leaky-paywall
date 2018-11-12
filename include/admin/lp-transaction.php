@@ -6,10 +6,16 @@
 class LP_Transaction_Post_Type {
 	
 	function __construct()	{
+        add_action( 'admin_menu', array( $this, 'admin_menu' ), 15 );
         add_action( 'init', array( $this, 'register_post_type' ) );
         add_action( 'add_meta_boxes', array( $this, 'meta_box_create' ) );
         add_action( 'save_post', array( $this, 'save_meta') );
-	}
+    }
+    
+    public function admin_menu()
+    {
+        add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
+    }
 
 	public function register_post_type()
     {
