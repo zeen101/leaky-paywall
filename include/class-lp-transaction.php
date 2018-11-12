@@ -28,7 +28,7 @@ class LP_Transaction {
 		$this->payment_gateway = $args['payment_gateway'];
 		$this->payment_status = $args['payment_status'];
 		$this->level_id = $args['level_id'];
-		$this->currency = $args['currency'];
+		$this->currency = isset( $args['currency'] ) ? $args['currency'] : '';
 
 	}
 

@@ -191,6 +191,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 function leaky_paywall_validate_user_data() {
 
 	$user = array();
+	$settings = get_leaky_paywall_settings();
 
 	if ( ! is_user_logged_in() ) {
 		$user['id']					= 0;
