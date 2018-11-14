@@ -161,6 +161,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 					$cu = \Stripe\Customer::create( $customer_array );
 
+					do_action( 'leaky_paywall_after_create_recurring_customer', $cu );
+
 					if ( $cu->id ) {
 						$subscription_array = array(
 							'customer'	=> $cu->id,
