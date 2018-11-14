@@ -36,7 +36,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		 */
 		$this->_column_headers = array($columns, $hidden, $sortable);
 
-		$usersearch = isset( $_REQUEST['s'] ) ? '*' . $_REQUEST['s'] . '*' : '';
+		$usersearch = isset( $_REQUEST['s'] ) ? '*' . sanitize_text_field( $_REQUEST['s'] ) . '*' : '';
 
 		// $users_per_page = $this->get_items_per_page( 'users_network_per_page' );
 		$per_page = ( $this->is_site_users ) ? 'site_users_network_per_page' : 'users_per_page';
@@ -564,6 +564,8 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		$input_id = $input_id . '-search-input';
 
+		$search_query = isset($_REQUEST['s']) ? trim( esc_attr( wp_unslash( $_REQUEST['s'] ) ) ) : '';
+
 		if ( ! empty( $_REQUEST['orderby'] ) )
 			echo '<input type="hidden" name="orderby" value="' . esc_attr( $_REQUEST['orderby'] ) . '" />';
 		if ( ! empty( $_REQUEST['order'] ) )
@@ -575,8 +577,8 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		?>
 		<p class="search-box">
 			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo $text; ?>:</label>
-			<input type="checkbox" name="custom_field_search"> Search custom fields</input><br>
-			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php _admin_search_query(); ?>" />
+			<input type="checkbox" name="custom_field_search"> Search custom fields<br>
+			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo $search_query; ?>" />
 
 			<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
 		</p>
