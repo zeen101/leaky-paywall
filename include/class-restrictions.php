@@ -681,8 +681,9 @@ class Leaky_Paywall_Restrictions {
 			$content = substr( get_the_content( get_the_ID() ), 0, intval( $settings['custom_excerpt_length'] ) );
 		}
 
+		
 		$message = $this->the_content_paywall_message();
-		$new_content = $content . $message;
+		$new_content = strip_shortcodes( $content ) . $message;
 
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content );
 
