@@ -2001,6 +2001,9 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$results .= '</div>';
 				
 				}
+
+				$results .= apply_filters( 'leaky_paywall_subscription_options_after_last_subscription_option', '' );
+				
 				$results .= '</div>';
 				
 				$results .= apply_filters( 'leaky_paywall_subscription_options_after_subscription_options', '' );
