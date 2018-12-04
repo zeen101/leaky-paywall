@@ -426,6 +426,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					$site = '';
 				}
 
+				do_action( 'leaky_paywall_before_process_paypal_webhooks', $args );
+
 				switch( $_REQUEST['txn_type'] ) {
 												
 					case 'web_accept':
