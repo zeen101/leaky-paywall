@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 3.3
 Tested up to: 4.9.8
-Stable tag: 4.11.0
+Stable tag: 4.11.1
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -81,6 +81,13 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.11.1 =
+* add leaky_paywall_before_process_paypal_webhooks action
+* add filter after last subscription option
+* trim search term in subscriber table input
+* strip shortcodes out of content excerpt before paywall message
+* add leaky_paywall_after_create_recurring_customer action
 
 = 4.11.0 =
 * add lp_transaction post type for storing registration data
