@@ -209,3 +209,18 @@
 #leaky-paywall-profile .issuem-leaky-paywall-field-input {
 	min-width: 300px;
 }
+
+#leaky-paywall-login-form {
+	border: 1px solid #ddd;
+	padding: 20px;
+	max-width: 300px;
+	box-shadow: 0 1px 3px rgba(0,0,0,.13);
+}
+
+#leaky-paywall-login-form #loginform label {
+	display: block;
+}
+
+#leaky-paywall-login-form #loginform .input {
+	width: 98%;
+}

@@ -66,6 +66,8 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 			}
 			
             $results .= apply_filters( 'leaky_paywall_before_login_form', '' );
+
+            $results .= '<div id="leaky-paywall-login-form">';
                         		
 			add_action( 'login_form_bottom', 'leaky_paywall_add_lost_password_link' );
 			$args = array(
@@ -73,7 +75,9 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 				'redirect' => $page_link,
 			);
 			$results .= wp_login_form( apply_filters( 'leaky_paywall_login_form_args', $args ) );
-		
+			
+			$results .= '</div>';
+
 		}
 		
 		return $results;
