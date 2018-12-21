@@ -291,6 +291,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					'METHOD'        => 'GetTransactionDetails',
 					'TRANSACTIONID' => $transaction_id,
 				);
+
+				leaky_paywall_log( $request, 'paypal - transaction details after process confirmation args');
 					
 				$response = wp_remote_post( $paypal_api_url, array( 'body' => $request, 'httpversion' => '1.1' ) );
 
@@ -298,6 +300,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				
 					$array = array();
 					parse_str( wp_remote_retrieve_body( $response ), $response_array );
+
+					leaky_paywall_log( $response_array, 'paypal - get transaction details after process confirmation');
 					
 					$transaction_status = $response_array['PAYMENTSTATUS'];
 					$level = get_leaky_paywall_subscription_level( $response_array['L_NUMBER0'] );
@@ -633,6 +637,11 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					$args['first_name'] = get_post_meta( $transaction_id, '_first_name', true );
 					$args['last_name'] = get_post_meta( $transaction_id, '_last_name', true );
 					$args['login'] = get_post_meta( $transaction_id, '_login', true );
+
+					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
+						update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+					}
+
 				} else {
 					// create a transaction after clicking the paypal button on the subscribe card
 					// one time payment uses txn_type web_accept
@@ -756,7 +765,11 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			$price = $_REQUEST['amount3'];
 		} else if ( isset( $_REQUEST['mc_gross'] ) ) { //subscr_payment
 			$price = $_REQUEST['mc_gross'];
-		}				
+		} else if ( isset( $this->amount ) ) {
+			$price = $this->amount;
+		} else {
+			$price = '';
+		}		
 
 		update_post_meta( $transaction_id, '_email', $transaction_email );
 		update_post_meta( $transaction_id, '_password', $transaction_password );
@@ -768,7 +781,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		update_post_meta( $transaction_id, '_price', $price );
 		update_post_meta( $transaction_id, '_currency', $currency );
 
-		update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+		if ( isset( $_REQUEST['txn_type'] ) ) {
+			update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+		}
 		
 	}	
 
