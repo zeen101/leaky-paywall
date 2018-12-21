@@ -653,6 +653,9 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	 */
 	function leaky_paywall_new_subscriber( $hash='deprecated', $email, $customer_id, $meta_args, $login='' ) {
 		
+		leaky_paywall_log( $meta_args, 'before create new lp subscriber - meta args');
+		leaky_paywall_log( $email, 'before create new lp subscriber - email');
+
 		if ( !is_email( $email ) ) {
 			return false;
 		}

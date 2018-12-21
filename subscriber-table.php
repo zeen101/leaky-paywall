@@ -91,7 +91,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		
 		$args['meta_query'] = array(
 			array(
-				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 				'compare' => 'EXISTS',
 			),
 		);

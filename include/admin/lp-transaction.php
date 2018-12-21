@@ -127,6 +127,15 @@ class LP_Transaction_Post_Type {
             </tbody>
         </table>
 
+        <?php if ( get_post_meta( $post->ID, '_paypal_request', true ) ) {
+            echo '<p><strong>Paypal Response</strong></p>';
+            echo '<pre>';
+            print_r( json_decode( get_post_meta( $post->ID, '_paypal_request', true ) ) );
+            echo '</pre>';
+            
+           
+        } ?>
+
         <?php do_action( 'leaky_paywall_after_transaction_meta_box', $post ); ?>
 
         <?php 
