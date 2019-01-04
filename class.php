@@ -281,6 +281,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'restrictions' 	=> array(
 					'post_types' => array(
 						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
+						'taxonomy'	=> 'all',
 						'allowed_value' => 2,
 					)
 				),

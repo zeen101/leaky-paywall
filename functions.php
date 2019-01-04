@@ -1799,6 +1799,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		if ( empty( $restriction ) ) {
 			$restriction = array(
 				'post_type' 	=> '',
+				'taxonomy'	=> '',
 				'allowed_value' => '0',
 			);
 		}
@@ -1822,11 +1823,12 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		echo '</select></td>';
 
 		// get taxonomies for this post type
-		echo '<td><select style="width: 100%;">';
-		$taxes = get_object_taxonomies( 'post', 'objects' );
+		echo '<td><select style="width: 100%;" name="restrictions[post_types][' . $row_key . '][taxonomy]">';
+		$tax_post_type = $restriction['post_type'] ? $restriction['post_type'] : 'post';
+		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
 		$hidden_taxes = array( 'post_format' );
 
-		echo '<option value"all">All</option>';
+		echo '<option value"all" ' . selected( 'all', $restriction['taxonomy'], false ) . '>All</option>';
 		
 		foreach( $taxes as $tax ) {
 
@@ -1844,7 +1846,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 			));
 
 			foreach( $terms as $term ) {
-				echo '<option value="' . $term->term_id . '">' . $term->name . '</option>';
+				echo '<option value="' . $term->term_id . '" ' . selected( $term->term_id, $restriction['taxonomy'], false ) . '>' . $term->name . '</option>';
 			}
 
 			echo '</optgroup>';
