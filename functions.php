@@ -1803,32 +1803,121 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 			);
 		}
     	
-		$return  = '<div class="issuem-leaky-paywall-restriction-row">';
-		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
+		// $return  = '<div class="issuem-leaky-paywall-restriction-row">';
+		echo '<tr class="issuem-leaky-paywall-restriction-row">';
+		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'custom_css' );
 		$post_types = get_post_types( array(), 'objects' );
-	    $return .= '<label for="restriction-post-type-' . $row_key . '">' . __( 'Number of', 'leaky-paywall' ) . '</label> ';
-		$return .= '<select id="restriction-post-type-' . $row_key . '" name="restrictions[post_types][' . $row_key . '][post_type]">';
+	    // $return .= '<label for="restriction-post-type-' . $row_key . '">' . __( 'Number of', 'leaky-paywall' ) . '</label> ';
+		echo '<td><select class="leaky-paywall-restriction-post-type" id="restriction-post-type-' . $row_key . '" name="restrictions[post_types][' . $row_key . '][post_type]">';
 		foreach ( $post_types as $post_type ) {
 		
-			if ( in_array( $post_type->name, $hidden_post_types ) ) 
+			if ( in_array( $post_type->name, $hidden_post_types ) ) {
 				continue;
-			
-			$return .= '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $restriction['post_type'], false ) . '>' . $post_type->labels->name . '</option>';
+			}
+
+			echo '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $restriction['post_type'], false ) . '>' . $post_type->labels->name . '</option>';
 		
 		}
-		$return .= '</select> ';
-		
-	    $return .= '<label for="restriction-allowed-' . $row_key . '">' . __( 'allowed:', 'leaky-paywall' ) . '</label> ';
-		$return .= '<input id="restriction-allowed-' . $row_key . '" type="text" class="small-text" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" />';
 
-		$return .= '<span class="delete-x delete-restriction-row">&times;</span>';
-		$return .= '</div>';
+		echo '</select></td>';
+
+		// get taxonomies for this post type
+		echo '<td><select style="width: 100%;">';
+		$taxes = get_object_taxonomies( 'post', 'objects' );
+		$hidden_taxes = array( 'post_format' );
+
+		echo '<option value"all">All</option>';
 		
-		return $return;
+		foreach( $taxes as $tax ) {
+
+			if ( in_array( $tax->name, $hidden_taxes ) ) {
+				continue;
+			}
+
+			// create option group for this taxonomy
+			echo '<optgroup label="' . $tax->label . '">';
+
+			// create options for this taxonomy
+			$terms = get_terms( array(
+				'taxonomy' => $tax->name,
+				'hide_empty'	=> false
+			));
+
+			foreach( $terms as $term ) {
+				echo '<option value="' . $term->term_id . '">' . $term->name . '</option>';
+			}
+
+			echo '</optgroup>';
+
+		}
+		echo '</select></td>';
+
+		
+	    // $return .= '<label for="restriction-allowed-' . $row_key . '">' . __( 'allowed:', 'leaky-paywall' ) . '</label> ';
+		echo '<td><input id="restriction-allowed-' . $row_key . '" type="text" class="small-text" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" /></td>';
+
+		echo '<td><span class="delete-x delete-restriction-row">&times;</span></td>';
+		
+		echo '</tr>';
 		
 	}
 	
 }
+
+add_action( 'wp_ajax_leaky-paywall-get-restriction-row-post-type-taxonomies', 'leaky_paywall_get_restriction_row_post_type_taxonomies' );
+
+/**
+ * Get the taxonomies for the selected post type in a restriction setting row
+ *
+ * @since 4.7.5
+ */
+function leaky_paywall_get_restriction_row_post_type_taxonomies() {
+
+	$post_type = $_REQUEST['post_type'];
+
+	$taxes = get_object_taxonomies( $post_type, 'objects' );
+	$hidden_taxes = array( 'post_format' );
+
+	 ob_start(); ?>
+    
+    	<select style="width: 100%;">
+    		<option value="all">All</option>
+    		
+    	<?php 
+    		foreach( $taxes as $tax ) {
+
+				if ( in_array( $tax->name, $hidden_taxes ) ) {
+					continue;
+				}
+
+				// create option group for this taxonomy
+				echo '<optgroup label="' . $tax->label . '">';
+
+				// create options for this taxonomy
+				$terms = get_terms( array(
+					'taxonomy' => $tax->name,
+					'hide_empty'	=> false
+				));
+
+				foreach( $terms as $term ) {
+					echo '<option value="' . $term->term_id . '">' . $term->name . '</option>';
+				}
+
+				echo '</optgroup>';
+
+			}
+
+    	?>
+
+    	</select>
+    
+    <?php  $content = ob_get_contents();
+	ob_end_clean();
+
+	wp_send_json($content);
+}
+	
+
  
 if ( !function_exists( 'build_leaky_paywall_default_restriction_row_ajax' ) ) {
 

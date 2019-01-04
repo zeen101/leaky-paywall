@@ -9,7 +9,8 @@ $leaky_paywall_settings(document).ready(function($) {
             'row-key': ++leaky_paywall_restriction_row_key,
         }
         $.post( ajaxurl, data, function( response ) {
-            $( 'td#issuem-leaky-paywall-restriction-rows' ).append( response );
+            $( 'td#issuem-leaky-paywall-restriction-rows table' ).append( response );
+            update_restriction_row_taxonomies();
         });
 	});
 	
@@ -69,5 +70,30 @@ $leaky_paywall_settings(document).ready(function($) {
 		var parent = $( this ).parent( '.issuem-leaky-paywall-row-post-type' );
 		parent.slideUp( 'normal', function() { $( this ).remove(); } );
 	});
-			
+
+	update_restriction_row_taxonomies();
+
+	function update_restriction_row_taxonomies() {
+		$( '.leaky-paywall-restriction-post-type').change(function() {
+			// replace taxonomy select with loader
+			var post_type = $(this).children("option:selected").val();
+			var taxCell = $(this).parent().next();
+			taxCell.append('<div class="spinner" style="visibility: visible; float: left;"></div>');
+			taxCell.find('select').remove();
+
+			// ajax call to find taxonomies and terms
+	        var data = {
+	            'action': 'leaky-paywall-get-restriction-row-post-type-taxonomies',
+	            'post_type': post_type
+	        }
+
+			$.post( ajaxurl, data, function( response ) {
+	          	// build out the new select box
+				taxCell.append( response );
+				taxCell.find('.spinner').remove();
+	        });
+
+		});
+	}
+
 });

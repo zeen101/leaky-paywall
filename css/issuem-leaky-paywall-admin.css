@@ -125,3 +125,26 @@ div.available-addon-inner {
 .leaky-paywall-dashboard-table td {
 	padding-bottom: 5px;
 }
+
+span.delete-restriction-row {
+	color: red;
+	margin-top: -10px;
+}
+
+#issuem-leaky-paywall-restriction-rows table {
+	border: 1px solid #ddd;
+}
+
+#issuem-leaky-paywall-restriction-rows table th {
+	/*border-bottom: 1px solid #ddd;*/
+	padding: 10px;
+}
+
+#issuem-leaky-paywall-restriction-rows table td {
+	border-top: 1px solid #F0F0F0;
+	padding: 10px;
+}
+
+#add-restriction-row {
+	margin-bottom: 10px;
+}

@@ -1291,35 +1291,47 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										<label for="restriction-post-type-' . $row_key . '"><?php _e( 'Restrictions', 'leaky-paywall' ); ?></label>
 									</th>
 									<td id="issuem-leaky-paywall-restriction-rows">
-		                        	<?php 
-		                        	$last_key = -1;
-		                        	if ( !empty( $settings['restrictions']['post_types'] ) ) {
-		                        	
-			                        	foreach( $settings['restrictions']['post_types'] as $key => $restriction ) {
-			                        	
-			                        		if ( !is_numeric( $key ) )
-				                        		continue;
-				                        		
-			                        		echo build_leaky_paywall_default_restriction_row( $restriction, $key );
-			                        		$last_key = $key;
-			                        		
-			                        	}
-			                        	
-		                        	}
-		                        	?>
+
+										<table>
+											<tr>
+												<th>Post Type</th>
+												<th>Taxonomy</th>
+												<th>Number Allowed</th>
+												<th>&nbsp;</th>
+											</tr>
+
+				                        	<?php 
+				                        	$last_key = -1;
+				                        	if ( !empty( $settings['restrictions']['post_types'] ) ) {
+				                        	
+					                        	foreach( $settings['restrictions']['post_types'] as $key => $restriction ) {
+					                        	
+					                        		if ( !is_numeric( $key ) )
+						                        		continue;
+						                        	
+					                        		build_leaky_paywall_default_restriction_row( $restriction, $key );
+					                        		
+					                        		$last_key = $key;
+					                        		
+					                        	}
+					                        	
+				                        	}
+				                        	?>
+				                        </table>
 			                        </td>
 		                        </tr>
 	                    
 	                        	<tr class="restriction-options">
 									<th>&nbsp;</th>
-									<td>
+									<td style="padding-top: 0;">
 								        <script type="text/javascript" charset="utf-8">
 								            var leaky_paywall_restriction_row_key = <?php echo $last_key; ?>;
 								        </script>
-										<p class="description"><?php _e( 'By default all content is allowed.', 'leaky-paywall' ); ?></p>
+										
 				                    	<p>
-				                       		<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_leaky_paywall_restriction_row" value="<?php _e( 'Add New Restricted Content', 'leaky-paywall' ); ?>" />
+				                       		<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_leaky_paywall_restriction_row" value="<?php _e( '+ Add Restricted Content', 'leaky-paywall' ); ?>" />
 				                    	</p>
+				                    	<p class="description"><?php _e( 'By default all content is allowed.', 'leaky-paywall' ); ?></p>
 			                        </td>
 		                        </tr>
 
