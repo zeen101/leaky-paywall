@@ -10,8 +10,8 @@
 Plugin Name: Leaky Paywall
 Plugin URI: https://zeen101.com/
 Description: The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
-Author: zeen101 Development Team
-Version: 4.10.3
+Author: ZEEN101
+Version: 4.11.2
 Author URI: https://zeen101.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: leaky-paywall
@@ -24,7 +24,7 @@ if ( !defined( 'ZEEN101_STORE_URL' ) )
 	
 define( 'LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 		'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION',	'4.10.3' );
+define( 'LEAKY_PAYWALL_VERSION',	'4.11.2' );
 define( 'LEAKY_PAYWALL_DB_VERSION',	'1.0.4' );
 define( 'LEAKY_PAYWALL_URL',		plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', 		plugin_dir_path( __FILE__ ) );
@@ -71,6 +71,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
 		require_once( 'include/admin/dashboard-widgets.php' );
+		require_once( 'include/admin/lp-transaction.php' );
 
 		// license key
 		include( LEAKY_PAYWALL_PATH . 'include/license-key.php' );
@@ -84,6 +85,7 @@ function leaky_paywall_plugins_loaded() {
 		// helper classes
 		include( LEAKY_PAYWALL_PATH . 'include/class-restrictions.php' );
 		include( LEAKY_PAYWALL_PATH . 'include/class-lp-export.php' );
+		include( LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php' );
 
 		// gateways
 		include( LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php' );

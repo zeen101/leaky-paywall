@@ -142,6 +142,12 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		$user_id = leaky_paywall_update_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	} else {
 		$status = 'new';
+
+		// create password here so we can send it to the email
+		if ( !$subscriber_data['password'] ) {
+			$subscriber_data['password'] = wp_generate_password();
+		} 
+		
 		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	}
 
@@ -158,6 +164,10 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
 	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $subscriber_data['level_id'] );
 	
+	$transaction = new LP_Transaction( $subscriber_data );
+	$transaction_id = $transaction->create();
+	$subscriber_data['transaction_id'] = $transaction_id;
+
 	// Send email notifications
 	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
 
@@ -181,6 +191,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 function leaky_paywall_validate_user_data() {
 
 	$user = array();
+	$settings = get_leaky_paywall_settings();
 
 	if ( ! is_user_logged_in() ) {
 		$user['id']					= 0;
@@ -203,49 +214,49 @@ function leaky_paywall_validate_user_data() {
 
 	if ( empty( $user['first_name'] ) ) {
 		// empty first name
-		leaky_paywall_errors()->add( 'firstname_empty', __( 'Please enter your first name', 'leaky_paywall' ), 'register' );
+		leaky_paywall_errors()->add( 'firstname_empty', __( 'Please enter your first name', 'leaky-paywall' ), 'register' );
 	}
 	
 	if ( empty( $user['last_name'] ) ) {
 		// empty last name
-		leaky_paywall_errors()->add( 'lastname_empty', __( 'Please enter your last name', 'leaky_paywall' ), 'register' );
+		leaky_paywall_errors()->add( 'lastname_empty', __( 'Please enter your last name', 'leaky-paywall' ), 'register' );
 	}
 	
 	if ( ! is_email( $user['email'] ) ) {
 		//invalid email
-		leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky_paywall' ), 'register' );
+		leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky-paywall' ), 'register' );
 	}
 	
 	if ( ! validate_username( $user['login'] ) ) {
 		// invalid username
-		leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky_paywall' ), 'register' );
+		leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky-paywall' ), 'register' );
 	}
 	
 	if ( ! is_user_logged_in() && empty( $user['password'] ) ) {
 		// password is empty
-		leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky_paywall' ), 'register' );
+		leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky-paywall' ), 'register' );
 	}
 	
 	if ( ! is_user_logged_in() && $user['password'] !== $user['confirm_password'] ) {
 		// passwords do not match
-		leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky_paywall' ), 'register' );
+		leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky-paywall' ), 'register' );
 	}
 
 	if ( $user['need_new'] ) {
 		
 		if ( email_exists( $user['email'] ) ) {
 			//Email address already registered
-			leaky_paywall_errors()->add( 'email_used', __( 'Email already registered', 'leaky_paywall' ), 'register' );
+			leaky_paywall_errors()->add( 'email_used', __( 'Email already registered. Please <a href="' . get_page_link( $settings['page_for_login'] ) . '">login</a>', 'leaky-paywall' ), 'register' );
 		}
 		
 		if ( username_exists( $user['login'] ) ) {
 			// Username already registered
-			leaky_paywall_errors()->add( 'username_unavailable', __( 'Username already taken', 'leaky_paywall' ), 'register' );
+			leaky_paywall_errors()->add( 'username_unavailable', __( 'Username already taken', 'leaky-paywall' ), 'register' );
 		}
 		
 		if ( empty( $user['login'] ) ) {
 			// empty username
-			leaky_paywall_errors()->add( 'username_empty', __( 'Please enter a username', 'leaky_paywall' ), 'register' );
+			leaky_paywall_errors()->add( 'username_empty', __( 'Please enter a username', 'leaky-paywall' ), 'register' );
 		}
 
 	}
@@ -679,7 +690,7 @@ if ( ! function_exists( 'leaky_paywall_get_redirect_url' ) ) {
 			$redirect_url = get_page_link( $settings['page_for_subscription'] );
 		}
 
-		return apply_filters( 'leaky_paywall_redirect_url', $redirect_url, $subscriber_data );
+		return apply_filters( 'leaky_paywall_redirect_url', add_query_arg( 'lp_txn_id', $subscriber_data['transaction_id'], $redirect_url ), $subscriber_data );
 
 	}
 }

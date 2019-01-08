@@ -49,6 +49,12 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 	} else {
 		$user_email = 'no_lp_email_set';
 	}
+
+			if ( isset( $_COOKIE['leaky-paywall-coupon'] ) ) {
+				$coupon_id = intval( $_COOKIE['leaky-paywall-coupon'] );
+			}else{
+				$coupon_id = 'Not Used';
+			}
 	if ( !empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 																				
 		$results .= '<script src="' . LEAKY_PAYWALL_URL . '/js/paypal-button.min.js?merchant=' . esc_js( $paypal_account ) . '" 
@@ -66,7 +72,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-button="subscribe" 
 						data-no_note="1" 
 						data-no_shipping="1" 
-						data-custom="' . esc_js( $user_email ) . '"
+						data-custom="' . esc_js( $user_email ) . ',' . esc_js( $coupon_id ) . '"
 					></script>';
 											
 	} else {
@@ -88,7 +94,7 @@ function leaky_paywall_paypal_button( $level, $level_id ) {
 						data-no_shipping="1" 
 						data-shipping="0" 
 						data-image_url="' . esc_js( $settings['paypal_image_url'] ) . '"
-						data-custom="' . esc_js( $user_email ) . '"
+						data-custom="' . esc_js( $user_email ) . ',' . esc_js( $coupon_id ) . '"
 					></script>';
 	
 	}

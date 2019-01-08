@@ -130,7 +130,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		// for recurring, cmb = _xclick-subscriptions
 
 		// save post data to a transient
-		$this->save_data_to_transient();
+		// $this->save_data_to_transient();
+		$this->save_data_to_transaction();
+
 
 		// https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
 		$settings = get_leaky_paywall_settings();
@@ -206,7 +208,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		leaky_paywall_log( $args, 'paypal standard args');
 
-		return $args;
+		return apply_filters( 'leaky_paywall_paypal_args', $args );
 
 	}
 
@@ -261,10 +263,10 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				switch( strtolower( $transaction_status ) ) {
 					
 					case 'denied' :
-						throw new Exception( __( 'Error: PayPal denied this payment.', 'issuem-leaky-paywall' ) );
+						throw new Exception( __( 'Error: PayPal denied this payment.', 'leaky-paywall' ) );
 						break;
 					case 'failed' :
-						throw new Exception( __( 'Error: Payment failed.', 'issuem-leaky-paywall' ) );
+						throw new Exception( __( 'Error: Payment failed.', 'leaky-paywall' ) );
 						break;
 					case 'completed':
 					case 'success':
@@ -289,6 +291,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					'METHOD'        => 'GetTransactionDetails',
 					'TRANSACTIONID' => $transaction_id,
 				);
+
+				leaky_paywall_log( $request, 'paypal - transaction details after process confirmation args');
 					
 				$response = wp_remote_post( $paypal_api_url, array( 'body' => $request, 'httpversion' => '1.1' ) );
 
@@ -296,6 +300,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				
 					$array = array();
 					parse_str( wp_remote_retrieve_body( $response ), $response_array );
+
+					leaky_paywall_log( $response_array, 'paypal - get transaction details after process confirmation');
 					
 					$transaction_status = $response_array['PAYMENTSTATUS'];
 					$level = get_leaky_paywall_subscription_level( $response_array['L_NUMBER0'] );
@@ -305,10 +311,10 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					}
 						
 					if ( $transaction_id != $response_array['TRANSACTIONID'] )
-						throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'issuem-leaky-paywall' ) );
+						throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'leaky-paywall' ) );
 					
 					if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) )
-						throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
+						throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
 					
 				} else {
 					
@@ -351,7 +357,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			}
 			catch ( Exception $e ) {
 				
-				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
+				return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) );
 
 			}
 			
@@ -423,6 +429,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				} else {
 					$site = '';
 				}
+
+				do_action( 'leaky_paywall_before_process_paypal_webhooks', $args );
 
 				switch( $_REQUEST['txn_type'] ) {
 												
@@ -578,6 +586,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			
 				if ( !empty( $_REQUEST['custom'] ) && is_email( $_REQUEST['custom'] ) ) {
 					$user = get_user_by( 'email', $_REQUEST['custom'] );
+					$email = $_REQUEST['custom'];
 					if ( empty( $user ) ) {
 						$user = get_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['custom'], $mode );
 						if ( is_multisite_premium() ) {
@@ -590,6 +599,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					
 				if ( empty( $user ) && !empty( $_REQUEST['payer_email'] ) && is_email( $_REQUEST['payer_email'] ) ) {
 					$user = get_user_by( 'email', $_REQUEST['payer_email'] );
+					$email = $_REQUEST['payer_email'];
 					if ( empty( $user ) ) {
 						$user = get_leaky_paywall_subscriber_by_subscriber_email( $_REQUEST['payer_email'], $mode );
 						if ( is_multisite_premium() ) {
@@ -618,21 +628,36 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					}
 				}
 
+				// get data submitted in registration form
+				$transaction_id = $this->get_transaction_id_from_email( $_REQUEST['custom'] );
+
+				if ( $transaction_id ) {
+					$args['password'] = get_post_meta( $transaction_id, '_password', true );
+					delete_post_meta( $transaction_id, '_password' ); // dont want this in the database
+					$args['first_name'] = get_post_meta( $transaction_id, '_first_name', true );
+					$args['last_name'] = get_post_meta( $transaction_id, '_last_name', true );
+					$args['login'] = get_post_meta( $transaction_id, '_login', true );
+
+					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
+						update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+					}
+
+				} else {
+					// create a transaction after clicking the paypal button on the subscribe card
+					// one time payment uses txn_type web_accept
+					// recurring subscription uses txn_type subscr_signup
+					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
+						$this->save_data_to_transaction( $email );
+					}
+					
+				}
+
 				if ( !empty( $user ) ) {
 					//WordPress user exists
 					$args['subscriber_email'] = $user->user_email;
 					$user_id = leaky_paywall_update_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 				} else {
 					//Need to create a new user
-
-					// get data submitted in registration form
-					$transient_data = $this->get_data_from_transient( $_REQUEST['custom'] );
-
-					if ( !empty( $transient_data ) ) {
-						foreach( $transient_data as $key => $value ) {
-							$args[$key] = $value;
-						}
-					}
 					
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
 					$user_id = leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
@@ -672,6 +697,121 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		set_transient( $trans_key, apply_filters('leaky_paywall_paypal_transient_data', $data ), 900 );
 
+	}
+
+	public function save_data_to_transaction( $email = '' )
+	{
+
+		if ( $email ) {
+			$transaction_email = $email;
+		} else {
+			$transaction_email = $this->email;
+		}
+		
+		$transaction = array(
+			'post_title'    => 'Transaction for ' . $transaction_email,
+			'post_content'  => '',
+			'post_status'   => 'publish',
+			'post_author'   => 1,
+			'post_type'		=> 'lp_transaction'
+		);
+		
+		// Insert the post into the database
+		$transaction_id = wp_insert_post( $transaction );
+		
+		if ( isset( $_POST['password'] ) ) {
+			$transaction_password = sanitize_text_field( $_POST['password'] );
+		} else {
+			$transaction_password = '';	
+		}
+
+		if ( isset( $_POST['username'] ) ) {
+			$username = sanitize_text_field( $_POST['username'] );
+		} else {
+			$username = '';	
+		}
+
+		if ( isset( $this->first_name ) ) {
+			$first_name = $this->first_name;
+		} else if ( isset( $_REQUEST['first_name'] ) ) {
+			$first_name = $_REQUEST['first_name'];
+		} else {
+			$first_name = '';
+		}
+
+		if ( isset( $this->last_name ) ) {
+			$last_name = $this->last_name;
+		} else if ( isset( $_REQUEST['last_name'] ) ) {
+			$last_name = $_REQUEST['last_name'];
+		} else {
+			$last_name = '';
+		}
+
+		if ( isset( $_REQUEST['item_number'] ) ) {
+			$level_id = $_REQUEST['item_number'];
+		} else {
+			$level_id = $this->level_id;
+		}
+
+		if ( isset( $this->currency ) ) {
+			$currency = $this->currency;
+		} else {
+			$currency = $_REQUEST['mc_currency'];
+		}
+
+		if ( isset( $_REQUEST['mc_amount3'] ) ) { //subscr_payment
+			$price = $_REQUEST['mc_amount3'];
+		} else if ( isset( $_REQUEST['amount3'] ) ) { //subscr_payment
+			$price = $_REQUEST['amount3'];
+		} else if ( isset( $_REQUEST['mc_gross'] ) ) { //subscr_payment
+			$price = $_REQUEST['mc_gross'];
+		} else if ( isset( $this->amount ) ) {
+			$price = $this->amount;
+		} else {
+			$price = '';
+		}		
+
+		update_post_meta( $transaction_id, '_email', $transaction_email );
+		update_post_meta( $transaction_id, '_password', $transaction_password );
+		update_post_meta( $transaction_id, '_first_name', $first_name );
+		update_post_meta( $transaction_id, '_last_name', $last_name );
+		update_post_meta( $transaction_id, '_login', $username );
+		update_post_meta( $transaction_id, '_level_id', $level_id );
+		update_post_meta( $transaction_id, '_gateway', 'paypal' );
+		update_post_meta( $transaction_id, '_price', $price );
+		update_post_meta( $transaction_id, '_currency', $currency );
+
+		if ( isset( $_REQUEST['txn_type'] ) ) {
+			update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+		}
+		
+	}	
+
+	public function get_transaction_id_from_email( $email )
+	{
+
+		$transaction_id = '';
+
+		$args = array(
+			'post_type'	=> 'lp_transaction',
+			'number_of_posts'	=> 1,
+			'meta_query' => array(
+				array(
+					'key'     => '_email',
+					'value'   => $email,
+					'compare' => '=',
+				),
+			),
+		);
+
+		$transactions = get_posts( $args );
+
+		if ( !empty( $transactions ) ) {
+			$transaction = $transactions[0];
+			$transaction_id = $transaction->ID;
+		}
+
+		return $transaction_id;
 	}
 
 	public function get_data_from_transient( $email = '' ) 

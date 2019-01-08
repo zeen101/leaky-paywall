@@ -20,7 +20,24 @@
 					};
 
 					$.get(leaky_paywall_cookie_ajax.ajaxurl, data, function(data) {
-						console.log(data);
+						var response;
+	
+						if ( data ) {
+
+							response = JSON.parse(data);
+
+							if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {
+								
+								var content = $('article .entry-content');
+								
+								content.before(response);
+								content.remove();
+								
+							}
+
+						}
+						
+						
 					});
 
 				}
