@@ -2982,7 +2982,7 @@ function leaky_paywall_get_level_display_price( $level ) {
 	$decimal_number = empty( $settings['leaky_paywall_decimal_number'] ) ? '0' : $settings['leaky_paywall_decimal_number'];
 	$currency_symbol = leaky_paywall_get_current_currency_symbol();
 
-	$price = floatval( $level['price'] );
+	$price = $level['price'];
 	$broken_price = explode('.', $price);
 
 	$before_decimal = $broken_price[0];
