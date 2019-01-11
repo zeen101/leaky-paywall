@@ -1605,15 +1605,27 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			<tr>
 				<th><?php _e( 'Access Options', 'leaky-paywall' ); ?></th>
 				<td id="issuem-leaky-paywall-subsciption-row-<?php echo $row_key; ?>-post-types">
-					<?php 
-						$last_key = -1;
-						if ( !empty( $level['post_types'] ) ) {
-							foreach( $level['post_types'] as $select_post_key => $select_post_type ) {
-								echo build_leaky_paywall_subscription_row_post_type( $select_post_type, $select_post_key, $row_key );
-								$last_key = $select_post_key;
+
+					<table class="leaky-paywall-interal-setting-table">
+						<tr>
+							<th>Number Allowed</th>
+							<th>Post Type</th>
+							<th>Taxonomy <span style="font-weight: normal; font-size: 11px; color: #999;"> Category,tag,etc.</span></th>
+							<th>&nbsp;</th>
+						</tr>
+					
+						<?php 
+							$last_key = -1;
+							if ( !empty( $level['post_types'] ) ) {
+								foreach( $level['post_types'] as $select_post_key => $select_post_type ) {
+									
+									build_leaky_paywall_subscription_row_post_type( $select_post_type, $select_post_key, $row_key );
+									
+									$last_key = $select_post_key;
+								}
 							}
-						}
-					?>
+						?>
+					</table>
 				</td>
 			</tr>
 		
@@ -1623,7 +1635,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
         			<script>
         				var leaky_paywall_subscription_row_<?php echo $row_key; ?>_last_post_type_key = <?php echo absint($last_key); ?>;
         			</script>
-					<p><input data-row-key="<?php echo $row_key; ?>" class="button-secondary" id="add-subscription-row-post-type" class="add-new-issuem-leaky-paywall-row-post-type" type="submit" name="add_leaky_paywall_subscription_row_post_type" value="<?php _e( 'Add New Post Type', 'leaky-paywall' ); ?>" /></p>
+					<p><input data-row-key="<?php echo $row_key; ?>" class="button-secondary" id="add-subscription-row-post-type" class="add-new-issuem-leaky-paywall-row-post-type" type="submit" name="add_leaky_paywall_subscription_row_post_type" value="<?php _e( '+ Add Access Option', 'leaky-paywall' ); ?>" /></p>
 					<?php 	
 						if ( $leaky_paywall->is_site_wide_enabled() ) {
 							echo '<p class="description">';
@@ -1715,16 +1727,17 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 			'allowed' 		=> 'unlimited',
 			'allowed_value' => -1,
 			'site' 			=> 0,
+			'taxonomy'		=> ''
 		);
 		$select_post_type = wp_parse_args( $select_post_type, $default_select_post_type );
 		
 
-		$return  = '<div class="issuem-leaky-paywall-row-post-type">';
+		echo '<tr class="issuem-leaky-paywall-row-post-type">';
 		
-		$return .= '<select class="allowed_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed]">';						
-			$return .= '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited', 'leaky-paywall' ) . '</option>';
-			$return .= '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limit to...', 'leaky-paywall' ) . '</option>';
-		$return .= '</select>';
+		echo '<td><select class="allowed_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed]">';						
+			echo '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . __( 'Unlimited', 'leaky-paywall' ) . '</option>';
+			echo '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . __( 'Limit to...', 'leaky-paywall' ) . '</option>';
+		echo '</select>';
 			
 		if ( 'unlimited' == $select_post_type['allowed'] ) {
 			$allowed_value_input_style = 'display: none;';
@@ -1732,11 +1745,11 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 			$allowed_value_input_style = '';
 		}
 			    
-		$return .= '<div class="allowed_value_div" style="' . $allowed_value_input_style . '">';
-		$return .= '<input type="text" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'leaky-paywall' ) . '" />';
-		$return .= '</div>';
+		echo '<div class="allowed_value_div" style="' . $allowed_value_input_style . '">';
+		echo '<input type="text" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'leaky-paywall' ) . '" />';
+		echo '</div></td>';
 		
-		$return .= '<select class="select_level_post_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
+		echo '<td><select class="select_level_post_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
 		$post_types = get_post_types( array(), 'objects' );
 		$post_types_names = get_post_types( array(), 'names' );
 		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
@@ -1744,18 +1757,48 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 			foreach ( $post_types as $post_type ) {
 				if ( in_array( $post_type->name, $hidden_post_types ) ) 
 					continue;
-				$return .= '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . $post_type->labels->name . '</option>';
+				echo '<option value="' . $post_type->name . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . $post_type->labels->name . '</option>';
 	        }
         } else {
-			$return .= '<option value="' . $select_post_type['post_type'] . '">' . $select_post_type['post_type'] . ' &#42;</option>';
+			echo '<option value="' . $select_post_type['post_type'] . '">' . $select_post_type['post_type'] . ' &#42;</option>';
         }
-		$return .= '</select>';
+		echo '</select></td>';
+
+		// get taxonomies for this post type
+		echo '<td><select style="width: 100%;" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][taxonomy]">';
+		$tax_post_type = $select_post_type['post_type'] ? $select_post_type['post_type'] : 'post';
+		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
+		$hidden_taxes = array( 'post_format' );
+
+		echo '<option value"all" ' . selected( 'all', $select_post_type['taxonomy'], false ) . '>All</option>';
+		
+		foreach( $taxes as $tax ) {
+
+			if ( in_array( $tax->name, $hidden_taxes ) ) {
+				continue;
+			}
+
+			// create option group for this taxonomy
+			echo '<optgroup label="' . $tax->label . '">';
+
+			// create options for this taxonomy
+			$terms = get_terms( array(
+				'taxonomy' => $tax->name,
+				'hide_empty'	=> false
+			));
+
+			foreach( $terms as $term ) {
+				echo '<option value="' . $term->term_id . '" ' . selected( $term->term_id, $select_post_type['taxonomy'], false ) . '>' . $term->name . '</option>';
+			}
+
+			echo '</optgroup>';
+
+		}
+		echo '</select></td>';
 				
-		$return .= '<span class="delete-x delete-post-type-row">&times;</span>';
+		echo '<td><span class="delete-x delete-post-type-row">&times;</span></td>';
 		
-		$return .= '</div>';
-		
-		return $return;
+		echo '</tr>';
 		
 	}
 	
@@ -1854,8 +1897,6 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		}
 		echo '</select></td>';
 
-		
-	    // $return .= '<label for="restriction-allowed-' . $row_key . '">' . __( 'allowed:', 'leaky-paywall' ) . '</label> ';
 		echo '<td><input id="restriction-allowed-' . $row_key . '" type="text" class="small-text" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" /></td>';
 
 		echo '<td><span class="delete-x delete-restriction-row">&times;</span></td>';

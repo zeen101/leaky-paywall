@@ -1296,7 +1296,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										<table>
 											<tr>
 												<th>Post Type</th>
-												<th>Taxonomy</th>
+												<th>Taxonomy <span style="font-weight: normal; font-size: 11px; color: #999;"> Category,tag,etc.</span></th>
 												<th>Number Allowed</th>
 												<th>&nbsp;</th>
 											</tr>

@@ -148,3 +148,27 @@ span.delete-restriction-row {
 #add-restriction-row {
 	margin-bottom: 10px;
 }
+
+/* access options */
+
+.leaky-paywall-interal-setting-table {
+	border: 1px solid #ddd;
+}
+
+.leaky-paywall-interal-setting-table th {
+	padding: 10px;
+}
+
+.leaky-paywall-interal-setting-table td {
+	border-top: 1px solid #F0F0F0;
+	padding: 10px;
+}
+
+span.delete-post-type-row {
+	color: red;
+	margin-top: -10px;
+}
+
+.allowed_value_div .allowed_value {
+	margin-left: 5px;
+}
