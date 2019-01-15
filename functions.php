@@ -2066,22 +2066,25 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					}
 					
 					$results .= '<div id="option-' . $level_id . '" class="leaky_paywall_subscription_option ' . $current_level. '">';
-					$results .= '<h3>' . stripslashes( $level['label'] ) . '</h3>';
+					$results .= '<h3>' . apply_filters( 'leaky_paywall_subscription_option_title', stripslashes( $level['label'] ) ) . '</h3>';
 					
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
-					foreach( $level['post_types'] as $post_type ) {
-					
-						/* @todo: We may need to change the site ID during this process, some sites may have different post types enabled */
-						$post_type_obj = get_post_type_object( $post_type['post_type'] );
-						if ( !empty( $post_type_obj ) ) {
-							if ( 0 <= $post_type['allowed_value'] ) {
-								$has_allowed_value = true;
-								$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
-							} else {
-								$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
+
+					if ( !empty( $level['post_types'] ) ) {
+						foreach( $level['post_types'] as $post_type ) {
+						
+							/* @todo: We may need to change the site ID during this process, some sites may have different post types enabled */
+							$post_type_obj = get_post_type_object( $post_type['post_type'] );
+							if ( !empty( $post_type_obj ) ) {
+								if ( 0 <= $post_type['allowed_value'] ) {
+									$has_allowed_value = true;
+									$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
+								} else {
+									$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
+								}
 							}
+								
 						}
-							
 					}
 					$results .= apply_filters( 'leaky_paywall_subscription_options_allowed_content', $allowed_content, $level_id, $level );
 					$results .= '</div>';
@@ -2852,6 +2855,12 @@ if ( ! function_exists( 'leaky_paywall_is_free_registration' ) ) {
 	}
 }
 
+/**
+ * Determine if the current subscriber can view the content
+ *
+ * @since 4.7.1
+ * @return bool
+ */
 function leaky_paywall_subscriber_can_view() {
 
 	$restricted = new Leaky_Paywall_Restrictions();

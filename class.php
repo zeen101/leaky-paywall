@@ -44,7 +44,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				
 			add_action( 'wp', array( $this, 'process_content_restrictions' ) );
 
-			add_action( 'init', array( $this, 'process_js_restrictions' ) );
+			add_action( 'init', array( $this, 'process_js_content_restrictions' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] ) {
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
@@ -62,17 +62,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			
 		}
 
-		public function process_js_restrictions() 
+		public function process_js_content_restrictions() 
 		{
 
 			$restrictions = new Leaky_Paywall_Restrictions();
-			$restrictions->process_js();
+			$restrictions->process_js_content_restrictions();
 		}
 
 		public function process_content_restrictions() 
 		{
 			$restrictions = new Leaky_Paywall_Restrictions();
-			$restrictions->process();
+			$restrictions->process_content_restrictions();
 		}
 		
 		public function restrict_pdf_attachment_url( $attachment_url, $attachment_id ) {
@@ -520,8 +520,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					else
 						$settings['enable_combined_restrictions'] = 'off';
 
-					if ( !empty( $_REQUEST['combined_restrictions_total_allowed'] ) )
-						$settings['combined_restrictions_total_allowed'] = trim( $_REQUEST['combined_restrictions_total_allowed'] );
+					if ( isset( $_POST['combined_restrictions_total_allowed'] ) ) {
+						$settings['combined_restrictions_total_allowed'] = sanitize_text_field( $_POST['combined_restrictions_total_allowed'] );
+					}
 
 					if ( !empty( $_POST['enable_js_cookie_restrictions'] ) )
 						$settings['enable_js_cookie_restrictions'] = $_POST['enable_js_cookie_restrictions'];
@@ -1344,7 +1345,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            <tr class="restriction-options">
 	                                <th><?php _e( 'Combined Restrictions Total Allowed', 'leaky-paywall' ); ?></th>
 	                                <td>
-	                                	<input type="text" id="combined_restrictions_total_allowed" class="small-text" name="combined_restrictions_total_allowed" value="<?php echo stripcslashes( $settings['combined_restrictions_total_allowed'] ); ?>" /> 
+	                                	<input type="number" id="combined_restrictions_total_allowed" class="small-text" name="combined_restrictions_total_allowed" value="<?php echo stripcslashes( $settings['combined_restrictions_total_allowed'] ); ?>" /> 
 	                                	<p class="description"><?php _e( 'If combined restrictions is enabled, the total amount of content items allowed before content is restricted.' ); ?></p>
 	                                </td>
 	                            </tr>

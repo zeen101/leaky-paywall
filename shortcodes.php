@@ -612,7 +612,7 @@ function do_leaky_paywall_register_form() {
 			<h3 class="leaky-paywall-subscription-details-title"><?php printf( __( 'Your Subscription', 'leaky-paywall' ) ); ?></h3>
 
 			<ul class="leaky-paywall-subscription-details">
-				<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['label']; ?></li>
+				<li><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_registration_level_name', $level['label'] ); ?></li>
 				<li><strong><?php printf( __( 'Subscription Length:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? __( 'Forever', 'leaky-paywall' ) : $level['interval_count'] . ' ' . $level['interval'] . ( $level['interval_count'] > 1  ? 's' : '' ); ?></li>
 				<li><strong><?php printf( __( 'Recurring:', 'leaky-paywall' ) ); ?> </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? __( 'Yes', 'leaky-paywall' ) : __( 'No', 'leaky-paywall' ); ?></li>
 				<li><strong><?php printf( __( 'Content Access:', 'leaky-paywall' ) ); ?></strong>
@@ -620,20 +620,23 @@ function do_leaky_paywall_register_form() {
 				<?php 
 					$content_access_description = '';
 					$i = 0;
-					foreach( $level['post_types'] as $type ) {
 
-						if ( $i > 0 ) {
-							$content_access_description .= ', ';
-						}
+					if ( !empty( $level['post_types'] ) ) {
+						foreach( $level['post_types'] as $type ) {
+							if ( $i > 0 ) {
+								$content_access_description .= ', ';
+							}
 
-						if ( $type['allowed'] == 'unlimited' ) {
-							$content_access_description .= ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's';
-						} else {
-							$content_access_description .= $type['allowed_value'] . ' ' . $type['post_type'] . 's';
-						}
-						
-						$i++;
-					}	
+							if ( $type['allowed'] == 'unlimited' ) {
+								$content_access_description .= ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's';
+							} else {
+								$content_access_description .= $type['allowed_value'] . ' ' . $type['post_type'] . 's';
+							}
+							
+							$i++;
+						}	
+					}
+					
 					
 					echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level, $level_id );
 				?>	

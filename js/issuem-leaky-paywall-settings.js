@@ -10,7 +10,6 @@ $leaky_paywall_settings(document).ready(function($) {
         }
         $.post( ajaxurl, data, function( response ) {
             $( 'td#issuem-leaky-paywall-restriction-rows table' ).append( response );
-         //   update_restriction_row_taxonomies();
         });
 	});
 	
@@ -26,8 +25,6 @@ $leaky_paywall_settings(document).ready(function($) {
         $.post( ajaxurl, data, function( response ) {
 	        console.log( response );
 	        $('#issuem-leaky-paywall-subsciption-row-' + row_key + '-post-types table').append(response);
-            // $( '#issuem-leaky-paywall-subsciption-row-' + row_key + '-post-types' ).append( response );
-          //  update_access_row_taxonomies();
         });
 	});
 	
@@ -73,54 +70,28 @@ $leaky_paywall_settings(document).ready(function($) {
 		parent.slideUp( 'normal', function() { $( this ).remove(); } );
 	});
 
-	// update_restriction_row_taxonomies();
-	// update_access_row_taxonomies();
-
 	$( '#issuem-leaky-paywall-restriction-rows').on( 'change', '.leaky-paywall-restriction-post-type', function() {
-			// replace taxonomy select with loader
-			console.log('here');
-			var post_type = $(this).children("option:selected").val();
-			var taxCell = $(this).parent().next();
-			taxCell.append('<div class="spinner" style="visibility: visible; float: left;"></div>');
-			taxCell.find('select').remove();
+		// replace taxonomy select with loader
+		console.log('here');
+		var post_type = $(this).children("option:selected").val();
+		var taxCell = $(this).parent().next();
+		taxCell.append('<div class="spinner" style="visibility: visible; float: left;"></div>');
+		taxCell.find('select').remove();
 
-			// ajax call to find taxonomies and terms
-	        var data = {
-	            'action': 'leaky-paywall-get-restriction-row-post-type-taxonomies',
-	            'post_type': post_type
-	        }
+		// ajax call to find taxonomies and terms
+        var data = {
+            'action': 'leaky-paywall-get-restriction-row-post-type-taxonomies',
+            'post_type': post_type
+        }
 
-			$.post( ajaxurl, data, function( response ) {
-	          	// build out the new select box
-				taxCell.append( response );
-				taxCell.find('.spinner').remove();
-	        });
+		$.post( ajaxurl, data, function( response ) {
+          	// build out the new select box
+			taxCell.append( response );
+			taxCell.find('.spinner').remove();
+        });
 
-		});
+	});
 
-	function update_access_row_taxonomies() {
-		$( '.select_level_post_type').change(function() {
-			// replace taxonomy select with loader
-			var post_type = $(this).children("option:selected").val();
-			var taxCell = $(this).parent().next();
-			taxCell.append('<div class="spinner" style="visibility: visible; float: left;"></div>');
-			taxCell.find('select').remove();
-
-			// ajax call to find taxonomies and terms
-	        var data = {
-	            'action': 'leaky-paywall-get-restriction-row-post-type-taxonomies',
-	            'post_type': post_type
-	        }
-
-			$.post( ajaxurl, data, function( response ) {
-	          	// build out the new select box
-	          	taxCell.find('select').remove();
-				taxCell.append( response );
-				taxCell.find('.spinner').remove();
-	        });
-
-		});
-	}
 
 	$( '.issuem-leaky-paywall-subscription-level-row-table').on( 'change', '.select_level_post_type', function() {
 			// replace taxonomy select with loader

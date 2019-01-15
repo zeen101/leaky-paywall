@@ -14,7 +14,7 @@ class Leaky_Paywall_Restrictions {
 	 * @since 4.10.3
 	 *
 	 */
-	public function process()
+	public function process_content_restrictions()
 	{
 
 		$settings = get_leaky_paywall_settings();
@@ -48,6 +48,13 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Determine if the subscriber can view the current content
+	 *
+	 * @since 4.10.3
+	 *
+	 * @return boolean
+	 */
 	public function subscriber_can_view()
 	{
 
@@ -148,7 +155,7 @@ class Leaky_Paywall_Restrictions {
 			leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 		} else {
 
-			$output = '<h3>' . __( 'Unauthorize PDF Download', 'leaky-paywall' ) . '</h3>';
+			$output = '<h3>' . __( 'Unauthorized PDF Download', 'leaky-paywall' ) . '</h3>';
 			$output .= '<p>' . sprintf( __( 'You must be logged in with a valid subscription to download Issue PDFs. Please <a href="%s">log in</a> or <a href="%s">subscribe</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
 
@@ -295,6 +302,18 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Update the available content for the default restriction settings
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param array $restrictions
+	 * @param array $available_content
+	 * @param string $post_type_id
+	 * @param string $restricted_post_type
+	 *
+	 * @return  array $available_content
+	 */
 	public function update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
 	{
 
@@ -320,6 +339,13 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Determine if current content is restricted using the default restriction settings
+	 *
+	 * @since 4.10.3
+	 *
+	 * @return  bool
+	 */
 	public function is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
 	{
 
@@ -344,6 +370,13 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Determine if combined restrictions is enabled
+	 *
+	 * @since 4.10.3
+	 *
+	 * @return  bool
+	 */
 	public function combined_restrictions_enabled()
 	{
 
@@ -401,6 +434,18 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Update the available content for combined restrictions
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param array $restrictions
+	 * @param array $available_content
+	 * @param string $post_type_id
+	 * @param string $restricted_post_type
+	 *
+	 * @return array $available_content
+	 */
 	public function update_available_content_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
 	{
 		if ( !$post_id ) {
@@ -427,7 +472,18 @@ class Leaky_Paywall_Restrictions {
 	}
 
 
-
+	/**
+	 * Determine if the current post is restricted based on combined restrictions
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param array $restrictions
+	 * @param array $available_content
+	 * @param string $post_type_id
+	 * @param string $restricted_post_type
+	 *
+	 * @return bool $restricted
+	 */
 	public function is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
 	{
 
@@ -530,7 +586,7 @@ class Leaky_Paywall_Restrictions {
 	 *
 	 * @return array $available_content Array of post ids that have been viewed
 	 */
-	public function get_available_content($restricted_post_type)
+	public function get_available_content( $restricted_post_type )
 	{
 
 		if ( !empty( $_COOKIE[$this->get_cookie_name()] ) ) {
@@ -623,6 +679,15 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Check if the Leaky Paywall visibility settings for this post restrict its access to the current user
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param object $post The post object
+	 *
+	 * @return bool $is_restricted 
+	 */
 	public function visibility_is_restricted( $post )
 	{
 		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
@@ -637,8 +702,6 @@ class Leaky_Paywall_Restrictions {
 					$is_restricted = true;
 				}
 			}
-
-
 
 		}
 
@@ -663,7 +726,7 @@ class Leaky_Paywall_Restrictions {
 	 *
 	 * @param string $content
 	 *
-	 * @return string $new_content conten for paywall barrier
+	 * @return string $new_content content for paywall barrier
 	 */
 	public function the_content_paywall( $content ) {
 
@@ -689,6 +752,15 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	/**
+	 * Build the HTML for the content paywall message
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param string $message
+	 *
+	 * @return string $message The paywall message
+	 */
 	public function the_content_paywall_message() 
 	{
 
@@ -973,7 +1045,13 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
-	public function process_js()
+	/**
+	 * Set ajax hooks for processing restrictions with javascript
+	 *
+	 * @since 4.7.1
+	 *
+	 */
+	public function process_js_content_restrictions()
 	{
 
 		add_action( 'wp_ajax_nopriv_leaky_paywall_process_cookie', array( $this, 'process_cookie_requests' ) );
