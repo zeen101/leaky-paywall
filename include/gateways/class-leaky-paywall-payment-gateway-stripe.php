@@ -147,11 +147,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ( !empty( $cu ) ) {
 					$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 
+					// updating a current subscription
 					if ( !empty( $subscriptions->data ) ) {
 						foreach( $subscriptions->data as $subscription ) {
 							$sub = $cu->subscriptions->retrieve( $subscription->id );
 							$sub->plan = $this->plan_id;
 							$sub->save();
+
+							do_action( 'leaky_paywall_after_update_stripe_subscription', $cu, $sub );
+							
 						}
 					} else {
 						$cu->subscriptions->create( array( 'plan' => $this->plan_id ) );
