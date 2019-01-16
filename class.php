@@ -1677,7 +1677,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <select name="leaky-paywall-subscriber-level-id">
 	                        <?php
 	                        foreach( $settings['levels'] as $key => $level ) {
-		                        echo '<option value="' . $key .'" ' . selected( $key, $subscriber_level_id, true ) . '>' . stripslashes( $level['label'] ) . '</option>';
+	                        	if ( !$level['label'] ) {
+	                        		continue;
+	                        	}
+		                        echo '<option value="' . $key . '" ' . selected( $key, $subscriber_level_id, true ) . '>' . stripslashes( $level['label'] );
+		                        echo $level['deleted'] ? '(deleted)' : '';
+		                        echo '</option>';
 	                        }
 	                        ?>
 	                        </select>
@@ -1727,7 +1732,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        <select name="leaky-paywall-subscriber-level-id">
 	                        <?php
 	                        foreach( $settings['levels'] as $key => $level ) {
-		                        echo '<option value="' . $key .'">' . stripslashes( $level['label'] ) . '</option>';
+	                        	if ( !$level['label'] ) {
+	                        		continue;
+	                        	}
+		                        echo '<option value="' . $key .'">' . stripslashes( $level['label'] );
+		                        echo $level['deleted'] ? '(deleted)' : '';
+		                        echo '</option>';
 	                        }
 	                        ?>
 	                        </select>
