@@ -2,8 +2,8 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 4.3.0
-Tested up to: 5.0.2
-Stable tag: 4.11.2
+Tested up to: 5.0.3
+Stable tag: 4.12.0
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -81,6 +81,13 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.12.0 =
+* Introducting restrictions by taxonomy! (category, tag, etc.)
+* Add leaky_paywall_after_update_stripe_subscription action after updating a Stripe subscription
+* Add Leaky Paywall toolbar to admin bar for easier admin workflows
+* Fix dropped zeros on price display
+* Fix Stripe error when subscriber updates their CC info on their account page
 
 = 4.11.2 =
 * add styles for login form
