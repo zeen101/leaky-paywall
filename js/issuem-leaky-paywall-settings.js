@@ -94,25 +94,36 @@ $leaky_paywall_settings(document).ready(function($) {
 
 
 	$( '.issuem-leaky-paywall-subscription-level-row-table').on( 'change', '.select_level_post_type', function() {
-			// replace taxonomy select with loader
-			var post_type = $(this).children("option:selected").val();
-			var taxCell = $(this).parent().next();
-			taxCell.append('<div class="spinner" style="visibility: visible; float: left;"></div>');
-			taxCell.find('select').remove();
+		// replace taxonomy select with loader
+		var post_type = $(this).children("option:selected").val();
+		var taxCell = $(this).parent().next();
+		taxCell.append('<div class="spinner" style="visibility: visible; float: left;"></div>');
+		taxCell.find('select').remove();
 
-			// ajax call to find taxonomies and terms
-	        var data = {
-	            'action': 'leaky-paywall-get-restriction-row-post-type-taxonomies',
-	            'post_type': post_type
-	        }
+		// ajax call to find taxonomies and terms
+        var data = {
+            'action': 'leaky-paywall-get-restriction-row-post-type-taxonomies',
+            'post_type': post_type
+        }
 
-			$.post( ajaxurl, data, function( response ) {
-	          	// build out the new select box
-	          	taxCell.find('select').remove();
-				taxCell.append( response );
-				taxCell.find('.spinner').remove();
-	        });
+		$.post( ajaxurl, data, function( response ) {
+          	// build out the new select box
+          	taxCell.find('select').remove();
+			taxCell.append( response );
+			taxCell.find('.spinner').remove();
+        });
 
-		});
+	});
+
+	$('#enable_combined_restrictions').click(function() {
+		if ( $(this).is(':checked' ) ) {
+			$('.restriction-allowed-number-setting').css('display', 'none');
+			$('.allowed-number-helper-text').css('display', 'block');
+		} else {
+			$('.restriction-allowed-number-setting').css('display', 'block');
+			$('.allowed-number-helper-text').css('display', 'none');
+		}
+		
+	});
 
 });

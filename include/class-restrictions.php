@@ -1,5 +1,4 @@
 <?php
-
 /**
 * Load the Restrictions Class
 */
@@ -7,536 +6,377 @@ class Leaky_Paywall_Restrictions {
 
 	/** @var string Name of the restriction cookie */
 	private $cookie_name = 'issuem_lp';
+	private $post_id;
+	private $is_ajax;
 
-	/**
-	 * Kick off the restriction process
-	 *
-	 * @since 4.10.3
-	 *
-	 */
-	public function process_content_restrictions()
+	public function __construct( $post_id = '' ) 
+	{
+		$this->post_id = $post_id ? $post_id : get_the_ID();
+		$this->is_ajax = false;
+
+		add_action( 'wp_footer', array( $this, 'display_viewed_content_debug' ) );
+	}
+
+	public function display_viewed_content_debug() 
 	{
 
-		$settings = get_leaky_paywall_settings();
+		if ( !isset( $_GET['leaky_paywall_debug'] ) ) {
+			return;
+		}
+		?>
+			<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 999;">
+				<?php 
+				echo '<pre>Viewed Content: ';
+				print_r( $this->get_content_viewed_by_user() );
+				echo '</pre>';
+				?>
+			</div>
+		<?php 
+	}
 
-		do_action( 'leaky_paywall_before_process_requests', $settings );
+	public function process_content_restrictions() 
+	{
 
-		$has_subscriber_paid = leaky_paywall_has_user_paid();
+		do_action( 'leaky_paywall_before_process_requests', get_leaky_paywall_settings() );
 
-		if ( isset( $_REQUEST['issuem-pdf-download'] ) ) {
-			$this->pdf_access( $has_subscriber_paid );
+		if ( !$this->is_content_restricted() ) {
+			return;
 		}
 
-		if ( is_singular() ) {
-			$this->content_access();
+		// content is restricted, so see if the current user can access it
+		if ( $this->current_user_can_access() ) {
+			return;
 		}
 
-		if ( $has_subscriber_paid ) {
+		$this->display_subscribe_nag();
 
-			if ( $this->is_cancel_request() ) {
-				wp_die( leaky_paywall_cancellation_confirmation(), $settings['site_name'] . ' - Cancel Request' );
-			}
-
-			$this->redirect_from_login_page();
-
-		} else {
-
-			if ( !empty( $_REQUEST['r'] ) ) {
-				$this->process_passwordless_login();
-			}
-		}
+		do_action( 'leaky_paywall_is_restricted_content' );
 
 	}
 
-	/**
-	 * Determine if the subscriber can view the current content
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return boolean
-	 */
-	public function subscriber_can_view()
+	public function process_js_content_restrictions() 
+	{
+		add_action( 'wp_ajax_nopriv_leaky_paywall_process_cookie', array( $this, 'check_js_restrictions' ) );
+		add_action( 'wp_ajax_leaky_paywall_process_cookie', array( $this, 'check_js_restrictions' ) );
+
+	}
+
+	public function check_js_restrictions() 
 	{
 
-		if ( !is_singular() ) {
-			return true;
+		$this->is_ajax = true;
+		$this->post_id = $_REQUEST['post_id'];
+		
+		if ( !$this->is_content_restricted() ) {
+			echo json_encode( 'do not show paywall' );
+			exit();
 		}
 
-		global $post;
-		$settings = get_leaky_paywall_settings();
-
-		// allow admins to view all content
-		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
-			return true;
+		// content is restricted, so see if the current user can access it
+		if ( $this->current_user_can_access() ) {
+			echo json_encode( 'do not show paywall' );
+			exit();
 		}
 
-		// We don't ever want to block the login, subscription, etc.
-		if ( $this->is_unblockable_content() ) {
-			return true;
-		}
+		echo json_encode( $this->get_subscribe_nag() );
+		do_action( 'leaky_paywall_is_restricted_content' );
 
-		if ( $this->visibility_allows_access( $post ) ) {
-			return true;
-		}
+		exit();
 
-		if ( $this->visibility_is_restricted( $post ) ) {
+	}
+
+	public function is_content_restricted() 
+	{
+		$is_restricted = false;
+
+		if ( $this->content_matches_restriction_rules() ) {
+			$is_restricted = true;
+		}
+		
+		return apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $this->get_restriction_settings(), $this->post_id );
+	}
+
+	public function content_matches_restriction_rules() 
+	{
+
+		if ( !$this->is_single() ) {
 			return false;
 		}
 
-		$restrictions = $this->get_subscriber_restrictions();
-
-		$post_type_id = '';
-		$restricted_post_type = '';
-		$is_restricted = false;
-
-		if ( !empty( $restrictions ) ) {
-
-			foreach( $restrictions as $key => $restriction ) {
-
-				if ( is_singular( $restriction['post_type'] ) ) {
-
-					// this will only be ignored if the allowed value is unlimited ( -1 )
-					if ( 0 <= $restriction['allowed_value'] ) {
-
-						$post_type_id = $key;
-						$restricted_post_type = $restriction['post_type'];
-						$is_restricted = true;
-						break;
-
-					}
-
-				}
-
-			}
-
-		}
-
-		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
-
-		if ( !$is_restricted ) {
-			return true;
-		}
-
-		$available_content = $this->get_available_content($restricted_post_type);
-
-		if ( $this->combined_restrictions_enabled() ) {
-
-			if ( $this->is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
-				return false;
-			}
-
-		} else {
-
-			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
-				return false;
-			}
-
-		}
-
-		return true;
-
-	}
-
-
-	/**
-	 * Determine if the user has pdf access
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param boolean $has_subscriber_paid
-	 */
-	public function pdf_access( $has_subscriber_paid )
-	{
-
-		$settings = get_leaky_paywall_settings();
-
-		//Admins or subscribed users can download PDFs
-		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $has_subscriber_paid ) {
-			leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
-		} else {
-
-			$output = '<h3>' . __( 'Unauthorized PDF Download', 'leaky-paywall' ) . '</h3>';
-			$output .= '<p>' . sprintf( __( 'You must be logged in with a valid subscription to download Issue PDFs. Please <a href="%s">log in</a> or <a href="%s">subscribe</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
-			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
-
-			wp_die( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ), $settings['site_name'] . ' - Error' );
-
-		}
-
-	}
-
-	/**
-	 * Determine if the user has content access
-	 *
-	 * @since 4.10.3
-	 *
-	 */
-	public function content_access()
-	{
-
-		global $post;
-		$settings = get_leaky_paywall_settings();
-
 		// allow admins to view all content
 		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
-			return;
+			return false;
 		}
 
-		// We don't ever want to block the login, subscription, etc.
+		// We don't ever want to block the login page, subscription page, etc.
 		if ( $this->is_unblockable_content() ) {
-			return;
+			return false;
 		}
 
-		if ( $this->visibility_allows_access( $post ) ) {
-			return;
+		// check if content is set to be open to everyone
+		if ( $this->visibility_allows_access() ) {
+			return false;
 		}
 
-		if ( $this->visibility_is_restricted( $post ) ) {
-			$this->restrict_content();
-		}
-
-		// determine if current content's post type has a limited allowed value in the restriction settings
-		$restrictions = $this->get_subscriber_restrictions();
-
-		$post_type_id = '';
-		$restricted_post_type = '';
-		$is_restricted = false;
-
-		if ( !empty( $restrictions ) ) {
-
-			foreach( $restrictions as $key => $restriction ) {
-
-				if ( isset( $restriction['post_type'] ) && is_singular( $restriction['post_type'] ) ) {
-
-					// this will only be ignored if the allowed value is unlimited ( -1 )
-					if ( 0 <= $restriction['allowed_value'] ) {
-
-						$post_type_id = $key;
-						$restricted_post_type = $restriction['post_type'];
-						$is_restricted = true;
-						break;
-
-					}
-
-				}
-
-			}
-
-		}
-
-		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
-
-		if ( !$is_restricted ) {
-			return;
-		}
-
-		// content that can be accessed because the user has viewed it already
-		$available_content = $this->get_available_content($restricted_post_type);
-
-		if ( $this->combined_restrictions_enabled() ) {
-
-			// maybe update available content array
-			$available_content = $this->update_available_content_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type );
-
-			if ( $this->is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
-				$this->restrict_content();
-			}
-
-			// $available_content = $this->combined_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
-		} else {
-
-			$available_content = $this->update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type );
-
-			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type ) ) {
-				$this->restrict_content();
-			}
-
-			// $available_content = $this->default_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type );
-		}
-
-		$this->set_available_content_cookie( $available_content );
-
-	}
-
-	/**
-	 * Process the default restriction access
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param array $restrictions
-	 * @param array $available_content
-	 * @param string $post_type_id
-	 * @param string $restricted_post_type
-	 *
-	 * @return array $availabled_content
-	 */
-	public function default_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
-	{
-
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
-		}
-
-		if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
-
-			if ( $restrictions[$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) {
-
-				// if this post hasn't been added to the available content array, do so now
-				if ( !array_key_exists( $post_id, $available_content[$restricted_post_type] ) ) {
-					$available_content[$restricted_post_type][$post_id] = $this->get_expiration_time();
-				}
-
-			} else {
-
-				// if this post hasn't been viewed before, then it needs to be restricted
-				if ( !array_key_exists( $post_id, $available_content[$restricted_post_type] ) ) {
-					$this->restrict_content();
-				}
-
-			}
-
-		}
-
-		return $available_content;
-
-	}
-
-	/**
-	 * Update the available content for the default restriction settings
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param array $restrictions
-	 * @param array $available_content
-	 * @param string $post_type_id
-	 * @param string $restricted_post_type
-	 *
-	 * @return  array $available_content
-	 */
-	public function update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
-	{
-
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
-		}
-
-		if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
-
-			if ( $restrictions[$post_type_id]['allowed_value'] > count( $available_content[$restricted_post_type] ) ) {
-
-				// if this post hasn't been added to the available content array, do so now
-				if ( !array_key_exists( $post_id, $available_content[$restricted_post_type] ) ) {
-					$available_content[$restricted_post_type][$post_id] = $this->get_expiration_time();
-				}
-
-			}
-
-		}
-
-		return $available_content;
-
-	}
-
-	/**
-	 * Determine if current content is restricted using the default restriction settings
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return  bool
-	 */
-	public function is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
-	{
-
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
-		}
-
-		if( -1 != $restrictions[$post_type_id]['allowed_value'] ) { //-1 means unlimited
-
-			if ( $restrictions[$post_type_id]['allowed_value'] <= count( $available_content[$restricted_post_type] ) ) {
-
-				if ( !array_key_exists( $post_id, $available_content[$restricted_post_type] ) ) {
-					return true;
-				}
-
-			}
-
-		}
-
-		return false;
-
-	}
-
-	/**
-	 * Determine if combined restrictions is enabled
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return  bool
-	 */
-	public function combined_restrictions_enabled()
-	{
-
-		$settings = get_leaky_paywall_settings();
-
-		if ( 'on' == $settings['enable_combined_restrictions'] ) {
+		if ( $this->visibility_restricts_access() ) {
 			return true;
 		}
 
+		// check if content is restricted based on main restriction settings
+		if ( $this->content_restricted_by_settings() ) {
+			return true;
+		}
+		
 		return false;
 
 	}
 
-	/**
-	 * Process the combined restriction access
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param array $restrictions
-	 * @param array $available_content
-	 * @param string $post_type_id
-	 * @param string $restricted_post_type
-	 *
-	 * @return array $availabled_content
-	 */
-	public function combined_restriction_access( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
+	public function is_single() 
 	{
 
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
+		$is_single = false;
+
+		if ( is_single( $this->post_id ) ) {
+			$is_single = true;
 		}
 
-		$total_allowed = $this->get_combined_restriction_total_allowed();
-		$total_viewed = $this->get_total_content_viewed( $available_content );
+		if ( is_page( $this->post_id ) ) {
+			$is_single = true;
+		}
 
-		if ( -1 != $restrictions[$post_type_id]['allowed_value'] ) {
+		// for ajax
+		if ( $this->is_ajax ) {
+			$is_single = true;
+		}
 
-			if ( $total_allowed > $total_viewed ) {
+		return $is_single;
 
-				if ( !array_key_exists( $post_id, $available_content[$restricted_post_type] ) ) {
-					$available_content[$restricted_post_type][$post_id] = $this->get_expiration_time();
-				}
+	}
 
+	public function current_user_can_access() 
+	{
+
+		// get their level
+		$level_ids = leaky_paywall_subscriber_current_level_ids();
+
+		// compare to the restrictions, and see if they can access the content
+
+		// user does not have a level id, so see if their allowed value lets them view the content
+		if ( empty( $level_ids ) ) {
+
+			// if they do not have a level id, and the content is restricted by level, then they can't view it
+			if ( $this->visibility_restricts_access() ) {
+				return false;
+			}
+
+			if ( $this->allowed_value_exceeded() ) {
+				return false;
 			} else {
-
-				if ( $this->content_never_viewed( $available_content, $post_id ) ) {
-					$this->restrict_content();
-				}
-
+				return true;
 			}
-		}
+			
+		} else {
 
-		return $available_content;
-
-	}
-
-	/**
-	 * Update the available content for combined restrictions
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param array $restrictions
-	 * @param array $available_content
-	 * @param string $post_type_id
-	 * @param string $restricted_post_type
-	 *
-	 * @return array $available_content
-	 */
-	public function update_available_content_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
-	{
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
-		}
-
-		$total_allowed = $this->get_combined_restriction_total_allowed();
-		$total_viewed = $this->get_total_content_viewed( $available_content );
-
-		if ( -1 != $restrictions[$post_type_id]['allowed_value'] ) {
-
-			if ( $total_allowed > $total_viewed ) {
-
-				if ( !array_key_exists( $post_id, $available_content[$restricted_post_type] ) ) {
-					$available_content[$restricted_post_type][$post_id] = $this->get_expiration_time();
-				}
-
+			// if they not have a level id, and the content is restricted by level, then they can't view it
+			if ( $this->visibility_restricts_access() ) {
+				return false;
 			}
 
-		}
+			if ( $this->level_id_allows_access() ) {
 
-		return $available_content;
-	}
-
-
-	/**
-	 * Determine if the current post is restricted based on combined restrictions
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param array $restrictions
-	 * @param array $available_content
-	 * @param string $post_type_id
-	 * @param string $restricted_post_type
-	 *
-	 * @return bool $restricted
-	 */
-	public function is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id = null )
-	{
-
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
-		}
-
-		$restricted = false;
-		$total_allowed = $this->get_combined_restriction_total_allowed();
-		$total_viewed = $this->get_total_content_viewed( $available_content );
-
-		if ( -1 != $restrictions[$post_type_id]['allowed_value'] ) {
-
-			if ( $total_allowed <= $total_viewed ) {
-
-				if ( $this->content_never_viewed( $available_content, $post_id ) ) {
-
-					$restricted = true;
-				}
-
-			}
-		}
-
-		return $restricted;
-	}
-
-	/**
-	 * Determine if the current content has never been viewed by the current user
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param array $available_content
-	 *
-	 * @return boolean
-	 */
-	public function content_never_viewed( $available_content, $post_id = null )
-	{
-
-		if ( !$post_id ) {
-			global $post;
-			$post_id = $post->ID;
-		}
-
-		foreach( $available_content as $content ) {
-
-			if ( array_key_exists( $post_id, $content ) ) {
+				return true;
+			} else {
 				return false;
 			}
 
 		}
 
-		return true;
+		return false;
+	}
+
+	public function level_id_allows_access() 
+	{
+		$settings = get_leaky_paywall_settings();
+		$level_ids = leaky_paywall_subscriber_current_level_ids();
+		$restrictions = $this->get_restriction_settings();
+		$viewed_content = $this->get_content_viewed_by_user();
+		$content_post_type = get_post_type( $this->post_id );
+		
+		foreach( $level_ids as $level_id ) {
+
+			$access_rules = $settings['levels'][$level_id]['post_types'];
+
+			foreach( $access_rules as $access_rule ) {
+
+				foreach( $restrictions['post_types'] as $restriction ) {
+
+					if ( $access_rule['post_type'] != $restriction['post_type'] ) {
+						continue;
+					}
+
+					// first, see if the content has already been viewed. if so, let them view it (keys are the post_id)
+					if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type]) ) ) {
+						return true;
+					}
+
+					if ( !isset( $access_rule['taxonomy'] ) ) {
+						$access_rule['taxonomy'] = 'all';
+					}
+
+					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
+						return true;
+					}
+					
+					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
+						return true;
+					}
+
+					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
+						continue;
+					}
+
+					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
+							
+						// get allowed value and compare to total content read for this taxonomy
+						$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
+
+						// this only needs to calculate for this term
+						$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
+
+						// max views reached so block the content
+						if ( !empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+							return false;
+						} else {
+							$this->update_content_viewed_by_user();
+							return true;
+						}
+
+					}
+
+				}
+				
+			}
+
+		}
+
+		return false;
+	}
+
+	public function allowed_value_exceeded() 
+	{
+
+		$settings = get_leaky_paywall_settings();
+
+		// get viewed content
+		$viewed_content = $this->get_content_viewed_by_user();
+		$restrictions = $this->get_restriction_settings();
+		$content_post_type = get_post_type( $this->post_id );
+
+		foreach( $restrictions['post_types'] as $restriction ) {
+
+			if ( !isset( $restriction['taxonomy'] ) ) {
+				$restriction['taxonomy'] = 'all';
+			}
+
+			if ( $restriction['post_type'] == $content_post_type && $restriction['taxonomy'] == 'all'  ) {
+
+				if ( 'on' == $settings['enable_combined_restrictions'] ) {
+					$allowed_value = $settings['combined_restrictions_total_allowed'];
+					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
+				} else {
+					$allowed_value = $restriction['allowed_value'];
+					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? count( $viewed_content[$content_post_type] ) : 0;
+				}
+
+				// If the content has already been viewed, then let them view it (keys are the post_id)
+				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type]) ) ) {
+					return false;
+				}
+				
+				if ( $allowed_value == 0 ) {
+					return true;
+				} else if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+					// max views reached so block the content
+					return true;
+				} else {
+					$this->update_content_viewed_by_user();
+					return false;
+				}
+
+			}
+
+			if ( $restriction['post_type'] == $content_post_type && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
+				
+				// this only needs to calculate for this term (unless combined)
+				if ( 'on' == $settings['enable_combined_restrictions'] ) {
+					$allowed_value = $settings['combined_restrictions_total_allowed'];
+					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
+				} else {
+					$allowed_value = $restriction['allowed_value'];
+					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
+				}
+				
+				// first, see if the content has already been viewed. if so, let them view it (keys are the post_id)
+				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type]) ) ) {
+					return false;
+				}
+
+				// max views reached so block the content
+				if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+					return true;
+				} else {
+					$this->update_content_viewed_by_user();
+					return false;
+				}
+
+			}
+
+			if ( $restriction['post_type'] == $content_post_type && 'on' == $settings['enable_combined_restrictions'] ) {
+
+				$allowed_value = $settings['combined_restrictions_total_allowed'];
+
+				// first, see if the content has already been viewed. if so, let them view it (keys are the post_id)
+				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type]) ) ) {
+					return false;
+				}
+
+				// calculate for all content since its combined restrictions
+				$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
+
+				// max views reached so block the content
+				if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+					return true;
+				} else {
+					$this->update_content_viewed_by_user();
+					return false;
+				}
+
+
+			}
+
+		}
+
+	}
+
+	// go through each content item viewed and see if its term matches any restrictions
+	public function get_number_viewed_by_term( $term_id ) 
+	{
+		$viewed_content = $this->get_content_viewed_by_user();
+		$num = 0;
+
+		foreach( $viewed_content as $post_type => $items ) {
+
+			foreach( $items as $post_id => $item ) {
+
+				if ( $this->content_taxonomy_matches( $term_id, $post_id ) ) {
+					$num++;
+				}
+
+			}
+
+		}
+
+		return $num;
 
 	}
 
@@ -549,12 +389,13 @@ class Leaky_Paywall_Restrictions {
 	 *
 	 * @return string $total_viewed Number of content items viewed
 	 */
-	public function get_total_content_viewed( $available_content )
+	public function get_total_content_viewed()
 	{
 
+		$viewed_content = $this->get_content_viewed_by_user();
 		$total_viewed = 0;
 
-		foreach( $available_content as $content ) {
+		foreach( $viewed_content as $content ) {
 
 			$total_viewed += count( $content );
 
@@ -564,203 +405,37 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
-	/**
-	 * Get the combined restriction total allowed content items
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return string $content_items_allowed
-	 */
-	public function get_combined_restriction_total_allowed()
-	{
-		$settings = get_leaky_paywall_settings();
-		$total_allowed = $settings['combined_restrictions_total_allowed'];
+	 public function display_subscribe_nag() 
+	 {
+	 	add_filter( 'the_content', array( $this, 'get_subscribe_nag' ), 999 );
+	 }
 
-		return $total_allowed;
-	}
+	 public function get_subscribe_nag( $content = '' ) 
+	 {
 
-	/**
-	 * Get the content that the user has already viewed
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return array $available_content Array of post ids that have been viewed
-	 */
-	public function get_available_content( $restricted_post_type )
-	{
+	 	if ( !$content ) {
+	 		$content = get_the_content( $this->post_id );
+	 	}
 
-		if ( !empty( $_COOKIE[$this->get_cookie_name()] ) ) {
-			$available_content = json_decode( stripslashes( $_COOKIE[$this->get_cookie_name()] ), true );
-		} else {
-			$available_content = array();
-		}
-
-		if ( empty( $available_content[$restricted_post_type] ) ) {
-			$available_content[$restricted_post_type] = array();
-		}
-
-		// Current post view has expired or it is very old and based on the post ID rather than the expiration time
-		foreach ( $available_content[$restricted_post_type] as $key => $restriction ) {
-
-			if ( time() > $restriction || 7200 > $restriction ) {
-				unset( $available_content[$restricted_post_type][$key] );
-			}
-
-		}
-
-		return apply_filters( 'leaky_paywall_available_content', $available_content );
-	}
-
-	/**
-	 * Update the available content cookie with the current post id
-	 *
-	 * @since 4.10.3
-	 *=
-	 * @param array $available_content
-	 *
-	 */
-	public function set_available_content_cookie( $available_content )
-	{
-
-		$json_available_content = json_encode( $available_content );
-
-		$cookie = setcookie( $this->get_cookie_name(), $json_available_content, $this->get_expiration_time(), '/' );
-		$_COOKIE[$this->get_cookie_name()] = $json_available_content;
-
-	}
-
-	/**
-	 * Determine if the current content can be viewed based on the Leaky Paywall visibility settings on the content item
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param object $post
-	 *
-	 * @return boolean
-	 */
-	public function visibility_allows_access( $post )
-	{
-
-		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-		$level_ids = leaky_paywall_subscriber_current_level_ids();
-
-		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
-
-			switch( $visibility['visibility_type'] ) {
-
-				case 'only':
-					$only = array_intersect( $level_ids, $visibility['only_visible'] );
-					if ( empty( $only ) ) {
-						// $this->restrict_content();
-					}
-					break;
-
-				case 'always':
-					$always = array_intersect( $level_ids, $visibility['always_visible'] );
-					if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
-						return true; //always visible, don't need process anymore
-					}
-					break;
-
-				case 'onlyalways':
-					$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
-					if ( empty( $onlyalways ) ) {
-						$this->restrict_content();
-					} else if ( !empty( $onlyalways ) ) {
-						return true; //always visible, don't need process anymore
-					}
-					break;
-
-			}
-
-		}
-
-		return false;
-
-	}
-
-	/**
-	 * Check if the Leaky Paywall visibility settings for this post restrict its access to the current user
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param object $post The post object
-	 *
-	 * @return bool $is_restricted 
-	 */
-	public function visibility_is_restricted( $post )
-	{
-		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-		$level_ids = leaky_paywall_subscriber_current_level_ids();
-		$is_restricted = false;
-
-		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
-
-			if ( $visibility['visibility_type'] == 'only' ) {
-				$only = array_intersect( $level_ids, $visibility['only_visible'] );
-				if ( empty( $only ) ) {
-					$is_restricted = true;
-				}
-			}
-
-		}
-
-		return $is_restricted;
-	}
-
-	/**
-	 * If the content needs to be restricted, perform the actions necessary for that to happen
-	 *
-	 * @since 4.10.3
-	 */
-	public function restrict_content()
-	{
-		add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-		do_action( 'leaky_paywall_is_restricted_content' );
-	}
-
-	/**
-	 * Display the content paywall barrier
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param string $content
-	 *
-	 * @return string $new_content content for paywall barrier
-	 */
-	public function the_content_paywall( $content ) {
-
-		$settings = get_leaky_paywall_settings();
-
-		add_filter( 'excerpt_more', '__return_false' );
-
-		//Remove the_content filter for get_the_excerpt calls
-		remove_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-		$content = get_the_excerpt();
-		add_filter( 'the_content', array( $this, 'the_content_paywall' ), 999 );
-		//Add the_content filter back for futhre the_content calls
-
-		if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
-			$content = substr( get_the_content( get_the_ID() ), 0, intval( $settings['custom_excerpt_length'] ) );
-		}
-
-		
-		$message = $this->the_content_paywall_message();
-		$new_content = strip_shortcodes( $content ) . $message;
+	 	$message = $this->the_content_paywall_message();
+	 	$new_content = $this->get_nag_excerpt( $content ) . $message;
 
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content );
+	 }
 
-	}
+	 public function get_nag_excerpt( $content ) 
+	 {
+	 	$settings = get_leaky_paywall_settings();
 
-	/**
-	 * Build the HTML for the content paywall message
-	 *
-	 * @since 4.10.3
-	 *
-	 * @param string $message
-	 *
-	 * @return string $message The paywall message
-	 */
+	 	if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
+			$excerpt = substr( get_the_content( get_the_ID() ), 0, intval( $settings['custom_excerpt_length'] ) );
+		} else {
+			$excerpt = substr( strip_tags( $content ), 0, 100 );
+		}
+
+	 	return strip_shortcodes( $excerpt );
+	 }
+
 	public function the_content_paywall_message() 
 	{
 
@@ -774,7 +449,7 @@ class Leaky_Paywall_Restrictions {
 		}
 		$message .= '</div></div>';
 
-		return $message;
+		return do_shortcode( $message );
 
 	}
 
@@ -824,6 +499,248 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	 /**
+	 * Determine if the current content is unblockable by the content paywall barrier
+	 *
+	 * @since 4.10.3
+	 *
+	 * @return boolean
+	 */
+	public function is_unblockable_content()
+	{
+
+		$settings = get_leaky_paywall_settings();
+
+		$unblockable_content = array(
+			$settings['page_for_login'],
+			$settings['page_for_subscription'],
+			$settings['page_for_profile'],
+			$settings['page_for_register']
+		);
+
+		if ( in_array( $this->post_id, apply_filters( 'leaky_paywall_unblockable_content', $unblockable_content ) ) ) {
+			return true;
+		}
+
+		return false;
+
+	}
+
+		/**
+	 * Determine if the current content can be viewed based on the Leaky Paywall visibility settings on the content item
+	 *
+	 * @since 4.10.3
+	 *
+	 * @return boolean
+	 */
+	public function visibility_allows_access()
+	{
+
+		$visibility = get_post_meta( $this->post_id, '_issuem_leaky_paywall_visibility', true );
+		$level_ids = leaky_paywall_subscriber_current_level_ids();
+
+		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+
+			switch( $visibility['visibility_type'] ) {
+
+				case 'only':
+					$only = array_intersect( $level_ids, $visibility['only_visible'] );
+					if ( empty( $only ) ) {
+						return false;
+					}
+					break;
+
+				case 'always':
+					$always = array_intersect( $level_ids, $visibility['always_visible'] );
+					if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
+						return true; //always visible, don't need process anymore
+					}
+					break;
+
+				case 'onlyalways':
+					$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
+					if ( empty( $onlyalways ) ) {
+						return false;
+					} else if ( !empty( $onlyalways ) ) {
+						return true; //always visible, don't need process anymore
+					}
+					break;
+
+			}
+
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * Check if the Leaky Paywall visibility settings for this post restrict its access to the current user
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param object $post The post object
+	 *
+	 * @return bool $is_restricted 
+	 */
+	public function visibility_restricts_access()
+	{
+		$visibility = get_post_meta( $this->post_id, '_issuem_leaky_paywall_visibility', true );
+		$level_ids = leaky_paywall_subscriber_current_level_ids();
+		$is_restricted = false;
+
+		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+
+			if ( $visibility['visibility_type'] == 'only' ) {
+				$only = array_intersect( $level_ids, $visibility['only_visible'] );
+				if ( empty( $only ) ) {
+					$is_restricted = true;
+				}
+			}
+
+		}
+
+		return $is_restricted;
+	}
+
+	/**
+	 * Check if the Leaky Paywall visibility settings for this post restrict its access to the current user
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param object $post The post object
+	 *
+	 * @return bool $is_restricted 
+	 */
+	public function content_restricted_by_settings() {
+
+		$restrictions = $this->get_restriction_settings();
+		$content_post_type = get_post_type( $this->post_id );
+
+		foreach( $restrictions['post_types'] as $restriction ) {
+
+			// post_type, taxonomy, allowed_value
+			
+			$restriction_taxomony = isset( $restriction['taxonomy'] ) ? $restriction['taxonomy'] : 'all';
+			
+			if ( $restriction['post_type'] == $content_post_type && $restriction_taxomony == 'all'  ) {
+				return true;
+			}
+
+			if ( $restriction['post_type'] == $content_post_type && $this->content_taxonomy_matches( $restriction_taxomony ) ) {
+				return true;
+			}
+		}
+		
+	}
+
+	/* Determine if the user has pdf access
+	 *
+	 * @since 4.10.3
+	 *
+	 * @param boolean $has_subscriber_paid
+	 */
+	public function pdf_access()
+	{
+
+		$settings = get_leaky_paywall_settings();
+		$has_subscriber_paid = leaky_paywall_has_user_paid();
+
+		//Admins or subscribed users can download PDFs
+		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $has_subscriber_paid ) {
+			leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
+		} else {
+
+			$output = '<h3>' . __( 'Unauthorized PDF Download', 'leaky-paywall' ) . '</h3>';
+			$output .= '<p>' . sprintf( __( 'You must be logged in with a valid subscription to download Issue PDFs. Please <a href="%s">log in</a> or <a href="%s">subscribe</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
+			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
+
+			wp_die( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ), $settings['site_name'] . ' - Error' );
+
+		}
+
+	}
+
+	public function get_restriction_settings() 
+	{
+		$settings = get_leaky_paywall_settings();
+		return $settings['restrictions'];
+	}
+
+	public function content_taxonomy_matches( $restricted_term_id, $post_id = '' ) 
+	{
+
+		if ( !$post_id ) {
+			$post_id = $this->post_id;
+		}
+
+		// get current post taxonomies
+		$taxonomies = get_post_taxonomies( $post_id );
+
+		foreach( $taxonomies as $taxonomy ) {
+			// get all terms for current post
+			$terms = get_the_terms( $post_id, $taxonomy );
+
+			if ( $terms ) {
+				foreach( $terms as $term ) {
+					// see if one of the term_ids matches the restricted_term_id
+					if ( $term->term_id == $restricted_term_id ) {
+						return true;
+					}
+
+				}
+			}	
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the content that the user has already viewed
+	 *
+	 * @since 4.10.3
+	 *
+	 * @return array $available_content Array of post ids that have been viewed
+	 */
+	public function get_content_viewed_by_user()
+	{
+
+		if ( !empty( $_COOKIE[$this->get_cookie_name()] ) ) {
+			$content_viewed = json_decode( stripslashes( $_COOKIE[$this->get_cookie_name()] ), true );
+		} else {
+			$content_viewed = array();
+		}
+
+		return apply_filters( 'leaky_paywall_available_content', $content_viewed );
+
+	}
+
+	public function update_content_viewed_by_user() 
+	{
+
+		$viewed_content = $this->get_content_viewed_by_user();
+		$restricted_post_type = get_post_type( $this->post_id );
+		$viewed_content[$restricted_post_type][$this->post_id] = $this->get_expiration_time();
+		$json_viewed_content = json_encode( $viewed_content );
+
+		$cookie = setcookie( $this->get_cookie_name(), $json_viewed_content, $this->get_expiration_time(), '/' );
+		$_COOKIE[$this->get_cookie_name()] = $json_viewed_content;
+
+	}
+
+	/**
+	 * Get the cookie name used for Leaky Paywall restrictions
+	 *
+	 * @since 4.10.10
+	 *
+	 * @return string
+	 */
+	public function get_cookie_name() 
+	{
+		$site = leaky_paywall_get_current_site();
+		return apply_filters( 'leaky_paywall_restriction_cookie_name', $this->cookie_name . $site );
+	}
+
 	/**
 	 * Calculate expiration time for cookie
 	 *
@@ -858,316 +775,6 @@ class Leaky_Paywall_Restrictions {
 
 		return apply_filters( 'leaky_paywall_expiration_time', $expiration );
 
-	}
-
-	/**
-	 * Determine if the user is trying to cancel their subscription
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return boolean
-	 */
-	public function is_cancel_request()
-	{
-		$settings = get_leaky_paywall_settings();
-
-		if ( isset( $_REQUEST['cancel'] ) ) {
-
-			if (
-				( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) )
-				|| ( !empty( $settings['page_for_profile'] ) && is_page( $settings['page_for_profile'] )  )
-			) {
-				return true;
-			} else {
-				return false;
-			}
-
-		} else {
-			return false;
-		}
-
-	}
-
-	/**
-	 * Send the user to the my account page if they user has paid and they try to access the login page
-	 *
-	 * @since 4.10.3
-	 */
-	public function redirect_from_login_page()
-	{
-
-		$settings = get_leaky_paywall_settings();
-
-		if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
-
-			if ( !empty( $settings['page_for_profile'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
-			} else if ( !empty( $settings['page_for_subscription'] ) ) {
-				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
-			}
-
-		}
-
-	}
-
-	/**
-	 * Process the passwordless login functionality
-	 *
-	 * @since 4.10.3
-	 */
-	public function process_passwordless_login()
-	{
-
-		$settings = get_leaky_paywall_settings();
-
-		if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
-
-			$login_hash = $_REQUEST['r'];
-
-			if ( verify_leaky_paywall_login_hash( $login_hash ) ) {
-
-				leaky_paywall_attempt_login( $login_hash );
-				if ( !empty( $settings['page_for_profile'] ) ) {
-					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
-				} else if ( !empty( $settings['page_for_subscription'] ) ) {
-					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
-				}
-
-			} else {
-
-				$output  = '<h3>' . __( 'Invalid or Expired Login Link', 'leaky-paywall' ) . '</h3>';
-				$output .= '<p>' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
-				$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
-
-				wp_die( apply_filters( 'leaky_paywall_invalid_login_link', $output ) );
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * Determine if the current content is unblockable by the content paywall barrier
-	 *
-	 * @since 4.10.3
-	 *
-	 * @return boolean
-	 */
-	public function is_unblockable_content()
-	{
-
-		$settings = get_leaky_paywall_settings();
-
-		$unblockable_content = array(
-			$settings['page_for_login'],
-			$settings['page_for_subscription'],
-			$settings['page_for_profile'],
-			$settings['page_for_register']
-		);
-
-		if ( is_page( apply_filters( 'leaky_paywall_unblockable_content', $unblockable_content ) ) ) {
-			return true;
-		}
-
-		return false;
-
-	}
-
-	/**
-	 * Returns current user's subscription restrictions
-	 *
-	 * @since 2.0.0
-	 *
-	 * @return array subscriber's subscription restrictions
-	 */
-	public function get_subscriber_restrictions()
-	{
-
-		$settings = get_leaky_paywall_settings();
-
-		if ( isset( $settings['restrictions']['post_types'] ) ) {
-			$restrictions = $settings['restrictions']['post_types']; //defaults
-		} else {
-			$restrictions = '';
-		}
-
-		if ( is_multisite_premium() ) {
-			$restriction_levels = leaky_paywall_subscriber_current_level_ids();
-			if ( !empty( $restriction_levels ) ) {
-
-				$restrictions = array();
-				$merged_restrictions = array();
-				foreach( $restriction_levels as $restriction_level ) {
-					if ( !empty( $settings['levels'][$restriction_level]['post_types'] ) ) {
-						$restrictions = array_merge( $restrictions, $settings['levels'][$restriction_level]['post_types'] );
-					}
-				}
-				$merged_restrictions = array();
-				foreach( $restrictions as $key => $restriction ) {
-					if ( empty( $merged_restrictions ) ) {
-						$merged_restrictions[$key] = $restriction;
-						continue;
-					} else {
-						$post_type_found = false;
-						foreach( $merged_restrictions as $tmp_key => $tmp_restriction ) {
-							if ( $restriction['post_type'] === $tmp_restriction['post_type'] ) {
-								$post_type_found = true;
-								$post_type_found_key = $tmp_key;
-								break;
-							}
-						}
-						if ( !$post_type_found ) {
-							$merged_restrictions[$key] = $restriction;
-						} else {
-							if ( -1 == $restriction['allowed_value'] ) { //-1 is unlimited, just use it
-								$merged_restrictions[$post_type_found_key] = $restriction;
-							} else if ( $merged_restrictions[$post_type_found_key]['allowed_value'] < $restriction['allowed_value'] ) {
-								$merged_restrictions[$post_type_found_key] = $restriction;
-							}
-						}
-					}
-				}
-				$restrictions = $merged_restrictions;
-
-			}
-		} else {
-			if ( false !== $restriction_level = leaky_paywall_subscriber_current_level_id() ) {
-
-				if ( !empty( $settings['levels'][$restriction_level]['post_types'] ) ) {
-					$restrictions = $settings['levels'][$restriction_level]['post_types'];
-				}
-
-			}
-		}
-
-		return apply_filters( 'leaky_paywall_subscriber_restrictions', $restrictions );
-
-	}
-
-	/**
-	 * Set ajax hooks for processing restrictions with javascript
-	 *
-	 * @since 4.7.1
-	 *
-	 */
-	public function process_js_content_restrictions()
-	{
-
-		add_action( 'wp_ajax_nopriv_leaky_paywall_process_cookie', array( $this, 'process_cookie_requests' ) );
-		add_action( 'wp_ajax_leaky_paywall_process_cookie', array( $this, 'process_cookie_requests' ) );
-
-	}
-
-	/**
-	 * Process ajax requests for restricting content with javascript cookies
-	 *
-	 * @since 4.7.1
-	 *
-	 */
-	public function process_cookie_requests()
-	{
-
-		$post_id = $_REQUEST['post_id'];
-		$post_obj = get_post( $post_id );
-		$current_post_type = $post_obj->post_type;
-		$settings = get_leaky_paywall_settings();
-		$restrictions = $this->get_subscriber_restrictions();
-
-		// allow admins to view all content
-		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
-			echo json_encode( 'do not show paywall' );
-			exit();
-		}
-
-		if ( $this->is_unblockable_content() ) {
-			echo json_encode( 'do not show paywall' );
-			exit();
-		}
-
-		if ( $this->visibility_allows_access( $post_obj ) ) {
-			echo json_encode( 'do not show paywall' );
-			exit();
-		}
-
-		if ( $this->visibility_is_restricted( $post_obj ) ) {
-			echo json_encode( $this->the_content_paywall_message() );
-			exit();
-		}
-
-		// at this point we need to test against the global restriction settings
-
-		$post_type_id = '';
-		$restricted_post_type = '';
-		$is_restricted = false;
-
-		if ( !empty( $restrictions ) ) {
-
-			foreach( $restrictions as $key => $restriction ) {
-
-				if ( $restriction['post_type'] == $current_post_type ) {
-
-					// this will only be ignored if the allowed value is unlimited ( -1 )
-					if ( 0 <= $restriction['allowed_value'] ) {
-
-						$post_type_id = $key;
-						$restricted_post_type = $restriction['post_type'];
-						$is_restricted = true;
-						break;
-
-					}
-
-				}
-
-			}
-
-		}
-
-		$is_restricted = apply_filters( 'leaky_paywall_filter_is_restricted', $is_restricted, $restrictions, $post );
-
-		if ( !$is_restricted ) {
-			echo json_encode( 'do not show paywall' );
-		}
-
-		// content that can be accessed because the user has viewed it already
-		$available_content = $this->get_available_content($restricted_post_type);
-
-		if ( $this->combined_restrictions_enabled() ) {
-
-			// maybe update available content array
-			$available_content = $this->update_available_content_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id );
-
-			if ( $this->is_restricted_combined( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id ) ) {
-				echo json_encode( $this->the_content_paywall_message() );
-			}
-
-		} else {
-
-			$available_content = $this->update_available_content_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id );
-		
-			if ( $this->is_restricted_default( $restrictions, $available_content, $post_type_id, $restricted_post_type, $post_id ) ) {
-				echo json_encode( $this->the_content_paywall_message() );
-			}
-
-		}
-
-		$this->set_available_content_cookie( $available_content );
-
-		die();
-
-	}
-
-	/**
-	 * Get the cookie name used for Leaky Paywall restrictions
-	 *
-	 * @since 4.10.10
-	 *
-	 * @return string
-	 */
-	public function get_cookie_name() 
-	{
-		$site = leaky_paywall_get_current_site();
-		return apply_filters( 'leaky_paywall_restriction_cookie_name', $this->cookie_name . $site );
 	}
 
 }

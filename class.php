@@ -43,13 +43,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
 				
 			add_action( 'wp', array( $this, 'process_content_restrictions' ) );
-
+			add_action( 'wp', array( $this, 'process_pdf_restrictions' ) );
+			add_action( 'wp', array( $this, 'process_cancellation_request' ) );
 			add_action( 'init', array( $this, 'process_js_content_restrictions' ) );
 			
 			if ( 'on' === $settings['restrict_pdf_downloads'] ) {
 				add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
 			}	
-			
+
 			if ( in_array( 'paypal_standard', $settings['payment_gateway'] ) || in_array( 'paypal-standard', $settings['payment_gateway'] ) ) {
 				
 				if ( empty( $settings['paypal_live_api_username'] ) || empty( $settings['paypal_live_api_password'] ) || empty( $settings['paypal_live_api_secret'] ) ) {
@@ -64,15 +65,139 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 		public function process_js_content_restrictions() 
 		{
-
-			$restrictions = new Leaky_Paywall_Restrictions();
-			$restrictions->process_js_content_restrictions();
+			$settings = get_leaky_paywall_settings();
+			
+			if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+				$restrictions = new Leaky_Paywall_Restrictions();
+				$restrictions->process_js_content_restrictions();
+			}
+			
 		}
 
 		public function process_content_restrictions() 
-		{
+		{	
+
+			if ( is_admin() ) {
+				return;
+			}
+
+			$settings = get_leaky_paywall_settings();
+
+			if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+				return;
+			}
+
 			$restrictions = new Leaky_Paywall_Restrictions();
 			$restrictions->process_content_restrictions();
+		}
+
+		public function process_pdf_restrictions() 
+		{
+
+			if ( isset( $_GET['issuem-pdf-download'] ) ) {
+				$restrictions = new Leaky_Paywall_Restrictions();
+				$restrictions->pdf_access();
+			}
+
+		}
+
+		public function process_cancellation_request() 
+		{
+			$settings = get_leaky_paywall_settings();
+
+			if ( leaky_paywall_has_user_paid() ) {
+
+				if ( $this->is_cancel_request() ) {
+					wp_die( leaky_paywall_cancellation_confirmation(), $settings['site_name'] . ' - Cancel Request' );
+				}
+
+				$this->redirect_from_login_page();
+
+			} else {
+
+				if ( !empty( $_REQUEST['r'] ) ) {
+					$this->process_passwordless_login();
+				}
+			}
+		}
+
+		public function is_cancel_request() 
+		{
+			$settings = get_leaky_paywall_settings();
+
+			if ( isset( $_REQUEST['cancel'] ) ) {
+
+				if (
+					( !empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) )
+					|| ( !empty( $settings['page_for_profile'] ) && is_page( $settings['page_for_profile'] )  )
+				) {
+					return true;
+				} else {
+					return false;
+				}
+
+			} else {
+				return false;
+			}
+		}
+
+		/**
+		 * Send the user to the my account page if they user has paid and they try to access the login page
+		 *
+		 * @since 4.10.3
+		 */
+		public function redirect_from_login_page()
+		{
+
+			$settings = get_leaky_paywall_settings();
+
+			if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
+
+				if ( !empty( $settings['page_for_profile'] ) ) {
+					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+				} else if ( !empty( $settings['page_for_subscription'] ) ) {
+					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+				}
+
+			}
+
+		}
+
+		/**
+		 * Process the passwordless login functionality
+		 *
+		 * @since 4.10.3
+		 */
+		public function process_passwordless_login()
+		{
+
+			$settings = get_leaky_paywall_settings();
+
+			if ( !empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
+
+				$login_hash = $_REQUEST['r'];
+
+				if ( verify_leaky_paywall_login_hash( $login_hash ) ) {
+
+					leaky_paywall_attempt_login( $login_hash );
+					if ( !empty( $settings['page_for_profile'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+					} else if ( !empty( $settings['page_for_subscription'] ) ) {
+						wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					}
+
+				} else {
+
+					$output  = '<h3>' . __( 'Invalid or Expired Login Link', 'leaky-paywall' ) . '</h3>';
+					$output .= '<p>' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ) ) . '</p>';
+					$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
+
+					wp_die( apply_filters( 'leaky_paywall_invalid_login_link', $output ) );
+
+				}
+
+			}
+
 		}
 		
 		public function restrict_pdf_attachment_url( $attachment_url, $attachment_id ) {
@@ -1339,7 +1464,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 		                        <tr class="restriction-options">
 	                                <th><?php _e( 'Combined Restrictions', 'leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> <?php _e( 'Use a single value for total content allowed regardless of content type. This uses the content types from the restriction content setting above.', 'leaky-paywall' ); ?></td>
+	                                <td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> <?php _e( 'Use a single value for total number allowed regardless of content type. This uses the Post Type and Taxonomy settings from the Restrictions settings above.', 'leaky-paywall' ); ?></td>
 	                            </tr>
 
 	                            <tr class="restriction-options">

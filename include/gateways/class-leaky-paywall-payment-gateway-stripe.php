@@ -150,8 +150,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					// updating a current subscription
 					if ( !empty( $subscriptions->data ) ) {
 						foreach( $subscriptions->data as $subscription ) {
+							
 							$sub = $cu->subscriptions->retrieve( $subscription->id );
 							$sub->plan = $this->plan_id;
+							do_action( 'leaky_paywall_before_update_stripe_subscription', $cu, $sub );
 							$sub->save();
 
 							do_action( 'leaky_paywall_after_update_stripe_subscription', $cu, $sub );

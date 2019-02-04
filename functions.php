@@ -1746,7 +1746,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		}
 			    
 		echo '<div class="allowed_value_div" style="' . $allowed_value_input_style . '">';
-		echo '<input type="text" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'leaky-paywall' ) . '" />';
+		echo '<input type="number" class="allowed_value small-text" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][allowed_value]" value="' . $select_post_type['allowed_value'] . '" placeholder="' . __( '#', 'leaky-paywall' ) . '" />';
 		echo '</div></td>';
 		
 		echo '<td><select class="select_level_post_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
@@ -1770,7 +1770,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
 		$hidden_taxes = array( 'post_format' );
 
-		echo '<option value"all" ' . selected( 'all', $select_post_type['taxonomy'], false ) . '>All</option>';
+		echo '<option value="all" ' . selected( 'all', $select_post_type['taxonomy'], false ) . '>All</option>';
 		
 		foreach( $taxes as $tax ) {
 
@@ -1839,6 +1839,9 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 	 */
 	function build_leaky_paywall_default_restriction_row( $restriction=array(), $row_key='' ) {
 
+
+		$settings = get_leaky_paywall_settings();
+
 		if ( empty( $restriction ) ) {
 			$restriction = array(
 				'post_type' 	=> '',
@@ -1871,7 +1874,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
 		$hidden_taxes = array( 'post_format' );
 
-		echo '<option value"all" ' . selected( 'all', $restriction['taxonomy'], false ) . '>All</option>';
+		echo '<option value="all" ' . selected( 'all', $restriction['taxonomy'], false ) . '>All</option>';
 		
 		foreach( $taxes as $tax ) {
 
@@ -1897,7 +1900,18 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		}
 		echo '</select></td>';
 
-		echo '<td><input id="restriction-allowed-' . $row_key . '" type="text" class="small-text" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" /></td>';
+		echo '<td>';
+
+		if ( 'on' == $settings['enable_combined_restrictions'] ) {
+
+			echo '<p class="allowed-number-helper-text" style="color: #555; font-size: 12px;">Using combined restrictions.</p>';
+			echo '<input style="display: none;" id="restriction-allowed-' . $row_key . '" type="number" class="small-text restriction-allowed-number-setting" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" />';
+		} else {
+			echo '<p class="allowed-number-helper-text" style="color: #555; font-size: 12px; display: none;">Using combined restrictions.</p>';
+			echo '<input id="restriction-allowed-' . $row_key . '" type="number" class="small-text restriction-allowed-number-setting" name="restrictions[post_types][' . $row_key . '][allowed_value]" value="' . $restriction['allowed_value'] . '" />';
+		}
+
+		echo '</td>';
 
 		echo '<td><span class="delete-x delete-restriction-row">&times;</span></td>';
 		
@@ -3213,4 +3227,57 @@ function leaky_paywall_normalize_chars($s) {
         'Ы'=>'y', 'ž'=>'z', 'З'=>'z', 'з'=>'z', 'ź'=>'z', 'ז'=>'z', 'ż'=>'z', 'ſ'=>'z', 'Ж'=>'zh', 'ж'=>'zh'
     );
     return strtr($s, $replace);
+}
+
+// add leaky paywall links to admin toolbar
+add_action('admin_bar_menu', 'leaky_paywall_add_toolbar_items', 100);
+	
+function leaky_paywall_add_toolbar_items( $admin_bar ){
+
+	if ( !current_user_can( 'edit_user', get_current_user_id() ) ) {
+		return;
+	}
+
+    $admin_bar->add_menu( array(
+        'id'    => 'leaky-paywall-toolbar',
+        'title' => 'Leaky Paywall',
+        'href'  => admin_url() . 'admin.php?page=issuem-leaky-paywall',
+        'meta'  => array(
+            'title' => __('Leaky Paywall'),            
+        ),
+    ));
+    $admin_bar->add_menu( array(
+        'id'    => 'leaky-paywall-toolbar-settings',
+        'parent' => 'leaky-paywall-toolbar',
+        'title' => 'Settings',
+        'href'  => admin_url() . 'admin.php?page=issuem-leaky-paywall',
+        'meta'  => array(
+            'title' => __('Settings'),
+            'target' => '',
+            'class' => 'my_menu_item_class'
+        ),
+    ));
+    $admin_bar->add_menu( array(
+        'id'    => 'leaky-paywall-toolbar-subscribers',
+        'parent' => 'leaky-paywall-toolbar',
+        'title' => 'Subscribers',
+        'href'  => admin_url() . 'admin.php?page=leaky-paywall-subscribers',
+        'meta'  => array(
+            'title' => __('Subscribers'),
+            'target' => '',
+            'class' => 'my_menu_item_class'
+        ),
+    ));
+
+    $admin_bar->add_menu( array(
+        'id'    => 'leaky-paywall-toolbar-transactions',
+        'parent' => 'leaky-paywall-toolbar',
+        'title' => 'Transactions',
+        'href'  => admin_url() . 'edit.php?post_type=lp_transaction',
+        'meta'  => array(
+            'title' => __('Transactions'),
+            'target' => '',
+            'class' => 'my_menu_item_class'
+        ),
+    ));
 }
