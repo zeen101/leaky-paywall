@@ -172,3 +172,9 @@ span.delete-post-type-row {
 .allowed_value_div .allowed_value {
 	margin-left: 5px;
 }
+
+.leaky-paywall-sidebar-widget {
+	background: #fff;
+	padding: 10px 20px;
+	margin-bottom: 20px;
+}

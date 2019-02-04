@@ -1601,7 +1601,26 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
             </div>
              <div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
-				<a target="_blank" href="https://zeen101.com/anvil/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings"><img width="300" src="<?php echo plugin_dir_url( __FILE__ ); ?>images/anvil-sidebar.jpg" alt="Grow your publication into a digital profit engine"></a>
+				
+				<div class="leaky-paywall-sidebar-widget">
+					<h3>Need more functionality?</h3>
+					<p><a target="_blank" href="https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Browse our Add-Ons</a></p>
+				</div>
+
+				<div class="leaky-paywall-sidebar-widget">
+					<h3>Need a tech partner?</h3>
+					<p><a target="_blank" href="https://zeen101.com/anvil/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out our Anvil Platform</a></p>
+				</div>
+
+				<div class="leaky-paywall-sidebar-widget">
+					<h3>Need apps to generate more subscribers?</h3>
+					<p><a target="_blank" href="https://zeen101.com/unipress/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
+				</div>
+
+				<div class="leaky-paywall-sidebar-widget">
+					<h3>Are you a local news publisher?</h3>
+					<p><a target="_blank" href="https://livemarket.pub/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Explode your digital ad revenue with LiveMarket.</a></p>
+				</div>
              </div>
 			</div>
 			<?php
@@ -1932,7 +1951,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
         	<div style="max-width: 1035px; margin-bottom: 20px; overflow: hidden;">
 	        	<div style="float: left;">
 	                <h2 style='margin-bottom: 10px;' ><?php _e( 'Leaky Paywall Add-Ons', 'leaky-paywall' ); ?></h2>
-	                <p><?php _e( 'The following are available add-ons to extend Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
+	                <p><?php _e( 'The following are some of the available add-ons to extend Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
 				</div>
 
 				<div style="float: right; margin-top: 20px;">	

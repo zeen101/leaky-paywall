@@ -3280,4 +3280,16 @@ function leaky_paywall_add_toolbar_items( $admin_bar ){
             'class' => 'my_menu_item_class'
         ),
     ));
+
+    $admin_bar->add_menu( array(
+        'id'    => 'leaky-paywall-toolbar-add-ons',
+        'parent' => 'leaky-paywall-toolbar',
+        'title' => 'Add-Ons',
+        'href'  => admin_url() . 'admin.php?page=leaky-paywall-addons',
+        'meta'  => array(
+            'title' => __('Add-Ons'),
+            'target' => '',
+            'class' => 'my_menu_item_class'
+        ),
+    ));
 }
