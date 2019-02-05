@@ -384,6 +384,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'live_publishable_key'			=> '',
 				'test_secret_key'				=> '',
 				'test_publishable_key'			=> '',
+				'enable_stripe_elements'		=> 'no',
+				'enable_apple_pay'				=> 'no',
 				'enable_paypal_on_registration' => 'off',
 				'paypal_live_email'				=> '',
 				'paypal_live_api_username'		=> '',
@@ -686,6 +688,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					if ( !empty( $_REQUEST['test_publishable_key'] ) )
 						$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', trim( $_REQUEST['test_publishable_key'] ) );
 					
+					if ( isset( $_POST['enable_stripe_elements'] ) ) {
+						$settings['enable_stripe_elements'] = sanitize_text_field( $_POST['enable_stripe_elements'] );
+					}
+
+					if ( isset( $_POST['enable_apple_pay'] ) ) {
+						$settings['enable_apple_pay'] = sanitize_text_field( $_POST['enable_apple_pay'] );
+					}
 					
 
 					if ( !empty( $_REQUEST['enable_paypal_on_registration'] ) )
@@ -1183,6 +1192,26 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            <tr>
 	                            	<th><?php _e( 'Test Webhooks', 'leaky-paywall' ); ?></th>
 	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Enable Stripe Elements', 'leaky-paywall' ); ?></th>
+	                                <td>
+	                                	<select id="enable_stripe_elements" name="enable_stripe_elements">
+	                                		<option <?php selected( 'yes', $settings['enable_stripe_elements'] ); ?> value="yes">Yes</option>
+	                                		<option <?php selected( 'no', $settings['enable_stripe_elements'] ); ?> value="no">No</option>
+	                                	</select>
+	                                	<p class="description">Use Stripe Elements for credit card form. Also allows for Apple Pay.</p>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Enable Apple Pay', 'leaky-paywall' ); ?></th>
+	                                <td>
+	                                	<select id="enable_apple_pay" name="enable_apple_pay">
+	                                		<option <?php selected( 'yes', $settings['enable_apple_pay'] ); ?> value="yes">Yes</option>
+	                                		<option <?php selected( 'no', $settings['enable_apple_pay'] ); ?> value="no">No</option>
+	                                	</select>
+	                                	<p class="description">Enable Apple Pay when using Stripe Elements.</p>
 	                            </tr>
 
 	           
