@@ -277,9 +277,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
              ) );
 
 				
-			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix )
+			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix ) {
 				wp_enqueue_script( 'leaky_paywall_post_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
-				
+			}
 			
 		}
 		

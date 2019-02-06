@@ -10,7 +10,7 @@ if ( !function_exists( 'leaky_paywall_general_metaboxes' ) ) {
 
 	function leaky_paywall_general_metaboxes() {
 	
-		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
+		$hidden_post_types = apply_filters( 'leaky_paywall_hidden_post_types_metaboxes', array( 'attachment', 'revision', 'nav_menu_item' ) );
 		$post_types = get_post_types( array(), 'objects' );
 	
 		foreach ( $post_types as $post_type ) {
