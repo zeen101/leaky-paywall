@@ -1044,7 +1044,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    
 	                        <div class="handlediv" title="Click to toggle"><br /></div>
 	                        
-	                        <h3 class="hndle"><span><?php _e( 'Renewal Reminder Email', 'leaky-paywall' ); ?></span></h3>
+	                        <h3 class="hndle"><span><?php _e( 'Renewal Reminder Email (for non-recurring subscribers)', 'leaky-paywall' ); ?></span></h3>
 	                        
 	                        <div class="inside">
 
@@ -1052,7 +1052,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        	
 		                        	 <tr>
 		                            	<th><?php _e( "Disable Renewal Reminder Email", 'leaky-paywall' ); ?></th>
-		                                <td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked( 'on', $settings['renewal_reminder_email'] ); ?> /> Disable the renewal reminder email sent to a subscriber</td>
+		                                <td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked( 'on', $settings['renewal_reminder_email'] ); ?> /> Disable the renewal reminder email sent to a non-recurring subscriber</td>
 		                            </tr>
 
 		                            <tr>
@@ -1065,7 +1065,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                            <tr>
 		                                <th><?php _e( 'Body', 'leaky-paywall' ); ?></th>
 		                                <td><textarea id="renewal_reminder_email_body" class="large-text" name="renewal_reminder_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['renewal_reminder_email_body'] ) ); ?></textarea>
-		                                <p class="description"><?php _e( 'The email message that is sent to remind subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
+		                                <p class="description"><?php _e( 'The email message that is sent to remind non-recurring subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
 		                                <p class="description"><?php _e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
 		                                %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
 		                                </td>
@@ -1075,7 +1075,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				                        <th><?php _e( 'When to Send Reminder', 'leaky-paywall' ); ?></th>
 				                        <td>
 				                        <input type="number" value="<?php echo $settings['renewal_reminder_days_before']; ?>" name="renewal_reminder_days_before" />
-				                        <p class="description"><?php _e( 'Days in advance of a subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
+				                        <p class="description"><?php _e( 'Days in advance of a non-recurring subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
 				                        </td>
 				                    </tr>
 

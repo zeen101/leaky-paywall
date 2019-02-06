@@ -223,6 +223,10 @@ class Leaky_Paywall_Restrictions {
 						$access_rule['taxonomy'] = 'all';
 					}
 
+					if ( !isset( $restriction['taxonomy'] ) ) {
+						$restriction['taxonomy'] = 'all';
+					}
+
 					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
 						return true;
 					}
