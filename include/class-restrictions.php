@@ -156,6 +156,7 @@ class Leaky_Paywall_Restrictions {
 	public function current_user_can_access() 
 	{
 
+
 		// get their level
 		$level_ids = leaky_paywall_subscriber_current_level_ids();
 
@@ -177,13 +178,11 @@ class Leaky_Paywall_Restrictions {
 			
 		} else {
 
-			// if they not have a level id, and the content is restricted by level, then they can't view it
 			if ( $this->visibility_restricts_access() ) {
 				return false;
 			}
 
 			if ( $this->level_id_allows_access() ) {
-
 				return true;
 			} else {
 				return false;
