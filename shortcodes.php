@@ -275,7 +275,13 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				
 				$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 				if ( !empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
-					$expires = sprintf( __( 'Recurs on %s', 'leaky-paywall' ), $expires );	
+					
+					if ( $status == 'canceled' ) {
+						$expires = sprintf( __( 'Ends on %s', 'leaky-paywall' ), $expires );	
+					} else {
+						$expires = sprintf( __( 'Recurs on %s', 'leaky-paywall' ), $expires );	
+					}
+					
 				}
 							
 				$paid = leaky_paywall_has_user_paid( $user->user_email, $site );
