@@ -618,6 +618,11 @@ class Leaky_Paywall_Restrictions {
 	public function content_restricted_by_settings() {
 
 		$restrictions = $this->get_restriction_settings();
+
+		if ( empty( $restrictions ) ) {
+			return false;
+		}
+
 		$content_post_type = get_post_type( $this->post_id );
 
 		foreach( $restrictions['post_types'] as $restriction ) {
