@@ -270,7 +270,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		    
 		    $stripe_object = $stripe_event->data->object;
 
-		    leaky_paywall_log( $stripe_object, 'stripe webhook');
+		    leaky_paywall_log( $stripe_object, 'stripe webhook - ' . $stripe_event->type );
 		
 		    if ( !empty( $stripe_object->customer ) ) {
 		        $user = get_leaky_paywall_subscriber_by_subscriber_id( $stripe_object->customer, $mode );
