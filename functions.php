@@ -1324,7 +1324,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 					
 					$args['meta_query'] = array(
 						array(
-							'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+							'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 							'compare' => 'EXISTS',
 						),
 					);
@@ -1336,7 +1336,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 					$args['meta_query'] = array(
 						'relation' => 'AND',
 						array(
-							'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+							'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 							'compare' => 'EXISTS',
 						),
 						array(
@@ -1351,7 +1351,7 @@ if ( !function_exists( 'leaky_paywall_subscriber_query' ) ){
 			} else {
 				$args['meta_query'] = array(
 					array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 						'compare' => 'EXISTS',
 					),
 				);
@@ -2437,72 +2437,78 @@ function leaky_paywall_process_renewal_reminder_deactivation() {
 register_deactivation_hook(__FILE__, 'leaky_paywall_process_renewal_reminder_deactivation');
 
 
-if ( !function_exists( 'leaky_paywall_process_renewal_reminder' ) ) {
+add_action('leaky_paywall_process_renewal_reminder', 'leaky_paywall_maybe_send_renewal_reminder');
 
-	/**
-	 * Process renewal reminder email for each Leaky Paywall subscriber
-	 *
-	 * @since 4.9.3
-	 */
-	function leaky_paywall_process_renewal_reminder() {
-		
-		global $blog_id;
+/**
+ * Process renewal reminder email for each Leaky Paywall subscriber
+ *
+ * @since 4.9.3
+ */
+function leaky_paywall_maybe_send_renewal_reminder() {
+	
+	global $blog_id;
 
-		$settings = get_leaky_paywall_settings();
-		$mode = leaky_paywall_get_current_mode();
-		$site = leaky_paywall_get_current_site();
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
 
-		if ( 'on' === $settings['renewal_reminder_email'] ) {
-			return;
-		}
-
-		// do not send an email if the body of the email is empty
-		if ( !$settings['renewal_reminder_email_body'] ) {
-			return; 
-		}
-
-		$days_before = (int) $settings['renewal_reminder_days_before'];
-
-		$args = array(
-			'number' => -1
-		);
-
-		$users = leaky_paywall_subscriber_query( $args, $blog_id );
-
-		if ( empty( $users ) ) {
-			return;
-		}
-
-		foreach( $users as $user ) {
-
-			$user_id = $user->ID;
-			$expiration = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
-	   		$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-	   		
-	   		// do not send renewal reminders to users with recurring plans
-	   		if ( !empty($plan) ) {
-	   			continue;
-	   		}
-			
-			// user does not have an expiration date sent, so we can't do the calculations needed
-			if(empty($expiration)) {
-				continue;
-			}
-			
-			$date1 = date_create($expiration);
-			$date2 = date('Y-m-d H:i:s');
-			$date_differ = leaky_paywall_date_difference($expiration, date('Y-m-d H:i:s'));
-			$already_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true) == true ? true : false;
-			
-			if ( ($date_differ <= $daysToRenew) && $already_emailed == false) {	
-				leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
-			}
-			
-		}
+	if ( 'on' === $settings['renewal_reminder_email'] ) {
+		return;
 	}
+
+	// do not send an email if the body of the email is empty
+	if ( !$settings['renewal_reminder_email_body'] ) {
+		return; 
+	}
+
+	leaky_paywall_log( current_time('Y-m-d'), 'process renewal reminder' );
+
+	$days_before = (int) $settings['renewal_reminder_days_before'];
+
+	$args = array(
+		'number' => -1
+	);
+
+	$users = leaky_paywall_subscriber_query( $args, $blog_id );
+
+	if ( empty( $users ) ) {
+		return;
+	}
+
+	foreach( $users as $user ) {
+
+		$user_id = $user->ID;
+		$expiration = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
+   		$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+   		
+   		// do not send renewal reminders to users with recurring plans
+   		if ( !empty($plan) ) {
+   			continue;
+   		}
+		
+		// user does not have an expiration date sent, so we can't do the calculations needed
+		if ( empty( $expiration ) || '0000-00-00 00:00:00' === $expiration ) {
+			continue;
+		}
+
+		// if expiration is the past, continue
+		if ( strtotime($expiration) < current_time('timestamp')) {
+			continue;
+		}
+		
+		$date_differ = leaky_paywall_date_difference( $expiration, date('Y-m-d H:i:s') );
+		$already_emailed = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true ) ? true : false;
+
+		if ( ($date_differ <= $days_before) && $already_emailed == false) {	
+			leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
+			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, current_time('timestamp') );
+		}
+		
+	}
+
+	
 }
-add_action('leaky_paywall_process_renewal_reminder', 'leaky_paywall_process_renewal_reminder');
+
 
 if ( !function_exists( 'leaky_paywall_date_difference' ) ) {
 
@@ -2511,10 +2517,10 @@ if ( !function_exists( 'leaky_paywall_date_difference' ) ) {
 	 *
 	 * @since 4.9.3
 	 */
-	function leaky_paywall_date_difference($date_1 , $date_2 , $differenceFormat = '%a' ) {
+	function leaky_paywall_date_difference( $date_1, $date_2, $differenceFormat = '%a' ) {
 
-	    $datetime1 = date_create($date_1);
-	    $datetime2 = date_create($date_2);
+	    $datetime1 = date_create($date_1); // expiration 
+	    $datetime2 = date_create($date_2); // today
 	    
 	    $interval = date_diff($datetime1, $datetime2);
 	    
