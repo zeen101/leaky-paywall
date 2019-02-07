@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 4.3.0
 Tested up to: 5.0.3
-Stable tag: 4.12.0
+Stable tag: 4.12.1
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,6 +19,7 @@ Pioneered by the Financial Times, popularized by the New York Times and used by 
 **Features**
 
 * Metered paywall: Let your readers read X number of free articles before they need to subscribe
+* Flexible restrictions: restrict by entire post type, category, tag, taxonomy, or even on individual posts
 * Get found in Google: Allows all your content to be indexed by search engines
 * Viral sharing: All your articles can be shared 1000s of times in social media
 * Sell live web issues: Integrates with [IssueM](https://zeen101.com/for-developers/issuem/) to sell access to individual special issues or traditional weekly, monthly, quarterly, etc issues
@@ -81,6 +82,15 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.12.1 =
+* Add options for Apple Pay and Stripe Elements on registration form
+* Fix canceled subscribers not being able to view correct content
+* Fix renewal reminder emails for non-recurring subscribers
+* Add stripe event type to webhook log
+* Remove Leaky Paywall menu from admin toolbar for subscribers
+* Fix compatibility issue with EditFlow
+* Update expiration text on My Account for canceled subscribers
 
 = 4.12.0 =
 * Introducting restrictions by taxonomy! (category, tag, etc.)
