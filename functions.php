@@ -492,7 +492,6 @@ if ( !function_exists( 'leaky_paywall_has_user_paid' ) ) {
 					case 'failed' :
 					case 'voided' :
 					case 'deactivated' :
-						continue;
 						break;
 					
 				}		
