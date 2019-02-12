@@ -150,9 +150,7 @@ class LP_Transaction_Post_Type {
         // if our nonce isn't there, or we can't verify it, bail 
         if( !isset( $_POST['meta_box_nonce'] ) || !wp_verify_nonce( $_POST['meta_box_nonce'], 'lp_transaction_meta_box_nonce' ) ) return; 
         
-        // if our current user can't edit this post, bail  
-        if( !current_user_can( 'edit_post' ) ) return;
-
+       
     
         // checkbox save
         // update_post_meta( $post_id, '_en_sold_out', $_POST['en_sold_out'] );
