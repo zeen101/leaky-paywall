@@ -67,8 +67,7 @@
 								
 								var content = $('article .entry-content');
 								
-								content.before(response);
-								content.remove();
+								content.html(response);
 								
 							}
 
