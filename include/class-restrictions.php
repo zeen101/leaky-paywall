@@ -436,7 +436,7 @@ class Leaky_Paywall_Restrictions {
 			$excerpt = substr( strip_tags( $content ), 0, 100 );
 		}
 
-	 	return strip_shortcodes( $excerpt );
+	 	return apply_filters( 'leaky_paywall_nag_excerpt', strip_shortcodes( $excerpt ), $this->post_id );
 	 }
 
 	public function the_content_paywall_message() 
