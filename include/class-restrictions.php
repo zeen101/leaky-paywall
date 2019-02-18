@@ -625,8 +625,12 @@ class Leaky_Paywall_Restrictions {
 
 		$content_post_type = get_post_type( $this->post_id );
 
-		foreach( $restrictions['post_types'] as $restriction ) {
+		foreach( $restrictions['post_types'] as $key => $restriction ) {
 
+			if ( !is_numeric( $key ) ) {
+				continue;
+			}
+			
 			// post_type, taxonomy, allowed_value
 			
 			$restriction_taxomony = isset( $restriction['taxonomy'] ) ? $restriction['taxonomy'] : 'all';
