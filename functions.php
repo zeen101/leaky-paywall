@@ -736,9 +736,12 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	
 		foreach( $meta as $key => $value ) {
 
-			if ( $key != 'confirm_password' || $key != 'password' ) { // do not want to store their password as plain text
-				update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
+			// do not want to store their password as plain text
+			if ( $key == 'confirm_password' || $key == 'password' ) {
+				continue;
 			}
+
+			update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );
 			
 		}
 			
