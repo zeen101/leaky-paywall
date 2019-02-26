@@ -85,6 +85,21 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
+	// Helper method when restrictions need to be checked manually (like custom fields)
+	public function subscriber_can_view() 
+	{
+		if ( !$this->is_content_restricted() ) {
+			return true;
+		}
+
+		// content is restricted, so see if the current user can access it
+		if ( $this->current_user_can_access() ) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public function is_content_restricted() 
 	{
 		$is_restricted = false;
