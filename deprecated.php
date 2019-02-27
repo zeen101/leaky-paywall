@@ -43,26 +43,26 @@ if ( !function_exists( 'get_leaky_paywall_subscriber_by_hash' ) ) {
 }
 
 
-if ( !function_exists( 'leaky_paywall_old_payment_gateway_processing' ) ) {
 
-    function leaky_paywall_old_payment_gateway_processing() {
+function leaky_paywall_old_payment_gateway_processing() {
 
-        $response = leaky_paywall_maybe_process_payment();
+    $response = leaky_paywall_maybe_process_payment();
 
-        if ( is_wp_error( $response ) ) {
-            $args = array(
-                'response' => 401,
-                'back_link' => true,
-            );      
-            wp_die( $response, '', $args );
-        }
-        
-        if ( leaky_paywall_maybe_process_webhooks() ) {
-            die(); //no point in loading the whole page for webhooks
-        }
+    if ( is_wp_error( $response ) ) {
+        $args = array(
+            'response' => 401,
+            'back_link' => true,
+        );      
+        wp_die( $response, '', $args );
+    }
+    
+
+    if ( leaky_paywall_maybe_process_webhooks() ) {
+        die(); //no point in loading the whole page for webhooks
     }
 }
-add_action('leaky_paywall_before_process_requests', 'leaky_paywall_old_payment_gateway_processing' );
+
+add_action('init', 'leaky_paywall_old_payment_gateway_processing' );
 
 
 if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
