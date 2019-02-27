@@ -736,7 +736,7 @@ function do_leaky_paywall_register_form() {
 
 		  <?php 
 		  	if ( $level['price'] > 0 ) {
-		  		$level_price = number_format( $level['price'], 2 );
+		  		$level_price = str_replace(',', '', number_format( $level['price'], 2 ) );
 		  	} else {
 		  		$level_price = 0;
 		  	}
