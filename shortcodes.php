@@ -401,7 +401,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 									  data-panel-label="Update Card Details"
 									  data-label="Update Credit Card Details"
 									  data-allow-remember-me=false
-									  data-email="' . $user->user_email . '">
+									  data-email="' . $user->user_email . '"
 									  data-locale="auto">	
 									  </script>	
 									</form>';
