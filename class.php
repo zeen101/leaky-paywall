@@ -852,7 +852,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                        	<?php if ( !isset( $settings['page_for_subscription'] ) || !$settings['page_for_subscription'] ) {
 	                        		?>
-	                        		<p>Need help getting started? <a target="_blank" href="https://zeen101.com/documentation/leaky-paywall-getting-started/">See our guide.</a></p>
+	                        		<p>Need help getting started? <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">See our guide</a> or <a target="_blank" href="https://zeen101.com/publisher-care?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">check out Publisher Care.</a></p>
 	                        		<?php 
 	                        	} ?>
 	                        
@@ -1607,11 +1607,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                     	<h2><?php _e( 'Getting Started', 'leaky-paywall' ); ?></h2>
 
-	                    	<p><a target="_blank" href="https://zeen101.com/documentation/leaky-paywall-getting-started/">Setting Up Leaky Paywall</a></p>
+	                    	<p><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">Setting Up Leaky Paywall</a></p>
 
-	                    	<h2><?php _e( 'Support Documentation Articles' ); ?></h2>
+	                    	<h2><?php _e( 'Documentation Articles' ); ?></h2>
 
-	                    	<p><a target="_blank" href="https://zeen101.com/documentation-category/leaky-paywall/">View All</a></p>
+	                    	<p><a target="_blank" href="https://zeen101.helpscoutdocs.com/collection/30-leaky-paywall">View All</a></p>
 							
 							<?php wp_nonce_field( 'verify', 'leaky_paywall_help_wpnonce' ); ?>
 							
@@ -1637,8 +1637,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				</div>
 
 				<div class="leaky-paywall-sidebar-widget">
-					<h3>Need a tech partner?</h3>
-					<p><a target="_blank" href="https://zeen101.com/anvil/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out our Anvil Platform</a></p>
+					<h3>Need software and support?</h3>
+					<p><a target="_blank" href="https://zeen101.com/publisher-care/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out Publisher Care</a></p>
 				</div>
 
 				<div class="leaky-paywall-sidebar-widget">
@@ -1648,8 +1648,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 				<div class="leaky-paywall-sidebar-widget">
 					<h3>Are you a local news publisher?</h3>
-					<p><a target="_blank" href="https://livemarket.pub/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Explode your digital ad revenue with LiveMarket.</a></p>
+					<p><a target="_blank" href="https://livemarket.pub/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Explode your digital ad revenue with LiveMarket</a></p>
 				</div>
+
+				
              </div>
 			</div>
 			<?php

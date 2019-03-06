@@ -5,9 +5,9 @@
 class Leaky_Paywall_Restrictions {
 
 	/** @var string Name of the restriction cookie */
-	private $cookie_name = 'issuem_lp';
+	public $cookie_name = 'issuem_lp';
 	private $post_id;
-	private $is_ajax;
+	public $is_ajax;
 
 	public function __construct( $post_id = '' ) 
 	{
@@ -24,7 +24,7 @@ class Leaky_Paywall_Restrictions {
 			return;
 		}
 		?>
-			<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 999;">
+			<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 9999;">
 				<?php 
 				echo '<pre>Viewed Content: ';
 				print_r( $this->get_content_viewed_by_user() );
@@ -103,7 +103,7 @@ class Leaky_Paywall_Restrictions {
 	public function is_content_restricted() 
 	{
 		$is_restricted = false;
-
+		
 		if ( $this->content_matches_restriction_rules() ) {
 			$is_restricted = true;
 		}

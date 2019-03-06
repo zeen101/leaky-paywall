@@ -152,7 +152,8 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 						case 'subscription':
 
 							if ( !$plan ) {
-								continue;
+								// continue;
+								break;
 							}
 							
 							if ( 'free_registration' != $payment_gateway ) {
