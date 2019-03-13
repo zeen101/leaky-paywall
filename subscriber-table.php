@@ -414,8 +414,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						break;
 						case 'email':
 							$edit_link = esc_url( add_query_arg( 'edit', urlencode( $user->user_email ) ) );
+							$edit_wp_link = admin_url() . 'user-edit.php?user_id=' . $user->ID;
 							echo "<td $attributes>"; ?>
-								<strong><a href="<?php echo $edit_link; ?>" class="edit"><?php echo $user->user_email; ?></a></strong>
+								<strong><?php echo $user->user_email; ?></strong>
+								<br><a href="<?php echo $edit_link; ?>" class="edit">Edit LP Sub</a> | <a href="<?php echo $edit_wp_link; ?>">Edit WP user</a>
 							</td>
 						<?php
 						break;
