@@ -178,3 +178,7 @@ span.delete-post-type-row {
 	padding: 10px 20px;
 	margin-bottom: 20px;
 }
+
+.leaky-paywall-restriction-settings .hide-setting {
+	display: none;
+}

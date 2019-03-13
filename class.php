@@ -300,9 +300,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				wp_enqueue_script( 'js_cookie_js', LEAKY_PAYWALL_URL . 'js/js-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_script( 'leaky_paywall_cookie_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 
+				$post_container = $settings['js_restrictions_post_container'];
+				$page_container = $settings['js_restrictions_page_container'];
+
 				wp_localize_script( 'leaky_paywall_cookie_js', 'leaky_paywall_cookie_ajax',
 		            array( 
-		            	'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' )
+		            	'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
+		            	'post_container'	=> $post_container,
+		            	'page_container'	=> $page_container
 		             ) 
 		        );
 			}
@@ -405,6 +410,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'enable_combined_restrictions'  => 'off',
 				'combined_restrictions_total_allowed' => '',
 				'enable_js_cookie_restrictions' => 'off',
+				'js_restrictions_post_container' => 'article .entry-content',
+				'js_restrictions_page_container' => 'article .entry-content',
 				'restrictions' 	=> array(
 					'post_types' => array(
 						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
@@ -656,7 +663,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					else
 						$settings['enable_js_cookie_restrictions'] = 'off';
 
-					
+					if ( isset( $_POST['js_restrictions_post_container'] ) ) {
+						$settings['js_restrictions_post_container'] = sanitize_text_field( $_POST['js_restrictions_post_container'] );
+					}
+
+					if ( isset( $_POST['js_restrictions_page_container'] ) ) {
+						$settings['js_restrictions_page_container'] = sanitize_text_field( $_POST['js_restrictions_page_container'] );
+					}
 
 					if ( !empty( $_REQUEST['levels'] ) ) {
 						$settings['levels'] = $_REQUEST['levels'];
@@ -1493,10 +1506,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 		                        <tr class="restriction-options">
 	                                <th><?php _e( 'Combined Restrictions', 'leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> <?php _e( 'Use a single value for total number allowed regardless of content type. This uses the Post Type and Taxonomy settings from the Restrictions settings above.', 'leaky-paywall' ); ?></td>
+	                                <td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> <?php _e( 'Use a single value for total number allowed regardless of content type or taxonomy. This uses the Post Type and Taxonomy settings from the Restrictions settings above.', 'leaky-paywall' ); ?></td>
 	                            </tr>
 
-	                            <tr class="restriction-options">
+	                            <tr class="restriction-options combined-restrictions-total-allowed <?php echo $settings['enable_combined_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
 	                                <th><?php _e( 'Combined Restrictions Total Allowed', 'leaky-paywall' ); ?></th>
 	                                <td>
 	                                	<input type="number" id="combined_restrictions_total_allowed" class="small-text" name="combined_restrictions_total_allowed" value="<?php echo stripcslashes( $settings['combined_restrictions_total_allowed'] ); ?>" /> 
@@ -1506,8 +1519,25 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 		                        <tr class="restriction-options">
 	                                <th><?php _e( 'Alternative Restriction Handling', 'leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php _e( 'Only enable this if your using a caching plugin or your host uses heavy caching and the paywall notice is not displaying on your site.' ); ?></td>
+	                                <td><input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php _e( 'Only enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying on your site.' ); ?></td>
 	                            </tr>
+
+	                            <tr class="restriction-options-post-container <?php echo $settings['enable_js_cookie_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
+	                                <th><?php _e( 'Alternative Restrictions Post Container', 'leaky-paywall' ); ?></th>
+	                                <td>
+	                                	<input type="text" id="js_restrictions_post_container" class="medium-text" name="js_restrictions_post_container" value="<?php echo stripcslashes( $settings['js_restrictions_post_container'] ); ?>" /> 
+	                                	<p class="description"><?php _e( 'CSS selector of the container that contains the content on a post and custom post type.' ); ?></p>
+	                                </td>
+	                            </tr>
+
+	                            <tr class="restriction-options-page-container <?php echo $settings['enable_js_cookie_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
+	                                <th><?php _e( 'Alternative Restrictions Page Container', 'leaky-paywall' ); ?></th>
+	                                <td>
+	                                	<input type="text" id="js_restrictions_page_container" class="medium-text" name="js_restrictions_page_container" value="<?php echo stripcslashes( $settings['js_restrictions_page_container'] ); ?>" /> 
+	                                	<p class="description"><?php _e( 'CSS selector of the container that contains the content on a page.' ); ?></p>
+	                                </td>
+	                            </tr>
+
 	                            
 	                        </table>
 	

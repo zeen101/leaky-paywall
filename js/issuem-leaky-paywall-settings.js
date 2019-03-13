@@ -119,9 +119,22 @@ $leaky_paywall_settings(document).ready(function($) {
 		if ( $(this).is(':checked' ) ) {
 			$('.restriction-allowed-number-setting').css('display', 'none');
 			$('.allowed-number-helper-text').css('display', 'block');
+			$('.combined-restrictions-total-allowed').removeClass('hide-setting');
 		} else {
 			$('.restriction-allowed-number-setting').css('display', 'block');
 			$('.allowed-number-helper-text').css('display', 'none');
+			$('.combined-restrictions-total-allowed').addClass('hide-setting');
+		}
+		
+	});
+
+	$('#enable_js_cookie_restrictions').click(function() {
+		if ( $(this).is(':checked' ) ) {
+			$('.restriction-options-post-container').removeClass('hide-setting');
+			$('.restriction-options-page-container').removeClass('hide-setting');
+		} else {
+			$('.restriction-options-post-container').addClass('hide-setting');
+			$('.restriction-options-page-container').addClass('hide-setting');
 		}
 		
 	});

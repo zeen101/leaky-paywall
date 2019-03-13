@@ -28,7 +28,7 @@
 
 							if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {
 								
-								var content = $('article .entry-content');
+								var content = $( leaky_paywall_cookie_ajax.post_container );
 								
 								content.html(response);
 								
@@ -65,7 +65,7 @@
 
 							if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {
 								
-								var content = $('article .entry-content');
+								var content = $( leaky_paywall_cookie_ajax.page_container );
 								
 								content.html(response);
 								
