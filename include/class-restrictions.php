@@ -171,7 +171,6 @@ class Leaky_Paywall_Restrictions {
 	public function current_user_can_access() 
 	{
 
-
 		// get their level
 		$level_ids = leaky_paywall_subscriber_current_level_ids();
 
@@ -192,6 +191,10 @@ class Leaky_Paywall_Restrictions {
 			}
 			
 		} else {
+
+			if ( !leaky_paywall_user_has_access() ) {
+				return false;
+			}
 
 			if ( $this->visibility_restricts_access() ) {
 				return false;
@@ -570,8 +573,14 @@ class Leaky_Paywall_Restrictions {
 
 				case 'always':
 					$always = array_intersect( $level_ids, $visibility['always_visible'] );
-					if ( in_array( -1, $visibility['always_visible'] ) || !empty( $always ) ) { //-1 = Everyone
+
+					if ( in_array( -1, $visibility['always_visible'] ) ) { //-1 = Everyone
 						return true; //always visible, don't need process anymore
+					}
+
+					// level id of the user matches those selected in the settings, and the user currently has access to that level
+					if ( !empty( $always ) && leaky_paywall_user_has_access() ) {
+						return true;
 					}
 					break;
 
@@ -579,7 +588,7 @@ class Leaky_Paywall_Restrictions {
 					$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
 					if ( empty( $onlyalways ) ) {
 						return false;
-					} else if ( !empty( $onlyalways ) ) {
+					} else if ( !empty( $onlyalways ) && leaky_paywall_user_has_access() ) {
 						return true; //always visible, don't need process anymore
 					}
 					break;
