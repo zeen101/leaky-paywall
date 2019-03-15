@@ -48,6 +48,8 @@ class Leaky_Paywall_Restrictions {
 			return;
 		}
 
+
+
 		$this->display_subscribe_nag();
 
 		do_action( 'leaky_paywall_is_restricted_content' );
@@ -184,6 +186,8 @@ class Leaky_Paywall_Restrictions {
 				return false;
 			}
 
+			
+
 			if ( $this->allowed_value_exceeded() ) {
 				return false;
 			} else {
@@ -196,9 +200,13 @@ class Leaky_Paywall_Restrictions {
 				return false;
 			}
 
+
+
 			if ( $this->visibility_restricts_access() ) {
 				return false;
 			}
+
+
 
 			if ( $this->level_id_allows_access() ) {
 				return true;
@@ -236,6 +244,8 @@ class Leaky_Paywall_Restrictions {
 						return true;
 					}
 
+
+
 					if ( !isset( $access_rule['taxonomy'] ) ) {
 						$access_rule['taxonomy'] = 'all';
 					}
@@ -247,6 +257,8 @@ class Leaky_Paywall_Restrictions {
 					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
 						return true;
 					}
+
+
 					
 					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 						return true;
@@ -256,10 +268,22 @@ class Leaky_Paywall_Restrictions {
 						continue;
 					}
 
-					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
-							
-						// get allowed value and compare to total content read for this taxonomy
+					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
+						
 						$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
+
+						// max views reached so block the content
+						if ( !empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+							return false;
+						} else {
+							$this->update_content_viewed_by_user();
+							return true;
+						}
+
+					}
+					
+
+					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 
 						// this only needs to calculate for this term
 						$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
@@ -382,6 +406,7 @@ class Leaky_Paywall_Restrictions {
 	// go through each content item viewed and see if its term matches any restrictions
 	public function get_number_viewed_by_term( $term_id ) 
 	{
+
 		$viewed_content = $this->get_content_viewed_by_user();
 		$num = 0;
 
@@ -389,7 +414,11 @@ class Leaky_Paywall_Restrictions {
 
 			foreach( $items as $post_id => $item ) {
 
-				if ( $this->content_taxonomy_matches( $term_id, $post_id ) ) {
+				// if all, then count every one
+				// @todo had to add this condition to account for the "all" term
+				if ( $term_id == 'all' ) {
+					$num++;
+				}  else if ( $this->content_taxonomy_matches( $term_id, $post_id ) ) {
 					$num++;
 				}
 
@@ -721,6 +750,7 @@ class Leaky_Paywall_Restrictions {
 				foreach( $terms as $term ) {
 					// see if one of the term_ids matches the restricted_term_id
 					if ( $term->term_id == $restricted_term_id ) {
+
 						return true;
 					}
 

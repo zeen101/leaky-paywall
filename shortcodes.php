@@ -497,7 +497,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 							$user = get_userdata( $user_id ); //Refresh the user object				
 							$results .= '<div class="leaky_paywall_message success"><p>' . __( 'Profile Changes Saved.', 'leaky-paywall' ) . '</p></div>';
 
-							do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args );
+							do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args, $userdata );
 							
 						}		
 						
