@@ -302,7 +302,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					}
 					
 				} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
-					$cancel = 'You have cancelled your subscription, but your account will remain active until your expiration date.';
+					$cancel = __( 'You have cancelled your subscription, but your account will remain active until your expiration date.', 'leaky-paywall' );
 				} 
 
 				if ( 'stripe' == $payment_gateway ) {
@@ -353,7 +353,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					    $cu->source = $_POST['stripeToken']; // obtained with Checkout
 					    $cu->save();
 
-					    $update_card_success = __( 'Your card details have been updated!' );
+					    $update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
 
 					  }
 					  catch(\Stripe\Error\Card $e) {
