@@ -407,11 +407,11 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		
 			if ( !empty( $_REQUEST['txn_type'] ) ) {
 			    
-				$args= array(
+				$args = apply_filters( 'leaky_paywall_paypal_verified_ipn_args', array(
 					'level_id' 		=> $_REQUEST['item_number'], //should be universal for all PayPal IPNs we're capturing
 					'description' 		=> $_REQUEST['item_name'], //should be universal for all PayPal IPNs we're capturing
 					'payment_gateway' 	=> 'paypal_standard',
-				);
+				) );
 
 				$level = get_leaky_paywall_subscription_level( $args['level_id'] );
 
