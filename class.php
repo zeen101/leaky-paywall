@@ -2010,21 +2010,22 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			<div class="wrap">
         	
         	<div style="max-width: 1035px; margin-bottom: 20px; overflow: hidden;">
-	        	<div style="float: left;">
+	        	<div>
 	                <h2 style='margin-bottom: 10px;' ><?php _e( 'Leaky Paywall Add-Ons', 'leaky-paywall' ); ?></h2>
-	                <p><?php _e( 'The following are some of the available add-ons to extend Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
+	                <p><?php _e( 'Just a few of the add-ons available to extend Leaky Paywall functionality. Click the button below to view them all.', 'leaky-paywall' ); ?></p>
+	                			<p>
+	                					<a target="_blank" class="button-primary" href="https://zeen101.com/downloads/?utm_source=Leaky%20dashboard%20addons&utm_medium=Button&utm_content=Button&utm_campaign=Leaky%20Addons%20dashboard%20Browse%20addons%20button">Browse all add-ons for Leaky Paywall</a>
+	                             	</p>
 				</div>
 
-				<div style="float: right; margin-top: 20px;">	
+				<div style="padding-top: 40px;">	
 					<div class="leaky-publisher-bundle">
 						<a target="_blank" href="https://zeen101.com/downloads/publisher-bundle/?utm_source=Leaky%20Addons%20dashboard&utm_medium=banner&utm_campaign=Publisher%20bundle%20banner%20addons%20leaky"><img width="500" src="https://zeen101.com/wp-content/uploads/edd/2016/03/publisher-bundle.jpg" alt="publisher-bundle"></a>
 					</div>
 				</div>
 			</div>
 			
-			<p>
-					<a target="_blank" class="button-primary" href="https://zeen101.com/leakypaywall/leaky-paywall-add-ons/?utm_source=Leaky%20dashboard%20addons&utm_medium=Button&utm_content=Button&utm_campaign=Leaky%20Addons%20dashboard%20Browse%20addons%20button">Browse all add-ons for Leaky Paywall</a>
-             	</p>
+			
 
                 <table id="leaky-paywall-addons" cellpadding="0" cellspacing="0">
                 	<tbody>
