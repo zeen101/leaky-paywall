@@ -1854,6 +1854,10 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 				'allowed_value' => '0',
 			);
 		}
+
+		if ( !isset( $restriction['taxonomy'] ) ) {
+			$restriction['taxonomy'] = 'all';
+		}
     	
 		// $return  = '<div class="issuem-leaky-paywall-restriction-row">';
 		echo '<tr class="issuem-leaky-paywall-restriction-row">';
