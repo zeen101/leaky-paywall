@@ -1649,17 +1649,6 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 					</table>
 				</td>
 			</tr>
-
-			<tr>
-				<th><?php _e( 'Plan ID', 'leaky-paywall' ); ?></th>
-				<td>
-					<?php
-						echo '<pre>';
-						print_r( $level['plan_id'] );
-						echo '</pre>';
-					?>
-				</td>
-			</tr>
 		
 			<tr>
 				<th>&nbsp;</th>
