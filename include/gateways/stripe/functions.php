@@ -120,6 +120,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
 
 	$settings = get_leaky_paywall_settings();
     $stripe_plan = false;
+    $match = false;
     $time = time();
 
     try {
@@ -127,33 +128,49 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
     } catch (Exception $e) {
     	return new WP_Error( 'missing_api_key', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
     }
-    
+
+    if ( !is_array( $level['plan_id'] ) ) {
+    	$plan_temp = $level['plan_id'];
+    	$settings['levels'][$level_id]['plan_id'] = array( $plan_temp );
+    	update_leaky_paywall_settings( $settings );
+    }
 
 	if ( !empty( $level['plan_id'] ) ) {
-		//We need to verify that the plan_id matches the level details, otherwise we need to update it
-		try {
-            $stripe_plan = \Stripe\Plan::retrieve( $level['plan_id'] );
-        }
-        catch( Exception $e ) {
-            $stripe_plan = false;
-        }
-		
+
+		foreach( (array)$level['plan_id'] as $plan_id ) {
+
+			//We need to verify that the plan_id matches the level details, otherwise we need to update it
+			try {
+	            $stripe_plan = \Stripe\Plan::retrieve( $plan_id );
+	        }
+	        catch( Exception $e ) {
+	            $stripe_plan = false;
+	        }
+
+	        if ( !is_object( $stripe_plan ) || //If we don't have a stripe plan
+	        	( //or the stripe plan doesn't match...
+	        		$plan_args['stripe_price']	!= $stripe_plan->amount 
+	        		|| $level['interval'] 		!= $stripe_plan->interval 
+	        		|| $level['interval_count'] != $stripe_plan->interval_count
+	        	) 
+	        ) {
+	        	// does not match
+	        } else {
+	        	$match = $stripe_plan; // this plan matches, so send it back
+	        }
+
+		}
+
 	}
 
-	if ( !is_object( $stripe_plan ) || //If we don't have a stripe plan
-		( //or the stripe plan doesn't match...
-			$plan_args['stripe_price']	!= $stripe_plan->amount 
-			|| $level['interval'] 		!= $stripe_plan->interval 
-			|| $level['interval_count'] != $stripe_plan->interval_count
-		) 
-	) {
-
+	if ( !$match ) {
 		$stripe_plan = leaky_paywall_create_stripe_plan( $level, $level_id , $plan_args );
         
-        $settings['levels'][$level_id]['plan_id'] = $stripe_plan->id;
+        $settings['levels'][$level_id]['plan_id'][] = $stripe_plan->id;
         update_leaky_paywall_settings( $settings );
-   
-    }
+	} else {
+		$stripe_plan = $match;
+	}
 
     return $stripe_plan;
 
