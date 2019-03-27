@@ -427,7 +427,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						'interval_count' 			=> 1,
 						'interval' 					=> 'month',
 						'recurring' 				=> 'off',
-						'plan_id' 					=> '',
+						'plan_id' 					=> array(),
 						'post_types' => array(
 							array(
 								'post_type' 		=> ACTIVE_ISSUEM ? 'article' : 'post',

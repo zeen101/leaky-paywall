@@ -129,6 +129,10 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
     	return new WP_Error( 'missing_api_key', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
     }
 
+   	if ( !isset( $level['plan_id'] ) ) {
+   		$level['plan_id'] = array();
+   	}
+
     if ( !is_array( $level['plan_id'] ) ) {
     	$plan_temp = $level['plan_id'];
     	$settings['levels'][$level_id]['plan_id'] = array( $plan_temp );

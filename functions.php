@@ -1506,7 +1506,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			'interval' 					=> 'month',
 			'recurring' 				=> 'off',
 			'hide_subscribe_card'		=> 'off',
-			'plan_id' 					=> '',
+			'plan_id' 					=> array(),
 			'post_types' => array(
 				array(
 					'post_type' 		=> ACTIVE_ISSUEM ? 'article' : 'post',
@@ -1552,7 +1552,23 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		    		</th>
 		    		<td>
 		    			<input id="level-recurring-<?php echo $row_key; ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo $row_key; ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments
-		    			<input type="hidden" id="level-plan_id-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][plan_id]" value="<?php echo $level['plan_id']; ?>">
+
+		    			<?php 
+
+		    				if ( is_array( $level['plan_id'] ) ) {
+		    					foreach( $level['plan_id'] as $plan_id ) {
+		    						?>
+		    						<input type="hidden" class="level-plan_id-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][plan_id][]" value="<?php echo $plan_id; ?>">
+		    						<?php 
+		    					}
+		    				} else {
+		    					?>
+		    					<input type="hidden" id="level-plan_id-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][plan_id]" value="<?php echo $level['plan_id']; ?>">
+		    					<?php 
+		    				}
+		    				
+		    			?>
+		    			
 		    		</td>
 		    	</tr>
 		    	<?php 
@@ -1631,6 +1647,17 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 							}
 						?>
 					</table>
+				</td>
+			</tr>
+
+			<tr>
+				<th><?php _e( 'Plan ID', 'leaky-paywall' ); ?></th>
+				<td>
+					<?php
+						echo '<pre>';
+						print_r( $level['plan_id'] );
+						echo '</pre>';
+					?>
 				</td>
 			</tr>
 		
@@ -2072,7 +2099,6 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					if ( isset( $level['hide_subscribe_card'] ) && 'on' == $level['hide_subscribe_card'] ) {
 						continue;
 					}
-					
 					
 					if ( is_multisite_premium() && !empty( $level['site'] ) && 'all' != $level['site'] && $blog_id != $level['site'] )
 						continue;
