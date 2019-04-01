@@ -367,7 +367,9 @@ class Leaky_Paywall_Restrictions {
 				}
 
 				// max views reached so block the content
-				if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+				if ( $allowed_value == 0 ) {
+					return true;
+				} else if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 					return true;
 				} else {
 					$this->update_content_viewed_by_user();
@@ -389,7 +391,9 @@ class Leaky_Paywall_Restrictions {
 				$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
 
 				// max views reached so block the content
-				if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+				if ( $allowed_value == 0 ) {
+					return true;
+				} else if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 					return true;
 				} else {
 					$this->update_content_viewed_by_user();
