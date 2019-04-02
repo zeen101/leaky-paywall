@@ -302,7 +302,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					}
 					
 				} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
-					$cancel = 'You have cancelled your subscription, but your account will remain active until your expiration date.';
+					$cancel = __( 'You have canceled your subscription, but your account will remain active until your expiration date.', 'leaky-paywall' );
 				} 
 
 				if ( 'stripe' == $payment_gateway ) {
@@ -545,7 +545,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 			if ( 'on' == $settings['enable_user_delete_account'] ) {
 				$results .= '<form id="leaky-paywall-delete-account" action="" method="post">';
-				$results .= '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">Delete Account</button></p>';
+				$results .= '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">' . __( 'Delete Account', 'leaky-paywall' ) . '</button></p>';
 				$results .= wp_nonce_field( 'leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true, false );
 				$results .= '</form>';
 
