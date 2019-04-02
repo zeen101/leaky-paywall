@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 4.6.0
 Tested up to: 5.1.1
-Stable tag: 4.12.5
+Stable tag: 4.12.6
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -12,18 +12,20 @@ The first and most flexible metered paywall for WordPress. Sell subscriptions wi
 
 == Description ==
 
-[Leaky Paywall](https://zeen101.com/for-developers/leakypaywall/) is perfect for bloggers, news, and magazine sites that need content to be discovered in Google search and shared socially on Facebook and the rest. Set your meter to allow X number of free articles before requiring a subscription.
+[Leaky Paywall](https://zeen101.com/for-developers/leakypaywall/) is the 1st and most flexible metered paywall built specifically for news and magazine publishers.
 
-Pioneered by the Financial Times, popularized by the New York Times and used by 1000’s of publishers large and small, the metered paywall is now the most successful paywall approach in the publishing industry.
+Get your content discovered in Google search and shared in social media. As simple as setting your meter to allow X number of free articles before requiring a subscription, Leaky Paywall can also be customized to allow multiple subscription options. Subscribers can pay (or register for free) for access to your content by category, tag, custom post type, and even pay a premium for your archive content.
+
+Leaky Paywall also integrates with our award winning IssueM issue publisher, our UniPress iOS and Android apps and many 3rd party print subscription services.
 
 **Features**
 
 * Metered paywall: Let your readers read X number of free articles before they need to subscribe
-* Flexible restrictions: restrict by entire post type, category, tag, taxonomy, or even on individual posts
+* Flexible restrictions: restrict by entire post type, category, tag, taxonomy, archive content, or even on individual posts
 * Get found in Google: Allows all your content to be indexed by search engines
 * Viral sharing: All your articles can be shared 1000s of times in social media
-* Sell live web issues: Integrates with [IssueM](https://zeen101.com/for-developers/issuem/) to sell access to individual special issues or traditional weekly, monthly, quarterly, etc issues
-* iOS and Android app publishing: Integrates with [UniPress](https://zeen101.com/unipress/) to easily give your subscribers access to apps and sell subscriptions in the app stores
+* Sell access to web issues: Integrates with IssueM to sell access to individual special issues or traditional weekly, monthly, quarterly, etc issues
+* iOS and Android app publishing: Integrates with UniPress to easily give your subscribers access to apps and sell subscriptions in the app stores
 * Build your email list with a Free subscription level
 * Granular content restriction: Optionally set any article as subscriber only or always free/public
 * Much more
@@ -31,9 +33,16 @@ Pioneered by the Financial Times, popularized by the New York Times and used by 
 **Leaky Paywall integrates with**
 
 * [IssueM](https://zeen101.com/for-developers/issuem/) issue publishing: Our IssueM plugin allows publishers to manage live web issues that are mobile, search engine, and social sharing friendly. Issues and articles reach today’s modern reader. Now you can promote and sell subscriptions to special or traditional recurring issues. 
-
 * iOS and Android apps! Leaky Paywall integrates with [UniPress](https://zeen101.com/unipress/) to give your subscribers native mobile apps for the best reading experience available today. Your subscribers will have automatic access to your content in the app after subscribing with Leaky Paywall. All content and apps are managed right in WordPress for true 1 click publishing.
-
+* Stripe
+* PayPal
+* MagHub
+* Enterprise Subscription Processing (ESP)
+* Palm Coast Data
+* Publisher Service Associates (PSA)
+* RunMags
+* Publisher's Creative Systems (PCS)
+* More
 
 **Add-ons available to power up your publication**
 Some of our [add-ons](https://zeen101.com/leakypaywall/leaky-paywall-add-ons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
@@ -50,9 +59,9 @@ Some of our [add-ons](https://zeen101.com/leakypaywall/leaky-paywall-add-ons/?ut
 * [MailChimp](https://zeen101.com/downloads/leaky-paywall-mailchimp/?utm_source=addons&utm_medium=description_tab&utm_content=mailchimp&utm_campaign=readme) automatically adds new subscribers to a Mailchimp list.
 * [Bulk Import Subscribers](https://zeen101.com/downloads/leaky-paywall-bulk-import-subscribers/?utm_source=addons&utm_medium=description_tab&utm_content=bulk_import&utm_campaign=readme) allows you to bulk import subscribers from a CSV file.
 * [Article Countdown Nag](https://zeen101.com/downloads/article-countdown-nag/?utm_source=addons&utm_medium=description_tab&utm_content=countdown_nag&utm_campaign=readme) lets the reader know how many free articles they have left before they need to subscribe.
-* More
+* Many more
 
-For documentation see: [https://zeen101.com/documentation](https://zeen101.com/documentation-category/leaky-paywall/)
+For documentation see: [https://zeen101.helpscoutdocs.com/collection/30-leaky-paywall](https://zeen101.helpscoutdocs.com/collection/30-leaky-paywall)
 
 We love contributions! Head over to our GitHub page if your feeling inspired [https://github.com/zeen101/leaky-paywall](https://github.com/zeen101/leaky-paywall)
 
@@ -82,6 +91,15 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.12.6 =
+* Add more translatable strings
+* Add filter to adjust paypal ipn data
+* Add restriction rules for a taxonomy that has zero allowed
+* Allow for multiple plan ids on a single level
+* Remove visbility metabox from coupons and transctions post types
+* Set default for restrction taxonomy on restriction settings
+* Update add-ons page links
 
 = 4.12.5 =
 * Update restriction rules for limited access options
