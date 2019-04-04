@@ -321,11 +321,12 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 
+
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 			$unexpired = true;
 		} else {
-			$date_format = get_option( 'date_format' );
-			$expires = mysql2date( $date_format, $expires );
+			// $date_format = get_option( 'date_format' );
+			// $expires = mysql2date( $date_format, $expires );
 
 			if ( strtotime( $expires ) > time() ) {
 				$unexpired = true;
