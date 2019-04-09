@@ -353,7 +353,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					    $cu->source = $_POST['stripeToken']; // obtained with Checkout
 					    $cu->save();
 
-					    $update_card_success = __( 'Your card details have been updated!' );
+					    $update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
 
 					  }
 					  catch(\Stripe\Error\Card $e) {
