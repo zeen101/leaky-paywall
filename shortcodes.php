@@ -634,10 +634,13 @@ function do_leaky_paywall_register_form() {
 								$content_access_description .= ', ';
 							}
 
+							$post_type = get_post_type_object( $type['post_type'] );
+
 							if ( $type['allowed'] == 'unlimited' ) {
-								$content_access_description .= ucfirst( $type['allowed'] ) . ' ' . $type['post_type'] . 's';
+								$content_access_description .= ucfirst( $type['allowed'] ) . ' ' . $post_type->labels->name;
 							} else {
-								$content_access_description .= $type['allowed_value'] . ' ' . $type['post_type'] . 's';
+								$post_type_label = $type['allowed_value'] === '1' ? $post_type->labels->singular_name : $post_type->labels->name;
+								$content_access_description .= $type['allowed_value'] . ' ' . $post_type_label;
 							}
 							
 							$i++;

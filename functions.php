@@ -2117,7 +2117,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 							if ( !empty( $post_type_obj ) ) {
 								if ( 0 <= $post_type['allowed_value'] ) {
 									$has_allowed_value = true;
-									$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->name ) .  '</p>';
+									$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->singular_name ) .  '</p>';
 								} else {
 									$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
 								}
