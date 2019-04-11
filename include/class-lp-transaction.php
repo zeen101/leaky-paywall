@@ -29,6 +29,7 @@ class LP_Transaction {
 		$this->payment_status = $args['payment_status'];
 		$this->level_id = $args['level_id'];
 		$this->currency = isset( $args['currency'] ) ? $args['currency'] : '';
+		$this->is_recurring = isset( $args['is_recurring'] ) ? true : false;
 
 	}
 
@@ -57,6 +58,7 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_price', $this->price );
 		update_post_meta( $transaction_id, '_currency', $this->currency );
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
+		update_post_meta( $transaction_id, '_is_recurring', $this->is_recurring );
 
 		return $transaction_id;
 		
