@@ -124,6 +124,14 @@ class LP_Transaction_Post_Type {
                         <?php echo esc_attr( get_post_meta( $post->ID, '_currency', true ) ); ?>
 					</td>
 				</tr>
+                <tr valign="top">
+                    <th scope="row">
+                        <label for="apc_box1_description">Is Recurring </label>
+                    </th>
+                    <td>
+                        <?php echo get_post_meta( $post->ID, '_is_recurring', true ) ? 'yes' : 'no'; ?>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
