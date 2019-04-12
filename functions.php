@@ -725,9 +725,16 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
-		unset( $meta_args['site'] );		
+		unset( $meta_args['site'] );	
 
-		$meta_args['created'] = date( 'Y-m-d H:i:s' );
+		if ( isset( $meta_args['created'] ) && $meta_args['created'] ) {
+			$created_date = strtotime( $meta_args['created'] );
+			$meta_args['created'] = date( 'Y-m-d H:i:s', $created_date );
+		} else {
+			$meta_args['created'] = date( 'Y-m-d H:i:s' );
+		}
+
+		
 
 		// set free level subscribers to active
 		if ( $meta_args['price'] == '0' ) {
