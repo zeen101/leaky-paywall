@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 4.6.0
 Tested up to: 5.1.1
-Stable tag: 4.12.7
+Stable tag: 4.12.8
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,11 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.12.8 =
+* Allow created date to be set during bulk import
+* Fix recurring payments on Stripe Checkout
+* Add recurring payment data to transaction
 
 = 4.12.7 =
 * Add more translatable strings
