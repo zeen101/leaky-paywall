@@ -30,8 +30,34 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 
 		$this->level_name  = $level['label'];
 		$this->recurring   = !empty( $level['recurring'] ) ? $level['recurring'] : false;
-		$this->plan_id     = !empty( $level['plan_id'] ) ? $level['plan_id'] : false;
 		$this->level_price = $level['price'];
+
+		if ( $this->recurring ) {
+
+			$currency = leaky_paywall_get_currency();
+			$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+
+			// @todo: make this a function so we can use it on the credit card form too
+			if ( in_array( strtoupper( $currency ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
+				//Zero-Decimal Currencies
+				//https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support
+				$stripe_price = number_format( $level['price'], '0', '', '' );
+			} else {
+				$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
+			}
+
+			$plan_args = array(
+				'stripe_price'	=> $stripe_price,
+				'currency'		=> $currency,
+				'secret_key'	=> $secret_key
+			);
+		
+	        $stripe_plan = leaky_paywall_get_stripe_plan( $level, $this->level_id, $plan_args );
+	        $this->plan_id = $stripe_plan->id;
+
+		} else {
+			$this->plan_id = false;
+		}
 
 		// @todo: Fix: this will ignore coupons
 		$this->amount      = $level['price'];
