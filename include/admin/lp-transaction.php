@@ -9,6 +9,11 @@ class LP_Transaction_Post_Type {
         add_action( 'init', array( $this, 'register_post_type' ) );
         add_action( 'add_meta_boxes', array( $this, 'meta_box_create' ) );
         add_action( 'save_post', array( $this, 'save_meta') );
+
+        add_filter('manage_edit-lp_transaction_columns' , array( $this, 'transaction_columns') );
+        add_action('manage_lp_transaction_posts_custom_column' , array( $this, 'transaction_custom_columns' ), 10, 2 );
+
+
     }
 
 	public function register_post_type()
@@ -58,8 +63,6 @@ class LP_Transaction_Post_Type {
     public function transaction_details_func( $post )
     {
         
-        $box1_title = get_post_meta( $post->ID, '_apc_box1_title', true );
-
         $level_id = esc_attr( get_post_meta( $post->ID, '_level_id', true ) );
         $level = get_leaky_paywall_subscription_level( $level_id );
 
@@ -167,6 +170,53 @@ class LP_Transaction_Post_Type {
        //     update_post_meta( $post_id, '_apc_box1_title',strip_tags( $_POST['apc_box1_title'] ) );
         }  
         
+    }
+
+    public function transaction_columns( $columns ) 
+    {
+
+        $columns = array(
+            'cb' => '<input type="checkbox" />',
+            'email' => __( 'Email' ),
+            'level' => __( 'Level' ),
+            'price' => __( 'Price' ),
+            'created' => __( 'Created' ),
+            'status' => __( 'Status' )
+        );
+
+        return $columns;
+
+    }
+
+    public function transaction_custom_columns( $column, $post_id ) 
+    {
+
+        $level_id = esc_attr( get_post_meta( $post_id, '_level_id', true ) );
+        $level = get_leaky_paywall_subscription_level( $level_id );
+        
+        switch ( $column ) {
+        
+           case 'email':
+               echo '<a href="' . admin_url() . '/post.php?post=' . $post_id . '&action=edit">' . esc_attr( get_post_meta( $post_id, '_email', true ) ) . '</a>';
+               break;
+
+           case 'level':
+                echo $level['label'];
+               break;
+
+            case 'price':
+                echo leaky_paywall_get_current_currency_symbol() . number_format( esc_attr( get_post_meta( $post_id, '_price', true ) ), 2 );
+               break;
+
+            case 'created':
+                echo get_the_date( 'M d, Y h:i:s A', $post_id );
+               break;
+
+            case 'status':
+                echo  get_post_meta( $post_id, '_is_recurring', true ) ? 'Recurring Payment' : 'Complete'; 
+               break;
+        }
+
     }
 
 }
