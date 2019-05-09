@@ -865,7 +865,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                        	<?php if ( !isset( $settings['page_for_subscription'] ) || !$settings['page_for_subscription'] ) {
 	                        		?>
-	                        		<p>Need help getting started? <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">See our guide</a> or <a target="_blank" href="https://zeen101.com/publisher-care?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">check out Publisher Care.</a></p>
+	                        		<p>Need help getting started? <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">See our guide</a> or <a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">check out PubCare.</a></p>
 	                        		<?php 
 	                        	} ?>
 	                        
@@ -1668,7 +1668,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 				<div class="leaky-paywall-sidebar-widget">
 					<h3>Need software and support?</h3>
-					<p><a target="_blank" href="https://zeen101.com/publisher-care/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out Publisher Care</a></p>
+					<p><a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out PubCare</a></p>
 				</div>
 
 				<div class="leaky-paywall-sidebar-widget">
