@@ -226,6 +226,7 @@ class Leaky_Paywall_Restrictions {
 		$restrictions = $this->get_restriction_settings();
 		$viewed_content = $this->get_content_viewed_by_user();
 		$content_post_type = get_post_type( $this->post_id );
+		$allows_access = false;
 		
 		foreach( $level_ids as $level_id ) {
 
@@ -257,11 +258,34 @@ class Leaky_Paywall_Restrictions {
 					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
 						return true;
 					}
-
-
 					
-					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
+					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
 						return true;
+					}
+
+					// they have access to some taxonomy, but not this one
+					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
+						
+						if ( $this->allowed_value_exceeded() ) {
+							$allows_access = false;
+						} else {
+							$allows_access = true;
+						}
+
+					}
+
+					if ( $access_rule['allowed'] == 'unlimited' && $restriction['taxonomy'] == 'all' && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
+						 $allows_access = true;
+					}
+
+					if ( $access_rule['allowed'] == 'unlimited' && $restriction['taxonomy'] == 'all' && $content_post_type == $restriction['post_type'] && !$this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
+
+						if ( $this->allowed_value_exceeded() ) {
+							$allows_access = false;
+						} else {
+							$allows_access = true;
+						}
+
 					}
 
 					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
@@ -274,10 +298,10 @@ class Leaky_Paywall_Restrictions {
 
 						// max views reached so block the content
 						if ( !empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
-							return false;
+							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
-							return true;
+							$allows_access = true;
 						}
 
 					}
@@ -290,10 +314,10 @@ class Leaky_Paywall_Restrictions {
 
 						// max views reached so block the content
 						if ( !empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
-							return false;
+							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
-							return true;
+							$allows_access = true;
 						}
 
 					}
@@ -304,7 +328,8 @@ class Leaky_Paywall_Restrictions {
 
 		}
 
-		return false;
+		// return false;
+		return $allows_access;
 	}
 
 	public function allowed_value_exceeded() 
