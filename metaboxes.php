@@ -128,7 +128,7 @@ if ( !function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 		}
 			
 		// Check the user's permissions.
-		if ( ! ( current_user_can( 'edit_page', $post_id ) || current_user_can( 'edit_posts', $post_id ) ) ) {
+		if ( ! ( current_user_can( 'edit_pages', $post_id ) || current_user_can( 'edit_posts', $post_id ) ) ) {
 			return;
 		}
 	
