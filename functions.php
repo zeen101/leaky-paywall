@@ -3139,6 +3139,8 @@ function leaky_paywall_maybe_delete_user() {
 
 		wp_delete_user( $user->ID );
 
+		do_action( 'leaky_paywall_after_user_deleted', $user );
+
 		$admin_message = '';
         $headers = array();
 
