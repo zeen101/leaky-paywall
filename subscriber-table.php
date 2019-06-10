@@ -375,7 +375,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				
 				if ( !empty( $_GET['user-type'] ) && 'wpusers' !== $_GET['user-type'] ) {
 					if ( empty( $payment_gateway ) ) {
-						continue;
+						$payment_gateway = 'manual';
 					}
 				}
 				
