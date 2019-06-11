@@ -391,7 +391,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan ? $stripe_plan->id : ''; ?>"/>
 
-			<script type="text/javascript">
+			<script>
 
 			var leaky_paywall_script_options;
 			var leaky_paywall_processing;
@@ -403,10 +403,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			  function stripeResponseHandler(status, response) {
 
 			  	if (response.error) {
-			  		// re-enable th submit button
-			  		jQuery('#leaky-paywall-payment-form #leaky-paywall-submit').attr("disabled", false );
+			  		// re-enable the submit button
+			  		jQuery('#leaky-paywall-payment-form #leaky-paywall-submit').prop("disabled", false ).text('Submit');
 
-			  		// jQuery('#leaky-paywall-registration-form').unblock();
 			  		jQuery('#leaky-paywall-submit').before('<div class="leaky-paywall-message error"><p class="leaky-paywall-error"><span>' + response.error.message + '</span></p></div>' );
 
 			  		leaky_paywall_stripe_processing = false;
@@ -433,6 +432,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			  		if ( method != 'stripe' ) {
 			  			return;
 			  		}
+
+
  
 			  		if ( ! leaky_paywall_stripe_processing ) {
 
@@ -442,7 +443,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			  			$('input[name="stripe_price"]').val();
 
 			  			// disabl the submit button to prevent repeated clicks
-			  			$('#leaky-paywall-payment-form #leaky-paywall-submit').attr('disabled', 'disabled' );
+			  			$('#leaky-paywall-payment-form #leaky-paywall-submit').prop('disabled', true ).text('Processing...Please Wait');
 
 			  			// create Stripe token
 			  			Stripe.createToken({
@@ -621,11 +622,20 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		  	form.addEventListener('submit', function(event) {
 		  	  event.preventDefault();
 
+		  	  var subButton = document.getElementById('leaky-paywall-submit');
+
+		  	  subButton.disabled = true;
+		  	  subButton.innerHTML = 'Processing...Please Wait';
+
 		  	  stripe.createToken(card).then(function(result) {
 		  	    if (result.error) {
 		  	      // Inform the user if there was an error.
 		  	      var errorElement = document.getElementById('card-errors');
 		  	      errorElement.textContent = result.error.message;
+
+		  	      subButton.disabled = false;
+		  	      subButton.innerHTML = 'Submit';
+
 		  	    } else {
 		  	      // Send the token to your server.
 		  	      stripeTokenHandler(result.token);
