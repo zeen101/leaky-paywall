@@ -2,13 +2,13 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Tags: magazine, issue, manager, paywall, leaky
 Requires at least: 4.6.0
-Tested up to: 5.2
-Stable tag: 4.12.9
+Tested up to: 5.2.1
+Stable tag: 4.13.0
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
+The most flexible paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
 
 == Description ==
 
@@ -20,6 +20,7 @@ Leaky Paywall also integrates with our award winning IssueM issue publisher, our
 
 **Features**
 
+* Can be easily configured as a metered paywall, hybrid paywall, hard paywall, and membership platform.
 * Metered paywall: Let your readers read X number of free articles before they need to subscribe
 * Flexible restrictions: restrict by entire post type, category, tag, taxonomy, archive content, or even on individual posts
 * Get found in Google: Allows all your content to be indexed by search engines
@@ -45,7 +46,7 @@ Leaky Paywall also integrates with our award winning IssueM issue publisher, our
 * More
 
 **Add-ons available to power up your publication**
-Some of our [add-ons](https://zeen101.com/leakypaywall/leaky-paywall-add-ons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
+Some of our [add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
 
 * [Recurring Payments](https://zeen101.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
 * [Trials](https://zeen101.com/downloads/leaky-paywall-trials/?utm_source=addons&utm_medium=description_tab&utm_content=trials&utm_campaign=readme) allow subscribers to sign up for a trial to any recurring level.
@@ -91,6 +92,13 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.13.0 =
+* Add confirmation message when a subscriber is added or updated on the subscriber screen
+* Add disabled state to button after clicked on registraiton page
+* Default to manual if no payment gateway is set for a subscriber
+* Add leaky_paywall_after_user_deleted action after a user deletes their account
+* Update user permission check for leaky paywall visibility
 
 = 4.12.9 =
 * Update restriction logic for users with a subscription level
