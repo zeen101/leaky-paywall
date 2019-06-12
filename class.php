@@ -1755,6 +1755,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							$user_id = leaky_paywall_new_subscriber( NULL, $email, $subscriber_id, $meta, $login );
 							
 							do_action( 'add_leaky_paywall_subscriber', $user_id );
+
+							echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . __( 'Subscriber added.', 'leaky-paywall' ) . '</strong></p></div>';
 							
 						} else {
 						
@@ -1822,6 +1824,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, $_POST['leaky-paywall-subscriber-level-id'] );
 								
 								do_action( 'update_leaky_paywall_subscriber', $user->ID );
+
+								echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . __( 'Subscriber updated.', 'leaky-paywall' ) . '</strong></p></div>';
 							}
 							
 						} else {
