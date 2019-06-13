@@ -139,4 +139,14 @@ $leaky_paywall_settings(document).ready(function($) {
 		
 	});
 
+	$('.stripe-recurring').click(function(e) {
+
+		if ( $(this).is(':checked' ) ) {
+			$(this).siblings('span').removeClass('hidden');
+		} else {
+			$(this).siblings('span').addClass('hidden');
+		}
+		
+	});
+
 });
