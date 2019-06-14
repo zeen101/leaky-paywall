@@ -738,10 +738,9 @@ class Leaky_Paywall_Restrictions {
 	{
 
 		$settings = get_leaky_paywall_settings();
-		$has_subscriber_paid = leaky_paywall_has_user_paid();
 
 		//Admins or subscribed users can download PDFs
-		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $has_subscriber_paid ) {
+		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || leaky_paywall_user_has_access() ) {
 			leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 		} else {
 
