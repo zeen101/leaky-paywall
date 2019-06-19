@@ -1421,6 +1421,9 @@ if ( !function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 	function leaky_paywall_server_pdf_download( $download_id ) {
 	    // Grab the download info
 	    $url = wp_get_attachment_url( $download_id );
+
+	    wp_redirect( $url );
+	    die();
 	    	
 	    // Attempt to grab file
 	    if ( $response = wp_remote_head( str_replace( ' ', '%20', $url ) ) ) {
