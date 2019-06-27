@@ -55,6 +55,23 @@ if (!function_exists('is_multisite_premium') ) {
 	}
 }
 
+
+
+if (!function_exists('is_level_deleted') ) {
+
+	function is_level_deleted( $level_id ) {
+
+		$settings = get_leaky_paywall_settings();
+		$level = $settings["levels"][$level_id];
+
+		if($level['deleted'] == 1) {
+			return true;
+		}
+
+		return false;
+	}
+}
+
 if ( !function_exists( 'get_leaky_paywall_subscribers_site_id_by_subscriber_id'  ) ) {
 	
 	function get_leaky_paywall_subscribers_site_id_by_subscriber_id( $subscriber_id, $mode = false ) {
