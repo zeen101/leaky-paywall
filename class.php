@@ -297,6 +297,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			}
 			
 			if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+
+				if ( is_home() || is_front_page() || is_archive() ) {
+					return;
+				}
+
 				wp_enqueue_script( 'js_cookie_js', LEAKY_PAYWALL_URL . 'js/js-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_script( 'leaky_paywall_cookie_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 
