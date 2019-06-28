@@ -540,6 +540,8 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'New Password (again)', 'leaky-paywall' ) . '</label>';
 			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-gift-subscription-password2" name="password2" value="" />';
 			$results .= '</p>';
+
+			$results .= apply_filters( 'leaky_paywall_profile_your_profile_before_submit', '' );
 			
 			$results .= wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true, false );
 			
