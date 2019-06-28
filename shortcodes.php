@@ -22,12 +22,13 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 			'email_sent' 		=> __( 'Email sent. Please check your email for the login link.', 'leaky-paywall' ),
 			'error_msg' 		=> __( 'Error sending login email, please try again later.', 'leaky-paywall' ),
 			'missing_email_msg' => __( 'Please supply a valid email address.', 'leaky-paywall' ),
+			'login_redirect_url'	=> ''
 		);
 	
 		// Merge defaults with passed atts
 		// Extract (make each array element its own PHP var
 		$args = shortcode_atts( $defaults, $atts );
-		extract( $args );
+		// extract( $args );
 		
 		$results = '';
 		
@@ -38,28 +39,30 @@ if ( !function_exists( 'do_leaky_paywall_login' ) ) {
 				if ( isset( $_REQUEST['email'] ) && is_email( $_REQUEST['email'] ) ) {
 				
 					if ( send_leaky_paywall_email( $_REQUEST['email'] ) )
-						return '<h3>' . $email_sent . '</h3>';
+						return '<h3>' . $args['email_sent'] . '</h3>';
 					else
-						$results .= '<h1 class="error">' . $error_msg . '</h1>';
+						$results .= '<h1 class="error">' . $args['error_msg'] . '</h1>';
 					
 				} else {
 				
-					$results .= '<h1 class="error">' . $missing_email_msg . '</h1>';
+					$results .= '<h1 class="error">' . $args['missing_email_msg'] . '</h1>';
 					
 				}
 				
 			}
 			
-			$results .= '<h2>' . $heading . '</h2>';
+			$results .= '<h2>' . $args['heading'] . '</h2>';
 			$results .= '<form action="" method="post">';
 			$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
 			$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __( 'Send Login Email', 'leaky-paywall' ) . '" />';
 			$results .= '</form>';
-			$results .= '<h3>' . $description . '</h3>';
+			$results .= '<h3>' . $args['description'] . '</h3>';
 	
 		} else { //traditional
-		
-			if ( !empty( $settings['page_for_profile'] ) ) {
+			
+			if ( $args['login_redirect_url'] ) {
+				$page_link = $args['login_redirect_url'];
+			} else if ( !empty( $settings['page_for_profile'] ) ) {
 				$page_link = get_page_link( $settings['page_for_profile'] );
 			} else if ( !empty( $settings['page_for_subscription'] ) ) {
 				$page_link = get_page_link( $settings['page_for_subscription'] );
