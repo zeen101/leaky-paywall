@@ -2139,18 +2139,56 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 
 					if ( !empty( $level['post_types'] ) ) {
 						foreach( $level['post_types'] as $post_type ) {
-						
-							/* @todo: We may need to change the site ID during this process, some sites may have different post types enabled */
-							$post_type_obj = get_post_type_object( $post_type['post_type'] );
-							if ( !empty( $post_type_obj ) ) {
-								if ( 0 <= $post_type['allowed_value'] ) {
-									$has_allowed_value = true;
-									$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->singular_name ) .  '</p>';
+
+							if ( isset( $post_type['taxonomy'] ) ) {
+
+								$term = get_term_by( 'term_taxonomy_id', $post_type['taxonomy'] );
+
+								if ( is_object( $term ) ) {
+									$name = $term->name;
 								} else {
-									$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
+									$name = '';
 								}
+
+								$post_type_obj = get_post_type_object( $post_type['post_type'] );
+								if ( !empty( $post_type_obj ) ) {
+									if ( 0 <= $post_type['allowed_value'] ) {
+										$has_allowed_value = true;
+
+										if ( $post_type['allowed_value'] > 1 ) {
+											$plural = 's';
+										} else {
+											$plural = '';
+										}
+
+										$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $name, $post_type_obj->labels->singular_name . $plural ) .  '</p>';
+									} else {
+										$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s %s', 'leaky-paywall' ), $name, $post_type_obj->labels->name ) . '</p>';
+									}
+								}
+
+							} else {
+
+								/* @todo: We may need to change the site ID during this process, some sites may have different post types enabled */
+								$post_type_obj = get_post_type_object( $post_type['post_type'] );
+								if ( !empty( $post_type_obj ) ) {
+									if ( 0 <= $post_type['allowed_value'] ) {
+										$has_allowed_value = true;
+
+										if ( $post_type['allowed_value'] > 1 ) {
+											$plural = 's';
+										} else {
+											$plural = '';
+										}
+
+										$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->singular_name . $plural ) .  '</p>';
+									} else {
+										$allowed_content .= '<p>' . sprintf( __( 'Unlimited %s', 'leaky-paywall' ), $post_type_obj->labels->name ) . '</p>';
+									}
+								}
+
 							}
-								
+
 						}
 					}
 					$results .= apply_filters( 'leaky_paywall_subscription_options_allowed_content', $allowed_content, $level_id, $level );
