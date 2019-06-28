@@ -2155,10 +2155,10 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 									if ( 0 <= $post_type['allowed_value'] ) {
 										$has_allowed_value = true;
 
-										if ( $post_type['allowed_value'] > 1 ) {
-											$plural = 's';
-										} else {
+										if ( $post_type['allowed_value'] == 1 ) {
 											$plural = '';
+										} else {
+											$plural = 's';
 										}
 
 										$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $name, $post_type_obj->labels->singular_name . $plural ) .  '</p>';
@@ -2175,10 +2175,10 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 									if ( 0 <= $post_type['allowed_value'] ) {
 										$has_allowed_value = true;
 
-										if ( $post_type['allowed_value'] > 1 ) {
-											$plural = 's';
-										} else {
+										if ( $post_type['allowed_value'] == 1 ) {
 											$plural = '';
+										} else {
+											$plural = 's';
 										}
 
 										$allowed_content .= '<p>'  . sprintf( __( 'Access %s %s*', 'leaky-paywall' ), $post_type['allowed_value'], $post_type_obj->labels->singular_name . $plural ) .  '</p>';
