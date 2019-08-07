@@ -1181,30 +1181,30 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                        	} ?>
 		                        	
 		                        </th></tr>
+
+		                        <tr>
+	                                <th><?php _e( 'Live Publishable Key', 'leaky-paywall' ); ?></th>
+	                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ); ?>" /></td>
+	                            </tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Live Secret Key', 'leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
-	                        	<tr>
-	                                <th><?php _e( 'Live Publishable Key', 'leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_publishable_key'] ) ); ?>" /></td>
-	                            </tr>
-	                            
 	                            <tr>
 	                            	<th><?php _e( 'Live Webhooks', 'leaky-paywall' ); ?></th>
 	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Test Publishable Key', 'leaky-paywall' ); ?></th>
+	                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                        	<tr>
 	                                <th><?php _e( 'Test Secret Key', 'leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_secret_key'] ) ); ?>" /></td>
-	                            </tr>
-	                            
-	                        	<tr>
-	                                <th><?php _e( 'Test Publishable Key', 'leaky-paywall' ); ?></th>
-	                                <td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['test_publishable_key'] ) ); ?>" /></td>
 	                            </tr>
 	                            
 	                            <tr>
