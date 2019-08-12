@@ -356,6 +356,10 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 			$has_access = false;
 		}
 
+		if ( !is_user_logged_in() ) {
+			$has_access = false;
+		}
+
 		return apply_filters( 'leaky_paywall_user_has_access', $has_access, $user );
 		
 	}
