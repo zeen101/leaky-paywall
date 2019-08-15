@@ -491,8 +491,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								throw new Exception( __( 'Passwords do not match.', 'leaky-paywall' ) );
 							}
 						}
-
-						$args = apply_filters('leaky_paywall_profile_custom_data', $args, $user_id);
 						
 						$user_id = wp_update_user( $args );
 												
