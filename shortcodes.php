@@ -492,7 +492,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 							}
 						}
 
-						$args = apply_filters('leaky_paywall_profile_your_profile_custom_data', $args, $user_id);
+						$args = apply_filters('leaky_paywall_profile_custom_data', $args, $user_id);
 						
 						$user_id = wp_update_user( $args );
 												
