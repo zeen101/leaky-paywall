@@ -2,7 +2,7 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
 Tested up to: 5.2.2
-Stable tag: 4.13.1
+Stable tag: 4.13.2
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,12 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.13.2 =
+* Adjust order of stripe keys in settings
+* Do not allow access if the user is not logged in
+* Add admin notice for feedback
+* Strip tags from content for nag
 
 = 4.13.1 =
 * Add leaky_paywall_profile_your_profile_before_submit filter to profile page form
