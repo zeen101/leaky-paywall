@@ -3396,3 +3396,47 @@ function leaky_paywall_add_toolbar_items( $admin_bar ){
         ),
     ));
 }
+
+add_action( 'admin_notices', 'leaky_paywall_display_rate_us_notice', 20 );
+
+function leaky_paywall_display_rate_us_notice() {
+
+	$notice_id = 'rate_us_feedback';
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	if ( 'dashboard' !== get_current_screen()->id || User::is_user_notice_viewed( $notice_id ) || Tracker::is_notice_shown() ) {
+		return;
+	}
+
+	$total_live_subscribers = 20;
+
+	if ( 5 >= $total_live_subscribers ) {
+		return;
+	}
+
+	$dismiss_url = add_query_arg( [
+		'action' => 'leaky_paywall_set_admin_notice_viewed',
+		'notice_id' => esc_attr( $notice_id ),
+	], admin_url( 'admin-post.php' ) );
+
+	?>
+	<div class="notice updated is-dismissible leaky-paywall-message leaky-paywall-message-dismissed" data-notice_id="<?php echo esc_attr( $notice_id ); ?>">
+		<div class="leaky-paywall-message-inner">
+			<div class="leaky-paywall-message-icon">
+				<div class="lp-logo-wrapper">
+					logo
+				</div>
+			</div>
+			<div class="leaky-paywall-message-content">
+				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> <?php _e( 'You have more than 5 subscribers with Leaky Paywall. Great job! If you can, please help us by leaving a five star review on WordPress.org.', 'leaky-paywall' ); ?></p>
+				<p class="leaky-paywall-message-actions">
+					<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php _e( 'Happy To Help', 'leaky-paywall' ); ?></a>
+					<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php _e( 'No Thanks', 'leaky-paywall' ); ?></a>
+				</p>
+			</div>
+		</div>
+	</div>
+}
