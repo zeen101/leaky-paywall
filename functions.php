@@ -3401,42 +3401,73 @@ add_action( 'admin_notices', 'leaky_paywall_display_rate_us_notice', 20 );
 
 function leaky_paywall_display_rate_us_notice() {
 
-	$notice_id = 'rate_us_feedback';
+	$notice_id = 'lp_rate_us_feedback';
 
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
 
-	if ( 'dashboard' !== get_current_screen()->id || User::is_user_notice_viewed( $notice_id ) || Tracker::is_notice_shown() ) {
+	// delete_user_meta( get_current_user_id(), $notice_id );
+
+	$current_user_has_viewed = get_user_meta( get_current_user_id(), $notice_id, true );
+
+	if ( 'dashboard' !== get_current_screen()->id || $current_user_has_viewed ) {
 		return;
 	}
 
-	$total_live_subscribers = 20;
+	$site = leaky_paywall_get_current_site();
+
+	$args = array(
+		'number' => 6,
+		'meta_query'	=> array(
+			array(
+				'key'     => '_issuem_leaky_paywall_live_level_id' . $site,
+				'compare' => 'EXISTS',
+			),
+		)
+	);
+
+	$wp_user_search = new WP_User_Query( $args );
+	$total_live_subscribers = count( $wp_user_search->get_results() );
 
 	if ( 5 >= $total_live_subscribers ) {
 		return;
 	}
 
+
 	$dismiss_url = add_query_arg( [
 		'action' => 'leaky_paywall_set_admin_notice_viewed',
 		'notice_id' => esc_attr( $notice_id ),
-	], admin_url( 'admin-post.php' ) );
+	], admin_url() );
 
 	?>
 	<div class="notice updated is-dismissible leaky-paywall-message leaky-paywall-message-dismissed" data-notice_id="<?php echo esc_attr( $notice_id ); ?>">
 		<div class="leaky-paywall-message-inner">
-			<div class="leaky-paywall-message-icon">
-				<div class="lp-logo-wrapper">
-					logo
-				</div>
-			</div>
+			
 			<div class="leaky-paywall-message-content">
-				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> <?php _e( 'You have more than 5 subscribers with Leaky Paywall. Great job! If you can, please help us by leaving a five star review on WordPress.org.', 'leaky-paywall' ); ?></p>
+				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> <?php _e( 'You have more than 5 subscribers with <strong>Leaky Paywall</strong>. If you can, please help us by leaving a five star review on WordPress.org.', 'leaky-paywall' ); ?></p>
 				<p class="leaky-paywall-message-actions">
-					<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php _e( 'Happy To Help', 'leaky-paywall' ); ?></a>
-					<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php _e( 'No Thanks', 'leaky-paywall' ); ?></a>
+					<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php _e( 'Leave a Review', 'leaky-paywall' ); ?></a>
+					<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php _e( 'Hide', 'leaky-paywall' ); ?></a>
 				</p>
 			</div>
 		</div>
 	</div>
+	<?php 
+}
+
+add_action( 'admin_init', 'leaky_paywall_update_admin_notice_viewed' );
+
+function leaky_paywall_update_admin_notice_viewed() {
+
+	if ( !isset( $_GET['action'] ) ) {
+		return;
+	}
+
+	if ( $_GET['action'] != 'leaky_paywall_set_admin_notice_viewed' ) {
+		return;
+	}
+
+	update_user_meta( get_current_user_id(), sanitize_text_field( $_GET['notice_id'] ), true );
+
 }
