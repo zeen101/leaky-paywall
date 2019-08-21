@@ -507,7 +507,7 @@ class Leaky_Paywall_Restrictions {
 	 	$settings = get_leaky_paywall_settings();
 
 	 	if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
-			$excerpt = substr( strip_tags( get_the_content( get_the_ID() ), 0, intval( $settings['custom_excerpt_length'] ) ) );
+			$excerpt = substr( strip_tags( get_the_content( get_the_ID() ) ), 0, intval( $settings['custom_excerpt_length'] ) );
 		} else {
 			$excerpt = substr( strip_tags( $content ), 0, 100 );
 		}
