@@ -1532,6 +1532,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 	
 		$default = array(
 			'label' 					=> '',
+			'description'				=> '',
 			'price' 					=> '',
 			'subscription_length_type' 	=> 'limited',
 			'interval_count' 			=> 1,
@@ -1573,6 +1574,16 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 					<input id="level-name-<?php echo $row_key; ?>" type="text" name="levels[<?php echo $row_key; ?>][label]" value="<?php echo htmlspecialchars( stripcslashes( $level['label'] ) ); ?>" />
 					<span class="delete-x delete-subscription-level">&times;</span>
 					<input type="hidden" class="deleted-subscription" name="levels[<?php echo $row_key; ?>][deleted]" value="<?php echo $level['deleted']; ?>">
+				</td>
+			</tr>
+
+			<tr>
+				<th>
+					<label for="level-description-<?php echo $row_key; ?>"><?php _e( 'Subscribe Card Description', 'leaky-paywall' ); ?></label>
+				</th>
+				<td>
+					<textarea id="level-description-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][description]" class="large-text"><?php echo stripslashes( $level['description'] ); ?></textarea>
+					<p class="description"><?php _e( 'If entered, this will replace the auto-generated access description on the subscribe cards. HTML allowed.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 		    
@@ -2141,7 +2152,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
 
-					if ( !empty( $level['post_types'] ) ) {
+					if ( !empty( $level['post_types'] && !$level['description'] ) ) {
 						foreach( $level['post_types'] as $post_type ) {
 
 							if ( isset( $post_type['taxonomy'] ) ) {
@@ -2194,6 +2205,8 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 							}
 
 						}
+					} else {
+						$allowed_content = stripslashes( $level['description'] );
 					}
 					$results .= apply_filters( 'leaky_paywall_subscription_options_allowed_content', $allowed_content, $level_id, $level );
 					$results .= '</div>';
