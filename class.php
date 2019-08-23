@@ -909,7 +909,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 
 	                            <tr>
-	                                <th><?php _e( 'After Subscribe Page', 'leaky-paywall' ); ?></th>
+	                                <th><?php _e( 'Confirmation Page', 'leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
 	                                <p class="description"><?php _e( 'Page a subscriber is redirected to after they subscribe.', 'leaky-paywall' ); ?></p>
