@@ -359,17 +359,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 *
 	 * @since 4.0.0
 	 */
-	public function fields() {
+	public function fields( $level_id ) {
 
 		$settings = get_leaky_paywall_settings();
+		$level_id = $level_id ? $level_id : esc_html( $_GET['level_id'] );
 
 		if ( 'yes' == $settings['enable_stripe_elements'] ) {
-			$content = $this->stripe_elements();
+			$content = $this->stripe_elements( $level_id );
 			return $content;
 		}
 
 		$stripe_plan = '';
-		$level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {
@@ -476,11 +476,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		return ob_get_clean();
 	}
 
-	public function stripe_elements() 
+	public function stripe_elements( $level_id ) 
 	{
 
 		$stripe_plan = '';
-		$level_id = esc_html( $_GET['level_id'] );
+		// $level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {

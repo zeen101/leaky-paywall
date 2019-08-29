@@ -72,7 +72,7 @@ function leaky_paywall_send_to_gateway( $gateway, $subscription_data ) {
  * @access      private
  * @return      array
 */
-function leaky_paywall_get_enabled_payment_gateways() {
+function leaky_paywall_get_enabled_payment_gateways( $level_id = '' ) {
 
 	$gateways = new Leaky_Paywall_Payment_Gateways;
 
@@ -86,7 +86,7 @@ function leaky_paywall_get_enabled_payment_gateways() {
 
 	}
 
-	return apply_filters( 'leaky_paywall_enabled_gateways', $gateways->enabled_gateways );
+	return apply_filters( 'leaky_paywall_enabled_gateways', $gateways->enabled_gateways, $level_id );
 }
 
 
@@ -96,7 +96,7 @@ function leaky_paywall_get_enabled_payment_gateways() {
  * @access      public
  * @since       4.0.0
  */
-function leaky_paywall_load_gateway_fields( $gateways ) {
+function leaky_paywall_load_gateway_fields( $gateways, $level_id ) {
 
 	foreach( $gateways as $key => $gateway ) {
 
@@ -106,12 +106,12 @@ function leaky_paywall_load_gateway_fields( $gateways ) {
 		$gateway = new $gateway['class'];
 		$gateway->init();
 
-		echo $gateway->fields();
+		echo $gateway->fields( $level_id );
 
 	}
 	
 }
-add_action( 'leaky_paywall_before_registration_submit_field', 'leaky_paywall_load_gateway_fields', 10, 1 );
+add_action( 'leaky_paywall_before_registration_submit_field', 'leaky_paywall_load_gateway_fields', 10, 2 );
 
 
 /**

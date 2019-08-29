@@ -45,7 +45,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 	}
 
-	public function fields() 
+	public function fields( $level_id ) 
 	{
 
 		$settings = get_leaky_paywall_settings();
@@ -54,7 +54,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			return;
 		}
 
-		$level_id = esc_html( $_GET['level_id'] );
+		// $level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {

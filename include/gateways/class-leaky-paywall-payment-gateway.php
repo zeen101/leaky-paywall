@@ -78,7 +78,7 @@ class Leaky_Paywall_Payment_Gateway {
 
 	public function scripts() {}
 
-	public function fields() {}
+	public function fields( $level_id ) {}
 
 	public function validate_fields() {}
 

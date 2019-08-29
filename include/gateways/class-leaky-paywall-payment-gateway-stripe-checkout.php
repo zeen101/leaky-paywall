@@ -82,7 +82,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 	 *
 	 * @since 4.0.0
 	 */
-	public function fields() {
+	public function fields( $level_id ) {
 
 	}
 

@@ -577,11 +577,19 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
  *
  * @since 3.7.0
  */
-function do_leaky_paywall_register_form() {
+function do_leaky_paywall_register_form( $atts ) {
+
+	$a = shortcode_atts( array(
+	    'level_id' => '',
+	), $atts );
 
 	$settings = get_leaky_paywall_settings();
 
-	$level_id = isset($_GET['level_id']) ? $_GET['level_id'] : null;
+	if ( $a['level_id'] ) {
+		$level_id = $a['level_id'];
+	} else {
+		$level_id = isset( $_GET['level_id'] ) ? $_GET['level_id'] : null;
+	}
 
 	if ( is_null( $level_id ) || is_level_deleted( $level_id) ) {
 		$content = '<p>' . __( 'Please', 'leaky-paywall' ) . ' <a href="' . get_page_link( $settings['page_for_subscription'] ) . '">' . __( 'go to the subscribe page', 'leaky-paywall' ) . '</a> ' . __( 'to choose a subscription level.', 'leaky-paywall' ) . '</p>';
@@ -730,7 +738,7 @@ function do_leaky_paywall_register_form() {
 
 		  <?php 
 
-		  	$gateways = leaky_paywall_get_enabled_payment_gateways(); 
+		  	$gateways = leaky_paywall_get_enabled_payment_gateways( $level_id ); 
 
 		  	if ( $gateways && $level['price'] != 0 ) {
 
@@ -778,7 +786,7 @@ function do_leaky_paywall_register_form() {
 		  	<?php 
 		  } ?>
 		  
-		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways ); ?>
+		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways, $level_id ); ?>
 		  
 		  <?php if ( leaky_paywall_get_current_mode() == 'test' ) {
 		  	?>
@@ -801,3 +809,21 @@ function do_leaky_paywall_register_form() {
 
 }
 add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' );
+
+
+function bartag_func( $atts ) {
+    $a = shortcode_atts( array(
+        'foo' => 'something',
+        'bar' => 'something else',
+    ), $atts );
+
+    ob_start(); ?>
+    
+    	<h2>html goes here</h2>
+    
+    <?php  $content = ob_get_contents();
+	ob_end_clean();
+
+	return $content; 
+}
+add_shortcode( 'bartag', 'bartag_func' );
