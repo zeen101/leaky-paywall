@@ -2,7 +2,7 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
 Tested up to: 5.2.2
-Stable tag: 4.13.3
+Stable tag: 4.13.4
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -52,6 +52,7 @@ Some of our [add-ons](https://zeen101.com/downloads/category/leaky-paywall-addon
 * [Multiple Levels](https://zeen101.com/downloads/leaky-paywall-multiple-levels/?utm_source=addons&utm_medium=description_tab&utm_content=multiple_levels&utm_campaign=readme) allows you to give your readers different subscription options.
 * [Coupon Codes](https://zeen101.com/downloads/leaky-paywall-coupons/?utm_source=addons&utm_medium=description_tab&utm_content=coupon_codes&utm_campaign=readme) allows you to create unlimited coupon codes for your subscription levels.
 * [Gift Subscriptions](https://zeen101.com/downloads/gift-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=gift_subscriptions&utm_campaign=readme) allows friends and family to buy gift subscriptions.
+* [Basic Shipping](https://zeen101.com/downloads/leaky-paywall-basic-shipping/?utm_source=addons&utm_medium=description_tab&utm_content=shipping&utm_campaign=readme) lets you collect address information for shipping during registration.
 * [IP Exceptions](https://zeen101.com/downloads/ip-exceptions/?utm_source=addons&utm_medium=description_tab&utm_content=ip_exceptions&utm_campaign=readme) allow visitors from designated IPs to view articles and posts without having to subscribe.
 * [Corporate subscriptions](https://zeen101.com/downloads/corporate-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=corporate_subscriptions&utm_campaign=readme) allow restricting access by domain or email address.
 * [Reporting Tool](https://zeen101.com/downloads/reporting-tool-free/?utm_source=addons&utm_medium=description_tab&utm_content=reporting_tool&utm_campaign=readme) allows you to filter and download a CSV file of the subscriber info you need.
@@ -91,6 +92,12 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.13.4 =
+* Add level_id attribute to leaky_paywall_register_form shortcode
+* Add subscribe card description setting on a per level basis
+* Add register form description setting on a per level basis
+* Add leaky_paywall_current_user_can_access filter
 
 = 4.13.3 =
 * Add fix for strip_tags when using custom excerpt length setting
