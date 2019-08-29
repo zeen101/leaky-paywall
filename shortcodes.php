@@ -633,7 +633,7 @@ function do_leaky_paywall_register_form() {
 					$content_access_description = '';
 					$i = 0;
 
-					if ( !empty( $level['post_types'] ) ) {
+					if ( !empty( $level['post_types'] && !$level['registration_form_description'] ) ) {
 						foreach( $level['post_types'] as $type ) {
 							if ( $i > 0 ) {
 								$content_access_description .= ', ';
@@ -650,6 +650,8 @@ function do_leaky_paywall_register_form() {
 							
 							$i++;
 						}	
+					} else {
+						$content_access_description = stripslashes( $level['registration_form_description'] );
 					}
 					
 					

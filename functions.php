@@ -1531,24 +1531,25 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		$settings = get_leaky_paywall_settings();
 	
 		$default = array(
-			'label' 					=> '',
-			'description'				=> '',
-			'price' 					=> '',
-			'subscription_length_type' 	=> 'limited',
-			'interval_count' 			=> 1,
-			'interval' 					=> 'month',
-			'recurring' 				=> 'off',
-			'hide_subscribe_card'		=> 'off',
-			'plan_id' 					=> array(),
+			'label' 							=> '',
+			'description'						=> '',
+			'registration_form_description'		=> '',
+			'price' 							=> '',
+			'subscription_length_type' 			=> 'limited',
+			'interval_count' 					=> 1,
+			'interval' 							=> 'month',
+			'recurring' 						=> 'off',
+			'hide_subscribe_card'				=> 'off',
+			'plan_id' 							=> array(),
 			'post_types' => array(
 				array(
-					'post_type' 		=> ACTIVE_ISSUEM ? 'article' : 'post',
-					'allowed' 			=> 'unlimited',
-					'allowed_value' 	=> -1,
+					'post_type' 				=> ACTIVE_ISSUEM ? 'article' : 'post',
+					'allowed' 					=> 'unlimited',
+					'allowed_value' 			=> -1,
 				)
 			),
-			'deleted' 					=> 0,
-			'site' 						=> 'all',
+			'deleted' 							=> 0,
+			'site' 								=> 'all',
 		);
 		$level = wp_parse_args( $level, $default );
     	
@@ -1584,6 +1585,16 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				<td>
 					<textarea id="level-description-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][description]" class="large-text"><?php echo stripslashes( $level['description'] ); ?></textarea>
 					<p class="description"><?php _e( 'If entered, this will replace the auto-generated access description on the subscribe cards. HTML allowed.', 'leaky-paywall' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th>
+					<label for="level-registration-form-description-<?php echo $row_key; ?>"><?php _e( 'Registration Form Description', 'leaky-paywall' ); ?></label>
+				</th>
+				<td>
+					<textarea id="level-registration-form-description-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][registration_form_description]" class="large-text"><?php echo stripslashes( $level['registration_form_description'] ); ?></textarea>
+					<p class="description"><?php _e( 'If entered, this will replace the auto-generated content access description on the registration form. HTML allowed.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 		    
