@@ -585,18 +585,18 @@ function do_leaky_paywall_register_form( $atts ) {
 
 	$settings = get_leaky_paywall_settings();
 
-	if ( $a['level_id'] ) {
+	if ( is_numeric( $a['level_id'] ) ) {
 		$level_id = $a['level_id'];
 	} else {
 		$level_id = isset( $_GET['level_id'] ) ? $_GET['level_id'] : null;
 	}
 
-	if ( is_null( $level_id ) || is_level_deleted( $level_id) ) {
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	if ( is_null( $level_id ) || !$level || is_level_deleted( $level_id ) ) {
 		$content = '<p>' . __( 'Please', 'leaky-paywall' ) . ' <a href="' . get_page_link( $settings['page_for_subscription'] ) . '">' . __( 'go to the subscribe page', 'leaky-paywall' ) . '</a> ' . __( 'to choose a subscription level.', 'leaky-paywall' ) . '</p>';
 		return $content;
 	}
-
-	$level = get_leaky_paywall_subscription_level( $level_id );
 
 	global $blog_id;
 	if ( is_multisite_premium() ){

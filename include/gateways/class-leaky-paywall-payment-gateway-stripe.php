@@ -362,7 +362,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function fields( $level_id ) {
 
 		$settings = get_leaky_paywall_settings();
-		$level_id = $level_id ? $level_id : esc_html( $_GET['level_id'] );
+		$level_id = is_numeric( $level_id ) ? $level_id : esc_html( $_GET['level_id'] );
 
 		if ( 'yes' == $settings['enable_stripe_elements'] ) {
 			$content = $this->stripe_elements( $level_id );
