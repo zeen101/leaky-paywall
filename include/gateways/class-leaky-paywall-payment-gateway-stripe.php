@@ -359,13 +359,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	    		leaky_paywall_log( json_encode( $session->display_items[0]->custom->name ), 'stripe handle checkout session item name' );
 
 	    		$level_id = null;
+	    		$level = array();
 
-	    		foreach( leaky_paywall_get_levels() as $key => $level ) {
+	    		foreach( leaky_paywall_get_levels() as $key => $level_data ) {
 
 	    			$level_name = stripcslashes( $settings['levels'][$key]['label'] );
 
 	    			if ( $level_name == $session->display_items[0]->custom->name ) {
 	    				$level_id = $key;
+	    				$level = $level_data;
 	    			}
 	    		}
 
@@ -393,12 +395,35 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	    			'currency'			=> leaky_paywall_get_currency(),
 	    			'level_id'			=> $level_id,
 	    			'payment_status' => 'active',
-	    			'recurring' => false
+	    			'recurring' => false,
+	    			'password' => wp_generate_password(),
+	    			
 	    		);
+
+	    		if ( $level['subscription_length_type'] == 'limited' ) {
+	    			$subscriber_data['interval'] = $level['interval'];
+	    			$subscriber_data['interval_count'] = $level['interval_count'];
+	    		}
 
 	    		leaky_paywall_log( json_encode( $subscriber_data ), 'stripe handle checkout payment final subscriber data' );
 
-	    		leaky_paywall_subscriber_registration( $subscriber_data );
+	    		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
+
+	    		$subscriber_data['user_id'] = $user_id;
+
+	    		do_action( 'leaky_paywall_after_stripe_checkout_user_created', $user_id, $subscriber_data );
+
+	    		$transaction = new LP_Transaction( $subscriber_data );
+				$transaction_id = $transaction->create();
+				$subscriber_data['transaction_id'] = $transaction_id;
+
+				$status = 'new';
+
+				leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
+
+				do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
+
+				wp_send_json_success();
 
 	    	}
 
