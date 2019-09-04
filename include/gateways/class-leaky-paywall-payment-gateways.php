@@ -66,7 +66,7 @@ class Leaky_Paywall_Payment_Gateways {
 			),
 			'stripe_checkout'	=> array(
 				'label'		=> __( 'Stripe Checkout', 'leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Checkout Popup', 'leaky-paywall' ),
+				'admin_label'	=> __( 'Stripe Checkout', 'leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
 			)
 		);

@@ -23,7 +23,9 @@ function leaky_paywall_stripe_subscription_cards( $payment_options, $level, $lev
 	}
 
 	if ( in_array( 'stripe_checkout', array_keys( $enabled_gateways ) ) ) {
-		$output .= leaky_paywall_stripe_checkout_button( $level, $level_id );
+		// $output .= leaky_paywall_stripe_checkout_button( $level, $level_id );
+		$output .= leaky_paywall_stripe_checkout_v3_button( $level, $level_id );
+
 	}
 
 	return $payment_options . $output;
@@ -31,6 +33,76 @@ function leaky_paywall_stripe_subscription_cards( $payment_options, $level, $lev
 }
 add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_stripe_subscription_cards', 7, 3 );
 
+
+/**
+ * Add the Stripe subscribe popup button to the subscribe cards. 
+ *
+ * @since 4.0.0
+ */
+function leaky_paywall_stripe_checkout_v3_button( $level, $level_id ) {
+
+	$settings = get_leaky_paywall_settings();
+	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
+	$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+
+	\Stripe\Stripe::setApiKey( $secret_key );
+
+	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+		$success_url = get_page_link( $settings['page_for_after_subscribe'] );
+	} else if ( !empty( $settings['page_for_profile'] ) ) {
+		$success_url = get_page_link( $settings['page_for_profile'] );
+	} else {
+		$success_url = home_url();
+	}
+
+	$currency = apply_filters( 'leaky_paywall_stripe_currency', leaky_paywall_get_currency() );
+
+	$session = \Stripe\Checkout\Session::create([
+	  'payment_method_types' => ['card'],
+	  'line_items' => [[
+	    'name' => $level['label'],
+	    'amount' => $level['price'] * 100,
+	    'currency' => $currency,
+	    'quantity' => 1,
+	  ]],
+	  'success_url' => $success_url,
+	  'cancel_url' => get_page_link( $settings['page_for_subscription'] ),
+	]);
+
+    ob_start(); ?>
+    
+    	<a class="stripe-subscribe-<?php echo $level_id; ?>" href="#">Subscribe</a>
+
+    	<script>
+    		( function( $ )  {
+
+				$(document).ready( function() {
+					
+					$('.stripe-subscribe-<?php echo $level_id; ?>').click(function(e) {
+						e.preventDefault();
+
+						var stripe = Stripe( '<?php echo $publishable_key; ?>' );
+
+						stripe.redirectToCheckout({
+						  sessionId: '<?php echo $session->id; ?>'
+						}).then(function (result) {
+						  // If `redirectToCheckout` fails due to a browser or network
+						  // error, display the localized error message to your customer
+						  // using `result.error.message`.
+						});
+
+					});
+				});
+
+			})( jQuery );
+    	</script>
+    
+    <?php  $content = ob_get_contents();
+	ob_end_clean();
+
+	return $content; 
+
+}
 
 /**
  * Add the Stripe subscribe popup button to the subscribe cards. 

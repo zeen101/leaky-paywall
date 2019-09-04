@@ -809,21 +809,3 @@ function do_leaky_paywall_register_form( $atts ) {
 
 }
 add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' );
-
-
-function bartag_func( $atts ) {
-    $a = shortcode_atts( array(
-        'foo' => 'something',
-        'bar' => 'something else',
-    ), $atts );
-
-    ob_start(); ?>
-    
-    	<h2>html goes here</h2>
-    
-    <?php  $content = ob_get_contents();
-	ob_end_clean();
-
-	return $content; 
-}
-add_shortcode( 'bartag', 'bartag_func' );

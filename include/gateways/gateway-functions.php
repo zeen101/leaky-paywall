@@ -130,6 +130,7 @@ function leaky_paywall_process_gateway_webhooks() {
 		if( is_array( $gateway ) && isset( $gateway['class'] ) ) {
 
 			$gateway = new $gateway['class'];
+			$gateway->init();
 			$gateway->process_webhooks();
 
 		}

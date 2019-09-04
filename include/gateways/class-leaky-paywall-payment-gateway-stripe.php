@@ -266,93 +266,146 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			$mode = 'live';
 		}
 
-		if ( isset( $stripe_event->type ) ) {
-		    
-		    $stripe_object = $stripe_event->data->object;
-
-		    leaky_paywall_log( $stripe_object, 'stripe webhook - ' . $stripe_event->type );
-		
-		    if ( !empty( $stripe_object->customer ) ) {
-		        $user = get_leaky_paywall_subscriber_by_subscriber_id( $stripe_object->customer, $mode );
-		    }
-		
-		    if ( !empty( $user ) ) {
-		        
-		        if ( is_multisite_premium() ) {
-		            if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $stripe_object->customer ) ) {
-		                $site = '_' . $site_id;
-		            }
-		        } else {
-		        	$site = '';
-		        }
-		
-		        //https://stripe.com/docs/api#event_types
-		        switch( $stripe_event->type ) {
-		
-		            case 'charge.succeeded' :
-		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
-		                break;
-		            case 'charge.failed' :
-		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
-		                do_action( 'leaky_paywall_failed_payment', $user );
-		                break;
-		            case 'charge.refunded' :
-		                if ( $stripe_object->refunded )
-		                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
-		                else
-		                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
-		                break;
-		            case 'charge.dispute.created' :
-		            case 'charge.dispute.updated' :
-		            case 'charge.dispute.closed' :
-		            case 'customer.created' :
-		            case 'customer.updated' :
-		            case 'customer.source.created' :
-		            case 'invoice.created' :
-		            case 'invoice.updated' :
-		                break;
-		            case 'customer.deleted' :
-		                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
-		                break;
-		                
-		            case 'invoice.payment_succeeded' :
-		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
-		                break;
-		                
-		            case 'invoice.payment_failed' :
-		                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
-		                    do_action( 'leaky_paywall_failed_payment', $user );
-		                break;
-		            
-		            case 'customer.subscription.updated' :
-		                $expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
-		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
-		                break;
-		                
-		            case 'customer.subscription.created' :
-		            	$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
-		            	update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
-		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
-		                break;
-		                
-		            case 'customer.subscription.deleted' :
-		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
-		                break;
-		               
-		            default:
-		            	break;
-		
-		        };
-
-		        // create an action for each event fired by stripe
-		        $action = str_replace( '.', '_', $stripe_event->type );
-		        do_action( 'leaky_paywall_stripe_' . $action, $user, $stripe_object );
-		
-		    }
-		        
+		if ( !isset( $stripe_event->type ) ) {
+			return;
 		}
 
+	    $stripe_object = $stripe_event->data->object;
+
+	    leaky_paywall_log( $stripe_object, 'stripe webhook - ' . $stripe_event->type );
+	
+	    if ( !empty( $stripe_object->customer ) ) {
+	        $user = get_leaky_paywall_subscriber_by_subscriber_id( $stripe_object->customer, $mode );
+	    }
+	
+	    if ( !empty( $user ) ) {
+	        
+	        if ( is_multisite_premium() ) {
+	            if ( $site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id( $stripe_object->customer ) ) {
+	                $site = '_' . $site_id;
+	            }
+	        } else {
+	        	$site = '';
+	        }
+	
+	        //https://stripe.com/docs/api#event_types
+	        switch( $stripe_event->type ) {
+	
+	            case 'charge.succeeded' :
+	                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
+	                break;
+	            case 'charge.failed' :
+	                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+	                do_action( 'leaky_paywall_failed_payment', $user );
+	                break;
+	            case 'charge.refunded' :
+	                if ( $stripe_object->refunded )
+	                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+	                else
+	                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+	                break;
+	            case 'charge.dispute.created' :
+	            case 'charge.dispute.updated' :
+	            case 'charge.dispute.closed' :
+	            case 'customer.created' :
+	            case 'customer.updated' :
+	            case 'customer.source.created' :
+	            case 'invoice.created' :
+	            case 'invoice.updated' :
+	                break;
+	            case 'customer.deleted' :
+	                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
+	                break;
+	                
+	            case 'invoice.payment_succeeded' :
+	                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
+	                break;
+	                
+	            case 'invoice.payment_failed' :
+	                    update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+	                    do_action( 'leaky_paywall_failed_payment', $user );
+	                break;
+	            
+	            case 'customer.subscription.updated' :
+	                $expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
+	                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
+	                break;
+	                
+	            case 'customer.subscription.created' :
+	            	$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
+	            	update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
+	                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
+	                break;
+	                
+	            case 'customer.subscription.deleted' :
+	                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
+	                break;
+	               
+	            default:
+	            	break;
+	
+	        };
+
+	        // create an action for each event fired by stripe
+	        $action = str_replace( '.', '_', $stripe_event->type );
+	        do_action( 'leaky_paywall_stripe_' . $action, $user, $stripe_object );
+	
+	    } else {
+
+	    	if ( $stripe_event->type == 'checkout.session.completed' ) {
+
+	    		$session = $stripe_object;
+	    		leaky_paywall_log( json_encode( $session ), 'stripe handle checkout session' );
+	    		leaky_paywall_log( json_encode( $session->display_items[0]->custom->name ), 'stripe handle checkout session item name' );
+
+	    		$level_id = null;
+
+	    		foreach( leaky_paywall_get_levels() as $key => $level ) {
+
+	    			$level_name = stripcslashes( $settings['levels'][$key]['label'] );
+
+	    			if ( $level_name == $session->display_items[0]->custom->name ) {
+	    				$level_id = $key;
+	    			}
+	    		}
+
+	    		// $this->handle_checkout_session( $session );
+
+	    		$customer_id = $session->customer;
+	    		$payment_intent_id = $session->payment_intent;
+
+	    		\Stripe\Stripe::setApiKey( $this->secret_key );
+
+	    		$customer = \Stripe\Customer::retrieve( $customer_id );
+	    		$payment = \Stripe\PaymentIntent::retrieve( $payment_intent_id );
+
+	    		leaky_paywall_log( json_encode( $customer ), 'stripe handle checkout customer - ' . $customer_id );
+	    		leaky_paywall_log( json_encode( $payment ), 'stripe handle checkout payment - ' . $payment_intent_id );
+
+	    		$subscriber_data = array(
+	    			'subscriber_id' => $customer_id,
+	    			'price'		=> $payment->amount / 100,
+	    			'existing_customer' => false,
+	    			'description' => $session->display_items[0]->custom->name,
+	    			'subscriber_email'	=> $customer->email,
+	    			'created'	=> date( 'Y-m-d H:i:s' ),
+	    			'payment_gateway'	=> 'stripe',
+	    			'currency'			=> leaky_paywall_get_currency(),
+	    			'level_id'			=> $level_id,
+	    			'payment_status' => 'active',
+	    			'recurring' => false
+	    		);
+
+	    		leaky_paywall_log( json_encode( $subscriber_data ), 'stripe handle checkout payment final subscriber data' );
+
+	    		leaky_paywall_subscriber_registration( $subscriber_data );
+
+	    	}
+
+	    }
+
 	}
+
 
 	/**
 	 * Add credit card fields
@@ -717,7 +770,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$settings = get_leaky_paywall_settings();
 
 		if ( is_page( $settings['page_for_subscription'] ) || is_page( $settings['page_for_register'] ) || is_page( $settings['page_for_profile'] ) ) {
-			wp_enqueue_script( 'stripe', 'https://js.stripe.com/v2/', array( 'jquery' ) );
+			wp_enqueue_script( 'stripe', 'https://js.stripe.com/v3/', array( 'jquery' ) );
 		}
 		
 	}
