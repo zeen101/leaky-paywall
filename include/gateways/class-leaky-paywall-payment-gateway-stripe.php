@@ -356,48 +356,62 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 	    		$session = $stripe_object;
 	    		leaky_paywall_log( json_encode( $session ), 'stripe handle checkout session' );
-	    		leaky_paywall_log( json_encode( $session->display_items[0]->custom->name ), 'stripe handle checkout session item name' );
+	    		leaky_paywall_log( json_encode( $session->display_items[0] ), 'stripe handle checkout session item' );
 
 	    		$level_id = null;
 	    		$level = array();
 
-	    		foreach( leaky_paywall_get_levels() as $key => $level_data ) {
+	    		\Stripe\Stripe::setApiKey( $this->secret_key );
 
-	    			$level_name = stripcslashes( $settings['levels'][$key]['label'] );
+	    		if ( isset ( $session->display_items[0]->custom->name ) ) {
+	    			// one time payment
+	    			$session_level_name = $session->display_items[0]->custom->name;
 
-	    			if ( $level_name == $session->display_items[0]->custom->name ) {
-	    				$level_id = $key;
-	    				$level = $level_data;
-	    			}
+	    			leaky_paywall_log( json_encode( $session_level_name ), 'stripe handle checkout level name' );
+
+	    			$level_id = leaky_paywall_get_level_id_by_label( $session_level_name );
+	    			$level = get_leaky_paywall_subscription_level( $level_id );
+	    			$plan_id = '';
+
+	    			leaky_paywall_log( json_encode( $level ), 'stripe handle checkout level' );
+
+	    			$payment_intent_id = $session->payment_intent;
+	    			$payment = \Stripe\PaymentIntent::retrieve( $payment_intent_id );
+	    			$price = $payment->amount / 100;
+
+	    			leaky_paywall_log( json_encode( $payment ), 'stripe handle checkout payment' );
+
+	    		} else {
+	    			// recurring subscription
+	    			$plan_id = $session->display_items[0]->plan->id;
+	    			$level_id = leaky_paywall_get_level_id_by_stripe_plan_id( $plan_id );
+	    			$level = get_leaky_paywall_subscription_level( $level_id );
+	    			$price = $session->display_items[0]->plan->amount / 100;
+
+	    			leaky_paywall_log( json_encode( $level ), 'stripe handle checkout session item plan id level' );
 	    		}
 
 	    		// $this->handle_checkout_session( $session );
 
 	    		$customer_id = $session->customer;
-	    		$payment_intent_id = $session->payment_intent;
-
-	    		\Stripe\Stripe::setApiKey( $this->secret_key );
-
 	    		$customer = \Stripe\Customer::retrieve( $customer_id );
-	    		$payment = \Stripe\PaymentIntent::retrieve( $payment_intent_id );
 
-	    		leaky_paywall_log( json_encode( $customer ), 'stripe handle checkout customer - ' . $customer_id );
-	    		leaky_paywall_log( json_encode( $payment ), 'stripe handle checkout payment - ' . $payment_intent_id );
+	    		leaky_paywall_log( json_encode( $customer ), 'stripe handle checkout customer' );
 
 	    		$subscriber_data = array(
 	    			'subscriber_id' => $customer_id,
-	    			'price'		=> $payment->amount / 100,
+	    			'price'		=> $price,
 	    			'existing_customer' => false,
-	    			'description' => $session->display_items[0]->custom->name,
+	    			'description' => $level['label'],
 	    			'subscriber_email'	=> $customer->email,
 	    			'created'	=> date( 'Y-m-d H:i:s' ),
 	    			'payment_gateway'	=> 'stripe',
 	    			'currency'			=> leaky_paywall_get_currency(),
 	    			'level_id'			=> $level_id,
 	    			'payment_status' => 'active',
-	    			'recurring' => false,
+	    			'recurring' => !empty( $level['recurring'] ) ? $level['recurring'] : false,
 	    			'password' => wp_generate_password(),
-	    			
+	    			'plan'	=> $plan_id,
 	    		);
 
 	    		if ( $level['subscription_length_type'] == 'limited' ) {
@@ -423,11 +437,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
-				wp_send_json_success();
-
 	    	}
 
 	    }
+
+	    wp_send_json_success( array( 'message' => 'webhook processed' ) );
 
 	}
 

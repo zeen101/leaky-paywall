@@ -56,23 +56,49 @@ function leaky_paywall_stripe_checkout_v3_button( $level, $level_id ) {
 	}
 
 	$currency = apply_filters( 'leaky_paywall_stripe_currency', leaky_paywall_get_currency() );
+	$recurring = !empty( $level['recurring'] ) ? $level['recurring'] : false;
 
-	$session = \Stripe\Checkout\Session::create([
-	  'payment_method_types' => ['card'],
-	  'line_items' => [[
-	    'name' => $level['label'],
-	    'amount' => $level['price'] * 100,
-	    'currency' => $currency,
-	    'quantity' => 1,
-	  ]],
-	  'success_url' => $success_url,
-	  'cancel_url' => get_page_link( $settings['page_for_subscription'] ),
-	]);
+	$session_args = array(
+		'payment_method_types' => ['card'],
+		'success_url' => $success_url,
+		'cancel_url' => get_page_link( $settings['page_for_subscription'] ),
+	);
+
+	if ( $recurring ) {
+
+		$stripe_price = leaky_paywall_get_stripe_price( $level, $currency );
+
+		$plan_args = array(
+			'stripe_price'	=> $stripe_price,
+			'currency'		=> $currency,
+			'secret_key'	=> $secret_key
+		);
+	
+        $stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+
+		$session_args['subscription_data'] = array(
+			'items' => [[
+		      'plan' => $stripe_plan->id,
+		    ]],
+		);
+
+	} else {
+		$session_args['line_items'] = array(
+			array(
+				'name' => $level['label'],
+				'amount' => $level['price'] * 100,
+				'currency' => $currency,
+				'quantity' => 1,
+			)
+		);
+	}
+
+	$session = \Stripe\Checkout\Session::create( $session_args );
 
     ob_start(); ?>
-    
-    	<a class="stripe-subscribe-<?php echo $level_id; ?>" href="#">Subscribe</a>
-
+    	<div class="leaky-paywall-payment-button">
+    		<a class="stripe-subscribe-<?php echo $level_id; ?>" href="#"><?php _e( 'Subscribe', 'leaky-paywall' ); ?></a>
+    	</div>
     	<script>
     		( function( $ )  {
 
@@ -182,6 +208,19 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 
 }
 
+function leaky_paywall_get_stripe_price( $level, $currency ) {
+
+	if ( in_array( strtoupper( $currency ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
+		//Zero-Decimal Currencies
+		//https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support
+		$stripe_price = number_format( $level['price'], '0', '', '' );
+	} else {
+		$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
+	}
+
+	return $stripe_price;
+
+}
 
 /**
  * Gets the stripe plan associated with the level, and creates one if it doesn't exist
@@ -252,6 +291,44 @@ function leaky_paywall_get_stripe_plan( $level, $level_id , $plan_args ) {
 
 }
 
+function leaky_paywall_get_level_id_by_stripe_plan_id( $plan_id ) {
+
+	foreach( leaky_paywall_get_levels() as $key => $level ) {
+
+		if ( !empty( $level['plan_id'] ) ) {
+
+			foreach( (array)$level['plan_id'] as $level_plan_id ) {
+
+				if ( $level_plan_id == $plan_id ) {
+					return $key;
+				}
+
+			}
+
+		}
+
+	}
+
+	return false;
+
+}
+
+function leaky_paywall_get_level_id_by_label( $label ) {
+
+	$levels = leaky_paywall_get_levels();
+
+	foreach( $levels as $key => $level ) {
+
+		$level_name = stripcslashes( $level['label'] );
+
+		if ( $level_name == $label ) {
+			return $key;
+		}
+	}
+
+	return false;
+
+}
 
 /**
  * Create a stripe plan
