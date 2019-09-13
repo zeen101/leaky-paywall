@@ -53,6 +53,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function process_signup() {
 
+		return;
+
 		if( empty( $_POST['stripeToken'] ) ) {
             leaky_paywall_errors()->add( 'missing_stripe_token', __( 'Error Processing Payment. If you are using an Ad Blocker, please disable it, refresh the page, and try again.', 'leaky-paywall' ), 'register' );
             return;
@@ -391,8 +393,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	    			leaky_paywall_log( json_encode( $level ), 'stripe handle checkout session item plan id level' );
 	    		}
 
-	    		// $this->handle_checkout_session( $session );
-
 	    		$customer_id = $session->customer;
 	    		$customer = \Stripe\Customer::retrieve( $customer_id );
 
@@ -439,6 +439,76 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 	    	}
 
+	    	if ( $stripe_event->type == 'payment_intent.succeeded' ) {
+
+	    		$session = $stripe_object;
+	    		leaky_paywall_log( json_encode( $session ), 'stripe handle pi_succeeded session' );
+	    	
+	    		$level_id = null;
+	    		$level = array();
+
+	    		\Stripe\Stripe::setApiKey( $this->secret_key );
+
+	    		if ( isset ( $session->charges->data[0]->metadata->level_id ) ) {
+
+	    			$level_id = $session->charges->data[0]->metadata->level_id;
+	    			$level = get_leaky_paywall_subscription_level( $level_id );
+	    			$plan_id = '';
+
+	    			leaky_paywall_log( json_encode( $level ), 'stripe handle pi_succeeded level' );
+
+	    			$price = $session->amount / 100;
+
+	    			leaky_paywall_log( json_encode( $price ), 'stripe handle pi_succeeded payment' );
+
+	    		}
+
+	    		$customer_id = $session->customer;
+	    		$customer = \Stripe\Customer::retrieve( $customer_id );
+
+	    		leaky_paywall_log( json_encode( $customer ), 'stripe handle pi_succeeded customer' );
+
+	    		$subscriber_data = array(
+	    			'subscriber_id' => $customer_id,
+	    			'price'		=> $price,
+	    			'existing_customer' => false,
+	    			'description' => $level['label'],
+	    			'subscriber_email'	=> $customer->email,
+	    			'created'	=> date( 'Y-m-d H:i:s' ),
+	    			'payment_gateway'	=> 'stripe',
+	    			'currency'			=> leaky_paywall_get_currency(),
+	    			'level_id'			=> $level_id,
+	    			'payment_status' => 'active',
+	    			'recurring' => !empty( $level['recurring'] ) ? $level['recurring'] : false,
+	    			'password' => wp_generate_password(),
+	    			'plan'	=> $plan_id,
+	    		);
+
+	    		if ( $level['subscription_length_type'] == 'limited' ) {
+	    			$subscriber_data['interval'] = $level['interval'];
+	    			$subscriber_data['interval_count'] = $level['interval_count'];
+	    		}
+
+	    		leaky_paywall_log( json_encode( $subscriber_data ), 'stripe handle pi_succeeded payment final subscriber data' );
+
+	    		$user_id = leaky_paywall_new_subscriber( NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
+
+	    		$subscriber_data['user_id'] = $user_id;
+
+	    		do_action( 'leaky_paywall_after_stripe_checkout_user_created', $user_id, $subscriber_data );
+
+	    		$transaction = new LP_Transaction( $subscriber_data );
+				$transaction_id = $transaction->create();
+				$subscriber_data['transaction_id'] = $transaction_id;
+
+				$status = 'new';
+
+				leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
+
+				do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
+
+	    	}
+
 	    }
 
 	    wp_send_json_success( array( 'message' => 'webhook processed' ) );
@@ -456,8 +526,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$settings = get_leaky_paywall_settings();
 		$level_id = is_numeric( $level_id ) ? $level_id : esc_html( $_GET['level_id'] );
 
+		$use_payment_intents = true;
+
+		/* 
 		if ( 'yes' == $settings['enable_stripe_elements'] ) {
 			$content = $this->stripe_elements( $level_id );
+			return $content;
+		}
+		*/
+	
+		if ( $use_payment_intents ) {
+			$content = $this->payment_fields( $level_id );
 			return $content;
 		}
 
@@ -572,7 +651,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	{
 
 		$stripe_plan = '';
-		// $level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {
@@ -777,6 +855,136 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		</style>
 
 		 <?php 
+
+		 return ob_get_clean();
+	}
+
+	public function payment_fields( $level_id ) 
+	{
+
+		ob_start();
+		?>
+
+		<script src="https://js.stripe.com/v3/"></script>
+
+		<div class="form-row">
+		  <label for="card-element">
+		    Credit or debit card
+		  </label>
+		  <div id="card-element">
+		    <!-- A Stripe Element will be inserted here. -->
+		  </div>
+
+		  <!-- Used to display form errors. -->
+		  <div id="card-errors" role="alert"></div>
+		</div>
+
+		<script>
+
+		( function( $ )  {
+
+			$(document).ready( function() {
+				
+				var stripe = Stripe('<?php echo $this->publishable_key; ?>');
+				var elements = stripe.elements();
+
+				var style = {
+				  base: {
+				    color: '#32325d',
+				    lineHeight: '18px',
+				    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+				    fontSmoothing: 'antialiased',
+				    fontSize: '16px',
+				    '::placeholder': {
+				      color: '#aab7c4'
+				    }
+				  },
+				  invalid: {
+				    color: '#fa755a',
+				    iconColor: '#fa755a'
+				  }
+				};
+
+				var card = elements.create('card', {style: style});
+				card.mount('#card-element');
+
+				card.addEventListener('change', function(event) {
+			  	  var displayError = document.getElementById('card-errors');
+			  	  if (event.error) {
+			  	    displayError.textContent = event.error.message;
+			  	  } else {
+			  	    displayError.textContent = '';
+			  	  }
+			  	});
+
+				var form = document.getElementById('leaky-paywall-payment-form');
+			  	
+			  	form.addEventListener('submit', function(event) {
+			  	  event.preventDefault();
+
+			  	  var subButton = document.getElementById('leaky-paywall-submit');
+			  	  var email = document.getElementsByName('email_address')[0].value;
+			  	  var fname = document.getElementsByName('first_name')[0].value;
+			  	  var lname = document.getElementsByName('last_name')[0].value;
+			  	  var level_id = document.getElementsByName('level_id')[0].value;
+
+			  	  subButton.disabled = true;
+			  	  subButton.innerHTML = 'Processing...Please Wait';
+
+			  	  var data = {
+				  	  action: 'leaky_paywall_process_stripe_elements',
+				  	  email: email,
+				  	  fname: fname,
+				  	  lname: lname,
+				  	  level_id: level_id
+			  	  };
+
+			  	  $.post('<?php echo home_url('/wp-admin/admin-ajax.php'); ?>', data, function(resp) {
+			  	  		
+			  	  	console.log(resp);
+
+			  	  	if ( resp.success == true ) {
+			  	  		
+			  	  		stripe.handleCardPayment(
+			  	  		  resp.intent_secret,
+			  	  		  card,
+			  	  		  {
+			  	  		      payment_method_data: {
+			  	  		        billing_details: {
+			  	  		          name: fname + ' ' + lname
+			  	  		        }
+			  	  		      },
+			  	  		      receipt_email: email
+			  	  		    }
+			  	  		).then(function(result) {
+			  	  		  if (result.error) {
+			  	  		    var errorElement = document.getElementById('card-errors');
+			  	  		    errorElement.textContent = result.error.message;
+
+			  	  		    subButton.disabled = false;
+			  	  		    subButton.innerHTML = 'Submit';
+			  	  		  } else {
+			  	  		  	
+			  	  		  	window.location.href = resp.success_url;
+			  	  		    // form.submit();
+			  	  		    // handling form submit in ajax
+
+			  	  		  }
+			  	  		});
+
+			  	  	}
+
+			  	  });
+
+			  	});
+
+			});
+
+		})( jQuery );
+
+		</script>
+
+		<?php 
 
 		 return ob_get_clean();
 	}

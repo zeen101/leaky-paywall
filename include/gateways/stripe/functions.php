@@ -374,3 +374,54 @@ function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
 	return false;
 
 }
+
+
+add_action( 'wp_ajax_nopriv_leaky_paywall_process_stripe_elements', 'leaky_paywall_process_stripe_elements' );
+add_action( 'wp_ajax_leaky_paywall_process_stripe_elements', 'leaky_paywall_process_stripe_elements' );
+
+function leaky_paywall_process_stripe_elements() {
+
+	$settings = get_leaky_paywall_settings();
+	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
+	$secret_key = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+
+	\Stripe\Stripe::setApiKey( $secret_key );
+
+	$customer_array = array(
+		'email'       => $_POST['email'],
+		'description' => $_POST['email'],
+		'name'	=> $_POST['fname'] . ' ' . $_POST['lname']
+	);
+
+	$level_id = $_POST['level_id'];
+	$level = get_leaky_paywall_subscription_level( $level_id );
+	$level_price = str_replace(',', '', number_format( $level['price'], 2 ) );
+
+	$amount = $level_price * 100;
+
+	$customer = \Stripe\Customer::create( $customer_array );
+	$currency = apply_filters( 'leaky_paywall_stripe_currency', leaky_paywall_get_currency() );
+
+	$intent = \Stripe\PaymentIntent::create([
+	    'amount' => $amount,
+	    'currency' => $currency,
+	    'customer'	=> $customer->id,
+	    'metadata'	=> array( 'level_id' => $level_id ),
+	    'payment_method_types' => ['card'],
+	]);
+
+	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+		$success_url = get_page_link( $settings['page_for_after_subscribe'] );
+	} else if ( !empty( $settings['page_for_profile'] ) ) {
+		$success_url = get_page_link( $settings['page_for_profile'] );
+	} else {
+		$success_url = home_url();
+	}
+
+	wp_send_json( array(
+		'success'	=> true,
+		'intent_secret' => $intent->client_secret,
+		'success_url'	=> $success_url
+	) );
+
+}
