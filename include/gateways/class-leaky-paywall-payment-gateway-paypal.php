@@ -637,6 +637,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					$args['first_name'] = get_post_meta( $transaction_id, '_first_name', true );
 					$args['last_name'] = get_post_meta( $transaction_id, '_last_name', true );
 					$args['login'] = get_post_meta( $transaction_id, '_login', true );
+					$args['transaction_id'] = $transaction_id;
 
 					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
 						update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
@@ -652,14 +653,23 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					
 				}
 
-				if ( !empty( $user ) ) {
+				$user_exists = get_user_by( 'email', $_REQUEST['custom'] );
+
+				if ( !empty( $user_exists ) ) {
 					//WordPress user exists
-					$args['subscriber_email'] = $user->user_email;
+					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $user->user_email;
+
+					leaky_paywall_log( $args, 'before paypal standard update existing user');
+
 					$user_id = leaky_paywall_update_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 				} else {
 					//Need to create a new user
 					
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
+
+					leaky_paywall_log( $_REQUEST['custom'], 'before paypal standard create new user: email');
+					leaky_paywall_log( $args, 'before paypal standard create new user: args');
+
 					$user_id = leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
 
 					// send new user the welcome email
@@ -784,6 +794,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		if ( isset( $_REQUEST['txn_type'] ) ) {
 			update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
 		}
+
+		do_action( 'leaky_paywall_save_data_to_paypal_transaction', $transaction_id );
 		
 	}	
 
