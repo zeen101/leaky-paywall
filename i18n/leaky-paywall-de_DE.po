@@ -8,7 +8,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-09-18 22:39+0000\n"
+"PO-Revision-Date: 2019-09-19 12:25+0000\n"
 "Last-Translator: admin <mohsin.rasool@gmail.com>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -109,7 +109,7 @@ msgstr ""
 
 #: class.php:834 class.php:842 class.php:850 class.php:858 class.php:896
 msgid "&mdash; Select &mdash;"
-msgstr ""
+msgstr "&mdash; Wählen &mdash;"
 
 #: class.php:835
 msgid "Add this shortcode to your Log In page: %s"
@@ -190,11 +190,11 @@ msgstr ""
 
 #: class.php:927
 msgid "From Name"
-msgstr ""
+msgstr "Von Namen"
 
 #: class.php:932
 msgid "From Email"
-msgstr ""
+msgstr "Aus der Email"
 
 #: class.php:936
 msgid "New Subscriber Email"
@@ -382,7 +382,7 @@ msgstr ""
 
 #: class.php:1269
 msgid "Subscription Levels"
-msgstr ""
+msgstr "Abonnement Levels"
 
 #: class.php:1370 subscriber-table.php:133
 msgid "Leaky Paywall Subscribers"
@@ -415,11 +415,11 @@ msgstr ""
 
 #: class.php:1526 class.php:1576 subscriber-table.php:102
 msgid "Expires"
-msgstr ""
+msgstr "Läuft ab"
 
 #: class.php:1530 class.php:1580
 msgid "Subscription Level"
-msgstr ""
+msgstr "Abo-Level"
 
 #: class.php:1540 class.php:1590 shortcodes.php:233 subscriber-table.php:104
 msgid "Status"
@@ -431,7 +431,7 @@ msgstr "Aktiv"
 
 #: class.php:1543 class.php:1593
 msgid "Canceled"
-msgstr ""
+msgstr "Abgesagt"
 
 #: class.php:1544 class.php:1594
 msgid "Deactivated"
@@ -447,7 +447,7 @@ msgstr ""
 
 #: class.php:1565
 msgid "Cancel"
-msgstr ""
+msgstr "Stornieren"
 
 #: class.php:1600 functions.php:1915
 msgid "Manual"
@@ -670,7 +670,7 @@ msgstr ""
 
 #: functions.php:864
 msgid "Cancel Subscription"
-msgstr ""
+msgstr "Abonnement beenden"
 
 #: functions.php:866
 msgid ""
@@ -755,7 +755,7 @@ msgstr "Abo-Name"
 
 #: functions.php:1384
 msgid "Subscription ID: %s"
-msgstr ""
+msgstr "Abo-ID: %s"
 
 #: functions.php:1394
 msgid "Recurring?"
@@ -763,11 +763,11 @@ msgstr "Wiederkehrende Zahlung"
 
 #: functions.php:1401
 msgid "Subscription Price"
-msgstr ""
+msgstr "Einschreibegebühr"
 
 #: functions.php:1404
 msgid "0 for Free Subscriptions"
-msgstr ""
+msgstr "0 für kostenlose Abonnements"
 
 #: functions.php:1409
 msgid "Subscription Length"
@@ -849,7 +849,7 @@ msgstr ""
 
 #: functions.php:1782
 msgid "Free"
-msgstr ""
+msgstr "Kostenlos"
 
 #: functions.php:1795
 msgid "Current Subscription"
@@ -867,7 +867,7 @@ msgstr ""
 
 #: functions.php:1918
 msgid "Free Registration"
-msgstr ""
+msgstr "Kostenlose Anmeldung"
 
 #: functions.php:1929
 msgid "for life"
@@ -1515,7 +1515,7 @@ msgstr ""
 #: include/registration-functions.php:310
 #: include/registration-functions.php:341 shortcodes.php:479
 msgid "Card Number"
-msgstr ""
+msgstr "Kartennummer"
 
 #: include/registration-functions.php:315
 msgid "CVC"
@@ -1523,7 +1523,7 @@ msgstr ""
 
 #: include/registration-functions.php:320
 msgid "Card Zip or Postal Code"
-msgstr ""
+msgstr "Postleitzahl der Karte"
 
 #: include/registration-functions.php:325
 #: include/registration-functions.php:620
@@ -1532,7 +1532,7 @@ msgstr ""
 
 #: include/registration-functions.php:345
 msgid "Card CVC"
-msgstr ""
+msgstr "Karte CVC"
 
 #: include/registration-functions.php:349
 msgid "Address"
@@ -1540,7 +1540,7 @@ msgstr ""
 
 #: include/registration-functions.php:353
 msgid "City"
-msgstr ""
+msgstr "Stadt"
 
 #: include/registration-functions.php:357
 msgid "State or Providence"
@@ -1548,11 +1548,11 @@ msgstr ""
 
 #: include/registration-functions.php:361
 msgid "Country"
-msgstr ""
+msgstr "Land"
 
 #: include/registration-functions.php:612
 msgid "Card ZIP or Postal Code"
-msgstr ""
+msgstr "Postleitzahl der Karte"
 
 #: metaboxes.php:21
 msgid "Leaky Paywall Visibility"
@@ -1683,7 +1683,7 @@ msgstr "Gültig bis"
 
 #: shortcodes.php:237
 msgid "Cancel?"
-msgstr ""
+msgstr "Stornieren?"
 
 #: shortcodes.php:247 subscriber-table.php:218
 msgid "Undefined"
@@ -1699,7 +1699,7 @@ msgstr ""
 
 #: shortcodes.php:273
 msgid "<a href=\"%s\">cancel</a>"
-msgstr ""
+msgstr "<a href=\"%s\">stornieren</a>"
 
 #: shortcodes.php:297
 msgid "Your Mobile Devices"
@@ -1777,7 +1777,7 @@ msgstr ""
 
 #: shortcodes.php:484
 msgid "Expiration Date"
-msgstr ""
+msgstr "Haltbarkeitsdatum"
 
 #: shortcodes.php:491
 msgid "Security Code (CVC)"
@@ -1785,7 +1785,7 @@ msgstr ""
 
 #: shortcodes.php:496
 msgid "Cardholder's Name"
-msgstr ""
+msgstr "Name des Karteninhabers"
 
 #: shortcodes.php:502
 msgid "Update Credit Card Information"
@@ -1845,7 +1845,7 @@ msgstr "Kundenkonto Informationen"
 
 #: shortcodes.php:650
 msgid "Confirm Password"
-msgstr ""
+msgstr "Passwort bestätigen"
 
 #: shortcodes.php:688
 msgid "Subscribe"
@@ -1877,7 +1877,7 @@ msgstr ""
 
 #: subscriber-table.php:101
 msgid "Created"
-msgstr ""
+msgstr "Erstellt"
 
 #: subscriber-table.php:103
 msgid "Gateway"
