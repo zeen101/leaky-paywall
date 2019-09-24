@@ -648,11 +648,12 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					// one time payment uses txn_type web_accept
 					// recurring subscription uses txn_type subscr_signup
 					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
-						$this->save_data_to_transaction( $email );
+						$transaction_id = $this->save_data_to_transaction( $email );
 					}
 					
 				}
 
+				$args['transaction_id'] = $transaction_id;
 				$user_exists = get_user_by( 'email', $_REQUEST['custom'] );
 
 				if ( !empty( $user_exists ) ) {
@@ -796,6 +797,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		}
 
 		do_action( 'leaky_paywall_save_data_to_paypal_transaction', $transaction_id );
+
+		return $transaction_id;
 		
 	}	
 
