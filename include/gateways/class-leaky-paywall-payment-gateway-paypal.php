@@ -129,8 +129,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		// for recurring, cmb = _xclick-subscriptions
 
-		// save post data to a transient
-		// $this->save_data_to_transient();
 		$this->save_data_to_transaction();
 
 
@@ -376,12 +374,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function process_webhooks() {
 
-		// this listener won't get set if the user cancel's their account in paypal...
-		// if( ! isset( $_GET['listener'] ) || strtoupper( $_GET['listener'] ) != 'IPN' ) {
-		// 	return;
-		// }
-
-		// so we are using this instead
 		if ( ! isset( $_POST['txn_type'] ) ) {
 			return;
 		}
@@ -668,7 +660,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					
 					$args['subscriber_email'] = is_email( $_REQUEST['custom'] ) ? $_REQUEST['custom'] : $_REQUEST['payer_email'];
 
-					leaky_paywall_log( $_REQUEST['custom'], 'before paypal standard create new user: email');
 					leaky_paywall_log( $args, 'before paypal standard create new user: args');
 
 					$user_id = leaky_paywall_new_subscriber( NULL, $args['subscriber_email'], $args['subscr_id'], $args );
@@ -691,23 +682,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		
 		return true;
 		
-	}
-
-	public function save_data_to_transient() 
-	{
-
-		$trans_key = 'paypal-transient-' . $this->email;
-
-		$data = array(
-			'email' => $this->email,
-			'password' => sanitize_text_field( $_POST['password'] ),
-			'first_name' => $this->first_name,
-			'last_name' => $this->last_name,
-			'login' => sanitize_text_field( $_POST['username'] )
-		);
-
-		set_transient( $trans_key, apply_filters('leaky_paywall_paypal_transient_data', $data ), 900 );
-
 	}
 
 	public function save_data_to_transaction( $email = '' )
@@ -827,18 +801,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		}
 
 		return $transaction_id;
-	}
-
-	public function get_data_from_transient( $email = '' ) 
-	{
-
-		if ( !$email ) {
-			$email = $this->email;
-		}
-		
-		$trans_key = 'paypal-transient-' . $email;
-		return get_transient( $trans_key );
-
 	}
 
 }
