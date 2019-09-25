@@ -2500,9 +2500,15 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 					$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
 
 					$admin_raw_message = '<p>A new user has signed up on ' . $site_name . '.</p>
+					<h3>Subscriber details</h3>
 					<ul>
-					<li><strong>Email:</strong> ' . $user_info->user_email . '</li>
-					<li><strong>Subscription:</strong> ' . $level_name . '</li>
+					<li><strong>Subscription:</strong> ' . $level_name . '</li>';
+
+					if ( $user_info->first_name ) {
+						$admin_raw_message .= '<li><strong>Name:</strong> ' . $user_info->first_name . ' ' . $user_info->last_name . '</li>';
+					}
+
+					$admin_raw_message .= '<li><strong>Email:</strong> ' . $user_info->user_email . '</li>
 					</ul>
 					';
 
