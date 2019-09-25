@@ -3501,3 +3501,30 @@ function leaky_paywall_update_admin_notice_viewed() {
 	update_user_meta( get_current_user_id(), sanitize_text_field( $_GET['notice_id'] ), true );
 
 }
+
+
+function leaky_paywall_get_transaction_id_from_email( $email ) {
+
+	$transaction_id = '';
+
+	$args = array(
+		'post_type'	=> 'lp_transaction',
+		'number_of_posts'	=> 1,
+		'meta_query' => array(
+			array(
+				'key'     => '_email',
+				'value'   => $email,
+				'compare' => '=',
+			),
+		),
+	);
+
+	$transactions = get_posts( $args );
+
+	if ( !empty( $transactions ) ) {
+		$transaction = $transactions[0];
+		$transaction_id = $transaction->ID;
+	}
+
+	return $transaction_id;
+}

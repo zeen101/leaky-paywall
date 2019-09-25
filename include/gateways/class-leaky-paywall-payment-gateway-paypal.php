@@ -621,7 +621,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				}
 
 				// get data submitted in registration form
-				$transaction_id = $this->get_transaction_id_from_email( $_REQUEST['custom'] );
+				$transaction_id = leaky_paywall_get_transaction_id_from_email( $_REQUEST['custom'] );
 
 				if ( $transaction_id ) {
 					$args['password'] = get_post_meta( $transaction_id, '_password', true );
@@ -775,32 +775,5 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		return $transaction_id;
 		
 	}	
-
-	public function get_transaction_id_from_email( $email )
-	{
-
-		$transaction_id = '';
-
-		$args = array(
-			'post_type'	=> 'lp_transaction',
-			'number_of_posts'	=> 1,
-			'meta_query' => array(
-				array(
-					'key'     => '_email',
-					'value'   => $email,
-					'compare' => '=',
-				),
-			),
-		);
-
-		$transactions = get_posts( $args );
-
-		if ( !empty( $transactions ) ) {
-			$transaction = $transactions[0];
-			$transaction_id = $transaction->ID;
-		}
-
-		return $transaction_id;
-	}
 
 }
