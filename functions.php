@@ -2463,8 +2463,8 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
         $admin_message = '';
         $headers = array();
 
-        $admin_emails = array();
-        $admin_emails = get_option( 'admin_email' );
+        $admin_email_recipients = esc_attr( $settings['admin_new_subscriber_email_recipients'] );
+        $admin_email_subject = esc_attr( $settings['admin_new_subscriber_email_subject'] );
 
         $site_name  = stripslashes_deep( html_entity_decode( get_bloginfo( 'name' ), ENT_COMPAT, 'UTF-8' ) );
         $from_name  = isset( $settings['from_name'] ) ? $settings['from_name'] : $site_name;
@@ -2514,7 +2514,10 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 
 					$admin_message = apply_filters( 'leaky_paywall_new_subscriber_admin_email', $admin_raw_message, $user_info );
 
-					wp_mail( $admin_emails, sprintf( __( 'New subscription on %s', 'leaky-paywall' ), $site_name ), $admin_message, $headers );           
+					if ( $admin_email_recipients ) {
+						wp_mail( $admin_email_recipients, $admin_email_subject, $admin_message, $headers );   
+					}
+					        
 				}
 
             break;

@@ -388,6 +388,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'renewal_reminder_email_body'	=> '',
 				'renewal_reminder_days_before'   => '7',
 				'new_subscriber_admin_email'	=> 'off',
+				'admin_new_subscriber_email_subject'	=> 'New subscription on ' . stripslashes_deep( html_entity_decode( get_bloginfo( 'name' ), ENT_COMPAT, 'UTF-8' ) ),
+				'admin_new_subscriber_email_recipients'	=> get_option( 'admin_email' ),
 				'payment_gateway'				=> array( 'stripe_checkout' ),
 				'test_mode'						=> 'off',
 				'live_secret_key'				=> '',
@@ -620,6 +622,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['new_subscriber_admin_email'] = $_REQUEST['new_subscriber_admin_email'];
 					else
 						$settings['new_subscriber_admin_email'] = 'off';
+
+					if ( isset( $_POST['admin_new_subscriber_email_subject'] ) ) {
+						$settings['admin_new_subscriber_email_subject'] = sanitize_text_field( $_POST['admin_new_subscriber_email_subject'] );
+					}
+
+					if ( isset( $_POST['admin_new_subscriber_email_recipients'] ) ) {
+						$settings['admin_new_subscriber_email_recipients'] = sanitize_text_field( $_POST['admin_new_subscriber_email_recipients'] );
+					}
 
 				}
 
@@ -1008,10 +1018,39 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['from_email'] ) ); ?>" /></td>
 	                            </tr>
 
+	                        </table>
+	                        
+	                        </div>
+	                        
+	                    </div>
+
+	                    <div id="modules" class="postbox">
+	                    
+	                        <div class="handlediv" title="Click to toggle"><br /></div>
+	                        
+	                        <h3 class="hndle"><span><?php _e( 'Admin New Subscriber Email', 'leaky-paywall' ); ?></span></h3>
+	                        
+	                        <div class="inside">
+	                        
+	                        <table id="leaky_paywall_administrator_options" class="form-table">
 
 	                            <tr>
 	                            	<th><?php _e( "Disable New User Notifications", 'leaky-paywall' ); ?></th>
 	                                <td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> <?php _e( 'Disable the email sent to an admin when a new subscriber is added to Leaky Paywall', 'leaky-paywall' ); ?></td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Subject', 'leaky-paywall' ); ?></th>
+	                                <td><input type="text" id="admin_new_subscriber_email_subject" class="regular-text" name="admin_new_subscriber_email_subject" value="<?php echo htmlspecialchars( stripcslashes( $settings['admin_new_subscriber_email_subject'] ) ); ?>" />
+	                                	<p class="description"><?php _e( 'The subject line for this email.', 'leaky-paywall' ); ?></p>
+	                                </td>
+	                            </tr>
+
+	                            <tr>
+	                                <th><?php _e( 'Recipient(s)', 'leaky-paywall' ); ?></th>
+	                                <td><input type="text" id="admin_new_subscriber_email_recipients" class="regular-text" name="admin_new_subscriber_email_recipients" value="<?php echo htmlspecialchars( stripcslashes( $settings['admin_new_subscriber_email_recipients'] ) ); ?>" />
+	                                	<p class="description"><?php _e( 'Enter recipients (comma separated) for this email.', 'leaky-paywall' ); ?></p>
+	                                </td>
 	                            </tr>
 
 	                        </table>
