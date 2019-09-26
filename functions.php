@@ -2474,6 +2474,8 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
         $headers[] = "Reply-To: " . $from_email;
         $headers[] = "Content-Type: text/html; charset=UTF-8";
 
+        $attachments = apply_filters( 'leaky_paywall_email_attachments', array(), $user_info, $status );
+
         do_action( 'leaky_paywall_before_email_status', $user_id, $status );
 
         switch ( $status ) {
@@ -2490,7 +2492,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
                 $filtered_message = wpautop( make_clickable( $filtered_message ) );
 
 				if ( 'traditional' === $settings['login_method'] && 'off' === $settings['new_subscriber_email']  ) {
-                    wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
+                    wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers, $attachments );
 				}
 
 				if ( 'off' === $settings['new_subscriber_admin_email'] ) {
@@ -2515,7 +2517,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 					$admin_message = apply_filters( 'leaky_paywall_new_subscriber_admin_email', $admin_raw_message, $user_info );
 
 					if ( $admin_email_recipients ) {
-						wp_mail( $admin_email_recipients, $admin_email_subject, $admin_message, $headers );   
+						wp_mail( $admin_email_recipients, $admin_email_subject, $admin_message, $headers, $attachments );   
 					}
 					        
 				}
@@ -2532,7 +2534,7 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
                 $filtered_message = wpautop( make_clickable( $filtered_message ) );
 
 				if ( 'traditional' === $settings['login_method']  ) {
-                    wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers );
+                    wp_mail( $user_info->user_email, $filtered_subject, $filtered_message , $headers, $attachments );
 				}
 
             break;
