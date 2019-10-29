@@ -64,7 +64,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		ob_start(); ?>
 
 		<div class="leaky-paywall-payment-method-container">
-			<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="Subscribe with PayPal" type="radio">
+			<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="<?php esc_attr( _e('Subscribe with Paypal' , 'leaky-paywall') ) ?>" type="radio">
 
 			<label for="payment_method_paypal"> Paypal <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_150x38.png" alt="PayPal Logo"></label>
 		</div>
@@ -77,7 +77,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 				if ( method == 'paypal_standard' ) {
 					$('.leaky-paywall-card-details').slideUp();
-					button.text('Subscribe with Paypal');
+					button.text('<?php _e('Subscribe with Paypal' , 'leaky-paywall') ?>');
 				}
 
 				$('#leaky-paywall-payment-form input[name="payment_method"]').change(function() {
@@ -86,10 +86,10 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					if ( method == 'paypal_standard' ) {
 						$('.leaky-paywall-card-details').slideUp();
-						button.text('Subscribe with Paypal');
+						button.text('<?php _e('Subscribe with Paypal' , 'leaky-paywall') ?>');
 					} else {
 						$('.leaky-paywall-card-details').slideDown();
-						button.text('Subscribe');
+						button.text('<?php _e('Subscribe' , 'leaky-paywall') ?>');
 					}
 
 				});
