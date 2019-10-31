@@ -520,9 +520,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$has_access = leaky_paywall_user_has_access( $user );
 
 							if ( $has_access ) {
-								echo '<td ' . $attributes . '>Yes</td>';
+								echo '<td ' . $attributes . '>' . __( 'Yes', 'leaky-paywall' ) . '</td>';
 							} else {
-								echo '<td ' . $attributes . '>No</td>';
+								echo '<td ' . $attributes . '>' . __( 'No', 'leaky-paywall' ) . '</td>';
 							}
 						break;
 

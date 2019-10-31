@@ -404,7 +404,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			  	if (response.error) {
 			  		// re-enable the submit button
-			  		jQuery('#leaky-paywall-payment-form #leaky-paywall-submit').prop("disabled", false ).text('Submit');
+			  		jQuery('#leaky-paywall-payment-form #leaky-paywall-submit').prop("disabled", false ).text('<?php _e( 'Submit', 'leaky-paywall' ) ?>');
 
 			  		jQuery('#leaky-paywall-submit').before('<div class="leaky-paywall-message error"><p class="leaky-paywall-error"><span>' + response.error.message + '</span></p></div>' );
 
@@ -443,7 +443,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			  			$('input[name="stripe_price"]').val();
 
 			  			// disabl the submit button to prevent repeated clicks
-			  			$('#leaky-paywall-payment-form #leaky-paywall-submit').prop('disabled', true ).text('Processing...Please Wait');
+			  			$('#leaky-paywall-payment-form #leaky-paywall-submit').prop('disabled', true ).text('<?php _e( 'Processing... Please Wait', 'leaky-paywall' ) ?>');
 
 			  			// create Stripe token
 			  			Stripe.createToken({
@@ -515,7 +515,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			
 			  <div class="form-row">
 			    <label for="card-element">
-			      Credit or debit card
+			      <?php _e( 'Credit or debit card', 'leaky-paywall' ); ?>
 			    </label>
 			    <div id="card-element">
 			      <!-- A Stripe Element will be inserted here. -->
@@ -625,7 +625,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		  	  var subButton = document.getElementById('leaky-paywall-submit');
 
 		  	  subButton.disabled = true;
-		  	  subButton.innerHTML = 'Processing...Please Wait';
+		  	  subButton.innerHTML = '<?php _e( 'Processing... Please Wait', 'leaky-paywall' ) ?>';
 
 		  	  stripe.createToken(card).then(function(result) {
 		  	    if (result.error) {
@@ -634,7 +634,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		  	      errorElement.textContent = result.error.message;
 
 		  	      subButton.disabled = false;
-		  	      subButton.innerHTML = 'Submit';
+		  	      subButton.innerHTML = '<?php _e( 'Submit', 'leaky-paywall' )?>';
 
 		  	    } else {
 		  	      // Send the token to your server.

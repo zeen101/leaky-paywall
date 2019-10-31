@@ -920,7 +920,7 @@ if ( !function_exists( 'leaky_paywall_translate_payment_gateway_slug_to_name' ) 
 				break;
 				
 			case 'free_registration':
-				$return = 'Free Registration';
+				$return = __( 'Free Registration', 'leaky-paywall' );
 				break;
 				
 			case 'manual':
@@ -3298,7 +3298,7 @@ function leaky_paywall_get_level_display_price( $level ) {
 		}
 		
 	} else {
-		$display_price = 'Free';
+		$display_price = __( 'Free', 'leaky-paywall' );
 	}
 
 	return apply_filters( 'leaky_paywall_display_price', $display_price, $level );
