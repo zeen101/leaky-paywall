@@ -48,11 +48,9 @@ class Leaky_Paywall_Restrictions {
 			return;
 		}
 
-
-
 		$this->display_subscribe_nag();
 
-		do_action( 'leaky_paywall_is_restricted_content' );
+		do_action( 'leaky_paywall_is_restricted_content', $this->post_id );
 
 	}
 

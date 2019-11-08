@@ -1941,7 +1941,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </select>
 	                        </p>
 	                    	<p>
-	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'leaky-paywall' ); ?></label>
+	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Payment Status', 'leaky-paywall' ); ?></label>
 	                        <select name="leaky-paywall-subscriber-status">
 	                            <option value="active" <?php selected( 'active', $payment_status ); ?>><?php _e( 'Active', 'leaky-paywall' ); ?></option>
 	                            <option value="canceled" <?php selected( 'canceled', $payment_status ); ?>><?php _e( 'Canceled', 'leaky-paywall' ); ?></option>
@@ -1996,7 +1996,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </select>
 	                        </p>
 	                    	<p>
-	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Status', 'leaky-paywall' ); ?></label>
+	                        <label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php _e( 'Payment Status', 'leaky-paywall' ); ?></label>
 	                        <select name="leaky-paywall-subscriber-status">
 	                            <option value="active"><?php _e( 'Active', 'leaky-paywall' ); ?></option>
 	                            <option value="canceled"><?php _e( 'Canceled', 'leaky-paywall' ); ?></option>
