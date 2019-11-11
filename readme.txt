@@ -1,8 +1,8 @@
 === Leaky Paywall for WordPress ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.2.3
-Stable tag: 4.13.7
+Tested up to: 5.2.4
+Stable tag: 4.13.8
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -92,6 +92,18 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.13.8 =
+* Remove i18n of ui datepicker on Add/Update Subscriber form
+* Remove i18n of date format on Add/Update Subscriber form
+* Disable autocompletion for date picker on Add/Update Subscriber form
+* Update status label on Add/Update Subscriber form
+* Add post_id to restricted content action
+* Update German translations
+* Add leaky_paywall_email_attachments filter to welcome emails
+* Add admin email settings for subject and recipients
+* Add leaky_paywall_get_transaction_id_from_email helper function
+* Add name to admin new subscriber email
 
 = 4.13.7 =
 * Downgrade Stripe PHP library to 6.43.1 for older versions of php
