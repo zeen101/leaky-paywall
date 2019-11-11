@@ -265,6 +265,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				
 			if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix ) {
 
+				// Removing i18n of UI datepicker for subscriber page only
+				remove_action( 'admin_enqueue_scripts', 'wp_localize_jquery_ui_datepicker', 1000 );
+
 				wp_enqueue_script( 'leaky_paywall_subscribers_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-subscribers.js', array( 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION );
 				wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
 			}
@@ -277,7 +280,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
              ) );
 
 				
-			if ( 'post.php' === $hook_suffix|| 'post-new.php' === $hook_suffix ) {
+			if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix ) {
 				wp_enqueue_script( 'leaky_paywall_post_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 			}
 			
@@ -1913,7 +1916,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						if ( '0000-00-00 00:00:00' === $expires )
 							$expires = '';
 						else
-							$expires = mysql2date( $date_format, $expires );
+							$expires = mysql2date( $date_format, $expires, false );
 						
 						?>
 	                    <form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
@@ -1922,7 +1925,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo $email; ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo $email; ?>" name="leaky-paywall-subscriber-original-email" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo $price; ?>"  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
-	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
+	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date( $date_format, time() ); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
 	                        </p>
 	                    	<p>
@@ -1977,7 +1980,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                    	<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php _e( 'Email Address (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p>
 	                    	<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php _e( 'Price Paid', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value=""  placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 	                    	<p>
-	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date_i18n( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires"  />
+	                        <label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date( $date_format, time() ); ?>"name="leaky-paywall-subscriber-expires" autocomplete="off"  />
 	                        <input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
 	                        </p>
 	                    	<p>
