@@ -148,8 +148,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		if ( !empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] ) {
 			unset( $args['meta_query'] );
 		}
-
-
+		
 		$wp_user_search = new WP_User_Query( $args );
 		$this->items = $wp_user_search->get_results();
 		
