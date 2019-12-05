@@ -684,8 +684,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					if ( !empty( $_POST['bypass_paywall_restrictions'] ) ) {
 						$settings['bypass_paywall_restrictions'] = $_POST['bypass_paywall_restrictions'];
+						$settings['bypass_paywall_restrictions'][] = 'administrator';
 					} else {
-						$settings['bypass_paywall_restrictions'] = array();
+						$settings['bypass_paywall_restrictions'] = array( 'administrator' );
 					}
 
 					if ( isset( $_POST['js_restrictions_post_container'] ) ) {
@@ -1600,15 +1601,13 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 	                                		foreach( $roles as $name => $role ) {
 	                                			?>
-	                                			<input type="checkbox" name="bypass_paywall_restrictions[]" <?php echo in_array($name, $settings['bypass_paywall_restrictions'] ) ? 'checked' : ''; ?> value="<?php echo $name; ?>"> <?php echo ucfirst( str_replace('_', ' ', $name) ) ; ?>&nbsp; &nbsp;
+	                                			<input type="checkbox" name="bypass_paywall_restrictions[]" <?php echo in_array($name, $settings['bypass_paywall_restrictions'] ) ? 'checked' : ''; ?> <?php echo $name == 'administrator' ? 'disabled' : ''; ?> value="<?php echo $name; ?>"> <?php echo ucfirst( str_replace('_', ' ', $name) ) ; ?>&nbsp; &nbsp;
 	                                			<?php 
-
 	                                		}
-
 	                                	?>
 	                                	
 	                                	<p class="description">
-	                                		<?php _e( 'Allow the selected user roles to always bypass the paywall.' ); ?>
+	                                		<?php _e( 'Allow the selected user roles to always bypass the paywall. Administrators can always bypass the paywall.' ); ?>
 	                                	</p>
 	                                </td>
 	                            </tr>

@@ -114,11 +114,17 @@ class Leaky_Paywall_Restrictions {
 	public function content_matches_restriction_rules() 
 	{
 
+		$settings = get_leaky_paywall_settings();
+
 		if ( !$this->is_single() ) {
 			return false;
 		}
 
-		// allow admins to view all content
+		if ( $this->user_role_can_bypass_paywall() ) {
+			return false;
+		}
+
+		// allow access by capability for more fine grain control
 		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
 			return false;
 		}
@@ -573,6 +579,37 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		return $message;
+
+	}
+
+	/**
+	 * Determine if the current user has a role that can bypass the paywall
+	 *
+	 * @since 4.13.9
+	 *
+	 * @return boolean
+	 */
+	public function user_role_can_bypass_paywall() 
+	{
+
+		$settings = get_leaky_paywall_settings();
+
+		if ( !is_user_logged_in() ) {
+			return false;
+		}	
+
+		$user = wp_get_current_user();
+ 		$roles = (array) $user->roles;
+
+ 		foreach( $roles as $role ) {
+
+ 			if ( in_array( $role, $settings['bypass_paywall_restrictions'] ) ) {
+ 				return true;
+ 			}
+
+ 		}
+
+ 		return false;
 
 	}
 
