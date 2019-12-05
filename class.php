@@ -422,6 +422,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'enable_js_cookie_restrictions' => 'off',
 				'js_restrictions_post_container' => 'article .entry-content',
 				'js_restrictions_page_container' => 'article .entry-content',
+				'bypass_paywall_restrictions' => array( 'administrator' ),
 				'restrictions' 	=> array(
 					'post_types' => array(
 						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
@@ -680,6 +681,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['enable_js_cookie_restrictions'] = $_POST['enable_js_cookie_restrictions'];
 					else
 						$settings['enable_js_cookie_restrictions'] = 'off';
+
+					if ( !empty( $_POST['bypass_paywall_restrictions'] ) ) {
+						$settings['bypass_paywall_restrictions'] = $_POST['bypass_paywall_restrictions'];
+					} else {
+						$settings['bypass_paywall_restrictions'] = array();
+					}
 
 					if ( isset( $_POST['js_restrictions_post_container'] ) ) {
 						$settings['js_restrictions_post_container'] = sanitize_text_field( $_POST['js_restrictions_post_container'] );
@@ -1585,6 +1592,26 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                </td>
 	                            </tr>
 
+	                            <tr class="restriction-options">
+	                                <th><?php _e( 'Bypass Restrictions', 'leaky-paywall' ); ?></th>
+	                                <td>
+	                                	<?php 
+	                                		$roles = get_editable_roles();
+
+	                                		foreach( $roles as $name => $role ) {
+	                                			?>
+	                                			<input type="checkbox" name="bypass_paywall_restrictions[]" <?php echo in_array($name, $settings['bypass_paywall_restrictions'] ) ? 'checked' : ''; ?> value="<?php echo $name; ?>"> <?php echo ucfirst( str_replace('_', ' ', $name) ) ; ?>&nbsp; &nbsp;
+	                                			<?php 
+
+	                                		}
+
+	                                	?>
+	                                	
+	                                	<p class="description">
+	                                		<?php _e( 'Allow the selected user roles to always bypass the paywall.' ); ?>
+	                                	</p>
+	                                </td>
+	                            </tr>
 	                            
 	                        </table>
 	
