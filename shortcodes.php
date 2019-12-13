@@ -263,6 +263,8 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 				    $update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
 
+				    leaky_paywall_log( $user->user_email, 'credit card updated');
+
 				    if ( strcasecmp('deactivated', $status) == 0 ) {
 
 			    		$new_sub = \Stripe\Subscription::create([
@@ -270,7 +272,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 			    		  'items' => [['plan' => $plan]],
 			    		]);
 
-			    		leaky_paywall_log( $new_sub, 'created new subscription after card update');
+			    		leaky_paywall_log( $user->user_email, 'created new subscription after card update');
 
 				    	$update_card_success .= __( ' Your subscription has been restarted! Please refresh page to see updated account status.', 'leaky-paywall' );
 
@@ -442,12 +444,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								$cu = \Stripe\Customer::Retrieve(
 								  ["id" => $subscriber_id, "expand" => ["default_source"]]
 								);
-
-								// echo '<pre>';
-								// print_r( $cu->subscriptions->all() );
-								// echo '</pre>';
-
-								// die('test');
 
 								$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
 
