@@ -1555,7 +1555,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				                    	<p>
 				                       		<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_leaky_paywall_restriction_row" value="<?php _e( '+ Add Restricted Content', 'leaky-paywall' ); ?>" />
 				                    	</p>
-				                    	<p class="description"><?php _e( 'By default all content is allowed.', 'leaky-paywall' ); ?></p>
+				                    	<p class="description"><?php _e( 'By default all content is allowed.', 'leaky-paywall' ); ?> <?php _e( 'Restrictions processed from top to bottom.', 'leaky-paywall' ); ?></p>
 			                        </td>
 		                        </tr>
 

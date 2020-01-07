@@ -1719,8 +1719,12 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 							echo '</p>';
 						}
 					?>
+
+					<p class="description"><?php _e( 'Access processed from top to bottom.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
+
+
 			
 			<?php 
 			if ( is_multisite_premium() ) {
