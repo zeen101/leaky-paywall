@@ -1580,7 +1580,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            <tr class="restriction-options-post-container <?php echo $settings['enable_js_cookie_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
 	                                <th><?php _e( 'Alternative Restrictions Post Container', 'leaky-paywall' ); ?></th>
 	                                <td>
-	                                	<input type="text" id="js_restrictions_post_container" class="medium-text" name="js_restrictions_post_container" value="<?php echo stripcslashes( $settings['js_restrictions_post_container'] ); ?>" /> 
+	                                	<input type="text" id="js_restrictions_post_container" class="large-text" name="js_restrictions_post_container" value="<?php echo stripcslashes( $settings['js_restrictions_post_container'] ); ?>" /> 
 	                                	<p class="description"><?php _e( 'CSS selector of the container that contains the content on a post and custom post type.' ); ?></p>
 	                                </td>
 	                            </tr>
@@ -1588,7 +1588,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            <tr class="restriction-options-page-container <?php echo $settings['enable_js_cookie_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
 	                                <th><?php _e( 'Alternative Restrictions Page Container', 'leaky-paywall' ); ?></th>
 	                                <td>
-	                                	<input type="text" id="js_restrictions_page_container" class="medium-text" name="js_restrictions_page_container" value="<?php echo stripcslashes( $settings['js_restrictions_page_container'] ); ?>" /> 
+	                                	<input type="text" id="js_restrictions_page_container" class="large-text" name="js_restrictions_page_container" value="<?php echo stripcslashes( $settings['js_restrictions_page_container'] ); ?>" /> 
 	                                	<p class="description"><?php _e( 'CSS selector of the container that contains the content on a page.' ); ?></p>
 	                                </td>
 	                            </tr>
