@@ -46,7 +46,6 @@ class LP_Transaction {
 			'post_type'		=> 'lp_transaction'
 		);
 		
-		// Insert the post into the database
 		$transaction_id = wp_insert_post( $transaction );
 
 		update_post_meta( $transaction_id, '_email', $user->user_email );
@@ -59,6 +58,8 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_currency', $this->currency );
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
 		update_post_meta( $transaction_id, '_is_recurring', $this->is_recurring );
+
+		do_action( 'leaky_paywall_after_create_transaction', $transaction_id, $user );
 
 		return $transaction_id;
 		
