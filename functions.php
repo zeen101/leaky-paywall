@@ -342,9 +342,6 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 			$unexpired = true;
 		} else {
-			// $date_format = get_option( 'date_format' );
-			// $expires = mysql2date( $date_format, $expires );
-
 			if ( strtotime( $expires ) > time() ) {
 				$unexpired = true;
 			}

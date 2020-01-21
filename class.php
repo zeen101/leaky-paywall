@@ -1777,7 +1777,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				$site = '';
 			}
 			
-			$date_format = get_option( 'date_format' );
+			$date_format = 'F j, Y';
 			$jquery_date_format = leaky_paywall_jquery_datepicker_format( $date_format );
 			$headings = apply_filters( 'leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id', 'subscriber-id' ) );
 			
@@ -1860,10 +1860,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								$payment_gateway = trim( rawurldecode( $_POST['leaky-paywall-subscriber-payment-gateway'] ) );
 								$subscriber_id = trim( rawurldecode( $_POST['leaky-paywall-subscriber-id'] ) );
 								
-								if ( empty( $_POST['leaky-paywall-subscriber-expires'] ) )
+								if ( empty( $_POST['leaky-paywall-subscriber-expires'] ) ) {
 									$expires = 0;
-								else 
+								} else {
 									$expires = date( 'Y-m-d 23:59:59', strtotime( trim( urldecode( $_POST['leaky-paywall-subscriber-expires'] ) ) ) );
+								}
 									
 								if ( $price !== get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true ) )
 									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, $price );

@@ -335,7 +335,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 				if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 					$expires = __( 'Never', 'leaky-paywall' );
 				} else {
-					$date_format = get_option( 'date_format' );
+					$date_format = 'F j, Y';
 					$expires = mysql2date( $date_format, $expires );
 				}
 				

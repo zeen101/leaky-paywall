@@ -490,7 +490,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							
 							$created = apply_filters( 'do_leaky_paywall_profile_shortcode_created_column', $created, $user, $mode, $site, $level_id );
 							
-							$date_format = get_option( 'date_format' );
+							$date_format = 'F j, Y';
 							$created = mysql2date( $date_format, $created );
 							
 							echo "<td $attributes>" . $created . '</td>';
@@ -508,7 +508,8 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
 								$expires = __( 'Never', 'leaky-paywall' );
 							} else {
-								$date_format = get_option( 'date_format' );
+
+								$date_format = 'F j, Y';
 								$expires = mysql2date( $date_format, $expires );
 							}
 							
