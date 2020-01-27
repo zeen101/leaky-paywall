@@ -101,7 +101,7 @@ if ( !function_exists( 'do_leaky_paywall_subscription' ) ) {
 	function do_leaky_paywall_subscription( $atts ) {
 		
 		if ( isset( $_REQUEST['level_id'] ) ) {
-			return do_leaky_paywall_register_form();
+			return do_leaky_paywall_register_form( $atts );
 		}
 		
 		$settings = get_leaky_paywall_settings();
