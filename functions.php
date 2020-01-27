@@ -3454,7 +3454,7 @@ function leaky_paywall_display_rate_us_notice() {
 	$site = leaky_paywall_get_current_site();
 
 	$args = array(
-		'number' => 6,
+		'number' => 11,
 		'meta_query'	=> array(
 			array(
 				'key'     => '_issuem_leaky_paywall_live_level_id' . $site,
@@ -3466,7 +3466,7 @@ function leaky_paywall_display_rate_us_notice() {
 	$wp_user_search = new WP_User_Query( $args );
 	$total_live_subscribers = count( $wp_user_search->get_results() );
 
-	if ( 5 >= $total_live_subscribers ) {
+	if ( 10 >= $total_live_subscribers ) {
 		return;
 	}
 
@@ -3481,14 +3481,23 @@ function leaky_paywall_display_rate_us_notice() {
 		<div class="leaky-paywall-message-inner">
 			
 			<div class="leaky-paywall-message-content">
-				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> <?php _e( 'You have more than 5 subscribers with <strong>Leaky Paywall</strong>. If you can, please help us by leaving a five star review on WordPress.org.', 'leaky-paywall' ); ?></p>
+				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> 🥳<?php _e( 'You have more than 10 subscribers with <strong>Leaky Paywall</strong>. Please help us by leaving a review on WordPress.org. <br>We read every review and use your feedback to make Leaky Paywall better for everyone!', 'leaky-paywall' ); ?></p>
 				<p class="leaky-paywall-message-actions">
 					<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php _e( 'Leave a Review', 'leaky-paywall' ); ?></a>
 					<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php _e( 'Hide', 'leaky-paywall' ); ?></a>
 				</p>
 			</div>
+			<div class="leaky-paywall-message-logo">
+				<img src="<?php echo esc_url( LEAKY_PAYWALL_URL ); ?>/images/zeen101-logo.png" alt="ZEEN101" width="100">
+			</div>
 		</div>
 	</div>
+
+	<style>
+		.leaky-paywall-message-inner { overflow: hidden; width: 100%; }
+		.leaky-paywall-message-inner .leaky-paywall-message-content { width: 60%; float: left; }
+		.leaky-paywall-message-inner .leaky-paywall-message-logo { width: 20%; float: right; text-align: right; padding-top: 7px; padding-bottom: 7px; }
+	</style>
 	<?php 
 }
 
