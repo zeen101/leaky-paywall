@@ -267,13 +267,36 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 				    if ( strcasecmp('deactivated', $status) == 0 ) {
 
-			    		$new_sub = \Stripe\Subscription::create([
-			    		  'customer' => $cu->id,
-			    		  'items' => [['plan' => $plan]],
-			    		]);
+				    	$subs = \Stripe\Subscription::all(['customer' => $subscriber_id, 'status' => 'all']);
 
-			    		leaky_paywall_log( $user->user_email, 'created new subscription after card update');
+					    if ( !empty( $subs->data ) ) {
 
+					    	foreach( $subs->data as $sub ) {
+
+					    		// we are only checking against the subscribers current plan
+					    		if ( $plan != $sub->items->data[0]->plan->id ) {
+					    			continue;
+					    		}
+
+					    		if ( $sub->status == 'active' || $sub->status == 'past_due' || $sub->status == 'trialing' ) {
+					    			
+					    			leaky_paywall_log( $user->user_email, 'has a subscription, did not create a new subscription after card update');
+
+					    		} else {
+					    				
+					    			// only create a new subscription if the subscriber does not have a current subscription
+					    			// such as expired or canceled
+					    			$new_sub = \Stripe\Subscription::create([
+					    			  'customer' => $cu->id,
+					    			  'items' => [['plan' => $plan]],
+					    			]);
+
+					    			leaky_paywall_log( $user->user_email, 'created new subscription after card update');
+
+					    		}
+					    	}
+					    }
+						
 				    	$update_card_success .= __( ' Your subscription has been restarted! Please refresh page to see updated account status.', 'leaky-paywall' );
 
 				    }
