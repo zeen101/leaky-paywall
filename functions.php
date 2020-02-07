@@ -347,7 +347,7 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 			}
 		}
 
-		if ( $unexpired && $payment_status != 'deactivated' ) {
+		if ( $unexpired && $payment_status && $payment_status != 'deactivated' ) {
 			$has_access = true;
 		} else {
 			$has_access = false;
