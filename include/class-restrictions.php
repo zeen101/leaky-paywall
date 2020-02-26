@@ -853,7 +853,7 @@ class Leaky_Paywall_Restrictions {
 		$viewed_content[$restricted_post_type][$this->post_id] = $this->get_expiration_time();
 		$json_viewed_content = json_encode( $viewed_content );
 
-		$cookie = setcookie( $this->get_cookie_name(), $json_viewed_content, $this->get_expiration_time(), '/' );
+		$cookie = setcookie( $this->get_cookie_name(), $json_viewed_content, $this->get_expiration_time(), '/', '', is_ssl() );
 		$_COOKIE[$this->get_cookie_name()] = $json_viewed_content;
 
 	}
