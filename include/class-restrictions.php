@@ -917,7 +917,7 @@ class Leaky_Paywall_Restrictions {
 			$container = $settings['js_restrictions_post_container'];
 			?>
 			<style>
-				<?php echo $container; ?> {
+				.single <?php echo $container; ?> {
 					display: none;
 				}
 			</style>
