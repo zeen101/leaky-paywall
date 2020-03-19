@@ -15,6 +15,7 @@ class Leaky_Paywall_Restrictions {
 		$this->is_ajax = false;
 
 		add_action( 'wp_footer', array( $this, 'display_viewed_content_debug' ) );
+		add_action( 'wp_footer', array( $this, 'hide_initial_content_display' ) );
 	}
 
 	public function display_viewed_content_debug() 
@@ -905,6 +906,23 @@ class Leaky_Paywall_Restrictions {
 
 		return apply_filters( 'leaky_paywall_expiration_time', $expiration );
 
+	}
+
+	public function hide_initial_content_display() 
+	{
+
+		$settings = get_leaky_paywall_settings();
+			
+		if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+			$container = $settings['js_restrictions_post_container'];
+			?>
+			<style>
+				<?php echo $container; ?> {
+					display: none;
+				}
+			</style>
+			<?php 
+		}
 	}
 
 }

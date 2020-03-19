@@ -21,17 +21,21 @@
 
 					$.get(leaky_paywall_cookie_ajax.ajaxurl, data, function(data) {
 						var response;
-	
+
+
 						if ( data ) {
 
 							response = JSON.parse(data);
 
+							var content = $( leaky_paywall_cookie_ajax.post_container );
+
 							if ( response.indexOf("leaky_paywall_message_wrap") >= 0 ) {
-								
-								var content = $( leaky_paywall_cookie_ajax.post_container );
-								
+
 								content.html(response);
+								content.css('display','block');
 								
+							} else {
+								content.css('display','block');
 							}
 
 						}
