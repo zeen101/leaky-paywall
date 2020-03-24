@@ -1845,7 +1845,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		echo '<td><select style="width: 100%;" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][taxonomy]">';
 		$tax_post_type = $select_post_type['post_type'] ? $select_post_type['post_type'] : 'post';
 		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
-		$hidden_taxes = array( 'post_format' );
+		$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format' ) );
 
 		echo '<option value="all" ' . selected( 'all', $select_post_type['taxonomy'], false ) . '>All</option>';
 		
@@ -1953,7 +1953,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		echo '<td><select style="width: 100%;" name="restrictions[post_types][' . $row_key . '][taxonomy]">';
 		$tax_post_type = $restriction['post_type'] ? $restriction['post_type'] : 'post';
 		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
-		$hidden_taxes = array( 'post_format' );
+		$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format' ) );
 
 		echo '<option value="all" ' . selected( 'all', $restriction['taxonomy'], false ) . '>All</option>';
 		
@@ -2014,7 +2014,7 @@ function leaky_paywall_get_restriction_row_post_type_taxonomies() {
 	$post_type = $_REQUEST['post_type'];
 
 	$taxes = get_object_taxonomies( $post_type, 'objects' );
-	$hidden_taxes = array( 'post_format' );
+	$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format' ) );
 
 	 ob_start(); ?>
     
