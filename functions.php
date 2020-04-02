@@ -1609,6 +1609,9 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 
 		    				if ( is_array( $level['plan_id'] ) ) {
 		    					foreach( $level['plan_id'] as $plan_id ) {
+		    						if ( !$plan_id ) {
+		    							continue;
+		    						}
 		    						?>
 		    						<input type="hidden" class="level-plan_id-<?php echo $row_key; ?>" name="levels[<?php echo $row_key; ?>][plan_id][]" value="<?php echo $plan_id; ?>">
 		    						<?php 
