@@ -1830,7 +1830,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 		echo '</div></td>';
 		
 		echo '<td><select class="select_level_post_type" name="levels[' . $row_key . '][post_types][' . $select_post_key . '][post_type]">';
-		$post_types = get_post_types( array(), 'objects' );
+		$post_types = get_post_types( array( 'public' => true ), 'objects' );
 		$post_types_names = get_post_types( array(), 'names' );
 		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item' );
 		if ( in_array( $select_post_type['post_type'], $post_types_names ) ) {
@@ -1937,7 +1937,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		// $return  = '<div class="issuem-leaky-paywall-restriction-row">';
 		echo '<tr class="issuem-leaky-paywall-restriction-row">';
 		$hidden_post_types = array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'custom_css' );
-		$post_types = get_post_types( array(), 'objects' );
+		$post_types = get_post_types( array( 'public' => true ), 'objects' );
 	    // $return .= '<label for="restriction-post-type-' . $row_key . '">' . __( 'Number of', 'leaky-paywall' ) . '</label> ';
 		echo '<td><select class="leaky-paywall-restriction-post-type" id="restriction-post-type-' . $row_key . '" name="restrictions[post_types][' . $row_key . '][post_type]">';
 		foreach ( $post_types as $post_type ) {
@@ -1956,7 +1956,7 @@ if ( !function_exists( 'build_leaky_paywall_default_restriction_row' ) ) {
 		echo '<td><select style="width: 100%;" name="restrictions[post_types][' . $row_key . '][taxonomy]">';
 		$tax_post_type = $restriction['post_type'] ? $restriction['post_type'] : 'post';
 		$taxes = get_object_taxonomies( $tax_post_type, 'objects' );
-		$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format' ) );
+		$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format', 'yst_prominent_words' ) );
 
 		echo '<option value="all" ' . selected( 'all', $restriction['taxonomy'], false ) . '>All</option>';
 		
@@ -2017,7 +2017,7 @@ function leaky_paywall_get_restriction_row_post_type_taxonomies() {
 	$post_type = $_REQUEST['post_type'];
 
 	$taxes = get_object_taxonomies( $post_type, 'objects' );
-	$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format' ) );
+	$hidden_taxes = apply_filters( 'leaky_paywall_settings_hidden_taxonomies', array( 'post_format', 'yst_prominent_words' ) );
 
 	 ob_start(); ?>
     

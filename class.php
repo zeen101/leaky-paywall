@@ -1509,6 +1509,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Restrict PDF Downloads?', 'leaky-paywall' ); ?></th>
 	                                <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
 	                            </tr>
+
+
 	                            
 	                        	<tr class="restriction-options">
 									<th>
@@ -1535,6 +1537,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						                        	
 					                        		build_leaky_paywall_default_restriction_row( $restriction, $key );
 					                        		
+					                
+
 					                        		$last_key = $key;
 					                        		
 					                        	}
@@ -1544,6 +1548,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				                        </table>
 			                        </td>
 		                        </tr>
+
+
 	                    
 	                        	<tr class="restriction-options">
 									<th>&nbsp;</th>
