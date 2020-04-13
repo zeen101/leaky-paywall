@@ -1582,7 +1582,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                        <tr class="restriction-options">
 	                                <th><?php _e( 'Alternative Restriction Handling', 'leaky-paywall' ); ?></th>
 	                                <td>
-	                                	<input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php _e( 'Only enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying on your site.' ); ?>
+	                                	<input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php _e( 'Enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying correctly on your site.' ); ?>
 
 	                                	<?php if ( $this->check_for_caching() && $settings['enable_js_cookie_restrictions'] != 'on' ) {
 	                                		?>
