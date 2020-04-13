@@ -132,9 +132,13 @@ $leaky_paywall_settings(document).ready(function($) {
 		if ( $(this).is(':checked' ) ) {
 			$('.restriction-options-post-container').removeClass('hide-setting');
 			$('.restriction-options-page-container').removeClass('hide-setting');
+			$('.restriction-options-lead-in-elements').removeClass('hide-setting');
+			$('.custom-excerpt-length').addClass('hide-setting');
 		} else {
 			$('.restriction-options-post-container').addClass('hide-setting');
 			$('.restriction-options-page-container').addClass('hide-setting');
+			$('.restriction-options-lead-in-elements').addClass('hide-setting');
+			$('.custom-excerpt-length').removeClass('hide-setting');
 		}
 		
 	});

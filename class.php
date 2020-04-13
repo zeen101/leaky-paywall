@@ -310,12 +310,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 				$post_container = $settings['js_restrictions_post_container'];
 				$page_container = $settings['js_restrictions_page_container'];
+				$lead_in_elements = $settings['lead_in_elements'];
 
 				wp_localize_script( 'leaky_paywall_cookie_js', 'leaky_paywall_cookie_ajax',
 		            array( 
 		            	'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
 		            	'post_container'	=> $post_container,
-		            	'page_container'	=> $page_container
+		            	'page_container'	=> $page_container,
+		            	'lead_in_elements'	=> $lead_in_elements
 		             ) 
 		        );
 			}
@@ -422,6 +424,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'enable_js_cookie_restrictions' => 'off',
 				'js_restrictions_post_container' => 'article .entry-content',
 				'js_restrictions_page_container' => 'article .entry-content',
+				'lead_in_elements'				=> 2,
 				'bypass_paywall_restrictions' => array( 'administrator' ),
 				'restrictions' 	=> array(
 					'post_types' => array(
@@ -549,18 +552,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					if ( isset( $_POST['page_for_profile'] ) ) {
 						$settings['page_for_profile'] = absint( $_POST['page_for_profile'] );
 					}
-
-					if ( isset( $_POST['custom_excerpt_length'] ) ) {
-						
-						if ( strlen( $_POST['custom_excerpt_length'] ) > 0 ) {
-							$settings['custom_excerpt_length'] = intval( $_POST['custom_excerpt_length'] );
-						} else {	
-							$settings['custom_excerpt_length'] = '';
-						}
-						
-					}
-
-
 						
 					if ( !empty( $_REQUEST['login_method'] ) )
 						$settings['login_method'] = $_REQUEST['login_method'];
@@ -687,6 +678,26 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 						$settings['bypass_paywall_restrictions'][] = 'administrator';
 					} else {
 						$settings['bypass_paywall_restrictions'] = array( 'administrator' );
+					}
+
+					if ( isset( $_POST['custom_excerpt_length'] ) ) {
+						
+						if ( strlen( $_POST['custom_excerpt_length'] ) > 0 ) {
+							$settings['custom_excerpt_length'] = intval( $_POST['custom_excerpt_length'] );
+						} else {	
+							$settings['custom_excerpt_length'] = '';
+						}
+						
+					}
+
+					if ( isset( $_POST['lead_in_elements'] ) ) {
+						
+						if ( strlen( $_POST['lead_in_elements'] ) > 0 ) {
+							$settings['lead_in_elements'] = intval( $_POST['lead_in_elements'] );
+						} else {	
+							$settings['lead_in_elements'] = '';
+						}
+						
 					}
 
 					if ( isset( $_POST['js_restrictions_post_container'] ) ) {
@@ -934,16 +945,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
 	                                <p class="description"><?php _e( 'Page a subscriber is redirected to after they subscribe.', 'leaky-paywall' ); ?></p>
-	                                </td>
-	                            </tr>
-
-	                            <tr>
-	                                <th><?php _e( 'Custom Excerpt Length', 'leaky-paywall' ); ?></th>
-	                                <td>
-										<input type="number" id="custom_excerpt_length" class="small-text" name="custom_excerpt_length" value="<?php echo esc_attr( $settings['custom_excerpt_length'] ); ?>">
-	                                    <p class="description">
-	                                    	<?php _e( "Amount of content (in characters) to show before displaying the subscribe nag. If nothing is entered then the full excerpt is displayed.", 'leaky-paywall' ); ?>
-	                                    </p>	
 	                                </td>
 	                            </tr>
 	                           
@@ -1580,7 +1581,19 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 		                        <tr class="restriction-options">
 	                                <th><?php _e( 'Alternative Restriction Handling', 'leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php _e( 'Only enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying on your site.' ); ?></td>
+	                                <td>
+	                                	<input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php _e( 'Only enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying on your site.' ); ?>
+
+	                                	<?php if ( $this->check_for_caching() && $settings['enable_js_cookie_restrictions'] != 'on' ) {
+	                                		?>
+	                                		<div class="notice-info notice">
+		                                		<p><strong>We noticed your site might use caching.</strong></p>
+		                                		<p> We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.<br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+		                                	</div>
+	                                		<?php 
+	                                	} ?>
+	                                	
+	                                </td>
 	                            </tr>
 
 	                            <tr class="restriction-options-post-container <?php echo $settings['enable_js_cookie_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
@@ -1596,6 +1609,26 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <td>
 	                                	<input type="text" id="js_restrictions_page_container" class="large-text" name="js_restrictions_page_container" value="<?php echo stripcslashes( $settings['js_restrictions_page_container'] ); ?>" /> 
 	                                	<p class="description"><?php _e( 'CSS selector of the container that contains the content on a page.' ); ?></p>
+	                                </td>
+	                            </tr>
+
+	                            <tr class="restriction-options-lead-in-elements <?php echo $settings['enable_js_cookie_restrictions'] != 'on' ? 'hide-setting' : ''; ?>">
+	                                <th><?php _e( 'Lead In Elements', 'leaky-paywall' ); ?></th>
+	                                <td>
+										<input type="number" id="lead_in_elements" class="small-text" name="lead_in_elements" value="<?php echo esc_attr( $settings['lead_in_elements'] ); ?>">
+	                                    <p class="description">
+	                                    	<?php _e( "Number of HTML elements (paragraphs, images, etc.) to show before displaying the subscribe nag.", 'leaky-paywall' ); ?>
+	                                    </p>	
+	                                </td>
+	                            </tr>
+
+	                            <tr class="custom-excerpt-length <?php echo $settings['enable_js_cookie_restrictions'] == 'on' ? 'hide-setting' : ''; ?>">
+	                                <th><?php _e( 'Custom Excerpt Length', 'leaky-paywall' ); ?></th>
+	                                <td>
+										<input type="number" id="custom_excerpt_length" class="small-text" name="custom_excerpt_length" value="<?php echo esc_attr( $settings['custom_excerpt_length'] ); ?>">
+	                                    <p class="description">
+	                                    	<?php _e( "Amount of content (in characters) to show before displaying the subscribe nag. If nothing is entered then the full excerpt is displayed.", 'leaky-paywall' ); ?>
+	                                    </p>	
 	                                </td>
 	                            </tr>
 
@@ -2447,6 +2480,42 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				</div>
 				<?php
 			}
+		}
+
+		/**
+		 * Check if the current site has a caching plugin or known managed hosting setup
+		 *
+		 * @since 4.14.0
+		 *
+		 * @param boolean
+		 */
+		public function check_for_caching() 
+		{
+
+			$found = false;
+
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+			$checks = array(
+				'wp-rocket/wp-rocket.php',
+				'litespeed-cache/litespeed-cache.php',
+				'wp-fastest-cache/wpFastestCache.php',
+				'w3-total-cache/w3-total-cache.php',
+				'wp-optimize/wp-optimize.php',
+				'autoptimize/autoptimize.php',
+				'cache-enabler/cache-enabler.php',
+				'wp-super-cache/wp-cache.php',
+				'hummingbird-performance/wp-hummingbird.php'
+			);
+
+			foreach( $checks as $check ) {
+				if ( is_plugin_active( $check ) ) {
+					$found = true;
+				}
+			}
+				
+			return $found;
+			
 		}
 		
 		/**

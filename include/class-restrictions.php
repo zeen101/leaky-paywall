@@ -81,7 +81,6 @@ class Leaky_Paywall_Restrictions {
 
 		echo json_encode( $this->get_subscribe_nag() );
 		do_action( 'leaky_paywall_is_restricted_content' );
-
 		exit();
 
 	}
