@@ -66,6 +66,9 @@ class LP_Transaction_Post_Type {
         $level_id = esc_attr( get_post_meta( $post->ID, '_level_id', true ) );
         $level = get_leaky_paywall_subscription_level( $level_id );
 
+        $gateway = esc_attr( get_post_meta( $post->ID, '_gateway', true ) );
+        $gateway_txn_id = esc_attr( get_post_meta( $post->ID, '_gateway_txn_id', true ) );
+
         wp_nonce_field( 'lp_transaction_meta_box_nonce', 'meta_box_nonce' ); 
         ?>
         <table class="form-table">
@@ -100,9 +103,27 @@ class LP_Transaction_Post_Type {
 						<label for="apc_box1_description">Gateway </label>
 					</th>
 					<td>
-                        <?php echo esc_attr( get_post_meta( $post->ID, '_gateway', true ) ); ?>
+                        <?php echo $gateway; ?>
 					</td>
 				</tr>
+
+                <?php 
+                    if ( $gateway_txn_id && $gateway == 'stripe' ) {
+                        ?>
+                        <tr valign="top">
+                            <th scope="row">
+                                <label for="apc_box1_description">Gateway Transaction ID</label>
+                            </th>
+                            <td>
+                                <a target="_blank" href="https://dashboard.stripe.com/payments/<?php echo $gateway_txn_id; ?>">
+                                    <?php echo $gateway_txn_id; ?>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php       
+                    }
+                ?>
+
                 <tr valign="top">
 					<th scope="row">
 						<label for="apc_box1_description">Level ID </label>
@@ -129,7 +150,7 @@ class LP_Transaction_Post_Type {
 				</tr>
                 <tr valign="top">
                     <th scope="row">
-                        <label for="apc_box1_description">Is Recurring </label>
+                        <label for="apc_box1_description">Is Renewal Payment</label>
                     </th>
                     <td>
                         <?php echo get_post_meta( $post->ID, '_is_recurring', true ) ? 'yes' : 'no'; ?>

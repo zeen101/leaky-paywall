@@ -65,6 +65,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$existing_customer = false;
 		$subscription = '';
 
+		$stripe_txn_id = '';
 		$settings = get_leaky_paywall_settings();
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 		$level = get_leaky_paywall_subscription_level( $this->level_id );
@@ -207,6 +208,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$charge = \Stripe\Charge::create( apply_filters( 'leaky_paywall_process_stripe_payment_charge_array', $charge_array ) );
 
+				$stripe_txn_id = $charge->id;
+				
 			}
 
 		} catch ( Exception $e ) {
@@ -220,6 +223,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		if ( !$customer_id ) {
 			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
+		}
+
+		$charges = $cu->charges( array('limit' => '1') );
+
+		if ( isset( $charges->data[0]->id ) ) {
+			$stripe_txn_id = $charges->data[0]->id;
 		}
 
 		$gateway_data = array(
@@ -236,7 +245,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
 			'plan' 				=> $this->plan_id,
 			'recurring'			=> $this->recurring,
-			'currency'			=> $this->currency
+			'currency'			=> $this->currency,
+			'payment_gateway_txn_id' => $stripe_txn_id
 		);
 
 		do_action( 'leaky_paywall_stripe_signup', $gateway_data );
