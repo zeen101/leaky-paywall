@@ -331,6 +331,7 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 			$user = wp_get_current_user();
 		}
 
+		$settings = get_leaky_paywall_settings();
 		$mode = leaky_paywall_get_current_mode();
 		$site = leaky_paywall_get_current_site();
 		$unexpired = false;
@@ -356,6 +357,16 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 		if ( !is_user_logged_in() ) {
 			$has_access = false;
 		}
+
+ 		$roles = (array) $user->roles;
+
+ 		foreach( $roles as $role ) {
+
+ 			if ( in_array( $role, $settings['bypass_paywall_restrictions'] ) ) {
+ 				$has_access = true;
+ 			}
+
+ 		}
 
 		return apply_filters( 'leaky_paywall_user_has_access', $has_access, $user );
 		
