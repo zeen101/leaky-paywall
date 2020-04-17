@@ -513,15 +513,13 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 					$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Subscription Has Been Canceled', 'leaky-paywall' ) . '</h2>';
 					$results .= '<p>' . sprintf( __( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 				} else {
-					
-					if ( in_array( 'administrator', $user->roles ) ) {
-						$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'You are an admin and can see all content.', 'leaky-paywall' ) . '</h2>';
+
+					if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
+						$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your user role can see all content.', 'leaky-paywall' ) . '</h2>';
 					} else {
 						$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Account is Not Currently Active', 'leaky-paywall' ) . '</h2>';
 						$results .= '<p>' . sprintf( __( 'To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 					}
-
-					
 					
 				}
 

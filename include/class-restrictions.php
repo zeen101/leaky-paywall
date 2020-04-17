@@ -592,23 +592,16 @@ class Leaky_Paywall_Restrictions {
 	public function user_role_can_bypass_paywall() 
 	{
 
-		$settings = get_leaky_paywall_settings();
-
 		if ( !is_user_logged_in() ) {
 			return false;
-		}	
+		}
 
 		$user = wp_get_current_user();
- 		$roles = (array) $user->roles;
 
- 		foreach( $roles as $role ) {
-
- 			if ( in_array( $role, $settings['bypass_paywall_restrictions'] ) ) {
- 				return true;
- 			}
-
- 		}
-
+		if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
+			return true;
+		}
+ 		
  		return false;
 
 	}

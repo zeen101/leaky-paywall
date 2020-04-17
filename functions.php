@@ -358,19 +358,39 @@ if ( !function_exists( 'leaky_paywall_user_has_access' ) ) {
 			$has_access = false;
 		}
 
- 		$roles = (array) $user->roles;
-
- 		foreach( $roles as $role ) {
-
- 			if ( in_array( $role, $settings['bypass_paywall_restrictions'] ) ) {
- 				$has_access = true;
- 			}
-
- 		}
+		if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
+			$has_access = true;
+		}
 
 		return apply_filters( 'leaky_paywall_user_has_access', $has_access, $user );
 		
 	}
+
+}
+
+/**
+ * Determine if a user has access based on their user role. 
+ *
+ * @since 4.14.5
+ *
+ * @param object $user object from WordPress database
+ * @return bool true if the user has access based on their role or false they do not
+ */
+function leaky_paywall_user_can_bypass_paywall_by_role( $user ) {
+
+	$settings = get_leaky_paywall_settings();
+	$roles = (array) $user->roles;
+	$can_bypass = false;
+
+	foreach( $roles as $role ) {
+
+		if ( in_array( $role, $settings['bypass_paywall_restrictions'] ) ) {
+			$can_bypass = true;
+		}
+
+	}
+
+	return $can_bypass;
 
 }
 
