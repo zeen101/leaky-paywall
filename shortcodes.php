@@ -914,8 +914,13 @@ add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' )
 function leaky_paywall_account_shortcode( $atts, $content = null ) {
 	ob_start();
 
-	leaky_paywall_get_template( 'shortcode-account.php' );
+	if ( is_user_logged_in() ) {
+		leaky_paywall_get_template( 'shortcode-account.php' );
+	} else {
+		echo do_shortcode('[leaky_paywall_login]');
+	}
 
+	
 	$display = ob_get_clean();
 
 	return $display;

@@ -205,7 +205,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 						echo '<h3 class="leaky-paywall-account-section-title">Your user role can see all content.</h3>';
 					} else {
 						?>
-						<h3 class="leaky-paywall-account-section-title">Your plan</h3>
+						<h3 class="leaky-paywall-account-section-title your-plan-title">Your plan</h3>
 
 						<table class="leaky-paywall-account-table leaky-paywall-account-plan-table">
 							<tbody>
