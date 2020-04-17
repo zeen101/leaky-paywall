@@ -894,19 +894,106 @@ function do_leaky_paywall_register_form( $atts ) {
 add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' );
 
 
-function bartag_func( $atts ) {
-    $a = shortcode_atts( array(
-        'foo' => 'something',
-        'bar' => 'something else',
-    ), $atts );
+/**
+ * Profile Editor Shortcode
+ *
+ * Outputs the Leaky Paywall Profile Editor to allow users to amend their details from the
+ * front-end. This function uses the EDD templating system allowing users to
+ * override the default profile editor template. The profile editor template is located
+ * under templates/profile-editor.php, however, it can be altered by creating a
+ * file called profile-editor.php in the edd_template directory in your active theme's
+ * folder. Please visit the EDD Documentation for more information on how the
+ * templating system is used.
+ *
+ * @since 4.14.5
+ *
+ * @param $atts Shortcode attributes
+ * @param null $content
+ * @return string Output generated from the profile editor
+ */
+function leaky_paywall_account_shortcode( $atts, $content = null ) {
+	ob_start();
 
-    ob_start(); ?>
-    
-    	<h2>html goes here</h2>
-    
-    <?php  $content = ob_get_contents();
-	ob_end_clean();
+	leaky_paywall_get_template( 'shortcode-account.php' );
 
-	return $content; 
+	$display = ob_get_clean();
+
+	return $display;
 }
-add_shortcode( 'bartag', 'bartag_func' );
+add_shortcode( 'leaky_paywall_account', 'leaky_paywall_account_shortcode' );
+
+/**
+ * Process a user editing their profile
+ * 
+ * @since 4.14.5
+ *
+ */
+add_action( 'init', 'leaky_paywall_process_profile_edit' );
+
+function leaky_paywall_process_profile_edit() {
+
+	if ( 
+	    ! isset( $_POST['leaky_paywall_profile_edit_nonce'] ) 
+	    || ! wp_verify_nonce( $_POST['leaky_paywall_profile_edit_nonce'], 'leaky_paywall_profile_edit' ) 
+	) {
+	 return;
+	 
+	}
+
+	$user = wp_get_current_user();
+
+	try {
+
+		$args = array(
+			'ID' 			=> $user->ID,
+			'user_login' 	=> $user->user_login,
+			'display_name' 	=> $user->display_name,	
+			'user_email' 	=> $user->user_email,	
+		);
+		
+		if ( isset( $_POST['displayname'] ) ) {
+			$args['display_name'] = sanitize_text_field( $_POST['displayname'] );
+		}
+
+		if ( isset( $_POST['firstname'] ) ) {
+			$args['first_name'] = sanitize_text_field( $_POST['firstname'] );
+		}
+
+		if ( isset( $_POST['lastname'] ) ) {
+			$args['last_name'] = sanitize_text_field( $_POST['lastname'] );
+		}
+		
+		if ( isset( $_POST['email'] ) ) {
+			if ( is_email( $_POST['email'] ) ) {
+				$args['user_email'] = sanitize_text_field( $_POST['email'] );
+			} else {
+				throw new Exception( __( 'Invalid email address.', 'leaky-paywall' ) );
+			}
+		}
+		
+		if ( !empty( $_POST['password1'] ) && !empty( $_POST['password2'] ) ) {
+			if ( $_POST['password1'] === $_POST['password2'] ) {
+				wp_set_password( $_POST['password1'], $user->ID );
+			} else {
+				throw new Exception( __( 'Passwords do not match.', 'leaky-paywall' ) );
+			}
+		}
+		
+		$user_id = wp_update_user( $args );
+								
+		if ( is_wp_error( $user_id ) ) {
+			throw new Exception( $user_id->get_error_message() );
+		} else {
+			$user = get_userdata( $user_id );		
+			do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args, $user );
+		}		
+		
+	}
+	catch ( Exception $e ) {
+		$results = '<div class="leaky_paywall_message error"><p class="error">' . $e->getMessage() . '</p></div>';
+	}
+
+	wp_redirect( home_url() . $_POST['_wp_http_referer'] );
+	exit();
+
+}

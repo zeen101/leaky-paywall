@@ -70,6 +70,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once( 'shortcodes.php' );
 		require_once( 'subscriber-table.php' );
 		require_once( 'metaboxes.php' );
+		require_once( 'include/template-functions.php' );
 		require_once( 'include/admin/dashboard-widgets.php' );
 		require_once( 'include/admin/lp-transaction.php' );
 

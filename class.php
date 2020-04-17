@@ -132,6 +132,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					|| ( !empty( $settings['page_for_profile'] ) && is_page( $settings['page_for_profile'] )  )
 				) {
 					return true;
+				} else if ( isset( $_GET['lp_cancel'] ) ) {
+					return true;
 				} else {
 					return false;
 				}
