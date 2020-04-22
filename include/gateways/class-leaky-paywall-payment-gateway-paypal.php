@@ -633,6 +633,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
 						update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+		                leaky_paywall_set_payment_transaction_id( $transaction_id, $_REQUEST['txn_id'] );
 					}
 
 				} else {
@@ -641,6 +642,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					// recurring subscription uses txn_type subscr_signup
 					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
 						$transaction_id = $this->save_data_to_transaction( $email );
+						leaky_paywall_set_payment_transaction_id( $transaction_id, $_REQUEST['txn_id'] );
 					}
 					
 				}

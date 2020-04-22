@@ -3577,3 +3577,17 @@ function leaky_paywall_get_transaction_id_from_email( $email ) {
 
 	return $transaction_id;
 }
+
+/**
+ * Sets a Gateway Transaction ID in post meta for the given Transaction ID
+ *
+ * @since  4.14.5
+ * @param int $transaction_id Transaction ID
+ * @param string $gateway_transaction_id The transaction ID from the gateway
+ * 
+ */
+function leaky_paywall_set_payment_transaction_id( $transaction_id, $gateway_transaction_id ) {
+
+	update_post_meta( $transaction_id, '_gateway_txn_id', $gateway_transaction_id );
+
+}
