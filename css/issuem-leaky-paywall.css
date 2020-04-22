@@ -224,3 +224,81 @@
 #leaky-paywall-login-form #loginform .input {
 	width: 98%;
 }
+
+#leaky-paywall-account-wrapper {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-navigation-wrapper {
+	width: 30%;
+	background: #000;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-navigation-wrapper ul {
+	margin: 0;
+	padding: 0;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-navigation-wrapper ul li {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-navigation-wrapper a {
+	color: #fff;
+	padding: 10px 10px 10px 20px;
+	margin: 0;
+	text-decoration: none;
+	display: block;
+	background: #000;
+	color: #929496;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-navigation-wrapper a.active {
+	color: #fff;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-navigation-wrapper a:hover {
+	 background: #666;
+	 color: #fff;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-details-wrapper {
+	width: 70%;
+	border: 1px solid #ddd;
+	padding: 20px;
+}
+
+#leaky-paywall-account-wrapper .leaky-paywall-account-page-title {
+	margin-top: 0;
+}
+
+.leaky-paywall-account-table {
+	width: 100%;
+	border-collapse: collapse;
+	border-spacing: 0;
+	margin-bottom: 20px;
+}
+
+.leaky-paywall-account-table tr {
+	border-bottom: 1px solid #d9dadc;
+}
+
+.leaky-paywall-account-table td {
+	width: 50%;
+}
+
+.leaky-paywall-account-table td.profile-table-label {
+	color: #9E9E9E;
+}
+
+.leaky-paywall-account-table td.profile-table-value {
+	color: #000;
+}
+
+#leaky-paywall-account-edit-profile-form input {
+	width: 300px;
+}
