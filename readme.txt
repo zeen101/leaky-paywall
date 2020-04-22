@@ -2,7 +2,7 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
 Tested up to: 5.4
-Stable tag: 4.14.4
+Stable tag: 4.14.5
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -92,6 +92,14 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.14.5 =
+* Add template for new my account page shortcode
+* Add new role check to has_access function
+* Add leaky_paywall_user_can_bypass_paywall_by_role() and update messaging on my account page for those that can
+* Save gateway transaction id on new transactions
+* Add responsive styling to subscribe cards
+* Fix index error of password when a user is already logged in during registration
 
 = 4.14.4 =
 * Add lead in setting for lead in when using alternative restriction handling
