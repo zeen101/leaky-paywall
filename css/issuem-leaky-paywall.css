@@ -33,13 +33,14 @@
 }
 
 .leaky_paywall_subscription_options {
-	display: inline-table;
-	border-spacing: .75em;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
 }
 
 .leaky_paywall_subscription_option {
-	display: table-cell;
-	width: 10em;
+	margin-bottom: 1em;
+	width: 32%;
 	padding: 1em;
     border: .25em solid #e3e3e3;
     -webkit-border-radius: .25em;
@@ -50,7 +51,20 @@
 	font-size: 1em;
     line-height: 1.625;
     text-align: center;
+    box-sizing: border-box;
 }
+
+@media (max-width: 990px) { 
+	.leaky_paywall_subscription_option {
+		width: 48%;
+	}
+}
+
+@media (max-width: 600px) { 
+	.leaky_paywall_subscription_option {
+		width: 95%;
+	}
+ }
 
 .leaky_paywall_subscription_option.current-level {
     border: 2px solid #007711;
