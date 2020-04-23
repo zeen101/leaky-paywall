@@ -1596,11 +1596,11 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		<table class="issuem-leaky-paywall-subscription-level-row-table leaky-paywall-table <?php echo $deleted; ?>">
 			<tr>
 				<th>
-					<label for="level-name-<?php echo $row_key; ?>"><?php _e( 'Subscription Name', 'leaky-paywall' ); ?></label>
-					<p class="description"><?php _e( 'Subscription ID: ', 'leaky-paywall' ); ?><?php echo $row_key; ?></p>
+					<label for="level-name-<?php echo $row_key; ?>"><?php _e( 'Subscription Level Name', 'leaky-paywall' ); ?></label>
+					<p class="description"><?php _e( 'Level ID: ', 'leaky-paywall' ); ?><?php echo $row_key; ?></p>
 				</th>
 				<td>
-					<input id="level-name-<?php echo $row_key; ?>" type="text" name="levels[<?php echo $row_key; ?>][label]" value="<?php echo htmlspecialchars( stripcslashes( $level['label'] ) ); ?>" />
+					<input id="level-name-<?php echo $row_key; ?>" type="text" class="regular-text" name="levels[<?php echo $row_key; ?>][label]" value="<?php echo htmlspecialchars( stripcslashes( $level['label'] ) ); ?>" />
 					<span class="delete-x delete-subscription-level">&times;</span>
 					<input type="hidden" class="deleted-subscription" name="levels[<?php echo $row_key; ?>][deleted]" value="<?php echo $level['deleted']; ?>">
 				</td>
@@ -1674,7 +1674,7 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 					<label for="level-price-<?php echo $row_key; ?>"><?php _e( 'Subscription Price', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
-					<input id="level-price-<?php echo $row_key; ?>" type="text" class="small-text" name="levels[<?php echo $row_key; ?>][price]" value="<?php echo stripcslashes( $level['price'] ); ?>" />
+					<input id="level-price-<?php echo $row_key; ?>" type="text" style="width: 100px;" name="levels[<?php echo $row_key; ?>][price]" value="<?php echo stripcslashes( $level['price'] ); ?>" />
 					<p class="description"><?php _e( '0 for Free Subscriptions', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
