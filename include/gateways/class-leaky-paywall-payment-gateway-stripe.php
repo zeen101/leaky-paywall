@@ -339,6 +339,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		            case 'customer.subscription.deleted' :
 		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
 		                break;
+
+		            case 'payment_intent.canceled' :
+		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
+		                break;
 		               
 		            default:
 		            	break;
