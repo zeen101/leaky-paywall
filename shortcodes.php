@@ -471,9 +471,9 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
 
 								if ( strcasecmp('deactivated', $status) == 0 ) {
-									$data_label = 'Update Credit Card Details & Restart Subscription';
+									$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
 								} else {
-									$data_label = 'Update Credit Card Details';
+									$data_label = __('Update Credit Card Details','leaky-paywall');
 								}
 
 								$payment_form .= '<form action="" method="POST">
