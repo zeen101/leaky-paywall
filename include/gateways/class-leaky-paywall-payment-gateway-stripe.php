@@ -630,7 +630,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		  	  var subButton = document.getElementById('leaky-paywall-submit');
 
 		  	  subButton.disabled = true;
-		  	  subButton.innerHTML = '<?php _e( 'Processing... Please Wait', 'leaky-paywall' ) ?>';
+		  	  subButton.innerHTML = '<?php echo __( 'Processing... Please Wait', 'leaky-paywall' ) ?>';
 
 		  	  stripe.createToken(card).then(function(result) {
 		  	    if (result.error) {

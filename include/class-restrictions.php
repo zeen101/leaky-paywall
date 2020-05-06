@@ -27,7 +27,7 @@ class Leaky_Paywall_Restrictions {
 		?>
 			<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 9999;">
 				<?php 
-				echo '<pre>Viewed Content: ';
+				echo '<pre>' . __('Viewed Content:','leaky-paywall') . ' ';
 				print_r( $this->get_content_viewed_by_user() );
 				echo '</pre>';
 				?>
