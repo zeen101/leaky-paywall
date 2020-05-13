@@ -901,6 +901,52 @@ function do_leaky_paywall_register_form( $atts ) {
 }
 add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' );
 
+function do_leaky_paywall_subscriber_shortcode( $atts, $content = null ) {
+
+	$a = shortcode_atts( array(
+	    'levels' => '',
+	), $atts );
+
+	if ( !is_user_logged_in() ) {
+		$content = '';
+	}
+
+	$user = wp_get_current_user();
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+
+	if ( !is_numeric( $level_id ) ) {
+		$content = '';
+	}
+
+	if ( !leaky_paywall_user_has_access( $user ) ) {
+		$content = '';
+	}
+
+	if ( !empty( $a['levels'] ) ) {
+
+		$match = false;
+		$shortcode_levels = explode(',', $a['levels'] );
+
+		foreach( $shortcode_levels as $level ) {
+			if ( $level == $level_id ) {
+				$match = true;
+				break;
+			}
+		}
+
+		if ( !$match ) {
+			$content = '';
+		}
+
+	}
+
+	return $content; 
+}
+add_shortcode( 'leaky_paywall_subscriber', 'do_leaky_paywall_subscriber_shortcode' );
 
 /**
  * Profile Editor Shortcode
