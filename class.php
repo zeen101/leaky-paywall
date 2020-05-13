@@ -1300,7 +1300,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                        <table id="leaky_paywall_paypal_options" class="gateway-options form-table">
 		                        
 			                        <tr><th colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'leaky-paywall' ); ?></h3></th></tr>
-		                        	
+
 		                        	<tr>
 		                                <th><?php _e( 'Paypal Button Location', 'leaky-paywall' ); ?></th>
 		                                <td>
@@ -1312,7 +1312,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                                <th><?php _e( 'Merchant ID', 'leaky-paywall' ); ?></th>
 		                                <td>
 		                                	<input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_email'] ) ); ?>" />
-		                                	<p class="description"><?php _e( 'Use PayPal Email Address in lieu of Merchant ID', 'leaky-paywall' ); ?></p>
+		                                	<p class="description"><?php _e( 'Need help setting up PayPal?', 'leaky-paywall' ); ?> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/213-how-to-set-up-paypal-as-a-payment-gateway"><?php _e( 'See our guide.', 'leaky-paywall' ); ?></a></p>
 		                                </td>
 		                            </tr>
 		                        
@@ -1320,7 +1320,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                                <th><?php _e( 'API Username', 'leaky-paywall' ); ?></th>
 		                                <td>
 		                                	<input type="text" id="paypal_live_api_username" class="regular-text" name="paypal_live_api_username" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_live_api_username'] ) ); ?>" />
-		                                	<p class="description"><?php _e( 'At PayPal, see: Profile &rarr; My Selling Tools &rarr; API Access &rarr; Update &rarr; View API Signature (or Request API Credentials).', 'leaky-paywall' ); ?></p>
 		                                </td>
 		                            </tr>
 		                        
@@ -1363,7 +1362,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                                <th><?php _e( 'Sandbox API Username', 'leaky-paywall' ); ?></th>
 		                                <td>
 		                                	<input type="text" id="paypal_sand_api_username" class="regular-text" name="paypal_sand_api_username" value="<?php echo htmlspecialchars( stripcslashes( $settings['paypal_sand_api_username'] ) ); ?>" />
-		                                	<p class="description"><?php _e( 'At PayPal, see: Profile &rarr; My Selling Tools &rarr; API Access &rarr; Update &rarr; View API Signature (or Request API Credentials).', 'leaky-paywall' ); ?></p>
 		                                </td>
 		                            </tr>
 		                            
@@ -2477,7 +2475,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				<div id="missing-paypal-settings" class="update-nag">
 					<?php
 					$settings_link = esc_url( add_query_arg( array( 'page' => 'issuem-leaky-paywall', 'tab' => 'payments' ), admin_url( 'admin.php' ) ) );
-					printf( __( 'You must complete your PayPal setup to continue using the Leaky Paywall Plugin. %s.', 'leaky-paywall' ), '<a class="btn" href="' . $settings_link . '">' . __( 'Complete Your Setup Now', 'leaky-paywall' ) . '</a>' );
+					printf( __( 'Please complete your PayPal setup for Leaky Paywall. %s.', 'leaky-paywall' ), '<a class="btn" href="' . $settings_link . '">' . __( 'Complete Your Setup Now', 'leaky-paywall' ) . '</a>' );
 					?>
 				</div>
 				<?php
