@@ -195,7 +195,7 @@ function leaky_paywall_validate_user_data() {
 
 	if ( ! is_user_logged_in() ) {
 		$user['id']					= 0;
-		$user['login']				= sanitize_text_field( $_POST['username'] );
+		$user['login']				= $settings['remove_username_field'] == 'off' ? sanitize_text_field( $_POST['username'] ) : sanitize_text_field( $_POST['email_address'] );
 		$user['password']			= sanitize_text_field( $_POST['password'] );
 		$user['confirm_password']	= sanitize_text_field( $_POST['confirm_password'] );
 		$user['email']				= sanitize_text_field( $_POST['email_address'] );
@@ -227,10 +227,13 @@ function leaky_paywall_validate_user_data() {
 		leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky-paywall' ), 'register' );
 	}
 	
-	if ( ! validate_username( $user['login'] ) ) {
-		// invalid username
-		leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky-paywall' ), 'register' );
+	if ( $settings['remove_username_field'] == 'off' ) {
+		if ( ! validate_username( $user['login'] ) ) {
+			// invalid username
+			leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky-paywall' ), 'register' );
+		}
 	}
+	
 	
 	if ( ! is_user_logged_in() && empty( $user['password'] ) ) {
 		// password is empty

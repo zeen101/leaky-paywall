@@ -796,10 +796,18 @@ function do_leaky_paywall_register_form( $atts ) {
 
 			  <h3><?php printf( __( 'Account Details', 'leaky-paywall' ) ); ?></h3>
 
-			  <p class="form-row username">
-			    <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
-			  </p>
+			  <?php 
+			  	if ( $settings['remove_username_field'] == 'off' ) {
+			  		?>
+			  		<p class="form-row username">
+			  		  <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+			  		  <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
+			  		</p>
+			  		<?php 
+			  	}
+			  ?>
+
+			  
 			  
 			  <?php if ( !is_user_logged_in() ) { ?>
 

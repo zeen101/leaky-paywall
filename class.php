@@ -384,6 +384,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'subscribe_upgrade_message'		=> __( 'You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'leaky-paywall' ),
 				'css_style'						=> 'default',
 				'enable_user_delete_account'	=> 'off',
+				'remove_username_field'			=> 'off',
 				'site_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_name'						=> get_option( 'blogname' ), /* Site Specific */
 				'from_email'					=> get_option( 'admin_email' ), /* Site Specific */
@@ -567,12 +568,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					if ( !empty( $_REQUEST['css_style'] ) )
 						$settings['css_style'] = $_REQUEST['css_style'];
 
-					
-
-					if ( !empty( $_REQUEST['enable_user_delete_account'] ) )
+					if ( !empty( $_REQUEST['enable_user_delete_account'] ) ) {
 						$settings['enable_user_delete_account'] = $_REQUEST['enable_user_delete_account'];
-					else
+					} else {
 						$settings['enable_user_delete_account'] = 'off';
+					}
+
+					if ( !empty( $_REQUEST['remove_username_field'] ) ) {
+						$settings['remove_username_field'] = $_REQUEST['remove_username_field'];
+					} else {
+						$settings['remove_username_field'] = 'off';
+					}
 				}
 										
 				
@@ -981,9 +987,16 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 
 	                            <tr class="general-options">
+	                                <th><?php _e( 'User Account Creation', 'leaky-paywall' ); ?></th>
+	                                <td><input type="checkbox" id="remove_username_field" name="remove_username_field" <?php checked( 'on', $settings['remove_username_field'] ); ?> /> Remove the username field during registration and use their email address to generate an account username</td>
+	                            </tr>
+
+	                            <tr class="general-options">
 	                                <th><?php _e( 'User Account Deletion', 'leaky-paywall' ); ?></th>
 	                                <td><input type="checkbox" id="enable_user_delete_account" name="enable_user_delete_account" <?php checked( 'on', $settings['enable_user_delete_account'] ); ?> /> Allow users to delete their account from the My Profile page</td>
 	                            </tr>
+
+	                           
 
 	                            <?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
 
@@ -1100,7 +1113,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                        	    <td><textarea id="new_email_body" class="large-text" name="new_email_body" rows="10" cols="20"><?php echo htmlspecialchars( stripcslashes( $settings['new_email_body'] ) ); ?></textarea>
 		                        	    <p class="description"><?php _e( 'The email message that is sent to new subscribers.', 'leaky-paywall' ); ?></p>
 		                        	    <p class="description"><?php _e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
-		                        	    %blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
+		                        	    %blogname%, %sitename%, %username%, %useremail%, %password%, %firstname%, %lastname%, %displayname%</p>
 		                        	    </td>
 		                        	</tr>
 
