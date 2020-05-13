@@ -901,10 +901,17 @@ function do_leaky_paywall_register_form( $atts ) {
 }
 add_shortcode( 'leaky_paywall_register_form', 'do_leaky_paywall_register_form' );
 
+/**
+ * Shortcode to show/hide content to an active user, optionally filtered by a comma separated list of level ids
+ * 
+ * @since 4.14.6
+ *
+ */
 function do_leaky_paywall_subscriber_shortcode( $atts, $content = null ) {
 
 	$a = shortcode_atts( array(
 	    'levels' => '',
+	    'message' => ''
 	), $atts );
 
 	if ( !is_user_logged_in() ) {
@@ -944,9 +951,51 @@ function do_leaky_paywall_subscriber_shortcode( $atts, $content = null ) {
 
 	}
 
+	if ( !empty( $a['message'] ) && !$content ) {
+		$content = '<p>' . $a['message'] . '</p>';
+	}
+
 	return $content; 
 }
 add_shortcode( 'leaky_paywall_subscriber', 'do_leaky_paywall_subscriber_shortcode' );
+
+
+/**
+ * Shortcode to show content to a user who isn't an active subscriber
+ * 
+ * @since 4.14.6
+ *
+ */
+function do_leaky_paywall_not_subscriber_shortcode( $atts, $content = null ) {
+
+	$a = shortcode_atts( array(
+	    'levels' => '',
+	    'message' => ''
+	), $atts );
+
+	if ( !is_user_logged_in() ) {
+		return $content;
+	}
+
+	$user = wp_get_current_user();
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+
+	if ( !is_numeric( $level_id ) ) {
+		return $content;
+	}
+
+	if ( !leaky_paywall_user_has_access( $user ) ) {
+		return $content;
+	}
+
+	return;
+}
+
+add_shortcode( 'leaky_paywall_not_subscriber', 'do_leaky_paywall_not_subscriber_shortcode' );
 
 /**
  * Profile Editor Shortcode
