@@ -204,14 +204,15 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 			$response = wp_remote_get( esc_url_raw( add_query_arg( $api_params, ZEEN101_STORE_URL ) ), array( 'timeout' => 15, 'sslverify' => false ) );
 
 			// make sure the response came back okay
-			if ( is_wp_error( $response ) )
+			if ( is_wp_error( $response ) ) {
 				return false;
+			}
 	
 			// decode the license data
 			$license_data = json_decode( wp_remote_retrieve_body( $response ) );
 			
 			// $license_data->license will be either "deactivated" or "failed"
-			if( $license_data->license == 'deactivated' ) {
+			if ( $license_data->license == 'deactivated' || $license_data->license == 'failed' ) {
 				
 				unset( $settings['license_key'] );
 				unset( $settings['license_status'] );
