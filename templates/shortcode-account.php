@@ -177,7 +177,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 			}
 			
 		} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
-			$cancel = __( 'You have canceled your subscription, but your account will remain active until your expiration date.', 'leaky-paywall' );
+			$cancel .= '<p>' . sprintf( __( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 		}
 
 		switch ( $action ) {
