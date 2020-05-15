@@ -38,7 +38,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 	    leaky_paywall_log( $user->user_email, 'credit card updated');
 
-	    if ( strcasecmp('deactivated', $status) == 0 ) {
+	    if ( strcasecmp('deactivated', $status) == 0 ) { // only runs if the user account is deactivated
 
 	    	$subs = \Stripe\Subscription::all(['customer' => $subscriber_id, 'status' => 'all']);
 
@@ -70,7 +70,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 		    	}
 		    }
 			
-	    	$update_card_success .= __( ' Your subscription has been restarted! Please refresh page to see updated account status.', 'leaky-paywall' );
+	    	$update_card_success .= __( ' Your subscription has been restarted!', 'leaky-paywall' );
 
 	    }
 
@@ -288,8 +288,6 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 			
 			case 'payment_info':
 
-
-
 				$payment_form = '';
 				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 				$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
@@ -332,7 +330,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				}
 				
 				?>
-				<h2 class="leaky-paywall-account-page-title">Your payment information</h2>
+				<h2 class="leaky-paywall-account-page-title"><?php _e( 'Your payment information', 'leaky-paywall' ); ?></h2>
 
 				<?php 
 					if ( $payment_form ) {

@@ -2154,6 +2154,8 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 		global $blog_id;
 		
 		$settings = get_leaky_paywall_settings();
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 		$current_level_ids = leaky_paywall_subscriber_current_level_ids();
 		
 		$results = apply_filters( 'leaky_paywall_subscription_options', '' );
@@ -2287,16 +2289,24 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$subscription_action = '';
 					$subscription_action .= '<div class="leaky_paywall_subscription_payment_options">';
 
-					//Don't show payment options if the users is currently subscribed to this level
+					//Don't show payment options if the users is currently subscribed to this level and it is a recurring level
 					if ( in_array( $level_id, $current_level_ids ) ) {
 						
 						$subscription_action .= '<div class="leaky_paywall_subscription_current_level"><span>';
 						$subscription_action .= __( 'Your Current Subscription', 'leaky-paywall' );
 						$subscription_action .= '</span></div>';
 
+						$status = get_user_meta( get_current_user_id(), '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+
 					} 
 
-					$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
+					if ( in_array( $level_id, $current_level_ids ) && 'on' == $level['recurring'] && $status == 'active' ) {
+						$subscription_action .= ''; // they already have an active recurring subscription to this level
+					} else {
+						$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
+					}
+
+					
 					$subscription_action .= '</div>';
 
 					$results .= apply_filters( 'leaky_paywall_subscription_options_subscription_action', $subscription_action, $level_id, $current_level_ids, $payment_options );
