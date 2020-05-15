@@ -17,6 +17,7 @@ $settings = get_leaky_paywall_settings();
 $mode = leaky_paywall_get_current_mode();
 $site = leaky_paywall_get_current_site();
 $subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 
 if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
@@ -101,7 +102,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				<a class="<?php echo $action == 'edit_profile' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=edit_profile">Edit Profile</a>
 			</li>
 
-			<?php if ( !leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
+			<?php if ( !leaky_paywall_user_can_bypass_paywall_by_role( $user ) && $plan ) {
 				?>
 				<li>
 					<a class="<?php echo $action == 'payment_info' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=payment_info">Payment Info</a>
