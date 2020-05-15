@@ -96,21 +96,21 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 	<div class="leaky-paywall-account-navigation-wrapper">
 		<ul class="leaky-paywall-account-menu">
 			<li>
-				<a class="<?php echo $action == 'overview' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>">Account Overview</a>
+				<a class="<?php echo $action == 'overview' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>"><?php _e( 'Account Overview', 'leaky-paywall' ); ?></a>
 			</li>
 			<li>
-				<a class="<?php echo $action == 'edit_profile' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=edit_profile">Edit Profile</a>
+				<a class="<?php echo $action == 'edit_profile' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=edit_profile"><?php _e( 'Edit Profile', 'leaky-paywall' ); ?></a>
 			</li>
 
 			<?php if ( !leaky_paywall_user_can_bypass_paywall_by_role( $user ) && $plan ) {
 				?>
 				<li>
-					<a class="<?php echo $action == 'payment_info' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=payment_info">Payment Info</a>
+					<a class="<?php echo $action == 'payment_info' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=payment_info"><?php _e( 'Payment Info', 'leaky-paywall' ); ?></a>
 				</li>
 				<?php 
 			} ?>
 			<li>
-				<a href="<?php echo wp_logout_url('/'); ?>">Logout</a>
+				<a href="<?php echo wp_logout_url('/'); ?>"><?php _e( 'Logout', 'leaky-paywall' ); ?></a>
 			</li>
 		</ul>
 	</div>
@@ -184,18 +184,18 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 		switch ( $action ) {
 			case 'overview':
 				?>
-				<h2 class="leaky-paywall-account-page-title">Account overview</h2>
+				<h2 class="leaky-paywall-account-page-title"><?php _e( 'Account overview', 'leaky-paywall' ); ?></h2>
 				
-				<h3 class="leaky-paywall-account-section-title">Profile</h3>
+				<h3 class="leaky-paywall-account-section-title"><?php _e( 'Profile', 'leaky-paywall' ); ?></h3>
 
 				<table class="leaky-paywall-account-table leaky-paywall-account-profile-table">
 					<tbody>
 						<tr>
-							<td class="profile-table-label">Name</td>
+							<td class="profile-table-label"><?php _e( 'Name', 'leaky-paywall' ); ?></td>
 							<td class="profile-table-value"><?php echo $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name; ?></td>
 						</tr>
 						<tr>
-							<td class="profile-table-label">Email</td>
+							<td class="profile-table-label"><?php _e( 'Email', 'leaky-paywall' ); ?></td>
 							<td class="profile-table-value"><?php echo $user->user_email; ?></td>
 						</tr>
 					</tbody>
@@ -206,16 +206,16 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 						echo '<h3 class="leaky-paywall-account-section-title">Your user role can see all content.</h3>';
 					} else {
 						?>
-						<h3 class="leaky-paywall-account-section-title your-plan-title">Your plan</h3>
+						<h3 class="leaky-paywall-account-section-title your-plan-title"><?php _e( 'Your plan', 'leaky-paywall' ); ?></h3>
 
 						<table class="leaky-paywall-account-table leaky-paywall-account-plan-table">
 							<tbody>
 								<tr>
-									<td class="profile-table-label">Name</td>
+									<td class="profile-table-label"><?php _e( 'Name', 'leaky-paywall' ); ?></td>
 									<td class="profile-table-value"><?php echo $level['label']; ?></td>
 								</tr>
 								<tr>
-									<td class="profile-table-label">Status</td>
+									<td class="profile-table-label"><?php _e( 'Status', 'leaky-paywall' ); ?></td>
 									<td class="profile-table-value"><?php echo esc_attr( $status_name ); ?></td>
 								</tr>
 								<tr>
@@ -223,11 +223,11 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 									<td class="profile-table-value"><?php echo $expires; ?></td>
 								</tr>
 								<tr>
-									<td class="profile-table-label">Has Access</td>
+									<td class="profile-table-label"><?php _e( 'Has Access', 'leaky-paywall' ); ?></td>
 									<td class="profile-table-value"><?php echo leaky_paywall_user_has_access() ? 'Yes' : 'No'; ?></td>
 								</tr>
 								<tr>
-									<td class="profile-table-label">Payment Method</td>
+									<td class="profile-table-label"><?php _e( 'Payment Method', 'leaky-paywall' ); ?></td>
 									<td class="profile-table-value"><?php echo $profile_payment; ?></td>
 								</tr>
 							</tbody>
@@ -239,7 +239,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 			case 'edit_profile':
 				?>
-				<h2 class="leaky-paywall-account-page-title">Edit your profile</h2>
+				<h2 class="leaky-paywall-account-page-title"><?php _e( 'Edit your profile', 'leaky-paywall' ); ?></h2>
 				
 				<form id="leaky-paywall-account-edit-profile-form" action="<?php the_permalink(); ?>" method="POST">
 					<p class="form-row">
