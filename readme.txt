@@ -1,8 +1,8 @@
 === Leaky Paywall for WordPress ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.4
-Stable tag: 4.14.5
+Tested up to: 5.4.1
+Stable tag: 4.14.6
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -92,6 +92,18 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.14.6 =
+* Add [leaky_paywall_subscriber] shortcode
+* Add [leaky_paywall_not_subscriber] shortcode
+* Add setting to remove username from registration form
+* Update PayPal setup information
+* Add stripe event for payment_intent.canceled
+* Update settings UI on subscription level settings
+* Hide subscribe button from active recurring subscribers on their level
+* Hide payment info on account profile from non-recurring subscribers
+* Update canceled wording
+* New translation added
 
 = 4.14.5 =
 * Add template for new my account page shortcode
