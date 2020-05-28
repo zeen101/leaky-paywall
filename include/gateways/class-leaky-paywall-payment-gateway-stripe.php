@@ -159,7 +159,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 							
 						}
 					} else {
-						$cu->subscriptions->create( array( 'plan' => $this->plan_id ) );
+						$subscription = $cu->subscriptions->create( array( 'plan' => $this->plan_id ) );
 					}
 					
 				} else {
@@ -179,6 +179,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 						);
 
 						$subscription = \Stripe\Subscription::create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array ) );
+
+						if ( $subscription->status == 'incomplete' ) {
+							leaky_paywall_errors()->add( 'stripe_error', __( 'Error Processing Payment. ', 'leaky-paywall' ) . 'Payment incomplete.', 'register' );
+							return;
+						}
+
 					}
 					
 				}
