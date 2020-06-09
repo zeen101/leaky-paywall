@@ -61,10 +61,9 @@ if (!function_exists('is_level_deleted') ) {
 
 	function is_level_deleted( $level_id ) {
 
-		$settings = get_leaky_paywall_settings();
-		$level = $settings["levels"][$level_id];
+		$level = get_leaky_paywall_subscription_level( $level_id );
 
-		if($level['deleted'] == 1) {
+		if ( isset( $level['deleted'] ) && $level['deleted'] == 1 ) {
 			return true;
 		}
 
@@ -2140,10 +2139,12 @@ if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 		
 		$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 		if ( isset( $settings['levels'][$level_id] ) ) {
-			return apply_filters( 'get_leaky_paywall_subscription_level', $settings['levels'][$level_id], $level_id );
+			$level = $settings['levels'][$level_id];
+		} else {
+			$level = false;
 		}
 		
-		return false;
+		return apply_filters( 'get_leaky_paywall_subscription_level', $level, $level_id );
 	}
 }
 

@@ -64,24 +64,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$paid   = false;
 		$existing_customer = false;
 		$subscription = '';
+		
 		$settings = get_leaky_paywall_settings();
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 		$level = get_leaky_paywall_subscription_level( $this->level_id );
 
 		try {
 
-			if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
-				$site = '_' . $level['site'];
-			} else {
-				$site = '';
-			}
-
 			if ( is_user_logged_in() && !is_admin() ) {
 				//Update the existing user
 				$user_id = get_current_user_id();
+				$subscriber_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
-				if ( get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true ) == 'stripe' ) {
-					$subscriber_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+				if ( strpos( $subscriber_id, 'cus_' ) === false ) {
+					$subscriber_id = false;
 				}
 				
 			}
@@ -119,6 +116,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 
 			$customer_array = array(
+				'name'		  => $this->first_name . ' ' . $this->last_name,
 				'email'       => $this->email,
 				'source'      => $_POST['stripeToken'],
 				'description' => $this->level_name
@@ -373,6 +371,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function fields( $level_id ) {
 
 		$settings = get_leaky_paywall_settings();
+
 		$level_id = is_numeric( $level_id ) ? $level_id : esc_html( $_GET['level_id'] );
 
 		if ( 'yes' == $settings['enable_stripe_elements'] ) {
@@ -491,7 +490,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	{
 
 		$stripe_plan = '';
-		// $level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {

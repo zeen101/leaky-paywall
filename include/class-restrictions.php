@@ -45,7 +45,7 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		// content is restricted, so see if the current user can access it
-		if ( apply_filters( 'leaky_paywall_current_user_can_access', $this->current_user_can_access() ) ) {
+		if ( apply_filters( 'leaky_paywall_current_user_can_access', $this->current_user_can_access(), $this->post_id ) ) {
 			return;
 		}
 

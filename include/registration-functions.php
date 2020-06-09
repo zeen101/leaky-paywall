@@ -30,15 +30,10 @@ function leaky_paywall_process_registration() {
 	}
 
 	$settings = get_leaky_paywall_settings();
-	$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
 	$level_id = isset( $_POST['level_id'] ) ? absint( $_POST['level_id'] ) : false;
 	$level = get_leaky_paywall_subscription_level( $level_id );
-	
-	if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
-		$site = '_' . $level['site'];
-	} else {
-		$site = '';
-	}
 
 	// get the selected payment method
 	// leaving this here for backwards compatibility
@@ -111,7 +106,11 @@ function leaky_paywall_process_registration() {
 	 */
 	$subscriber_data = apply_filters( 'leaky_paywall_registration_user_meta', array_merge( $user_data, $gateway_data ), $user_data );
 
-	leaky_paywall_subscriber_registration( $subscriber_data );
+	if ( apply_filters( 'leaky_paywall_use_alternative_subscriber_registration', false, $subscriber_data, $level ) ) {
+		do_action( 'leaky_paywall_alternative_subscriber_registration', $subscriber_data, $level );
+	} else {
+		leaky_paywall_subscriber_registration( $subscriber_data );
+	}
 	
 }
 add_action( 'init', 'leaky_paywall_process_registration', 100 );
@@ -126,13 +125,8 @@ add_action( 'init', 'leaky_paywall_process_registration', 100 );
 function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
 	$settings = get_leaky_paywall_settings();
-	$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-
-	if ( is_multisite_premium() && !empty( $level['site'] ) && !is_main_site( $level['site'] ) ) {
-		$site = '_' . $level['site'];
-	} else {
-		$site = '';
-	}
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
 
 	/**
 	* Create or update the WP user for this subscriber
