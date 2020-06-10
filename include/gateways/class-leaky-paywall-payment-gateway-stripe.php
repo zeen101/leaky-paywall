@@ -144,6 +144,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ( !empty( $cu ) ) {
 					$subscriptions = $cu->subscriptions->all( array('limit' => '1') );
 
+					// use credit card submitted in form
+					$source = $cu->sources->create( array( 'source' => $_POST['stripeToken'] ) );
+					$cu->default_source = $source->id;
+					$cu->save();
+
 					// updating a current subscription
 					if ( !empty( $subscriptions->data ) ) {
 						foreach( $subscriptions->data as $subscription ) {
