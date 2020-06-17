@@ -53,10 +53,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function process_signup() {
 
-		if( empty( $_POST['stripeToken'] ) ) {
-            leaky_paywall_errors()->add( 'missing_stripe_token', __( 'Error Processing Payment. If you are using an Ad Blocker, please disable it, refresh the page, and try again.', 'leaky-paywall' ), 'register' );
-            return;
-		}
+		// don't need a Stripe token anymore
+		// if( empty( $_POST['stripeToken'] ) ) {
+  //           leaky_paywall_errors()->add( 'missing_stripe_token', __( 'Error Processing Payment. If you are using an Ad Blocker, please disable it, refresh the page, and try again.', 'leaky-paywall' ), 'register' );
+  //           return;
+		// }
 
 		\Stripe\Stripe::setApiKey( $this->secret_key );
 
@@ -118,7 +119,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			$customer_array = array(
 				'name'		  => $this->first_name . ' ' . $this->last_name,
 				'email'       => $this->email,
-				'source'      => $_POST['stripeToken'],
+				// 'source'      => $_POST['stripeToken'],
 				'description' => $this->level_name
 			);
 
@@ -194,6 +195,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			} else {
 
+				// one time payment for new customer
+
+				// This is all handled before this point now. What about user data that is invalid? Probably need a multi-step form
+				
+				/*
+
 				$source_id = '';
 
 				// Create a Customer
@@ -215,6 +222,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$charge = \Stripe\Charge::create( apply_filters( 'leaky_paywall_process_stripe_payment_charge_array', $charge_array ) );
 				
+				*/
+				
+				if ( empty( $cu ) ) {
+					$cu = \Stripe\Customer::create( $customer_array );
+				}
+			
 			}
 
 		} catch ( Exception $e ) {
@@ -229,6 +242,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		if ( !$customer_id ) {
 			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
 		}
+
+		// add customer to paymentIntent
+		$payment_intent_id = $_POST['payment-intent-id'];
+
+		$payment_intent = \Stripe\PaymentIntent::retrieve( $payment_intent_id );
+		$payment_intent->customer = $customer_id;
+		$payment_intent->save();
 
 		$gateway_data = array(
 			'level_id'			=> $this->level_id,
@@ -379,7 +399,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$level_id = is_numeric( $level_id ) ? $level_id : esc_html( $_GET['level_id'] );
 
-		if ( 'yes' == $settings['enable_stripe_elements'] ) {
+		$use_stripe_elements = true;
+
+		// if ( 'yes' == $settings['enable_stripe_elements'] ) {
+		// 	$content = $this->stripe_elements( $level_id );
+		// 	return $content;
+		// }
+		// 
+		
+		if ( $use_stripe_elements ) {
 			$content = $this->stripe_elements( $level_id );
 			return $content;
 		}
@@ -503,8 +531,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$settings = get_leaky_paywall_settings();
 
+		$stripe_price = number_format( $level['price'], 2, '', '' );
+
 		$plan_args = array(
-			'stripe_price'	=> number_format( $level['price'], 2, '', '' ),
+			'stripe_price'	=> $stripe_price,
 			'currency'		=> leaky_paywall_get_currency(),
 			'secret_key'	=> $this->secret_key
 		);
@@ -513,12 +543,22 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
 		}
 
+		\Stripe\Stripe::setApiKey( $this->secret_key );
+
+		$intent = \Stripe\PaymentIntent::create([
+	      'amount' => $stripe_price,
+	      'currency' => leaky_paywall_get_currency(),
+	      'setup_future_usage' => 'off_session',
+	      // Verify your integration in this guide by including this parameter
+	     // 'metadata' => ['integration_check' => 'accept_a_payment'],
+	    ]);
+
 		ob_start();
 		?>
 
 			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan ? $stripe_plan->id : ''; ?>"/>
-
-			<script src="https://js.stripe.com/v3/"></script>
+			<input type="hidden" id="payment-intent-client" value="<?php echo $intent->client_secret; ?>">
+			<input type="hidden" id="payment-intent-id" name="payment-intent-id" value="<?php echo $intent->id; ?>">
 
 			<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
 				<div id="payment-request-button">
@@ -537,139 +577,162 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			    <!-- Used to display form errors. -->
 			    <div id="card-errors" role="alert"></div>
+			    <div id="lp-card-errors"></div>
 			  </div>
 
 		  <script>
-		  	var stripe = Stripe('<?php echo $this->publishable_key; ?>');
 
-		  	<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
-			  	var paymentRequest = stripe.paymentRequest({
-			  	  country: 'US',
-			  	  currency: '<?php echo strtolower( leaky_paywall_get_currency() ); ?>',
-			  	  total: {
-			  	    label: '<?php echo $level['label']; ?>',
-			  	    amount: <?php echo $level['price'] * 100; ?>,
-			  	  },
-			  	  requestPayerName: true,
-			  	  requestPayerEmail: true,
-			  	});
-			<?php } ?>
+		  	( function( $ )  {
 
-		  	var elements = stripe.elements();
+				$(document).ready( function() {
+					
+				  	var stripe = Stripe('<?php echo $this->publishable_key; ?>');
 
-		  	<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
-			  	var prButton = elements.create('paymentRequestButton', {
-			  	  paymentRequest: paymentRequest,
-			  	});
-		  <?php } ?>
+				  	<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
+					  	var paymentRequest = stripe.paymentRequest({
+					  	  country: 'US',
+					  	  currency: '<?php echo strtolower( leaky_paywall_get_currency() ); ?>',
+					  	  total: {
+					  	    label: '<?php echo $level['label']; ?>',
+					  	    amount: <?php echo $level['price'] * 100; ?>,
+					  	  },
+					  	  requestPayerName: true,
+					  	  requestPayerEmail: true,
+					  	});
+					<?php } ?>
 
-		  	var style = {
-		  	  base: {
-		  	    color: '#32325d',
-		  	    lineHeight: '18px',
-		  	    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-		  	    fontSmoothing: 'antialiased',
-		  	    fontSize: '16px',
-		  	    '::placeholder': {
-		  	      color: '#aab7c4'
-		  	    }
-		  	  },
-		  	  invalid: {
-		  	    color: '#fa755a',
-		  	    iconColor: '#fa755a'
-		  	  }
-		  	};
+				  	var elements = stripe.elements();
+				  	var clientSecret = $('#payment-intent-client').val();
+				  	
 
-		  	var card = elements.create('card', {style: style});
+				  	<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
+					  	var prButton = elements.create('paymentRequestButton', {
+					  	  paymentRequest: paymentRequest,
+					  	});
+				  <?php } ?>
 
-		  	card.mount('#card-element');
+				  	var style = {
+				  	  base: {
+				  	    color: '#32325d',
+				  	    lineHeight: '18px',
+				  	    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+				  	    fontSmoothing: 'antialiased',
+				  	    fontSize: '16px',
+				  	    '::placeholder': {
+				  	      color: '#aab7c4'
+				  	    }
+				  	  },
+				  	  invalid: {
+				  	    color: '#fa755a',
+				  	    iconColor: '#fa755a'
+				  	  }
+				  	};
 
-		  	<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
-			  	// Check the availability of the Payment Request API first.
-			  	paymentRequest.canMakePayment().then(function(result) {
-			  	  if (result) {
-			  	    prButton.mount('#payment-request-button');
-			  	  } else {
-			  	    document.getElementById('payment-request-button').style.display = 'none';
-			  	  }
-			  	});
+				  	var card = elements.create('card', {style: style});
 
-			  	paymentRequest.on('token', function(ev) {
-			  	  // Send the token to your server to charge it!
-			  	  fetch('/', {
-			  	    method: 'POST',
-			  	    body: JSON.stringify({token: ev.token.id}),
-			  	    headers: {'content-type': 'application/json'},
-			  	  })
-			  	  .then(function(response) {
-			  	    if (response.ok) {
-			  	      // Report to the browser that the payment was successful, prompting
-			  	      // it to close the browser payment interface.
-			  	      console.log('success');
-			  	
-			  	      ev.complete('success');
-			  	      stripeTokenHandler(ev.token);
-			  	    } else {
-			  	      // Report to the browser that the payment failed, prompting it to
-			  	      // re-show the payment interface, or show an error message and close
-			  	      // the payment interface.
-			  	      console.log('fail');
-			  	      ev.complete('fail');
-			  	    }
-			  	  });
-			  	});
-			 <?php } ?>
+				  	card.mount('#card-element');
+
+				  	<?php if ( 'yes' == $settings['enable_apple_pay'] ) { ?>
+					  	// Check the availability of the Payment Request API first.
+					  	paymentRequest.canMakePayment().then(function(result) {
+					  	  if (result) {
+					  	    prButton.mount('#payment-request-button');
+					  	  } else {
+					  	    document.getElementById('payment-request-button').style.display = 'none';
+					  	  }
+					  	});
+
+					  	paymentRequest.on('token', function(ev) {
+					  	  // Send the token to your server to charge it!
+					  	  fetch('/', {
+					  	    method: 'POST',
+					  	    body: JSON.stringify({token: ev.token.id}),
+					  	    headers: {'content-type': 'application/json'},
+					  	  })
+					  	  .then(function(response) {
+					  	    if (response.ok) {
+					  	      // Report to the browser that the payment was successful, prompting
+					  	      // it to close the browser payment interface.
+					  	      console.log('success');
+					  	
+					  	      ev.complete('success');
+					  	      stripeTokenHandler(ev.token);
+					  	    } else {
+					  	      // Report to the browser that the payment failed, prompting it to
+					  	      // re-show the payment interface, or show an error message and close
+					  	      // the payment interface.
+					  	      console.log('fail');
+					  	      ev.complete('fail');
+					  	    }
+					  	  });
+					  	});
+					 <?php } ?>
 
 
-		  	// Handle real-time validation errors from the card Element.
-		  	card.addEventListener('change', function(event) {
-		  	  var displayError = document.getElementById('card-errors');
-		  	  if (event.error) {
-		  	    displayError.textContent = event.error.message;
-		  	  } else {
-		  	    displayError.textContent = '';
-		  	  }
-		  	});
+				  	// Handle real-time validation errors from the card Element.
+				  	card.on('change', function(event) {
+					  var displayError = document.getElementById('card-errors');
+					  if (event.error) {
+					    displayError.textContent = event.error.message;
+					  } else {
+					    displayError.textContent = '';
+					  }
+					});
 
-		  	// Handle form submission.
-		  	var form = document.getElementById('leaky-paywall-payment-form');
-		  	form.addEventListener('submit', function(event) {
-		  	  event.preventDefault();
+				  	// Handle form submission.
+				  	var form = document.getElementById('leaky-paywall-payment-form');
 
-		  	  var subButton = document.getElementById('leaky-paywall-submit');
+				  	form.addEventListener('submit', function(event) {
+				  	  event.preventDefault();
 
-		  	  subButton.disabled = true;
-		  	  subButton.innerHTML = '<?php echo __( 'Processing... Please Wait', 'leaky-paywall' ) ?>';
+				  	  var subButton = document.getElementById('leaky-paywall-submit');
+				  	  var firstName = $('input[name="first_name"]').val();
+				  		var lastName = $('input[name="last_name"]').val();
 
-		  	  stripe.createToken(card).then(function(result) {
-		  	    if (result.error) {
-		  	      // Inform the user if there was an error.
-		  	      var errorElement = document.getElementById('card-errors');
-		  	      errorElement.textContent = result.error.message;
+				  	  subButton.disabled = true;
+				  	  subButton.innerHTML = '<?php echo __( 'Processing... Please Wait', 'leaky-paywall' ) ?>';
 
-		  	      subButton.disabled = false;
-		  	      subButton.innerHTML = '<?php _e( 'Submit', 'leaky-paywall' )?>';
+				  	 // old stripe token code here
+				  	   
+				  	   stripe.confirmCardPayment(clientSecret, {
+				  	     payment_method: {
+				  	       card: card,
+				  	       billing_details: {
+				  	         name: firstName + ' ' + lastName
+				  	       }
+				  	     }
+				  	   }).then(function(result) {
+				  	     if (result.error) {
+				  	       // Show error to your customer (e.g., insufficient funds)
+				  	       console.log(result.error.message);
+				  	       $('#lp-card-errors').html('<p>' + result.error.message + '</p>');
+				  	     } else {
+				  	       // The payment has been processed!
+				  	       if (result.paymentIntent.status === 'succeeded') {
+				  	       	console.log('success');
 
-		  	    } else {
-		  	      // Send the token to your server.
-		  	      stripeTokenHandler(result.token);
-		  	    }
-		  	  });
-		  	});
+				  	       	var form$ = jQuery('#leaky-paywall-payment-form');
+				  	   		
+				  	   		form$.get(0).submit();
+				  	         // Show a success message to your customer
+				  	      //   window.location.replace("http://conveners.test/");
+				  	         // There's a risk of the customer closing the window before callback
+				  	         // execution. Set up a webhook or plugin to listen for the
+				  	         // payment_intent.succeeded event that handles any business critical
+				  	         // post-payment actions.
+				  	       }
+				  	     }
+				  	   });
+				  	  });
+				  	// });
 
-		  	// Submit the form with the token ID.
-		  	function stripeTokenHandler(token) {
-		  	  // Insert the token ID into the form so it gets submitted to the server
-		  	  var form = document.getElementById('leaky-paywall-payment-form');
-		  	  var hiddenInput = document.createElement('input');
-		  	  hiddenInput.setAttribute('type', 'hidden');
-		  	  hiddenInput.setAttribute('name', 'stripeToken');
-		  	  hiddenInput.setAttribute('value', token.id);
-		  	  form.appendChild(hiddenInput);
+				  	// Submit the form with the token ID.
+				  	// old stripe submit handler
 
-		  	  // Submit the form
-		  	  form.submit();
-		  	}
+				});
+
+				
+			})( jQuery );
 
 		  </script>
 
@@ -718,21 +781,23 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 
 	/**
-	 * Load Stripe JS
+	 * Load Stripe JS. Need to load it on every page for Stripe Radar rules.
 	 *
 	 * @since  4.0.0
 	 */
 	public function scripts() {
 
-		if ( is_home() || is_front_page() || is_archive() ) {
-			return;
-		}
+		wp_enqueue_script( 'stripe', 'https://js.stripe.com/v3/', array( 'jquery' ) );
 
-		$settings = get_leaky_paywall_settings();
+		// if ( is_home() || is_front_page() || is_archive() ) {
+		// 	return;
+		// }
 
-		if ( is_page( $settings['page_for_subscription'] ) || is_page( $settings['page_for_register'] ) || is_page( $settings['page_for_profile'] ) ) {
-			wp_enqueue_script( 'stripe', 'https://js.stripe.com/v2/', array( 'jquery' ) );
-		}
+		// $settings = get_leaky_paywall_settings();
+
+		// if ( is_page( $settings['page_for_subscription'] ) || is_page( $settings['page_for_register'] ) || is_page( $settings['page_for_profile'] ) ) {
+			
+		// }
 		
 	}
 
