@@ -202,7 +202,8 @@ class LP_Transaction_Post_Type {
             'level' => __( 'Level' ),
             'price' => __( 'Price' ),
             'created' => __( 'Created' ),
-            'status' => __( 'Status' )
+            'status' => __( 'Status' ),
+            'type'  => __( 'Payment Type' )
         );
 
         return $columns;
@@ -234,7 +235,11 @@ class LP_Transaction_Post_Type {
                break;
 
             case 'status':
-                echo  get_post_meta( $post_id, '_is_recurring', true ) ? 'Recurring Payment' : 'Complete'; 
+                echo  get_post_meta( $post_id, '_transaction_status', true ) ? get_post_meta( $post_id, '_transaction_status', true ) : 'Complete';
+               break;
+
+            case 'type':
+                echo  get_post_meta( $post_id, '_is_recurring', true ) ? 'Recurring' : 'One Time';
                break;
         }
 

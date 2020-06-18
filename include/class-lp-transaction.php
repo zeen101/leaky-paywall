@@ -62,6 +62,7 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_currency', $this->currency );
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
 		update_post_meta( $transaction_id, '_is_recurring', $this->is_recurring );
+		update_post_meta( $transaction_id, '_transaction_status', 'complete' );
 
 		do_action( 'leaky_paywall_after_create_transaction', $transaction_id, $user );
 

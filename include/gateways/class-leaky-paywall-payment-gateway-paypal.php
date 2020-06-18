@@ -770,9 +770,11 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		update_post_meta( $transaction_id, '_gateway', 'paypal' );
 		update_post_meta( $transaction_id, '_price', $price );
 		update_post_meta( $transaction_id, '_currency', $currency );
+		update_post_meta( $transaction_id, '_transaction_status', 'incomplete' );
 
 		if ( isset( $_REQUEST['txn_type'] ) ) {
 			update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+			update_post_meta( $transaction_id, '_transaction_status', 'complete' );
 		}
 
 		do_action( 'leaky_paywall_save_data_to_paypal_transaction', $transaction_id );
