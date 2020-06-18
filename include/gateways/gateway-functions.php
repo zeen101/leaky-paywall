@@ -216,3 +216,21 @@ function leaky_paywall_free_subscription_cards( $payment_options, $level, $level
 	return $payment_options . $output; 
 }
 add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall_free_subscription_cards', 7, 3 );
+
+
+/**
+ * Filter checkout button text on the registration form
+ *
+ * @return string 	button text
+ */
+function leaky_paywall_get_registration_checkout_button_text( $method = '' ) {
+
+	if ( $method == 'paypal' ) {
+		$text = __('Subscribe with Paypal' , 'leaky-paywall');
+	} else {
+		$text = __('Subscribe' , 'leaky-paywall');
+	}
+
+	return apply_filters( 'registration_checkout_button_text', $text );
+
+}

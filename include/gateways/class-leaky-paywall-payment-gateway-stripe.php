@@ -250,6 +250,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$payment_intent->customer = $customer_id;
 		$payment_intent->save();
 
+		// attach payment method to the customer
+		// https://stripe.com/docs/payments/payment-intents/migration
+		// $payment_method = \Stripe\PaymentMethod::retrieve('{{PAYMENT_METHOD_ID}}');
+		// $payment_method->attach(['customer' => $customer_id]);
+
 		$gateway_data = array(
 			'level_id'			=> $this->level_id,
 			'subscriber_id' 	=> $customer_id,
@@ -258,7 +263,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'price' 			=> $this->level_price,
 			'description' 		=> $this->level_name,
 			'payment_gateway' 	=> 'stripe',
-			'payment_status' 	=> 'active',
+			'payment_status' 	=> 'deactivated', // will activate with payment_intent.succeeded webhook 
 			'interval' 			=> $this->length_unit,
 			'interval_count' 	=> $this->length,
 			'site' 				=> !empty( $level['site'] ) ? $level['site'] : '',
@@ -372,6 +377,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		            case 'payment_intent.canceled' :
 		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
 		                break;
+
+		            case 'payment_intent.succeeded' :
+		                update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
+		                break;
 		               
 		            default:
 		            	break;
@@ -399,18 +408,18 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$level_id = is_numeric( $level_id ) ? $level_id : esc_html( $_GET['level_id'] );
 
-		$use_stripe_elements = true;
+		// $use_stripe_elements = true;
 
-		// if ( 'yes' == $settings['enable_stripe_elements'] ) {
-		// 	$content = $this->stripe_elements( $level_id );
-		// 	return $content;
-		// }
-		// 
-		
-		if ( $use_stripe_elements ) {
+		if ( 'yes' == $settings['enable_stripe_elements'] ) {
 			$content = $this->stripe_elements( $level_id );
 			return $content;
 		}
+		
+		
+		// if ( $use_stripe_elements ) {
+		// 	$content = $this->stripe_elements( $level_id );
+		// 	return $content;
+		// }
 
 		$stripe_plan = '';
 		$level = get_leaky_paywall_subscription_level( $level_id );
@@ -556,6 +565,18 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		ob_start();
 		?>
 
+		
+
+		<div class="leaky-paywall-payment-method-container">
+
+			<input id="payment_method_stripe" class="input-radio" name="payment_method" value="stripe" checked="checked" data-order_button_text="" type="radio">
+
+			<label for="payment_method_stripe"> <?php _e( 'Credit Card', 'leaky-paywall' ); ?> <img width="150" src="<?php echo LEAKY_PAYWALL_URL; ?>images/credit_card_logos_5.gif"></label>
+
+		</div>
+
+		<div class="leaky-paywall-card-details">
+
 			<input type="hidden" name="plan_id" value="<?php echo $stripe_plan ? $stripe_plan->id : ''; ?>"/>
 			<input type="hidden" id="payment-intent-client" value="<?php echo $intent->client_secret; ?>">
 			<input type="hidden" id="payment-intent-id" name="payment-intent-id" value="<?php echo $intent->id; ?>">
@@ -579,6 +600,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			    <div id="card-errors" role="alert"></div>
 			    <div id="lp-card-errors"></div>
 			  </div>
+
+		</div>
 
 		  <script>
 
@@ -683,6 +706,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				  	var form = document.getElementById('leaky-paywall-payment-form');
 
 				  	form.addEventListener('submit', function(event) {
+
+				  		var method = $('#leaky-paywall-payment-form').find( 'input[name="payment_method"]:checked' ).val();
+
+				  		if ( method != 'stripe' ) {
+				  			return;
+				  		}
+
 				  	  event.preventDefault();
 
 				  	  var subButton = document.getElementById('leaky-paywall-submit');
