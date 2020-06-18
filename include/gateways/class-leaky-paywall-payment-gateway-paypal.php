@@ -304,7 +304,13 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					leaky_paywall_log( $response_array, 'paypal - get transaction details after process confirmation');
 					
-					$transaction_status = $response_array['PAYMENTSTATUS'];
+					$transaction_status = isset( $response_array['PAYMENTSTATUS'] ) ? $response_array['PAYMENTSTATUS'] : '';
+					$transaction_id = isset( $response_array['TRANSACTIONID'] ) ? $response_array['TRANSACTIONID'] : '';
+
+					if ( !$transaction_id ) {
+						return;
+					}
+					
 					$level = get_leaky_paywall_subscription_level( $response_array['L_NUMBER0'] );
 							
 					if ( !is_email( $user_email ) ) {
@@ -590,9 +596,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 							}
 						}
 					}
-				}
-					
-				if ( empty( $user ) && !empty( $_REQUEST['payer_email'] ) && is_email( $_REQUEST['payer_email'] ) ) {
+				} else if ( !empty( $_REQUEST['payer_email'] ) && is_email( $_REQUEST['payer_email'] ) ) {
 					$user = get_user_by( 'email', $_REQUEST['payer_email'] );
 					$email = $_REQUEST['payer_email'];
 					if ( empty( $user ) ) {
@@ -604,6 +608,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 						}
 					}
 				}
+				
 					
 				if ( empty( $user ) && !empty( $_REQUEST['txn_id'] ) ) {
 					$user = get_leaky_paywall_subscriber_by_subscriber_id( $_REQUEST['txn_id'], $mode );
@@ -636,6 +641,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					if ( 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
 						update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+						update_post_meta( $transaction_id, '_transaction_status', 'complete' );
 		                leaky_paywall_set_payment_transaction_id( $transaction_id, $_REQUEST['txn_id'] );
 					}
 
