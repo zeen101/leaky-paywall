@@ -310,23 +310,32 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					if ( !$transaction_id ) {
 						return;
 					}
-					
+
 					$level = get_leaky_paywall_subscription_level( $response_array['L_NUMBER0'] );
 							
 					if ( !is_email( $user_email ) ) {
-						$user_email = $response_array['EMAIL'];
+						$user_email = isset( $response_array['CUSTOM'] ) ? $response_array['CUSTOM'] : $response_array['EMAIL'];
 					}
 						
-					if ( $transaction_id != $response_array['TRANSACTIONID'] )
+					if ( $transaction_id != $response_array['TRANSACTIONID'] ) {
 						throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'leaky-paywall' ) );
+					}
 					
-					if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) )
+					if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) ) {
 						throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
+					}
 					
 				} else {
 					
 					throw new Exception( $response->get_error_message() );
 					
+				}
+
+				$lp_transaction_id = leaky_paywall_get_transaction_id_from_email( $user_email );
+
+				// if a transaction already exists in LP we do not need to create a new one
+				if ( $lp_transaction_id ) {
+					return;
 				}
 
 				if ( email_exists( $user_email ) ) {
