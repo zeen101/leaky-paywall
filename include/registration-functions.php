@@ -693,3 +693,53 @@ if ( ! function_exists( 'leaky_paywall_get_redirect_url' ) ) {
 }
 
 
+add_action( 'wp_ajax_nopriv_leaky_paywall_validate_registration', 'leaky_paywall_validate_frontend_registration' );
+add_action( 'wp_ajax_leaky_paywall_validate_registration', 'leaky_paywall_validate_frontend_registration' );
+
+function leaky_paywall_validate_frontend_registration() {
+
+	if ( isset( $_POST['email'] ) ) {
+
+		$email = trim( $_POST['email'] );
+
+		if ( !is_email( $email ) ) {
+
+			$return = array(
+			    'message'  => 'This email is invalid. Please enter a different email.',
+			    'status'       => 'error'
+			);
+			 
+			wp_send_json($return);
+		}
+
+		if ( email_exists( $email ) ) {
+
+			$return = array(
+			    'message'  => 'This email already exists. Please login or enter a different email.',
+			    'status'       => 'error'
+			);
+			 
+			wp_send_json($return);
+		}
+
+	}
+
+	if ( isset( $_POST['username'] ) ) {
+
+		$username = trim( $_POST['username'] );
+
+		if ( username_exists( $username ) ) {
+
+			$return = array(
+			    'message'  => 'Username already taken.',
+			    'status'       => 'error'
+			);
+			 
+			wp_send_json($return);
+
+		}
+	}
+
+	die();
+	
+}

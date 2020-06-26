@@ -323,6 +323,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		             ) 
 		        );
 			}
+
+			wp_enqueue_script( 'leaky_paywall_validate', LEAKY_PAYWALL_URL . 'js/leaky-paywall-validate.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
+
+			wp_localize_script( 'leaky_paywall_validate', 'leaky_paywall_validate_ajax',
+	            array( 
+	            	'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
+	             )
+	        );
 			
 		}
 		

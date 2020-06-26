@@ -770,6 +770,8 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 		if ( empty( $user_id ) ) {
 			leaky_paywall_log( $meta_args, 'could not create user');
 			return false;
+		} else {
+			leaky_paywall_log( $userdata, 'leaky paywall - new subscriber created');
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
@@ -2140,6 +2142,7 @@ if ( !function_exists( 'get_leaky_paywall_subscription_level' ) ) {
 		$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 		if ( isset( $settings['levels'][$level_id] ) ) {
 			$level = $settings['levels'][$level_id];
+			$level['id'] = $level_id;
 		} else {
 			$level = false;
 		}

@@ -316,3 +316,8 @@
 #leaky-paywall-account-edit-profile-form input {
 	width: 300px;
 }
+
+.leaky-paywall-input-error {
+	color: red;
+	font-size: 12px;
+}

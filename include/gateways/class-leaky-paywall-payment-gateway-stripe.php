@@ -554,13 +554,14 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		\Stripe\Stripe::setApiKey( $this->secret_key );
 
-		$intent = \Stripe\PaymentIntent::create([
-	      'amount' => $stripe_price,
-	      'currency' => leaky_paywall_get_currency(),
-	      'setup_future_usage' => 'off_session',
-	      // Verify your integration in this guide by including this parameter
-	     // 'metadata' => ['integration_check' => 'accept_a_payment'],
-	    ]);
+		$intent_args = apply_filters( 'leaky_paywall_payment_intent_args', array(
+			'amount'	=> $stripe_price,
+			'currency'	=> leaky_paywall_get_currency(),
+			'setup_future_usage' => 'off_session',
+			'description' 	=> $level['label']
+		), $level );
+
+		$intent = \Stripe\PaymentIntent::create( $intent_args );
 
 		ob_start();
 		?>

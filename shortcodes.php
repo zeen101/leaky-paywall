@@ -463,32 +463,39 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 								}
 
 								$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-								\Stripe\Stripe::setApiKey( $secret_key );
+								
+								if ( $secret_key ) {
 
-								$cu = \Stripe\Customer::Retrieve(
-								  ["id" => $subscriber_id, "expand" => ["default_source"]]
-								);
+									\Stripe\Stripe::setApiKey( $secret_key );
 
-								$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+									$cu = \Stripe\Customer::Retrieve(
+									  ["id" => $subscriber_id, "expand" => ["default_source"]]
+									);
 
-								if ( strcasecmp('deactivated', $status) == 0 ) {
-									$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
-								} else {
-									$data_label = __('Update Credit Card Details','leaky-paywall');
+									$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+
+									if ( strcasecmp('deactivated', $status) == 0 ) {
+										$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
+									} else {
+										$data_label = __('Update Credit Card Details','leaky-paywall');
+									}
+
+									$payment_form .= '<form action="" method="POST">
+										  <script
+										  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+										  data-key="' . $publishable_key . '"
+										  data-name="' . get_bloginfo( 'name' ) . '"
+										  data-panel-label="' . $data_label . '"
+										  data-label="' . $data_label . '"
+										  data-allow-remember-me=false
+										  data-email="' . $user->user_email . '"
+										  data-locale="auto">	
+										  </script>	
+										</form>';
+
 								}
 
-								$payment_form .= '<form action="" method="POST">
-									  <script
-									  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-									  data-key="' . $publishable_key . '"
-									  data-name="' . get_bloginfo( 'name' ) . '"
-									  data-panel-label="' . $data_label . '"
-									  data-label="' . $data_label . '"
-									  data-allow-remember-me=false
-									  data-email="' . $user->user_email . '"
-									  data-locale="auto">	
-									  </script>	
-									</form>';
+								
 
 								break;
 								
@@ -716,7 +723,7 @@ function do_leaky_paywall_register_form( $atts ) {
 			<h3 class="leaky-paywall-subscription-details-title"><?php printf( __( 'Order Summary', 'leaky-paywall' ) ); ?></h3>
 
 			<ul class="leaky-paywall-subscription-details">
-				<li class="leaky-paywall-subscription-details-subscription-name"><strong><?php printf( __( 'Subscription Name:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_registration_level_name', $level['label'] ); ?></li>
+				<li class="leaky-paywall-subscription-details-subscription-name"><strong><?php printf( __( 'Your Order:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_registration_level_name', $level['label'] ); ?></li>
 				<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf( __( 'Subscription Length:', 'leaky-paywall' ) ); ?></strong> <?php echo $level['subscription_length_type'] == 'unlimited' ? __( 'Forever', 'leaky-paywall' ) : $level['interval_count'] . ' ' . $level['interval'] . ( $level['interval_count'] > 1  ? 's' : '' ); ?></li>
 				<li class="leaky-paywall-subscription-details-recurring"><strong><?php printf( __( 'Recurring:', 'leaky-paywall' ) ); ?> </strong> <?php echo !empty( $level['recurring'] ) && $level['recurring'] == 'on' ? __( 'Yes', 'leaky-paywall' ) : __( 'No', 'leaky-paywall' ); ?></li>
 				<li class="leaky-paywall-subscription-details-content-access"><strong><?php printf( __( 'Content Access:', 'leaky-paywall' ) ); ?></strong>
@@ -776,17 +783,17 @@ function do_leaky_paywall_register_form( $atts ) {
 
 			  <p class="form-row first-name">
 			    <label for="first_name"><?php printf( __( 'First Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="first_name" value="<?php echo $first; ?>" />
+			    <input type="text" size="20" name="first_name" required value="<?php echo $first; ?>" />
 			  </p>
 
 			  <p class="form-row last-name">
 			    <label for="last_name"><?php printf( __( 'Last Name', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="last_name" value="<?php echo $last; ?>"/>
+			    <input type="text" size="20" name="last_name" required value="<?php echo $last; ?>"/>
 			  </p>
 			 
 			  <p class="form-row email-address">
 			    <label for="email_address"><?php printf( __( 'Email Address', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="text" size="20" name="email_address" value="<?php echo $email; ?>" <?php echo !empty( $email ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
+			    <input type="email" size="20" id="email_address" name="email_address" required value="<?php echo $email; ?>" <?php echo !empty( $email ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
 			  </p>
 
 		  </div>
@@ -802,7 +809,7 @@ function do_leaky_paywall_register_form( $atts ) {
 			  		?>
 			  		<p class="form-row username">
 			  		  <label for="username"><?php printf( __( 'Username', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			  		  <input type="text" size="20" name="username" value="<?php echo $username; ?>" <?php echo !empty( $username ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
+			  		  <input type="text" size="20" name="username" id="username" required value="<?php echo $username; ?>" <?php echo !empty( $username ) && !empty( $userdata ) ? 'disabled="disabled"' : ''; ?>/>
 			  		</p>
 			  		<?php 
 			  	}
@@ -814,12 +821,12 @@ function do_leaky_paywall_register_form( $atts ) {
 
 			  <p class="form-row password">
 			    <label for="password"><?php printf( __( 'Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="password" size="20" name="password"/>
+			    <input type="password" size="20" id="password" required name="password"/>
 			  </p>
 
 			  <p class="form-row confirm-password">
 			    <label for="confirm_password"><?php printf( __( 'Confirm Password', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-			    <input type="password" size="20" name="confirm_password"/>
+			    <input type="password" size="20" id="confirm_password" required name="confirm_password"/>
 			  </p>
 			  
 			  <?php } ?>
