@@ -2,187 +2,234 @@
 
 table.leaky-paywall-table,
 body.leaky-paywall_page_leaky-paywall-subscribers table {
-	width: 100%;
+  width: 100%;
 }
 
 table.leaky-paywall-table input.small-text,
 body.leaky-paywall_page_leaky-paywall-subscribers table input.small-text {
-	height: 28px;
+  height: 28px;
 }
 
 table.issuem-leaky-paywall-subscription-level-row-table {
-	border: 1px solid #eee;
-	margin-bottom: 20px;
-	padding: 10px;
+  border: 1px solid #eee;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #fff;
 }
 
-table.leaky-paywall-table tr th, table.leaky-paywall-table tr td,
-body.leaky-paywall_page_leaky-paywall-subscribers table tr th,body.leaky-paywall_page_leaky-paywall-subscribers table tr td {
-	vertical-align:top;
-	padding-bottom:10px;
+table.issuem-leaky-paywall-subscription-level-row-table.toggled {
+  display: none;
+}
+
+.leaky-paywall-subscription-level-row-header.hidden {
+  display: none;
+}
+
+.leaky-paywall-subscription-level-row-header.toggled {
+  margin-bottom: 10px;
+}
+
+.leaky-paywall-subscription-level-row-header .dashicons-arrow-down {
+  display: none;
+}
+
+.leaky-paywall-subscription-level-row-header.toggled .dashicons-arrow-up {
+  display: none;
+}
+
+.leaky-paywall-subscription-level-row-header.toggled .dashicons-arrow-down {
+  display: block;
+}
+
+.leaky-paywall-subscription-level-row-header {
+  background: #fff;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.leaky-paywall-subscription-level-row-header p {
+  font-weight: bold;
+}
+
+.leaky-paywall-subscription-level-row-header
+  .leaky-paywall-subscription-level-row-header-title-id {
+  font-weight: normal;
+  color: #999;
+  margin-left: 10px;
+}
+
+table.leaky-paywall-table tr th,
+table.leaky-paywall-table tr td,
+body.leaky-paywall_page_leaky-paywall-subscribers table tr th,
+body.leaky-paywall_page_leaky-paywall-subscribers table tr td {
+  vertical-align: top;
+  padding-bottom: 10px;
 }
 
 table.leaky-paywall-table tr th,
 body.leaky-paywall_page_leaky-paywall-subscribers table tr th {
-	padding-top:5px;
-	width:200px;
+  padding-top: 5px;
+  width: 200px;
 }
 
 table.leaky-paywall-table .leaky_paywall_subscription_level_row_table {
-	border: 1px solid #eee;
-	padding-top: 20px;
-	margin-bottom: 20px;
+  border: 1px solid #eee;
+  padding-top: 20px;
+  margin-bottom: 20px;
 }
 
 body.leaky-paywall_page_leaky-paywall-subscribers div.tablenav {
-	margin-top:25px;
+  margin-top: 25px;
 }
 
-body.leaky-paywall_page_leaky-paywall-subscribers div#leaky-paywall-subscriber-add-edit {
-	background:#ECECEC;
-	border:1px solid #CCC;
-	padding:0 10px;
-	margin-top:5px;
-	border-radius:5px;
-	-moz-border-radius:5px;
-	-webkit-border-radius:5px;
-    width: 100%;
+body.leaky-paywall_page_leaky-paywall-subscribers
+  div#leaky-paywall-subscriber-add-edit {
+  background: #ececec;
+  border: 1px solid #ccc;
+  padding: 0 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  width: 100%;
 }
 
 div#leaky-paywall-subscriber-add-edit form#leaky-paywall-susbcriber-add {
-	display: block;
-    float: left;
-    max-width: 500px;
-    position: relative;
+  display: block;
+  float: left;
+  max-width: 500px;
+  position: relative;
 }
 
 div#leaky-paywall-subscriber-add-edit form#leaky-paywall-subscriber-bulk-add {
-	display: block;
-    float: left;
-    margin-left: 150px;
-    max-width: 500px;
-    position: relative;
+  display: block;
+  float: left;
+  margin-left: 150px;
+  max-width: 500px;
+  position: relative;
 }
 
 div.interval_div,
 div.allowed_value_div {
-	display: inline-block;
+  display: inline-block;
 }
 
 form#leaky-paywall-subscriber-bulk-add textarea {
-	width:400px;
-	height:200px;
+  width: 400px;
+  height: 200px;
 }
 
 span.delete-x {
-	display: inline-block;
-    color: #bbb;
-    font-size: 14px;
-    line-height: 1.3em;
-    margin-right: 12px;
-    margin-top: 18px;
-    text-align: center;
-    text-decoration: none;
-    width: 20px;
-    height: 20px;
+  display: inline-block;
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1.3em;
+  margin-right: 12px;
+  margin-top: 18px;
+  text-align: center;
+  text-decoration: none;
+  width: 20px;
+  height: 20px;
 }
 
 span.delete-x:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
-select.select_level_post_type, select.select_level_site {
-	width: 100px;	
+select.select_level_post_type,
+select.select_level_site {
+  width: 100px;
 }
 
 .leaky_paywall_hidden {
-	display: none;	
+  display: none;
 }
 
-
 td.available-addon {
-	border: 1px solid #ccc;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    max-width: 340px;
-    min-width: 250px;
-    vertical-align: top;
-    width: 33%;
-    background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  max-width: 340px;
+  min-width: 250px;
+  vertical-align: top;
+  width: 33%;
+  background: #fff;
 }
 
 div.available-addon-inner {
-	margin: 20px;
+  margin: 20px;
 }
 
 div.available-addon-inner img {
-	max-width: 100%;
+  max-width: 100%;
 }
 
 .leaky-paywall-dashboard-table {
-	width: 100%;
+  width: 100%;
 }
 
 .leaky-paywall-dashboard-table th {
-	text-align: left;
-	font-weight: bold;
+  text-align: left;
+  font-weight: bold;
 }
 .leaky-paywall-dashboard-table td {
-	padding-bottom: 5px;
+  padding-bottom: 5px;
 }
 
 span.delete-restriction-row {
-	color: red;
-	margin-top: -10px;
+  color: red;
+  margin-top: -10px;
 }
 
 #issuem-leaky-paywall-restriction-rows table {
-	border: 1px solid #ddd;
+  border: 1px solid #ddd;
 }
 
 #issuem-leaky-paywall-restriction-rows table th {
-	/*border-bottom: 1px solid #ddd;*/
-	padding: 10px;
+  /*border-bottom: 1px solid #ddd;*/
+  padding: 10px;
 }
 
 #issuem-leaky-paywall-restriction-rows table td {
-	border-top: 1px solid #F0F0F0;
-	padding: 10px;
+  border-top: 1px solid #f0f0f0;
+  padding: 10px;
 }
 
 #add-restriction-row {
-	margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 /* access options */
 
 .leaky-paywall-interal-setting-table {
-	border: 1px solid #ddd;
+  border: 1px solid #ddd;
 }
 
 .leaky-paywall-interal-setting-table th {
-	padding: 10px;
+  padding: 10px;
 }
 
 .leaky-paywall-interal-setting-table td {
-	border-top: 1px solid #F0F0F0;
-	padding: 10px;
+  border-top: 1px solid #f0f0f0;
+  padding: 10px;
 }
 
 span.delete-post-type-row {
-	color: red;
-	margin-top: -10px;
+  color: red;
+  margin-top: -10px;
 }
 
 .allowed_value_div .allowed_value {
-	margin-left: 5px;
+  margin-left: 5px;
 }
 
 .leaky-paywall-sidebar-widget {
-	background: #fff;
-	padding: 10px 20px;
-	margin-bottom: 20px;
+  background: #fff;
+  padding: 10px 20px;
+  margin-bottom: 20px;
 }
 
 .leaky-paywall-restriction-settings .hide-setting {
-	display: none;
+  display: none;
 }

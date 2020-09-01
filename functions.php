@@ -1592,13 +1592,17 @@ if ( !function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 	    }
 
 	    ob_start();
-	    ?>
+		?>
+		
+		<div class="leaky-paywall-subscription-level-row-header <?php echo $deleted; ?>">
+			<p class="leaky-paywall-subscription-level-row-header-title"><?php echo htmlspecialchars( stripcslashes( $level['label'] ) ); ?> <span class="leaky-paywall-subscription-level-row-header-title-id">ID: <?php echo $row_key; ?></span></p>
+			<p class="leaky-paywall-subscription-level-row-header-toggler"><span class="dashicons dashicons-arrow-up"></span><span class="dashicons dashicons-arrow-down"></span></p>
+		</div>
 	    
 		<table class="issuem-leaky-paywall-subscription-level-row-table leaky-paywall-table <?php echo $deleted; ?>">
 			<tr>
 				<th>
 					<label for="level-name-<?php echo $row_key; ?>"><?php _e( 'Subscription Level Name', 'leaky-paywall' ); ?></label>
-					<p class="description"><?php _e( 'Level ID: ', 'leaky-paywall' ); ?><?php echo $row_key; ?></p>
 				</th>
 				<td>
 					<input id="level-name-<?php echo $row_key; ?>" type="text" class="regular-text" name="levels[<?php echo $row_key; ?>][label]" value="<?php echo htmlspecialchars( stripcslashes( $level['label'] ) ); ?>" />
