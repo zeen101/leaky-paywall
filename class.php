@@ -928,7 +928,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Page for Log In', 'leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_login', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_login'] ) ); ?>
-	                                <p class="description"><?php printf( __( 'Add this shortcode to your Log In page: %s', 'leaky-paywall' ), '[leaky_paywall_login]' ); ?></p>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your Log In page: %s. This page cannot be restricted.', 'leaky-paywall' ), '[leaky_paywall_login]' ); ?></p>
 	                                </td>
 	                            </tr>
 	                            
@@ -936,7 +936,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Page for Subscribe Cards', 'leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_subscription', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_subscription'] ) ); ?>
-	                                <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s', 'leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your Subscription page: %s. This page cannot be restricted.', 'leaky-paywall' ), '[leaky_paywall_subscription]' ); ?></p>
 	                                </td>
 	                            </tr>
 
@@ -944,7 +944,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Page for Register Form', 'leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_register', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_register'] ) ); ?>
-	                                <p class="description"><?php printf( __( 'Add this shortcode to your register page: %s', 'leaky-paywall' ), '[leaky_paywall_register_form]' ); ?></p>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your register page: %s. This page cannot be restricted.', 'leaky-paywall' ), '[leaky_paywall_register_form]' ); ?></p>
 	                                </td>
 	                            </tr>
 	                            
@@ -952,7 +952,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Page for Profile', 'leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_profile', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_profile'] ) ); ?>
-	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s. This page displays the account information for subscribers.', 'leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
+	                                <p class="description"><?php printf( __( 'Add this shortcode to your Profile page: %s. This page displays the account information for subscribers.  This page cannot be restricted.', 'leaky-paywall' ), '[leaky_paywall_profile]' ); ?></p>
 	                                </td>
 	                            </tr>
 
@@ -960,7 +960,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Confirmation Page', 'leaky-paywall' ); ?></th>
 	                                <td>
 									<?php echo wp_dropdown_pages( array( 'name' => 'page_for_after_subscribe', 'echo' => 0, 'show_option_none' => __( '&mdash; Select &mdash;' ), 'option_none_value' => '0', 'selected' => $settings['page_for_after_subscribe'] ) ); ?>
-	                                <p class="description"><?php _e( 'Page a subscriber is redirected to after they subscribe.', 'leaky-paywall' ); ?></p>
+	                                <p class="description"><?php _e( 'Page a subscriber is redirected to after they subscribe.  This page cannot be restricted.', 'leaky-paywall' ); ?></p>
 	                                </td>
 	                            </tr>
 	                           

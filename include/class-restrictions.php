@@ -125,7 +125,7 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		// allow access by capability for more fine grain control
-		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
+		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {	
 			return false;
 		}
 

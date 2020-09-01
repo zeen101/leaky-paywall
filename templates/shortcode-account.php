@@ -284,6 +284,8 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 					</p>
 				</form>
 
+				<?php do_action( 'leaky_paywall_after_edit_profile' ); ?>
+
 				<?php 
 				break;
 			

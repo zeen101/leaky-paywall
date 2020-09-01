@@ -2548,7 +2548,11 @@ if ( !function_exists( 'leaky_paywall_email_subscription_status' ) ) {
 					// new user subscribe admin email
 
 					$level_id = get_user_meta( $user_info->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-					$level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
+					// $level_name = stripcslashes( $settings['levels'][$level_id]['label'] );
+
+					$level = get_leaky_paywall_subscription_level( $level_id );
+
+					$level_name = $level['label'];
 
 					$admin_raw_message = '<p>A new user has signed up on ' . $site_name . '.</p>
 					<h3>Subscriber details</h3>
