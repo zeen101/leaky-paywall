@@ -106,8 +106,262 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 	
 	}
 
+	$results = '<button class="lp-stripe-checkout-button" data-level-id="' . $level_id . '">Subscribe</button>';
+
 	return '<div class="leaky-paywall-stripe-button leaky-paywall-payment-button">' . $results . '</div>';
 
+}
+
+function leaky_paywall_get_stripe_public_key() {
+
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+
+	if ( $mode == 'test' ) {
+		$public_key = isset( $settings['test_publishable_key'] ) ? trim( $settings['test_publishable_key'] ) : '';
+	} else {
+		$public_key = isset( $settings['live_publishable_key'] ) ? trim( $settings['live_publishable_key'] ) : '';
+	}
+	
+	return $public_key;
+
+}
+
+function leaky_paywall_get_stripe_secret_key() {
+
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+
+	if ( $mode == 'test' ) {
+		$secret_key = isset( $settings['test_secret_key'] ) ? trim( $settings['test_secret_key'] ) : '';
+	} else {
+		$secret_key = isset( $settings['live_secret_key'] ) ? trim( $settings['live_secret_key'] ) : '';
+	}
+
+	return $secret_key;
+}
+
+
+add_action( 'wp_ajax_nopriv_leaky_paywall_create_stripe_checkout_session', 'leaky_paywall_create_stripe_checkout_session' );
+add_action( 'wp_ajax_leaky_paywall_create_stripe_checkout_session', 'leaky_paywall_create_stripe_checkout_session' );
+
+function leaky_paywall_create_stripe_checkout_session() {
+
+	$level_id = $_POST['level_id'];
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	// if ( !is_numeric( $level ) ) {
+	// 	exit;
+	// }
+
+	/*
+	[label] => BiteSize - Yearly
+    [deleted] => 0
+    [description] => 
+    [registration_form_description] => 
+    [price] => 24.99
+    [subscription_length_type] => limited
+    [interval_count] => 1
+    [interval] => year
+    [post_types] => Array
+        (
+            [0] => Array
+                (
+                    [allowed] => unlimited
+                    [allowed_value] => -1
+                    [post_type] => article
+                    [taxonomy] => all
+                )
+
+        )
+
+    [id] => 4
+	*/
+
+	$settings = get_leaky_paywall_settings();
+
+	// @todo: make this a function so we can use it on the credit card form too
+	if ( in_array( strtoupper( leaky_paywall_get_currency() ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
+		//Zero-Decimal Currencies
+		//https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support
+		$stripe_price = number_format( $level['price'], '0', '', '' );
+	} else {
+		$stripe_price = number_format( $level['price'], '2', '', '' ); //no decimals
+	}
+
+	if ( isset( $level['recurring'] ) && 'on' == $level['recurring'] ) {
+		$mode = 'subscription';
+	} else {
+		$mode = 'payment';
+	}
+
+	if ( !empty( $settings['page_for_after_subscribe'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
+	} else if ( !empty( $settings['page_for_profile'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_profile'] );
+	} else if ( !empty( $settings['page_for_subscription'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_subscription'] );
+	} else {
+		$redirect_url = home_url();
+	}
+
+	\Stripe\Stripe::setApiKey( leaky_paywall_get_stripe_secret_key() );
+
+	$data = array(
+		'cancel_url' => home_url('cancel'),
+		'mode'	=> $mode,
+		'payment_method_types' => array( 'card', 'alipay' ),
+		'success_url' => $redirect_url,
+		'line_items'	=> array(
+			array(
+				'price_data'	=> array(
+					'currency' => leaky_paywall_get_currency(),
+					'product_data' => array( 'name' => $level['label'] ),
+					'unit_amount' => $stripe_price
+				),
+				'quantity' => 1,
+				'description' => $level['label']
+			)
+		)
+	);
+
+	if ( 'subscription' == $mode ) {
+		$data['line_items'] = array(
+			array(
+				'price_data'	=> array(
+					'currency' => leaky_paywall_get_currency(),
+					'product_data' => array( 'name' => $level['label'] ),
+					'unit_amount' => $stripe_price,
+					'recurring' => array(
+						'interval'	=> $level['interval'],
+						'interval_count' => $level['interval_count']
+					)
+				),
+				'quantity' => 1,
+				'description' => $level['label']
+			)
+		);
+	} else {
+		$data['line_items'] = array(
+			array(
+				'price_data'	=> array(
+					'currency' => leaky_paywall_get_currency(),
+					'product_data' => array( 'name' => $level['label'] ),
+					'unit_amount' => $stripe_price
+				),
+				'quantity' => 1,
+				'description' => $level['label']
+			)
+		);
+	}
+
+	try {
+		$session = \Stripe\Checkout\Session::create( $data );
+	} catch (\Throwable $th) {
+		
+		echo '<pre>';
+		print_r( $th );
+		echo '</pre>';
+		die('testing');
+	}
+	
+	$return = array(
+		'session_id'  => $session->id,
+	);
+	 
+	wp_send_json( $return );
+}
+
+
+
+add_action( 'wp_ajax_nopriv_leaky_paywall_create_stripe_checkout_subscription', 'leaky_paywall_create_stripe_checkout_subscription' );
+add_action( 'wp_ajax_leaky_paywall_create_stripe_checkout_subscription', 'leaky_paywall_create_stripe_checkout_subscription' );
+
+function leaky_paywall_create_stripe_checkout_subscription() {
+
+	$level_id = $_POST['level_id'];
+	$level = get_leaky_paywall_subscription_level( $level_id );
+	$customerId = $_POST['customerId'];
+	$paymentMethodId = $_POST['paymentMethodId'];
+	$planId = $_POST['planId'];
+
+	// if ( !is_numeric( $level ) ) {
+	// 	exit;
+	// }
+
+	/*
+	[label] => BiteSize - Yearly
+    [deleted] => 0
+    [description] => 
+    [registration_form_description] => 
+    [price] => 24.99
+    [subscription_length_type] => limited
+    [interval_count] => 1
+    [interval] => year
+    [post_types] => Array
+        (
+            [0] => Array
+                (
+                    [allowed] => unlimited
+                    [allowed_value] => -1
+                    [post_type] => article
+                    [taxonomy] => all
+                )
+
+        )
+
+    [id] => 4
+	*/
+
+	$settings = get_leaky_paywall_settings();
+
+	\Stripe\Stripe::setApiKey( leaky_paywall_get_stripe_secret_key() );
+
+	$data = array(
+		'invoice_settings' => array(
+			'default_payment_method' => $paymentMethodId
+		)
+	);
+
+	try {
+		$payment_method = \Stripe\PaymentMethod::retrieve($paymentMethodId);
+		$payment_method->attach(array( 'customer' => $customerId));
+
+		$customer = \Stripe\Customer::retrieve($customerId);
+		$customer->invoice_settings->default_payment_method = $paymentMethodId;
+		$customer->save();
+		
+	} catch (\Throwable $th) {
+
+		wp_send_json( array(
+			'error'  => $th->jsonBody
+		) );
+		
+	}
+
+	do_action( 'leaky_paywall_after_create_recurring_customer', $customer );
+
+	try {
+		$subscription = \Stripe\Subscription::create([
+			'customer' => $customerId,
+			'items' => [
+				[
+				'plan' => $planId,
+				],
+			],
+			'expand' => ['latest_invoice.payment_intent'],
+		]);
+	} catch (\Throwable $th) {
+		wp_send_json( array(
+			'error'  => $th->jsonBody
+		) );
+	}
+	
+	$return = array(
+		'subscription'  => $subscription,
+	);
+	 
+	wp_send_json( $return );
 }
 
 

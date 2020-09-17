@@ -184,6 +184,7 @@ span.delete-restriction-row {
 
 #issuem-leaky-paywall-restriction-rows table {
   border: 1px solid #ddd;
+  background: #fff;
 }
 
 #issuem-leaky-paywall-restriction-rows table th {

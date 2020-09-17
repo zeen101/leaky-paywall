@@ -468,30 +468,36 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 									\Stripe\Stripe::setApiKey( $secret_key );
 
-									$cu = \Stripe\Customer::Retrieve(
-									  ["id" => $subscriber_id, "expand" => ["default_source"]]
+									$cu = \Stripe\Customer::retrieve(
+									  ["id" => $subscriber_id]
 									);
 
-									$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
 
-									if ( strcasecmp('deactivated', $status) == 0 ) {
-										$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
-									} else {
-										$data_label = __('Update Credit Card Details','leaky-paywall');
+									if ( isset( $cu->default_source->brand ) ) {
+
+										$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+
+										if ( strcasecmp('deactivated', $status) == 0 ) {
+											$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
+										} else {
+											$data_label = __('Update Credit Card Details','leaky-paywall');
+										}
+
+										$payment_form .= '<form action="" method="POST">
+											<script
+											src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+											data-key="' . $publishable_key . '"
+											data-name="' . get_bloginfo( 'name' ) . '"
+											data-panel-label="' . $data_label . '"
+											data-label="' . $data_label . '"
+											data-allow-remember-me=false
+											data-email="' . $user->user_email . '"
+											data-locale="auto">	
+											</script>	
+											</form>';
 									}
 
-									$payment_form .= '<form action="" method="POST">
-										  <script
-										  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-										  data-key="' . $publishable_key . '"
-										  data-name="' . get_bloginfo( 'name' ) . '"
-										  data-panel-label="' . $data_label . '"
-										  data-label="' . $data_label . '"
-										  data-allow-remember-me=false
-										  data-email="' . $user->user_email . '"
-										  data-locale="auto">	
-										  </script>	
-										</form>';
+									
 
 								}
 
@@ -775,6 +781,10 @@ function do_leaky_paywall_register_form( $atts ) {
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
 		  <span class="payment-errors"></span>
 
+		  <div id="leaky-paywall-registration-errors"></div>
+
+		  <div class="leaky-paywall-registration-user-container">
+
 		  <?php do_action( 'leaky_paywall_before_registration_form_user_fields', $level ); ?>
 
 		  <div class="leaky-paywall-user-fields">
@@ -835,67 +845,109 @@ function do_leaky_paywall_register_form( $atts ) {
 
 		  <?php do_action( 'leaky_paywall_after_password_registration_field', $level_id, $level ); ?>
 
+			<?php if ( $level['price'] != 0 ) {
+				?>
+				<p>
+					<button id="leaky-paywall-registration-next" type="button">Next</button>
+				</p>
+				<?php 
+			} ?>
+			
+
+		</div> <!-- leaky-paywall-registration-user-container -->
+
+		<div class="leaky-paywall-registration-payment-container">
+
+			<?php 
+
+				$gateways = leaky_paywall_get_enabled_payment_gateways( $level_id ); 
+
+				if ( $gateways && $level['price'] != 0 ) {
+
+					foreach( $gateways as $key => $gateway ) {
+
+						echo '<input type="hidden" name="gateway" value="' . esc_attr( $key ) . '" />';
+
+					}
+				} else {
+					echo '<input type="hidden" name="gateway" value="free_registration" />';
+				}
+
+				?>
+
+				<?php 
+				if ( $level['price'] > 0 ) {
+					$total_price = str_replace(',', '', number_format( $level['price'], 2 ) );
+				} else {
+					$total_price = 0;
+				}
+
+				if ( $total_price > 0 ) { ?>
+		  			<h3><?php printf( __( 'Payment Information', 'leaky-paywall' ) ); ?></h3>
+		  		<?php } ?>
+
+				  <?php if ( leaky_paywall_get_current_mode() == 'test' ) {
+					?>
+					<div class="leaky-paywall-test-mode-wrapper">
+						<p class="leaky-paywall-test-mode-text">The site is currently in test mode.</p>
+					<?php 
+				} ?>
+				
+				<?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways, $level_id ); ?>
+				
+				<?php if ( leaky_paywall_get_current_mode() == 'test' ) {
+					?>
+					</div>
+				<?php } ?>
+
+				<div class="leaky-paywall-checkout-button">
+					<button id="leaky-paywall-submit" type="submit"><?php echo leaky_paywall_get_registration_checkout_button_text(); ?></button>
+				</div>
+
+				
+			</div> <!-- .leaky-paywall-registration-payment-container -->
+					
+			<input type="hidden" name="level_price" value="<?php echo $total_price; ?>"/>
+			<input type="hidden" name="currency" value="<?php echo $currency; ?>"/>
+			<input type="hidden" name="description" value="<?php echo $level['label']; ?>"/>
+			<input type="hidden" name="level_id" id="level-id" value="<?php echo $level_id; ?>"/>
+			<input type="hidden" name="interval" value="<?php echo $level['interval']; ?>"/>
+			<input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>"/>
+			<input type="hidden" name="recurring" value="<?php echo empty( $level['recurring'] ) ? '' : $level['recurring']; ?>"/>
+			<input type="hidden" name="site" value="<?php echo $site; ?>"/>
+
+			<input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>
+
+		  </form>
+
 		  <?php 
-
-		  	$gateways = leaky_paywall_get_enabled_payment_gateways( $level_id ); 
-
-		  	if ( $gateways && $level['price'] != 0 ) {
-
-		  		foreach( $gateways as $key => $gateway ) {
-
-		  			echo '<input type="hidden" name="gateway" value="' . esc_attr( $key ) . '" />';
-
-		  		}
-		  	} else {
-		  		echo '<input type="hidden" name="gateway" value="free_registration" />';
-		  	}
-
+			if ( $level['price'] != 0 ) {
+				?>
+				<style>
+					.leaky-paywall-registration-payment-container {
+						display: none;
+					}
+				</style>
+				<?php 
+			}
 		  ?>
 
-		  <?php 
-		  	if ( $level['price'] > 0 ) {
-		  		$total_price = str_replace(',', '', number_format( $level['price'], 2 ) );
-		  	} else {
-		  		$total_price = 0;
-		  	}
-
-		  ?>
-
-		  <input type="hidden" name="level_price" value="<?php echo $total_price; ?>"/>
-		  <input type="hidden" name="currency" value="<?php echo $currency; ?>"/>
-		  <input type="hidden" name="description" value="<?php echo $level['label']; ?>"/>
-		  <input type="hidden" name="level_id" value="<?php echo $level_id; ?>"/>
-		  <input type="hidden" name="interval" value="<?php echo $level['interval']; ?>"/>
-		  <input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>"/>
-		  <input type="hidden" name="recurring" value="<?php echo empty( $level['recurring'] ) ? '' : $level['recurring']; ?>"/>
-		  <input type="hidden" name="site" value="<?php echo $site; ?>"/>
-
-		  <input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce' ); ?>"/>
-
-		  <?php if ( $total_price > 0 ) {
-		  	?>
-		  	<h3><?php printf( __( 'Payment Information', 'leaky-paywall' ) ); ?></h3>
-		  	<?php 
-		  } ?>
-
-		  <?php if ( leaky_paywall_get_current_mode() == 'test' ) {
-		  	?>
-		  	<div class="leaky-paywall-test-mode-wrapper">
-		  		<p class="leaky-paywall-test-mode-text">The site is currently in test mode.</p>
-		  	<?php 
-		  } ?>
-		  
-		  <?php do_action( 'leaky_paywall_before_registration_submit_field', $gateways, $level_id ); ?>
-		  
-		  <?php if ( leaky_paywall_get_current_mode() == 'test' ) {
-		  	?>
-		  	</div>
-		  <?php } ?>
-
-		  <div class="leaky-paywall-checkout-button">
-		  	<button id="leaky-paywall-submit" type="submit"><?php echo leaky_paywall_get_registration_checkout_button_text(); ?></button>
-		  </div>
-		</form>
+		  <style>
+			
+			#leaky-paywall-registration-errors {
+				display: none;
+				padding: .75rem 1.25rem;
+				margin: 1rem 0;
+				border-radius: .25rem;
+				color: #772b35;
+				background: #fadddd;
+				border: 1px solid #f8cfcf;
+			}
+			#leaky-paywall-registration-errors p {
+				margin: 0;
+				font-size: .75em;
+			}
+		  </style>
 
 		<?php do_action( 'leaky_paywall_after_registration_form', $gateways ); ?>
 

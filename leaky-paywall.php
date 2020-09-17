@@ -65,14 +65,15 @@ function leaky_paywall_plugins_loaded() {
 		global $leaky_paywall;
 		$leaky_paywall = new Leaky_Paywall();
 		
-		require_once( 'functions.php' );
-		require_once( 'deprecated.php' );
-		require_once( 'shortcodes.php' );
-		require_once( 'subscriber-table.php' );
-		require_once( 'metaboxes.php' );
-		require_once( 'include/template-functions.php' );
-		require_once( 'include/admin/dashboard-widgets.php' );
-		require_once( 'include/admin/lp-transaction.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'functions.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'deprecated.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'shortcodes.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'subscriber-table.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'metaboxes.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'include/template-functions.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'include/admin/dashboard-widgets.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction.php' );
+		require_once( LEAKY_PAYWALL_PATH . 'include/admin/lp-incomplete-user.php' );
 
 		// license key
 		include( LEAKY_PAYWALL_PATH . 'include/license-key.php' );

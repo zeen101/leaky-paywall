@@ -50,8 +50,11 @@ function leaky_paywall_process_registration() {
 	/** 
 	 * Validate the Form
 	 */
+	// already done via ajax for Stripe transactions
 	
 	$user_data = leaky_paywall_validate_user_data();
+	
+	
 
 	// retrieve all error messages, if any
 	$errors = leaky_paywall_errors()->get_error_messages();
@@ -162,6 +165,8 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 	$transaction_id = $transaction->create();
 	$subscriber_data['transaction_id'] = $transaction_id;
 
+	leaky_paywall_cleanup_incomplete_user( $subscriber_data['email'] );
+
 	// Send email notifications
 	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
 
@@ -174,6 +179,183 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
 
 	exit;
+
+}
+
+/** 
+ * Validate first step of multistep registration form
+ *
+ * @since  4.0.0
+ */
+add_action( 'wp_ajax_nopriv_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation' );
+add_action( 'wp_ajax_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation' );
+
+function leaky_paywall_process_user_registration_validation() {
+
+	$form_data = $_POST['form_data'];
+
+	parse_str( $form_data, $fields );
+
+	$user = array();
+	$errors = array();
+	$settings = get_leaky_paywall_settings();
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+	$level_id = $fields['level_id'];
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	if ( is_user_logged_in() ) {
+		$userdata 			      = get_userdata( get_current_user_id() );
+		$user['id']			      = $userdata->ID;
+		$user['login']		      = $userdata->user_login;
+		$user['email']		      = $userdata->user_email;
+		$user['first_name']       = sanitize_text_field( $fields['first_name']);
+		$user['last_name']        = sanitize_text_field( $fields['last_name']);
+		$user['level_id']         = $level_id;
+		$user['need_new']         = false;
+	} else {
+		$user['id']					= 0;
+		$user['login']				= $settings['remove_username_field'] == 'off' ? sanitize_text_field( $fields['username'] ) : sanitize_text_field( $fields['email_address'] );
+		$user['password']			= sanitize_text_field( $fields['password'] );
+		$user['confirm_password']	= sanitize_text_field( $fields['confirm_password'] );
+		$user['email']				= sanitize_text_field( $fields['email_address'] );
+		$user['first_name']			= sanitize_text_field( $fields['first_name']);
+		$user['last_name']			= sanitize_text_field( $fields['last_name']);
+		$user['level_id']           = $level_id;
+		$user['need_new']			= true;
+	}
+
+	if ( empty( $user['first_name'] ) ) {
+		$errors['firstname_empty'] = array(
+			'message' =>  __( 'Please enter your first name', 'leaky-paywall' )
+		);
+	}
+	
+	if ( empty( $user['last_name'] ) ) {
+		$errors['lastname_empty'] = array(
+			'message' =>  __( 'Please enter your last name', 'leaky-paywall' )
+		);
+	}
+	
+	if ( ! is_email( $user['email'] ) ) {
+		$errors['email_invalid'] = array(
+			'message' =>  __( 'Invalid email', 'leaky-paywall' )
+		);
+	}
+
+	if ( $settings['remove_username_field'] == 'off' ) {
+		if ( ! validate_username( $user['login'] ) ) {
+			$errors['username_invalid'] = array(
+				'message' =>  __( 'Invalid username', 'leaky-paywall' )
+			);
+		}
+	}
+
+	if ( 0 == $user['id'] && empty( $user['password'] ) ) {
+		$errors['password_empty'] = array(
+			'message' =>  __( 'Please enter a password', 'leaky-paywall' )
+		);
+	}
+	
+	if ( 0 == $user['id'] && $user['password'] !== $user['confirm_password'] ) {
+		$errors['password_mismatch'] = array(
+			'message' =>  __( 'Passwords do not match', 'leaky-paywall' )
+		);
+	}
+
+	// validate other fields
+
+
+	if ( !empty($errors)) {
+		$return = array(
+			'errors'  => $errors,
+		);
+		wp_send_json( $return );
+	}
+
+	// if stripe payment method is not active, we are done
+	$enabled_gateways = leaky_paywall_get_enabled_payment_gateways();
+
+	if ( ! in_array( 'stripe', array_keys( $enabled_gateways ) ) ) {
+		$return = array(
+			'success'  => 1,
+		);
+		
+		wp_send_json( $return );
+	}
+	
+	
+	// create Stripe customer
+	$customer_array = array(
+		'name'		  => $user['first_name'] . ' ' . $user['last_name'],
+		'email'       => $user['email'],
+		'description' => $level['label']
+	);
+
+	$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array );
+
+	\Stripe\Stripe::setApiKey( leaky_paywall_get_stripe_secret_key() );
+
+	try {
+		$cu = \Stripe\Customer::create( $customer_array );
+	} catch (\Throwable $th) {
+		$errors['stripe_customer'] = array(
+			'message' =>  __( 'Could not create customer.', 'leaky-paywall' )
+		);
+	}
+
+	if ( !empty($errors)) {
+		$return = array(
+			'errors'  => $errors,
+		);
+		wp_send_json( $return );
+	}
+
+	// need something to store the data on
+	leaky_paywall_create_incomplete_user( $user, $cu );
+
+	// create a paymentIntent (if not recurring)
+	if ( isset( $level['recurring'] ) && 'on' == $level['recurring'] ) {
+		$return = array(
+			'success'  => 1,
+			'customer_id' => $cu->id,
+		);
+		
+		wp_send_json( $return );
+	}
+
+	$stripe_price = number_format( $level['price'], 2, '', '' );
+
+	$intent_args = apply_filters( 'leaky_paywall_payment_intent_args', array(
+		'amount'	=> $stripe_price,
+		'currency'	=> leaky_paywall_get_currency(),
+		'setup_future_usage' => 'off_session',
+		'customer'	=> $cu->id,
+		'description' 	=> $level['label']
+	), $level );
+
+	try {
+		$intent = \Stripe\PaymentIntent::create( $intent_args );
+	} catch (\Throwable $th) {
+		$errors['payment_intent'] = array(
+			'message' =>  __( 'Could not create payment intent.', 'leaky-paywall' )
+		);
+	}
+	
+	if ( !empty($errors)) {
+		$return = array(
+			'errors'  => $errors,
+		);
+		wp_send_json( $return );
+	}
+	
+	$return = array(
+		'success'  => 1,
+		'pi_client' => $intent->client_secret,
+		'pi_id' => $intent->id
+	);
+	
+	wp_send_json( $return );
 
 }
 
@@ -204,6 +386,10 @@ function leaky_paywall_validate_user_data() {
 		$user['first_name']       = sanitize_text_field( $_POST['first_name']);
 		$user['last_name']        = sanitize_text_field( $_POST['last_name']);
 		$user['need_new']         = false;
+	}
+
+	if ( 'stripe' == $_POST['payment_method'] ) {
+		return apply_filters( 'leaky_paywall_user_registration_data', $user );
 	}
 
 	if ( empty( $user['first_name'] ) ) {
@@ -742,4 +928,40 @@ function leaky_paywall_validate_frontend_registration() {
 
 	die();
 	
+}
+
+
+function leaky_paywall_create_incomplete_user( $user_data, $customer_data ) {
+
+	$data = array(
+		'post_title'    => wp_strip_all_tags( $user_data['email'] ),
+		'post_content'  => '',
+		'post_status'   => 'publish',
+		'post_author'   => 1,
+		'post_type'		=> 'lp_incomplete_user'
+	);
+	
+	// Insert the post into the database
+	$incomplete_user = wp_insert_post( $data );
+
+	update_post_meta( $incomplete_user, '_user_data', $user_data );
+	update_post_meta( $incomplete_user, '_customer_data', $customer_data );
+
+}
+
+function leaky_paywall_cleanup_incomplete_user( $email ) {
+
+	$incomplete_users = get_posts(array(
+		'post_type' => 'lp_incomplete_user',
+		's'	=> $email,
+		'posts_per_page' => 99
+	));
+
+	if ( empty( $incomplete_users ) ) {
+		return;
+	}
+
+	foreach( $incomplete_users as $incomplete ) {
+		wp_trash_post( $incomplete->ID );
+	}
 }

@@ -17,10 +17,11 @@ $leaky_paywall_settings(document).ready(function ($) {
   );
 
   $(".leaky-paywall-subscription-level-row-header").click(function () {
-    $(this).toggleClass("toggled");
     $(this)
       .next(".issuem-leaky-paywall-subscription-level-row-table")
-      .toggleClass("toggled");
+      .slideToggle("fast", function () {});
+    // .toggleClass("toggled");
+    $(this).toggleClass("toggled");
   });
 
   $("#leaky_paywall_subscription_level_options").on(

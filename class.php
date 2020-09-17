@@ -214,6 +214,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 			
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Incomplete Users', 'leaky-paywall' ), __( 'Incomplete Users', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_incomplete_user' );
 			
 			add_submenu_page( false, __( 'Update', 'leaky-paywall' ), __( 'Update', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
 
@@ -315,10 +316,18 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			}
 
 			wp_enqueue_script( 'leaky_paywall_validate', LEAKY_PAYWALL_URL . 'js/leaky-paywall-validate.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
+			wp_enqueue_script( 'leaky_paywall_script', LEAKY_PAYWALL_URL . 'js/script.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 
 			wp_localize_script( 'leaky_paywall_validate', 'leaky_paywall_validate_ajax',
 	            array( 
 	            	'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
+	             )
+			);
+			
+			wp_localize_script( 'leaky_paywall_script', 'leaky_paywall_script_ajax',
+	            array( 
+					'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
+					'stripe_pk' => leaky_paywall_get_stripe_public_key()
 	             )
 	        );
 			
@@ -1143,9 +1152,17 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Enabled Gateways', 'leaky-paywall' ); ?></th>
 									<td>
 	                                <?php 
-	                                	$gateways = leaky_paywall_get_payment_gateways();
-
+										$gateways = leaky_paywall_get_payment_gateways();
+				
 	                                	foreach( $gateways as $key => $value ) {
+
+											// no longer supporting the checkout modal
+											if ( $key == 'stripe' && in_array( 'stripe_checkout', $settings['payment_gateway'] ) && !in_array( 'stripe', $settings['payment_gateway'] ) ) {
+												$settings['payment_gateway'][] = 'stripe';
+											
+											}
+
+
 	                                		?>
 											<p>
 												<input id="enable-<?php echo $key; ?>" type="checkbox" name="payment_gateway[]" value="<?php echo $key; ?>" <?php checked( in_array( $key, $settings['payment_gateway'] ) ); ?> /> <label for="enable-<?php echo $key; ?>"><?php _e( $value['admin_label'], 'leaky-paywall' ); ?></label>
@@ -1153,8 +1170,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                		<?php 
 	                                	}
 	                                ?>
-	
-	                                </td>
+	                                <p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://zeen101.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Taxrates, Pipedrive, fulfillment services and other providers.</p>
+									</td>
 	                            </tr>
 	                            
 	                        </table>
@@ -1186,11 +1203,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                <th><?php _e( 'Live Secret Key', 'leaky-paywall' ); ?></th>
 	                                <td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['live_secret_key'] ) ); ?>" /></td>
 	                            </tr>
-	                            
-	                            <tr>
-	                            	<th><?php _e( 'Live Webhooks', 'leaky-paywall' ); ?></th>
-	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
-	                            </tr>
 
 	                            <tr>
 	                                <th><?php _e( 'Test Publishable Key', 'leaky-paywall' ); ?></th>
@@ -1203,18 +1215,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            </tr>
 	                            
 	                            <tr>
-	                            	<th><?php _e( 'Test Webhooks', 'leaky-paywall' ); ?></th>
+	                            	<th><?php _e( 'Stripe Webhook URL', 'leaky-paywall' ); ?></th>
 	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
-	                            </tr>
-
-	                            <tr>
-	                                <th><?php _e( 'Enable Stripe Elements', 'leaky-paywall' ); ?></th>
-	                                <td>
-	                                	<select id="enable_stripe_elements" name="enable_stripe_elements">
-	                                		<option <?php selected( 'yes', $settings['enable_stripe_elements'] ); ?> value="yes">Yes</option>
-	                                		<option <?php selected( 'no', $settings['enable_stripe_elements'] ); ?> value="no">No</option>
-	                                	</select>
-	                                	<p class="description">Use Stripe Elements for credit card form. Also allows for Apple Pay.</p>
 	                            </tr>
 
 	                            <tr>
@@ -1224,7 +1226,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                		<option <?php selected( 'yes', $settings['enable_apple_pay'] ); ?> value="yes">Yes</option>
 	                                		<option <?php selected( 'no', $settings['enable_apple_pay'] ); ?> value="no">No</option>
 	                                	</select>
-	                                	<p class="description">Enable Apple Pay when using Stripe Elements.</p>
+	                                	<p class="description">You must <a target="_blank" href="https://stripe.com/docs/stripe-js/elements/payment-request-button">verify your domain with Apple Pay</a> to complete the Apple Pay setup.</p>
 	                            </tr>
 
 	                        </table>
@@ -1238,13 +1240,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		                        <table id="leaky_paywall_paypal_options" class="gateway-options form-table">
 		                        
 			                        <tr><th colspan="2"><h3><?php _e( 'PayPal Standard Settings', 'leaky-paywall' ); ?></h3></th></tr>
-
-		                        	<tr>
-		                                <th><?php _e( 'Paypal Button Location', 'leaky-paywall' ); ?></th>
-		                                <td>
-		                                	<input type="checkbox" id="enable_paypal_on_registration" name="enable_paypal_on_registration" <?php checked( 'on', $settings['enable_paypal_on_registration'] ); ?> /> <?php _e( 'Display paypal option on the registration form instead of the pricing cards.', 'leaky-paywall' ); ?> 
-		                                </td>
-		                            </tr>
 
 		                        	<tr>
 		                                <th><?php _e( 'Merchant ID', 'leaky-paywall' ); ?></th>
@@ -1421,12 +1416,20 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                                	</select>
 	                                	<p class="description"><?php _e( 'Choose length of time when a visitor can once again read your articles/posts (up to the # of articles allowed).', 'leaky-paywall' ); ?></p>
 	                                </td>
-	                            </tr>
+								</tr>
+								
+								<?php 
+									if ( ACTIVE_ISSUEM ) {
+										?>
+										<tr class="restriction-options ">
+											<th><?php _e( 'IssueM PDF Downloads', 'leaky-paywall' ); ?></th>
+											<td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /> <?php _e( 'Restrict PDF issue downloads to active Leaky Paywall subscribers.', 'leaky-paywall' ); ?></td>
+										</tr>
+										<?php 
+									}
+								?>
 	                            
-	                        	<tr class="restriction-options ">
-	                                <th><?php _e( 'Restrict PDF Downloads?', 'leaky-paywall' ); ?></th>
-	                                <td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /></td>
-	                            </tr>
+	                        	
 
 	                        	<tr class="restriction-options">
 									<th>

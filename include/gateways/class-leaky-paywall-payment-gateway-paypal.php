@@ -49,12 +49,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	{
 
 		$settings = get_leaky_paywall_settings();
-		
-		if ( $settings['enable_paypal_on_registration'] != 'on' ) {
-			return;
-		}
-
-		// $level_id = esc_html( $_GET['level_id'] );
 		$level = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( $level['price'] == 0 ) {
@@ -725,6 +719,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					// send new user the welcome email
 					leaky_paywall_email_subscription_status( $user_id, 'new', $args );
 				}
+
+				leaky_paywall_cleanup_incomplete_user( $args['subscriber_email'] );
 
 				leaky_paywall_log( $args, 'after paypal standard ipn');
 

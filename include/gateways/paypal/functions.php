@@ -20,13 +20,7 @@ function leaky_paywall_paypal_subscription_cards( $payment_options, $level, $lev
 
 	$settings = get_leaky_paywall_settings();
 
-	if ( in_array( 'paypal_standard', array_keys( $enabled_gateways ) ) && $settings['enable_paypal_on_registration'] != 'on' ) {
-		$output = leaky_paywall_paypal_button( $level, $level_id );
-	} else if($settings['enable_paypal_on_registration'] == 'on'){
-		return '<div class="leaky-paywall-payment-button"><a href="' . get_page_link( $settings['page_for_register'] ) . '?level_id=' . $level_id . '">' . __( 'Subscribe', 'leaky-paywall' ) . '</a></div>';
-	}
-
-	return $payment_options . $output;
+	return '<div class="leaky-paywall-payment-button"><a href="' . get_page_link( $settings['page_for_register'] ) . '?level_id=' . $level_id . '">' . __( 'Subscribe', 'leaky-paywall' ) . '</a></div>';
 
 }
 

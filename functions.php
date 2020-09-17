@@ -703,7 +703,7 @@ if ( !function_exists( 'leaky_paywall_new_subscriber' ) ) {
 	 * @return mixed $wpdb insert ID or false
 	 */
 	function leaky_paywall_new_subscriber( $hash='deprecated', $email, $customer_id, $meta_args, $login='' ) {
-		
+
 		if ( !is_email( $email ) ) {
 			return false;
 		}
@@ -2193,6 +2193,12 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 						continue;
 						
 					$level = apply_filters( 'leaky_paywall_subscription_options_level', $level, $level_id );
+
+					if ( isset( $level['recurring'] ) && 'on' == $level['recurring'] ) {
+						$is_recurring = true;
+					} else {
+						$is_recurring = false;
+					}
 										
 					$payment_options = '';
 					$allowed_content = '';
@@ -2308,7 +2314,7 @@ if ( !function_exists( 'leaky_paywall_subscription_options' ) ) {
 
 					} 
 
-					if ( in_array( $level_id, $current_level_ids ) && 'on' == $level['recurring'] && $status == 'active' ) {
+					if ( in_array( $level_id, $current_level_ids ) && $status == 'active' && $is_recurring ) {
 						$subscription_action .= ''; // they already have an active recurring subscription to this level
 					} else {
 						$subscription_action .= apply_filters( 'leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id );
@@ -3523,7 +3529,7 @@ function leaky_paywall_display_rate_us_notice() {
 	$wp_user_search = new WP_User_Query( $args );
 	$total_live_subscribers = count( $wp_user_search->get_results() );
 
-	if ( 10 >= $total_live_subscribers ) {
+	if ( 100 >= $total_live_subscribers ) {
 		return;
 	}
 
@@ -3538,7 +3544,7 @@ function leaky_paywall_display_rate_us_notice() {
 		<div class="leaky-paywall-message-inner">
 			
 			<div class="leaky-paywall-message-content">
-				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> 🥳<?php _e( 'You have more than 10 subscribers with <strong>Leaky Paywall</strong>. Please help us by leaving a review on WordPress.org. <br>We read every review and use your feedback to make Leaky Paywall better for everyone!', 'leaky-paywall' ); ?></p>
+				<p><strong><?php echo __( 'Congrats!', 'leaky-paywall' ); ?></strong> 🥳<?php _e( 'You have more than 100 subscribers with <strong>Leaky Paywall</strong>. Please help us by leaving a review on WordPress.org. <br>We read every review and use your feedback to make Leaky Paywall better for everyone!', 'leaky-paywall' ); ?></p>
 				<p class="leaky-paywall-message-actions">
 					<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php _e( 'Leave a Review', 'leaky-paywall' ); ?></a>
 					<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php _e( 'Hide', 'leaky-paywall' ); ?></a>

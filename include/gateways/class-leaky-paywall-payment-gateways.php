@@ -61,14 +61,14 @@ class Leaky_Paywall_Payment_Gateways {
 			),
 			'stripe'	=> array(
 				'label'		=> __( 'Credit / Debit Card', 'leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Credit / Debit Card Form', 'leaky-paywall' ),
+				'admin_label'	=> __( 'Stripe', 'leaky-paywall' ),
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe'
 			),
-			'stripe_checkout'	=> array(
-				'label'		=> __( 'Stripe Checkout', 'leaky-paywall' ),
-				'admin_label'	=> __( 'Stripe Checkout Popup', 'leaky-paywall' ),
-				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
-			)
+			// 'stripe_checkout'	=> array(
+			// 	'label'		=> __( 'Stripe Checkout', 'leaky-paywall' ),
+			// 	'admin_label'	=> __( 'Stripe Checkout (this will send the user offsite for payment)', 'leaky-paywall' ),
+			// 	'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
+			// )
 		);
 
 		return apply_filters( 'leaky_paywall_payment_gateways', $gateways );
@@ -100,11 +100,19 @@ class Leaky_Paywall_Payment_Gateways {
 			}
 		}
 
+		if ( in_array( 'stripe_checkout', $saved ) && !in_array( 'stripe', $saved ) ) {
+
+			$enabled['stripe'] = __( 'Stripe', 'leaky-paywall' );
+
+		}
+
 		if ( empty( $enabled ) ) {
 
 			$enabled['paypal_standard'] = __( 'PayPal Standard', 'leaky-paywall' );
 
 		}
+
+		
 
 		return apply_filters( 'leaky_paywall_enabled_payment_gateways', $enabled, $this->available_gateways );
 
