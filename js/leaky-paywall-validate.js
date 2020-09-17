@@ -62,34 +62,42 @@
       });
     });
 
-    // username
-    username.focus(function () {
-      userValid = false;
-      $(".username-error").remove();
+    console.log(username);
 
-      setSubmitBtnActive();
-    });
+    if (username.length > 0) {
+      console.log("has username");
+      // username
+      username.focus(function () {
+        userValid = false;
+        $(".username-error").remove();
 
-    username.blur(function () {
-      var data = {
-        action: "leaky_paywall_validate_registration",
-        username: username.val(),
-      };
-
-      $.post(leaky_paywall_validate_ajax.ajaxurl, data, function (resp) {
-        if (resp.status == "error") {
-          $(
-            '<p class="leaky-paywall-input-error username-error">' +
-              resp.message +
-              "</p>"
-          ).insertAfter("#username");
-          userValid = false;
-        } else {
-          userValid = true;
-        }
         setSubmitBtnActive();
       });
-    });
+
+      username.blur(function () {
+        var data = {
+          action: "leaky_paywall_validate_registration",
+          username: username.val(),
+        };
+
+        $.post(leaky_paywall_validate_ajax.ajaxurl, data, function (resp) {
+          if (resp.status == "error") {
+            $(
+              '<p class="leaky-paywall-input-error username-error">' +
+                resp.message +
+                "</p>"
+            ).insertAfter("#username");
+            userValid = false;
+          } else {
+            userValid = true;
+          }
+          setSubmitBtnActive();
+        });
+      });
+    } else {
+      // email is the username
+      userValid = true;
+    }
 
     function validatePasswords() {
       var pwMatch =
