@@ -342,15 +342,18 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	do_action( 'leaky_paywall_after_create_recurring_customer', $customer );
 
 	try {
-		$subscription = \Stripe\Subscription::create([
+
+		$subscription_array = array(
 			'customer' => $customerId,
-			'items' => [
-				[
-				'plan' => $planId,
-				],
-			],
-			'expand' => ['latest_invoice.payment_intent'],
-		]);
+			'items' => array(
+				array(
+					'plan' => $planId,
+				),
+			),
+			'expand' => array('latest_invoice.payment_intent'),
+		);
+
+		$subscription = \Stripe\Subscription::create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level ) );
 	} catch (\Throwable $th) {
 		wp_send_json( array(
 			'error'  => $th->jsonBody

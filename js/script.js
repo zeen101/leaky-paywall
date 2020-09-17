@@ -57,18 +57,18 @@
             $("#leaky-paywall-registration-errors").hide();
             $("#leaky-paywall-registration-next").remove();
             $(".leaky-paywall-registration-user-container").hide();
-
-            $("html, body")
-              .stop(true, true)
-              .animate(
-                {
-                  scrollTop: $("#leaky-paywall-payment-form").offset().top,
-                },
-                1000
-              );
+            $(".leaky-paywall-form-payment-setup-step").addClass("active");
+            $(".leaky-paywall-form-account-setup-step").removeClass("active");
 
             $(".leaky-paywall-registration-payment-container").slideDown();
           }, 500);
+
+          $("html, body").animate(
+            {
+              scrollTop: $(".leaky-paywall-form-steps").offset().top,
+            },
+            1000
+          );
         }
       });
     });

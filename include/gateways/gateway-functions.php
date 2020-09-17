@@ -98,6 +98,8 @@ function leaky_paywall_get_enabled_payment_gateways( $level_id = '' ) {
  */
 function leaky_paywall_load_gateway_fields( $gateways, $level_id ) {
 
+	// $flipped_gateways = array_reverse( $gateways, true );
+
 	foreach( $gateways as $key => $gateway ) {
 
 		$all_gateways = new Leaky_Paywall_Payment_Gateways;

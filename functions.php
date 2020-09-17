@@ -3130,6 +3130,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 	$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 	$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 	$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+	$subscriber_notes = get_user_meta( $user->ID, '_leaky_paywall_subscriber_notes', true );
 
 	if ( !$level_id ) {
 		return;
@@ -3141,7 +3142,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 	<table class="form-table">	
 
 		<tr>
-			<th><label for="twitter">Level ID</label></th>
+			<th><label for="level_id">Level ID</label></th>
 
 			<td>
 				<?php echo esc_attr( $level_id ); ?>
@@ -3150,7 +3151,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 		</tr>
 
 		<tr>
-			<th><label for="twitter">Level Description</label></th>
+			<th><label for="level_description">Level Description</label></th>
 
 			<td>
 				<?php echo $level['label']; ?>
@@ -3159,7 +3160,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 		</tr>
 
 		<tr>
-			<th><label for="twitter">Payment Gateway</label></th>
+			<th><label for="payment_gateway">Payment Gateway</label></th>
 
 			<td>
 				<?php echo esc_attr( $gateway ); ?>
@@ -3168,7 +3169,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 		</tr>
 
 		<tr>
-			<th><label for="twitter">Payment Status</label></th>
+			<th><label for="payment_status">Payment Status</label></th>
 
 			<td>
 				<?php echo esc_attr( $status ); ?>
@@ -3177,7 +3178,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 		</tr>
 
 		<tr>
-			<th><label for="twitter">Expires</label></th>
+			<th><label for="expires">Expires</label></th>
 
 			<td>
 				<?php echo esc_attr( $expires ); ?>
@@ -3188,7 +3189,7 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 		<?php if ( $plan ) {
 			?>
 			<tr>
-				<th><label for="twitter">Plan</label></th>
+				<th><label for="plan">Plan</label></th>
 
 				<td>
 					<?php echo esc_attr( $plan ); ?>
@@ -3202,10 +3203,23 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 		<?php if ( $subscriber_id ) {
 			?>
 			<tr>
-				<th><label for="twitter">Subscriber ID</label></th>
+				<th><label for="subscriber_id">Subscriber ID</label></th>
 
 				<td>
 					<?php echo esc_attr( $subscriber_id ); ?>
+					
+				</td>
+			</tr>
+			<?php 
+		} ?>
+
+		<?php if ( $subscriber_notes ) {
+			?>
+			<tr>
+				<th><label for="subscriber_notes">Subscriber Notes</label></th>
+
+				<td>
+					<?php echo esc_attr( $subscriber_notes ); ?>
 					
 				</td>
 			</tr>

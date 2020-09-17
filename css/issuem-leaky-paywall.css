@@ -321,3 +321,78 @@
 	color: red;
 	font-size: 12px;
 }
+
+#leaky-paywall-registration-next {
+	min-width: 200px;
+}
+
+#leaky-paywall-submit {
+	min-width: 200px;
+}
+
+#card-element {
+	margin-bottom: 20px;
+	background: #E7E9EB;
+}
+
+#card-errors {
+	color: red;
+	font-size: 14px;
+	margin-bottom: 20px;
+}
+
+.leaky-paywall-form-steps {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	margin: 40px auto 20px;
+	border-bottom: 3px solid #ddd;
+	padding: 10px;
+}
+
+.leaky-paywall-form-steps .leaky-paywall-form-step {
+	width: 50%;
+	text-align: center;
+	padding: 3px;
+	text-transform: uppercase;
+	font-size: 14px;
+}
+
+.leaky-paywall-form-steps .leaky-paywall-form-step.active {
+	
+	font-weight: bold;
+		
+}
+
+.leaky-paywall-form-steps .leaky-paywall-form-step .step-number {
+	display: inline-block;
+	background: #ddd;
+	padding: 0 5px;
+	width: 30px;
+	color: #000;
+	text-align: center;
+	line-height: 30px;
+	vertical-align: middle;
+	border-radius: 3px;
+}
+
+.leaky-paywall-form-steps .leaky-paywall-form-step .step-title {
+	display: block;
+}
+
+.leaky-paywall-form-steps .leaky-paywall-form-step.active .step-number {
+	color: #fff;
+	background: #3097DD;
+}
+
+.leaky-paywall-user-fields input {
+	width: 100%;
+}
+
+.leaky-paywall-account-fields h3 {
+	margin-top: 20px;
+}
+
+.leaky-paywall-account-fields input {
+	width: 100%;
+}

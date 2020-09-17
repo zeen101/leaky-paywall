@@ -1840,7 +1840,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								}
 								
 								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, $_POST['leaky-paywall-subscriber-level-id'] );
-								
+
+								if ( isset( $_POST['leaky-paywall-subscriber-notes'] ) ) {
+									update_user_meta( $user->ID, '_leaky_paywall_subscriber_notes', sanitize_text_field( $_POST['leaky-paywall-subscriber-notes']) );
+								}
+
 								do_action( 'update_leaky_paywall_subscriber', $user->ID );
 
 								echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . __( 'Subscriber updated.', 'leaky-paywall' ) . '</strong></p></div>';
@@ -1883,7 +1887,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
                 		$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
                 		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
                 		$price = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true );
-                		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+						$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+						$subscriber_notes = get_user_meta( $user->ID, '_leaky_paywall_subscriber_notes', true );
+
+					
+
 						if ( '0000-00-00 00:00:00' === $expires )
 							$expires = '';
 						else
@@ -1935,7 +1943,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                        </p>
 	                    	<p>
 		                        <label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php _e( 'Subscriber ID', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo $subscriber_id; ?>" name="leaky-paywall-subscriber-id"  />
-	                        </p>
+							</p>
+							<p>
+								<label for="leaky-paywall-subscriber-notes" style="display:table-cell"><?php _e( 'Subscriber Notes', 'leaky-paywall' ); ?></label>
+								<textarea id="leaky-paywall-subscriber-notes" class="regular-text" name="leaky-paywall-subscriber-notes"><?php echo esc_attr( $subscriber_notes ); ?></textarea>
+							</p>
 	                        <?php do_action( 'update_leaky_paywall_subscriber_form', $user->ID ); ?>
 	                        </div>
 	                        <?php submit_button( 'Update Subscriber' ); ?>

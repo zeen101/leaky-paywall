@@ -523,13 +523,17 @@ class Leaky_Paywall_Restrictions {
 	{
 
 		$settings = get_leaky_paywall_settings();
+		$text = '';
 		
-		$message  = '<div class="leaky_paywall_message_wrap"><div id="leaky_paywall_message">';
+		$message = '<div class="leaky_paywall_message_wrap"><div id="leaky_paywall_message">';
+
 		if ( !is_user_logged_in() ) {
-			$message .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			$text .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
 		} else {
-			$message .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
+			$text .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
 		}
+
+		$message .= apply_filters( 'leaky_paywall_nag_message_text', $text, $this->post_id );
 		$message .= '</div></div>';
 
 		return do_shortcode( $message );

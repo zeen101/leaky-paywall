@@ -777,6 +777,25 @@ function do_leaky_paywall_register_form( $atts ) {
 		</div>
 
 		<?php do_action( 'leaky_paywall_before_registration_form', $level ); ?>
+					
+		<?php 
+			if ( $level['price'] > 0 ) {
+				?>
+				<div class="leaky-paywall-form-steps">
+					<div class="leaky-paywall-form-account-setup-step leaky-paywall-form-step active">
+						<span class="step-number">1</span>
+						<span class="step-title">Account Setup</span>
+					</div>
+					<div class="leaky-paywall-form-payment-setup-step leaky-paywall-form-step">
+						<span class="step-number">2</span>
+						<span class="step-title">Payment</span>
+					</div>
+				</div>
+				<?php 
+			}
+		?>
+
+		
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
 		  <span class="payment-errors"></span>

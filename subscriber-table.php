@@ -248,6 +248,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'has_access'    => __( 'Has Access', 'leaky-paywall' ),
 			'gateway'       => __( 'Gateway', 'leaky-paywall' ),
 			'status'        => __( 'Payment Status', 'leaky-paywall' ),
+			'notes'         => __( 'Notes', 'leaky-paywall' ),	
 		);
 		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
 
@@ -536,7 +537,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							} else {
 								echo "<td $attributes>" . get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) . '</td>';
 							}
-							
+						break;
+						case 'notes':
+							echo "<td $attributes>" . esc_attr( get_user_meta( $user->ID, '_leaky_paywall_subscriber_notes', true ) ) . '</td>';
 						break;
 	
 						default:

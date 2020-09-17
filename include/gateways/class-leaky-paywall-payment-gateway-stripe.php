@@ -98,7 +98,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		do_action( 'leaky_paywall_stripe_signup', $gateway_data );
 
-		return apply_filters( 'leaky_paywall_stripe_gateway_data', $gateway_data, $this, $cu, $subscription );
+		return apply_filters( 'leaky_paywall_stripe_gateway_data', $gateway_data, $this, $customer_data );
 
 	}
 
@@ -570,6 +570,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 										// Subscription is active, no customer actions required.
 										return { subscription, planId, paymentMethodId };
 									}
+									if (subscription && subscription.status === 'trialing') {
+										// Subscription is trialing, no customer actions required.
+										return { subscription, planId, paymentMethodId };
+									}
 
 									console.log('handle payment that requires customer action');
 									console.log(subscription);
@@ -626,7 +630,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 									}) {
 									
 										console.log('handle requires payment method');
-									if (subscription.status === 'active') {
+									if (subscription.status === 'active' || subscription.status === 'trialing') {
 										// subscription is active, no customer actions required.
 										return { subscription, planId, paymentMethodId };
 									} else if (
@@ -651,7 +655,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 									console.log('sub complete');
 									console.log(result);
 									// Payment was successful.
-									if (result.subscription.status === 'active') {
+									if (result.subscription.status === 'active' || result.subscription.status === 'trialing') {
 										console.log('subscription complete!');
 										var form$ = jQuery('#leaky-paywall-payment-form');
 									
