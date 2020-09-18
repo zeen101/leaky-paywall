@@ -214,7 +214,6 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 			
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
-			add_submenu_page( 'issuem-leaky-paywall', __( 'Incomplete Users', 'leaky-paywall' ), __( 'Incomplete Users', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_incomplete_user' );
 			
 			add_submenu_page( false, __( 'Update', 'leaky-paywall' ), __( 'Update', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-update', array( $this, 'update_page' ) );
 
@@ -411,6 +410,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				'live_publishable_key'			=> '',
 				'test_secret_key'				=> '',
 				'test_publishable_key'			=> '',
+				'stripe_webhooks_enabled'		=> 'off',
 				'enable_stripe_elements'		=> 'no',
 				'enable_apple_pay'				=> 'no',
 				'enable_paypal_on_registration' => 'on',
@@ -445,7 +445,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				),
 				'levels' => array(
 					'0' => array(
-						'label' 					=> __( 'Magazine Subscription', 'leaky-paywall' ),
+						'label' 					=> __( 'Digital Access', 'leaky-paywall' ),
 						'price' 					=> '',
 						'subscription_length_type' 	=> 'limited',
 						'interval_count' 			=> 1,
@@ -755,6 +755,12 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					
 					if ( isset( $_POST['enable_stripe_elements'] ) ) {
 						$settings['enable_stripe_elements'] = sanitize_text_field( $_POST['enable_stripe_elements'] );
+					}
+
+					if ( !empty( $_POST['stripe_webhooks_enabled'] ) ) {
+						$settings['stripe_webhooks_enabled'] = 'on';
+					} else {
+						$settings['stripe_webhooks_enabled'] = 'off';
 					}
 
 					if ( isset( $_POST['enable_apple_pay'] ) ) {
@@ -1217,6 +1223,14 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 	                            <tr>
 	                            	<th><?php _e( 'Stripe Webhook URL', 'leaky-paywall' ); ?></th>
 	                            	<td><p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p></td>
+								</tr>
+								
+								<tr>
+	                            	<th><?php _e( 'Stripe Webhooks Enabled', 'leaky-paywall' ); ?></th>
+	                            	<td>
+										<p><input type="checkbox" id="stripe_webhooks_enabled" name="stripe_webhooks_enabled" <?php checked( 'on', $settings['stripe_webhooks_enabled'] ); ?> />
+	                                	<?php _e( 'I have enabled the Leaky Paywall webhook URL in my Stripe account.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/120-leaky-paywall-recurring-payments"><?php _e( 'View Instructions', 'leaky-paywall' ); ?></a></p>
+	                                </td>
 	                            </tr>
 
 	                            <tr>

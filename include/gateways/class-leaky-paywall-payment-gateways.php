@@ -102,7 +102,11 @@ class Leaky_Paywall_Payment_Gateways {
 
 		if ( in_array( 'stripe_checkout', $saved ) && !in_array( 'stripe', $saved ) ) {
 
-			$enabled['stripe'] = __( 'Stripe', 'leaky-paywall' );
+			$enabled['stripe'] = array(
+				'label' => 'Credit / Debit Card',
+				'admin_label' => 'Stripe',
+				'class' => 'Leaky_Paywall_Payment_Gateway_Stripe'
+			);
 
 		}
 

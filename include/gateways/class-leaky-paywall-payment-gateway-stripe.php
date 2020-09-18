@@ -789,16 +789,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function scripts() {
 
 		wp_enqueue_script( 'stripe', 'https://js.stripe.com/v3/', array( 'jquery' ) );
-
-		// if ( is_home() || is_front_page() || is_archive() ) {
-		// 	return;
-		// }
-
-		// $settings = get_leaky_paywall_settings();
-
-		// if ( is_page( $settings['page_for_subscription'] ) || is_page( $settings['page_for_register'] ) || is_page( $settings['page_for_profile'] ) ) {
-			
-		// }
 		
 	}
 
