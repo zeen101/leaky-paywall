@@ -8,7 +8,6 @@ class LP_Incomplete_User {
 	function __construct()	{
         add_action( 'init', array( $this, 'register_post_type' ) );
         add_action( 'add_meta_boxes', array( $this, 'meta_box_create' ) );
-        add_action( 'save_post', array( $this, 'save_meta') );
     }
 
 	public function register_post_type()
