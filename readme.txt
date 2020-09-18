@@ -1,8 +1,8 @@
 === Leaky Paywall for WordPress ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.4.1
-Stable tag: 4.14.7
+Tested up to: 5.5.1
+Stable tag: 4.15.0
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -92,6 +92,18 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.15.0 =
+*** Update Notice: Stripe Checkout is no longer supported. Use registration form instead. ***
+* Update Stripe integration to be SCA compliant
+* Update registration flow to use two steps
+* Add front end validation to the registration form
+* Add initial incomplete transaction status to paypal orders
+* Add class checks for stripe with namespace
+* Allow for both paypal and stripe elements as options on checkout
+* Remove depracated Stripe Checkout Modal
+* Admin settings UI improvements
+* Fix duplicate transactions for paypal signups
 
 = 4.14.7 =
 * Adjust registration to allow for more ways to purchase content
