@@ -25,6 +25,7 @@
     $("#leaky-paywall-registration-next").click(function () {
       console.log("validate data and create user");
       $(this).text("Processing... Please Wait");
+      $("#leaky-paywall-registration-errors").html("");
 
       const form_data = $("#leaky-paywall-payment-form").serialize();
 

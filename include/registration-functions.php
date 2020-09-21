@@ -263,8 +263,8 @@ function leaky_paywall_process_user_registration_validation() {
 		);
 	}
 
-	// validate other fields
-
+	// allow 3rd party plugins to validate account setup data
+	$errors = apply_filters( 'leaky_paywall_account_setup_validation', $errors, $fields );
 
 	if ( !empty($errors)) {
 		$return = array(
