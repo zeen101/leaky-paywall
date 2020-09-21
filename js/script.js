@@ -1,27 +1,6 @@
 (function ($) {
   $(document).ready(function () {
-    var stripe = Stripe(leaky_paywall_script_ajax.stripe_pk);
-
-    $(".lp-stripe-checkout-button").click(function (e) {
-      e.preventDefault();
-
-      var level_id = $(this).data("level-id");
-
-      var data = {
-        action: "leaky_paywall_create_stripe_checkout_session",
-        level_id: level_id,
-      };
-
-      $.post(leaky_paywall_script_ajax.ajaxurl, data, function (resp) {
-        console.log(resp);
-
-        if (resp.session_id) {
-          return stripe.redirectToCheckout({ sessionId: resp.session_id });
-        }
-      });
-    });
-
-    // registration form stuff
+    // registration form handler
     $("#leaky-paywall-registration-next").click(function () {
       console.log("validate data and create user");
       $(this).text("Processing... Please Wait");
