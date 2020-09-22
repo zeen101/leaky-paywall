@@ -243,6 +243,12 @@ function leaky_paywall_process_user_registration_validation() {
 		);
 	}
 
+	if ( email_exists( $user['email'] ) ) {
+		$errors['email_exists'] = array(
+			'message' =>  __( 'Email already exists. Please log in.', 'leaky-paywall' )
+		);
+	}
+
 	if ( $settings['remove_username_field'] == 'off' ) {
 		if ( ! validate_username( $user['login'] ) ) {
 			$errors['username_invalid'] = array(
