@@ -258,11 +258,6 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 				try {
 
-				    // $cu = \Stripe\Customer::retrieve($subscriber_id); // stored in your application
-				    // $cu->source = $_POST['stripeToken']; // obtained with Checkout
-					// $cu->update();
-					
-
 					// update source
 					$cu = \Stripe\Customer::update( $subscriber_id, array( 'source' => $_POST['stripeToken'] ) );
 
