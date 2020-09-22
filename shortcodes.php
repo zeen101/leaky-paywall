@@ -258,13 +258,26 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 				try {
 
-				    $cu = \Stripe\Customer::retrieve($subscriber_id); // stored in your application
-				    $cu->source = $_POST['stripeToken']; // obtained with Checkout
-				    $cu->save();
+				    // $cu = \Stripe\Customer::retrieve($subscriber_id); // stored in your application
+				    // $cu->source = $_POST['stripeToken']; // obtained with Checkout
+					// $cu->update();
+					
 
-				    $update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
+					// update source
+					$cu = \Stripe\Customer::update( $subscriber_id, array( 'source' => $_POST['stripeToken'] ) );
 
-				    leaky_paywall_log( $user->user_email, 'credit card updated');
+					// retrieve sources
+					$sources = \Stripe\Customer::allSources( $subscriber_id );
+
+					$card_id = isset( $sources->data[0]->id ) ? $sources->data[0]->id : '';
+
+					if ( $card_id ) {
+						// update customer default source with the card ID
+						$cu = \Stripe\Customer::update( $subscriber_id, array( 'default_source' => $card_id ) );
+						$update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
+						leaky_paywall_log( $user->user_email, 'credit card updated to ' . $card_id );
+						
+					}
 
 				    if ( strcasecmp('deactivated', $status) == 0 ) {
 
@@ -302,7 +315,7 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 
 				    }
 
-				  }
+				}
 				  catch(\Stripe\Error\Card $e) {
 
 				    $body = $e->getJsonBody();
@@ -471,34 +484,32 @@ if ( !function_exists( 'do_leaky_paywall_profile' ) ) {
 									$cu = \Stripe\Customer::retrieve(
 									  ["id" => $subscriber_id]
 									);
-
-
+								
 									if ( isset( $cu->default_source->brand ) ) {
 
 										$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
 
-										if ( strcasecmp('deactivated', $status) == 0 ) {
-											$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
-										} else {
-											$data_label = __('Update Credit Card Details','leaky-paywall');
-										}
-
-										$payment_form .= '<form action="" method="POST">
-											<script
-											src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-											data-key="' . $publishable_key . '"
-											data-name="' . get_bloginfo( 'name' ) . '"
-											data-panel-label="' . $data_label . '"
-											data-label="' . $data_label . '"
-											data-allow-remember-me=false
-											data-email="' . $user->user_email . '"
-											data-locale="auto">	
-											</script>	
-											</form>';
 									}
 
-									
+									if ( strcasecmp('deactivated', $status) == 0 ) {
+										$data_label = __('Update Credit Card Details & Restart Subscription','leaky-paywall');
+									} else {
+										$data_label = __('Update Credit Card Details','leaky-paywall');
+									}
 
+									$payment_form .= '<form action="" method="POST">
+										<script
+										src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+										data-key="' . $publishable_key . '"
+										data-name="' . get_bloginfo( 'name' ) . '"
+										data-panel-label="' . $data_label . '"
+										data-label="' . $data_label . '"
+										data-allow-remember-me=false
+										data-email="' . $user->user_email . '"
+										data-locale="auto">	
+										</script>	
+										</form>';
+								
 								}
 
 								
