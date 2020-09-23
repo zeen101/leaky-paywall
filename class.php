@@ -314,7 +314,11 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 		        );
 			}
 
-			wp_enqueue_script( 'leaky_paywall_validate', LEAKY_PAYWALL_URL . 'js/leaky-paywall-validate.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
+
+			if ( !empty( $settings['page_for_register'] ) && is_page( $settings['page_for_register'] ) ) {
+				wp_enqueue_script( 'leaky_paywall_validate', LEAKY_PAYWALL_URL . 'js/leaky-paywall-validate.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
+			}
+			
 			wp_enqueue_script( 'leaky_paywall_script', LEAKY_PAYWALL_URL . 'js/script.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION );
 
 			wp_localize_script( 'leaky_paywall_validate', 'leaky_paywall_validate_ajax',

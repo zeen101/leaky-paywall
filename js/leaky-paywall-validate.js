@@ -62,10 +62,7 @@
       });
     });
 
-    console.log(username);
-
     if (username.length > 0) {
-      console.log("has username");
       // username
       username.focus(function () {
         userValid = false;
@@ -108,8 +105,6 @@
       if (pwMatch) {
         $(".password-error").remove();
       } else {
-        // console.log(passwordField.val());
-        // console.log(passwordConfirmField.val());
         if (passwordField.val() && passwordConfirmField.val()) {
           $(
             '<p class="leaky-paywall-input-error password-error">' +
@@ -124,8 +119,10 @@
     function setSubmitBtnActive() {
       if (userValid && emailValid && passwordsMatch) {
         $("#leaky-paywall-submit").prop("disabled", false);
+        $("#leaky-paywall-registration-next").prop("disabled", false);
       } else {
         $("#leaky-paywall-submit").prop("disabled", true);
+        $("#leaky-paywall-registration-next").prop("disabled", true);
       }
     }
   });
