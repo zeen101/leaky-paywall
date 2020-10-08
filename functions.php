@@ -2587,12 +2587,27 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		leaky_paywall_log(current_time('Y-m-d'), 'process renewal reminder');
 
 		$days_before = (int) $settings['renewal_reminder_days_before'];
+		$date_to_compare = strtotime('+' . $days_before . ' day');
 
 		$args = array(
-			'number' => -1
+			'number' => -1,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key' => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+					'compare' => 'EXISTS'
+				),
+				array(
+					'key' => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value' => date('Y-m-d', $date_to_compare),
+					'compare' => '=',
+					'type' => 'DATE'
+				),
+
+			)
 		);
 
-		$users = leaky_paywall_subscriber_query($args, $blog_id);
+		$users = get_users($args);
 
 		if (empty($users)) {
 			return;

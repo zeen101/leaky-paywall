@@ -24,6 +24,36 @@ $leaky_paywall_settings(document).ready(function ($) {
     $(this).toggleClass("toggled");
   });
 
+  $("#collapse-levels").click(function (e) {
+    e.preventDefault();
+    $(".issuem-leaky-paywall-subscription-level-row-table").each(function () {
+      if (!$(this).hasClass("hidden")) {
+        $(this).slideUp("fast");
+      }
+    });
+
+    $(".leaky-paywall-subscription-level-row-header").each(function () {
+      if (!$(this).hasClass("hidden")) {
+        $(this).addClass("toggled");
+      }
+    });
+  });
+
+  $("#expand-levels").click(function (e) {
+    e.preventDefault();
+    $(".issuem-leaky-paywall-subscription-level-row-table").each(function () {
+      if (!$(this).hasClass("hidden")) {
+        $(this).slideDown("fast");
+      }
+    });
+
+    $(".leaky-paywall-subscription-level-row-header").each(function () {
+      if (!$(this).hasClass("hidden")) {
+        $(this).removeClass("toggled");
+      }
+    });
+  });
+
   $("#leaky_paywall_subscription_level_options").on(
     "click",
     "input#add-subscription-row-post-type",

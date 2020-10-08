@@ -1607,6 +1607,8 @@ if (!class_exists('Leaky_Paywall')) {
 
 							<h2><?php _e('Subscription Levels', 'leaky-paywall'); ?></span></h2>
 
+							<p><a id="collapse-levels" href="#">Collapse All</a> / <a id="expand-levels" href="#">Expand All</a></p>
+
 							<div id="leaky_paywall_subscription_level_options">
 
 								<table id="leaky_paywall_subscription_level_options_table" class="leaky-paywall-table subscription-options form-table">
