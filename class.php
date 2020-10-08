@@ -1938,6 +1938,7 @@ if (!class_exists('Leaky_Paywall')) {
 								<p>
 									<label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e('Expires', 'leaky-paywall'); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo date($date_format, time()); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
 									<input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
+									<br><span style="color: #999;"><?php _e('Enter 0 for never expires', 'leaky-paywall'); ?></span>
 								</p>
 								<p>
 									<label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php _e('Subscription Level', 'leaky-paywall'); ?></label>
@@ -1997,6 +1998,7 @@ if (!class_exists('Leaky_Paywall')) {
 								<p>
 									<label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php _e('Expires', 'leaky-paywall'); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo date($date_format, time()); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
 									<input type="hidden" name="date_format" value="<?php echo $jquery_date_format; ?>" />
+									<br><span style="color: #999;"><?php _e('Enter 0 for never expires', 'leaky-paywall'); ?></span>
 								</p>
 								<p>
 									<label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php _e('Subscription Level', 'leaky-paywall'); ?></label>
