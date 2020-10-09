@@ -360,10 +360,10 @@ function leaky_paywall_create_stripe_checkout_subscription()
 
 				$sub = $customer->subscriptions->retrieve($subscription->id);
 				$sub->plan = $planId;
-				do_action('leaky_paywall_before_update_stripe_subscription', $customer, $sub);
+				do_action('leaky_paywall_before_update_stripe_subscription', $customer, $sub, $level);
 				$sub->save();
 
-				do_action('leaky_paywall_after_update_stripe_subscription', $customer, $sub);
+				do_action('leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level);
 			}
 		}
 	} catch (\Throwable $th) {
