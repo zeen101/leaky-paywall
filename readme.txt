@@ -2,7 +2,7 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
 Tested up to: 5.5.1
-Stable tag: 4.15.2
+Stable tag: 4.15.3
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -92,6 +92,17 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.15.3 =
+* Add collapsable ui to subscription levels
+* Add level to update stripe subscription actions
+* Add helper text for expires field
+* Update reminder email user query for large sites
+* Update admin plugin links
+* Fix for updating Stripe subscriptions on existing customers
+* Fix Stripe customer duplication during registration
+* Fix email check during account setup validation
+* Only load validation script on register page
 
 = 4.15.2 =
 * Add functionality for updating a subscriber to update their payment information
