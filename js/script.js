@@ -2,7 +2,6 @@
   $(document).ready(function () {
     // registration form handler
     $("#leaky-paywall-registration-next").click(function () {
-      console.log("validate data and create user");
       $(this).text("Processing... Please Wait");
       $("#leaky-paywall-registration-errors").html("");
 
