@@ -359,9 +359,6 @@ function leaky_paywall_create_stripe_checkout_subscription()
 			foreach ($subscriptions->data as $subscription) {
 
 				$sub = $customer->subscriptions->retrieve($subscription->id);
-
-				leaky_paywall_log($sub, 'stripe sub before update stripe subscription');
-
 				$sub->plan = $planId;
 				do_action('leaky_paywall_before_update_stripe_subscription', $customer, $sub);
 				$sub->save();
