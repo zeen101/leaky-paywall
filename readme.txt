@@ -1,4 +1,4 @@
-=== Leaky Paywall for WordPress ===
+=== Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
 Tested up to: 5.5.1
