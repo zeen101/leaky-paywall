@@ -427,7 +427,7 @@ function leaky_paywall_get_stripe_plan($level, $level_id, $plan_args)
 	if (!$match) {
 		$stripe_plan = leaky_paywall_create_stripe_plan($level, $level_id, $plan_args);
 
-		$settings['levels'][$level_id]['plan_id'][] = $stripe_plan->id;
+		$settings['levels'][$level_id]['plan_id'][] = is_object($stripe_plan) ? $stripe_plan->id : false;
 		update_leaky_paywall_settings($settings);
 	} else {
 		$stripe_plan = $match;

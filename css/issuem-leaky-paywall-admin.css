@@ -123,7 +123,7 @@ form#leaky-paywall-subscriber-bulk-add textarea {
 
 span.delete-x {
   display: inline-block;
-  color: #bbb;
+  color: red;
   font-size: 14px;
   line-height: 1.3em;
   margin-right: 12px;
