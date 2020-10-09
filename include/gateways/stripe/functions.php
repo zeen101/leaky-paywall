@@ -338,19 +338,37 @@ function leaky_paywall_create_stripe_checkout_subscription()
 
 	do_action('leaky_paywall_after_create_recurring_customer', $customer);
 
+	$subscription_array = array(
+		'customer' => $customerId,
+		'items' => array(
+			array(
+				'plan' => $planId,
+			),
+		),
+		'expand' => array('latest_invoice.payment_intent'),
+	);
+
 	try {
 
-		$subscription_array = array(
-			'customer' => $customerId,
-			'items' => array(
-				array(
-					'plan' => $planId,
-				),
-			),
-			'expand' => array('latest_invoice.payment_intent'),
-		);
+		$subscriptions = $customer->subscriptions->all(array('limit' => '1'));
 
-		$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level));
+		if (empty($subscriptions->data)) {
+			$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level));
+		} else {
+
+			foreach ($subscriptions->data as $subscription) {
+
+				$sub = $customer->subscriptions->retrieve($subscription->id);
+
+				leaky_paywall_log($sub, 'stripe sub before update stripe subscription');
+
+				$sub->plan = $planId;
+				do_action('leaky_paywall_before_update_stripe_subscription', $customer, $sub);
+				$sub->save();
+
+				do_action('leaky_paywall_after_update_stripe_subscription', $customer, $sub);
+			}
+		}
 	} catch (\Throwable $th) {
 		wp_send_json(array(
 			'error'  => $th->jsonBody

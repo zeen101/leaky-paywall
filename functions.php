@@ -3026,6 +3026,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	/**
 	 * Log Leaky Paywall events and data to a file
 	 *
+	 * @param $data array|object the data to store
+	 * @param $event string name of event
+	 * 
 	 * @since 4.7.1
 	 * @return bool
 	 */
