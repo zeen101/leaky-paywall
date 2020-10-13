@@ -283,34 +283,8 @@ function leaky_paywall_create_stripe_checkout_subscription()
 	$customerId = $_POST['customerId'];
 	$paymentMethodId = $_POST['paymentMethodId'];
 	$planId = $_POST['planId'];
-
-	// if ( !is_numeric( $level ) ) {
-	// 	exit;
-	// }
-
-	/*
-	[label] => BiteSize - Yearly
-    [deleted] => 0
-    [description] => 
-    [registration_form_description] => 
-    [price] => 24.99
-    [subscription_length_type] => limited
-    [interval_count] => 1
-    [interval] => year
-    [post_types] => Array
-        (
-            [0] => Array
-                (
-                    [allowed] => unlimited
-                    [allowed_value] => -1
-                    [post_type] => article
-                    [taxonomy] => all
-                )
-
-        )
-
-    [id] => 4
-	*/
+	$form_data = $_POST['formData'];
+	parse_str($form_data, $fields);
 
 	$settings = get_leaky_paywall_settings();
 
@@ -353,7 +327,7 @@ function leaky_paywall_create_stripe_checkout_subscription()
 		$subscriptions = $customer->subscriptions->all(array('limit' => '1'));
 
 		if (empty($subscriptions->data)) {
-			$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level));
+			$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields));
 		} else {
 
 			foreach ($subscriptions->data as $subscription) {

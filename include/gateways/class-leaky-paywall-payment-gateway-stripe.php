@@ -508,14 +508,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 							}) {
 
 								let level_id = $('#level-id').val();
-
-								var data = new FormData();
+								let data = new FormData();
+								const form_data = $("#leaky-paywall-payment-form").serialize();
 
 								data.append('action', 'leaky_paywall_create_stripe_checkout_subscription');
 								data.append('level_id', level_id);
 								data.append('customerId', customerId);
 								data.append('paymentMethodId', paymentMethodId);
 								data.append('planId', planId);
+								data.append('formData', form_data);
 
 								return (
 									fetch(leaky_paywall_script_ajax.ajaxurl, {
