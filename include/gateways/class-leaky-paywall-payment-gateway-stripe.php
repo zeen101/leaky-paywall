@@ -707,7 +707,6 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 								console.log('show card error - event');
 								console.log(event);
 								console.log('show card error - event error message');
-								console.log(event.error.message);
 
 								let subButton = document.getElementById('leaky-paywall-submit');
 								subButton.disabled = false;
@@ -717,7 +716,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 								if (event.error) {
 									displayError.textContent = event.error.message;
 								} else {
-									displayError.textContent = '';
+									displayError.textContent = 'There was an error with your payment. Please try again.';
 								}
 							}
 
