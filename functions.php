@@ -955,18 +955,11 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 	{
 
 		$settings = get_leaky_paywall_settings();
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
-
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 		$form = '';
 
 		if (is_user_logged_in()) {
-
-			global $blog_id;
-			if (is_multisite_premium() && !is_main_site($blog_id)) {
-				$site = '_' . $blog_id;
-			} else {
-				$site = '';
-			}
 
 			if (!empty($_REQUEST['payment_gateway'])) {
 				$payment_gateway = $_REQUEST['payment_gateway'];
@@ -1019,6 +1012,7 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 							//We are creating plans with the site of '_all', even on single sites.  This is a quick fix but needs to be readdressed.
 							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled');
 							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan_all', 'Canceled');
+							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
 
 							do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
 						} else {
