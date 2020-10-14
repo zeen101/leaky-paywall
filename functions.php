@@ -2364,9 +2364,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		function leaky_paywall_add_lost_password_link()
 		{
-
-			$settings = get_leaky_paywall_settings();
-			return '<a href="' . wp_lostpassword_url() . '">' . __('Lost Password?', 'leaky-paywall') . '</a>';
+			return '<a id="leaky-paywall-lost-password-link" href="' . wp_lostpassword_url() . '">' . __('Lost Password?', 'leaky-paywall') . '</a>';
 		}
 	}
 
