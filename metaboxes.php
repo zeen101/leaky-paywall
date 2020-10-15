@@ -11,35 +11,35 @@ if ( !function_exists( 'leaky_paywall_general_metaboxes' ) ) {
 	function leaky_paywall_general_metaboxes() {
 	
 		$hidden_post_types = apply_filters( 'leaky_paywall_hidden_post_types_metaboxes', array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'lp-coupons', 'ad_dropper', 'lp_group_account' ) );
-		$post_types = get_post_types( array(), 'objects' );
-	
+		$post_types        = get_post_types( array(), 'objects' );
+
 		foreach ( $post_types as $post_type ) {
-		
+
 			if ( in_array( $post_type->name, $hidden_post_types ) ) 
 				continue;
-				
+
 			add_meta_box( 'leaky_paywall_content_visibility', __( 'Leaky Paywall Visibility', 'issuem-leaky-paywall' ), 'leaky_paywall_content_visibility', $post_type->name, 'side' );
-		
+
 		}
-		
+
 		do_action( 'leaky_paywall_general_metaboxes' );
-		
+
 	}
 	add_action( 'add_meta_boxes', 'leaky_paywall_general_metaboxes' );
 
 }
 
-if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
+if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 
 	function leaky_paywall_content_visibility( $post ) {
 	
-		$settings = get_leaky_paywall_settings();
+		$settings   = get_leaky_paywall_settings();
 		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
-		$defaults = array(
-			'visibility_type' 		=> 'default',
-			'only_visible' 			=> array(),
-			'only_always_visible' 	=> array(),
-			'always_visible' 		=> array(),
+		$defaults   = array(
+			'visibility_type'     => 'default',
+			'only_visible'        => array(),
+			'only_always_visible' => array(),
+			'always_visible'      => array(),
 		);
 		$visibility = wp_parse_args( $visibility, $defaults );
 		
@@ -52,15 +52,16 @@ if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
 		echo '  <option value="onlyalways" ' . selected( $visibility['visibility_type'], 'onlyalways', true ) . '>' . __( 'only and always be visible to...', 'issuem-leaky-paywall' ) . '</option>';
 		echo '</select>';
 		
-		if ( 'only' !== $visibility['visibility_type'] )
+		if ( 'only' !== $visibility['visibility_type'] ) {
 			$only_visible = 'style="display: none;"';
-		else
+		} else {
 			$only_visible = '';
+		}
 
-		if ( !empty( $settings['levels'] ) ) {
+		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-only-visible" name="leaky_paywall_only_visible[]" ' . $only_visible . ' multiple="multiple">';
 	    	foreach( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . $key . '" ' . selected( in_array( $key, $visibility['only_visible'] ), true, false ) . '>' . $level['label'] . '</option>';
+				echo '<option value="' . $key . '" ' . selected( in_array( $key, $visibility['only_visible'] ), true, false ) . '>' . $level['label'] . '</option>';
 			}
 			echo '</select>';
 		}
@@ -70,11 +71,11 @@ if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
 		else
 			$always_visible = '';
 		
-		if ( !empty( $settings['levels'] ) ) {
+		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-always-visible" name="leaky_paywall_always_visible[]" ' . $always_visible . ' multiple="multiple">';
-			echo '  <option value="-1" ' . selected( in_array( '-1', $visibility['always_visible'] ), true, false ) . '>' . __( 'Everyone', 'issuem-leaky-paywall' ) . '</option>';
+			echo '<option value="-1" ' . selected( in_array( '-1', $visibility['always_visible'] ), true, false ) . '>' . __( 'Everyone', 'issuem-leaky-paywall' ) . '</option>';
 	    	foreach( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . $key . '" ' . selected( in_array( $key, $visibility['always_visible'] ), true, false ) . '>' . $level['label'] . '</option>';
+				echo '<option value="' . $key . '" ' . selected( in_array( $key, $visibility['always_visible'] ), true, false ) . '>' . $level['label'] . '</option>';
 			}
 			echo '</select>';
 		}
@@ -84,26 +85,26 @@ if ( !function_exists( 'leaky_paywall_content_visibility' ) ) {
 		else
 			$only_always_visible = '';
 
-		if ( !empty( $settings['levels'] ) ) {
+		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-only-always-visible" name="leaky_paywall_only_always_visible[]" ' . $only_always_visible . ' multiple="multiple">';
 	    	foreach( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . $key . '" ' . selected( in_array( $key, $visibility['only_always_visible'] ), true, false ) . '>' . $level['label'] . '</option>';
+				echo '<option value="' . $key . '" ' . selected( in_array( $key, $visibility['only_always_visible'] ), true, false ) . '>' . $level['label'] . '</option>';
 			}
 			echo '</select>';
 		}
 		
 		echo '<p class="description">' . __( 'Hint:', 'issuem-leaky-paywall' ) . '</p>';
 		echo '<p class="description">' . sprintf( __( '"Only" means that only the selected subscription levels can see this %s, if they have not reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
-		 echo '<p class="description">' . sprintf( __( '"Always" means that the selected subscription levels can see this %s, even if they have reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
-		 echo '<p class="description">' . sprintf( __( '"Only and Always" means that only the selected subscription levels can see this %s, even if they have reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
+		echo '<p class="description">' . sprintf( __( '"Always" means that the selected subscription levels can see this %s, even if they have reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
+		echo '<p class="description">' . sprintf( __( '"Only and Always" means that only the selected subscription levels can see this %s, even if they have reached their %s limit.', 'issuem-leaky-paywall' ), $post->post_type, $post->post_type ) . '</p>';
 
 		wp_nonce_field( 'leaky_paywall_content_visibility_meta_box', 'leaky_paywall_content_visibility_meta_box_nonce' );
-	
+
 	}
 
 }
 
-if ( !function_exists( 'save_leaky_paywall_content_visibility' ) ) {
+if ( ! function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 
 	function save_leaky_paywall_content_visibility( $post_id ) {
 	
@@ -134,38 +135,38 @@ if ( !function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 	
 		/* OK, it's safe for us to save the data now. */	
 		
-		if ( !empty( $_POST['leaky_paywall_visibility_type'] ) ) {
+		if ( ! empty( $_POST['leaky_paywall_visibility_type'] ) ) {
 			$visibility['visibility_type'] = $_POST['leaky_paywall_visibility_type'];
 			
 			switch ( $visibility['visibility_type'] ) {
-			
+
 				case 'only':
-					if ( !empty( $_POST['leaky_paywall_only_visible'] ) ) {
-						$visibility['only_visible'] = $_POST['leaky_paywall_only_visible'];
+					if ( ! empty( $_POST['leaky_paywall_only_visible'] ) ) {
+						$visibility['only_visible']        = $_POST['leaky_paywall_only_visible'];
 						$visibility['only_always_visible'] = array();
-						$visibility['always_visible'] = array();
+						$visibility['always_visible']      = array();
 					} else {
-						$visibility['only_visible'] = array();
+						$visibility['only_visible']        = array();
 						$visibility['only_always_visible'] = array();
-						$visibility['always_visible'] = array();
+						$visibility['always_visible']      = array();
 					}
 					break;
-			
+
 				case 'onlyalways':
-					if ( !empty( $_POST['leaky_paywall_only_always_visible'] ) ) {
-						$visibility['only_visible'] = array();
+					if ( ! empty( $_POST['leaky_paywall_only_always_visible'] ) ) {
+						$visibility['only_visible']        = array();
 						$visibility['only_always_visible'] = $_POST['leaky_paywall_only_always_visible'];
-						$visibility['always_visible'] = array();
+						$visibility['always_visible']      = array();
 					} else {
-						$visibility['only_visible'] = array();
+						$visibility['only_visible']        = array();
 						$visibility['only_always_visible'] = array();
-						$visibility['always_visible'] = array();
+						$visibility['always_visible']      = array();
 					}
 					break;
 					
 				case 'always':
-					if ( !empty( $_POST['leaky_paywall_always_visible'] ) ) {
-						$visibility['only_visible'] = array();
+					if ( ! empty( $_POST['leaky_paywall_always_visible'] ) ) {
+						$visibility['only_visible']        = array();
 						$visibility['only_always_visible'] = array();
 						
 						if ( in_array( '-1', $_POST['leaky_paywall_always_visible'] ) )
@@ -173,22 +174,22 @@ if ( !function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 						else
 							$visibility['always_visible'] = $_POST['leaky_paywall_always_visible'];
 					} else {
-						$visibility['only_visible'] = array();
+						$visibility['only_visible']        = array();
 						$visibility['only_always_visible'] = array();
-						$visibility['always_visible'] = array();
+						$visibility['always_visible']      = array();
 					}
 					break;
-					
+
 				default:
-					if ( !empty( $_POST['leaky_paywall_always_visible'] ) ) {
-						$visibility['only_visible'] = array();
+					if ( ! empty( $_POST['leaky_paywall_always_visible'] ) ) {
+						$visibility['only_visible']        = array();
 						$visibility['only_always_visible'] = array();
-						$visibility['always_visible'] = array();
+						$visibility['always_visible']      = array();
 					}
 					break;
-			
+
 			}
-			
+
 			update_post_meta( $post_id, '_issuem_leaky_paywall_visibility', $visibility );
 			
 		} else {

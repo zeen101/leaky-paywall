@@ -25,14 +25,14 @@ class LP_Transaction {
 
 	function __construct( $args )	{
 
-		$this->user_id = $args['user_id'];
-		$this->price = $args['price'];
-		$this->payment_gateway = $args['payment_gateway'];
+		$this->user_id                = $args['user_id'];
+		$this->price                  = $args['price'];
+		$this->payment_gateway        = $args['payment_gateway'];
 		$this->payment_gateway_txn_id = isset( $args['payment_gateway_txn_id'] ) ? $args['payment_gateway_txn_id'] : '';
-		$this->payment_status = $args['payment_status'];
-		$this->level_id = $args['level_id'];
-		$this->currency = isset( $args['currency'] ) ? $args['currency'] : '';
-		$this->is_recurring = isset( $args['is_recurring'] ) ? true : false;
+		$this->payment_status         = $args['payment_status'];
+		$this->level_id               = $args['level_id'];
+		$this->currency               = isset( $args['currency'] ) ? $args['currency'] : '';
+		$this->is_recurring           = isset( $args['is_recurring'] ) ? true : false;
 
 	}
 
@@ -42,11 +42,11 @@ class LP_Transaction {
 		$user = get_user_by( 'id', $this->user_id );
 
 		$transaction = array(
-			'post_title'    => 'Transaction for ' . $user->user_email,
-			'post_content'  => '',
-			'post_status'   => 'publish',
-			'post_author'   => 1,
-			'post_type'		=> 'lp_transaction'
+			'post_title'   => 'Transaction for ' . $user->user_email,
+			'post_content' => '',
+			'post_status'  => 'publish',
+			'post_author'  => 1,
+			'post_type'    => 'lp_transaction'
 		);
 		
 		$transaction_id = wp_insert_post( $transaction );
@@ -67,7 +67,6 @@ class LP_Transaction {
 		do_action( 'leaky_paywall_after_create_transaction', $transaction_id, $user );
 
 		return $transaction_id;
-		
 	}
 
 }

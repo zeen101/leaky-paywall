@@ -21,13 +21,13 @@ class Leaky_Paywall_Restrictions {
 	public function display_viewed_content_debug() 
 	{
 
-		if ( !isset( $_GET['leaky_paywall_debug'] ) ) {
+		if ( ! isset( $_GET['leaky_paywall_debug'] ) ) {
 			return;
 		}
 		?>
 			<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 9999;">
 				<?php 
-				echo '<pre>' . __('Viewed Content:','leaky-paywall') . ' ';
+				echo '<pre>' . __( 'Viewed Content:','leaky-paywall' ) . ' ';
 				print_r( $this->get_content_viewed_by_user() );
 				echo '</pre>';
 				?>
@@ -40,7 +40,7 @@ class Leaky_Paywall_Restrictions {
 
 		do_action( 'leaky_paywall_before_process_requests', get_leaky_paywall_settings() );
 
-		if ( !$this->is_content_restricted() ) {
+		if ( ! $this->is_content_restricted() ) {
 			return;
 		}
 
@@ -68,7 +68,7 @@ class Leaky_Paywall_Restrictions {
 		$this->is_ajax = true;
 		$this->post_id = $_REQUEST['post_id'];
 		
-		if ( !$this->is_content_restricted() ) {
+		if ( ! $this->is_content_restricted() ) {
 			echo json_encode( 'do not show paywall' );
 			exit();
 		}
@@ -88,7 +88,7 @@ class Leaky_Paywall_Restrictions {
 	// Helper method when restrictions need to be checked manually (like custom fields)
 	public function subscriber_can_view() 
 	{
-		if ( !$this->is_content_restricted() ) {
+		if ( ! $this->is_content_restricted() ) {
 			return true;
 		}
 
@@ -116,7 +116,7 @@ class Leaky_Paywall_Restrictions {
 
 		$settings = get_leaky_paywall_settings();
 
-		if ( !$this->is_single() ) {
+		if ( ! $this->is_single() ) {
 			return false;
 		}
 
@@ -190,8 +190,6 @@ class Leaky_Paywall_Restrictions {
 				return false;
 			}
 
-			
-
 			if ( $this->allowed_value_exceeded() ) {
 				return false;
 			} else {
@@ -200,17 +198,13 @@ class Leaky_Paywall_Restrictions {
 			
 		} else {
 
-			if ( !leaky_paywall_user_has_access() ) {
+			if ( ! leaky_paywall_user_has_access() ) {
 				return false;
 			}
-
-
 
 			if ( $this->visibility_restricts_access() ) {
 				return false;
 			}
-
-
 
 			if ( $this->level_id_allows_access() ) {
 				return true;
@@ -225,12 +219,12 @@ class Leaky_Paywall_Restrictions {
 
 	public function level_id_allows_access() 
 	{
-		$settings = get_leaky_paywall_settings();
-		$level_ids = leaky_paywall_subscriber_current_level_ids();
-		$restrictions = $this->get_restriction_settings();
-		$viewed_content = $this->get_content_viewed_by_user();
+		$settings          = get_leaky_paywall_settings();
+		$level_ids         = leaky_paywall_subscriber_current_level_ids();
+		$restrictions      = $this->get_restriction_settings();
+		$viewed_content    = $this->get_content_viewed_by_user();
 		$content_post_type = get_post_type( $this->post_id );
-		$allows_access = false;
+		$allows_access     = false;
 		
 		foreach( $level_ids as $level_id ) {
 
@@ -249,26 +243,24 @@ class Leaky_Paywall_Restrictions {
 						return true;
 					}
 
-
-
-					if ( !isset( $access_rule['taxonomy'] ) ) {
+					if ( ! isset( $access_rule['taxonomy'] ) ) {
 						$access_rule['taxonomy'] = 'all';
 					}
 
-					if ( !isset( $restriction['taxonomy'] ) ) {
+					if ( ! isset( $restriction['taxonomy'] ) ) {
 						$restriction['taxonomy'] = 'all';
 					}
 
-					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
+					if ( 'unlimited' == $access_rule['allowed'] && 'all' == $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 						return true;
 					}
 					
-					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
+					if ( 'unlimited' == $access_rule['allowed'] && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
 						return true;
 					}
 
 					// they have access to some taxonomy, but not this one
-					if ( $access_rule['allowed'] == 'unlimited' && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
+					if ( 'unlimited' == $access_rule['allowed'] && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 						
 						if ( $this->allowed_value_exceeded() ) {
 							$allows_access = false;
@@ -278,11 +270,11 @@ class Leaky_Paywall_Restrictions {
 
 					}
 
-					if ( $access_rule['allowed'] == 'unlimited' && $restriction['taxonomy'] == 'all' && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
-						 $allows_access = true;
+					if ( 'unlimited' == $access_rule['allowed'] && 'all' == $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
+						$allows_access = true;
 					}
 
-					if ( $access_rule['allowed'] == 'unlimited' && $restriction['taxonomy'] == 'all' && $content_post_type == $restriction['post_type'] && !$this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
+					if ( 'unlimited' == $access_rule['allowed'] && 'all' == $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && ! $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
 
 						if ( $this->allowed_value_exceeded() ) {
 							$allows_access = false;
@@ -292,16 +284,16 @@ class Leaky_Paywall_Restrictions {
 
 					}
 
-					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
+					if ( 'limited' == $access_rule['allowed'] && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 						continue;
 					}
 
-					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] == 'all' && $content_post_type == $access_rule['post_type'] ) {
+					if ( 'limited' == $access_rule['allowed'] && 'all' == $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 						
 						$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 
 						// max views reached so block the content
-						if ( !empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
 							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
@@ -311,13 +303,13 @@ class Leaky_Paywall_Restrictions {
 					}
 					
 
-					if ( $access_rule['allowed'] == 'limited' && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
+					if ( 'limited' == $access_rule['allowed'] && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 
 						// this only needs to calculate for this term
 						$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 
 						// max views reached so block the content
-						if ( !empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
 							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
@@ -342,23 +334,23 @@ class Leaky_Paywall_Restrictions {
 		$settings = get_leaky_paywall_settings();
 
 		// get viewed content
-		$viewed_content = $this->get_content_viewed_by_user();
-		$restrictions = $this->get_restriction_settings();
+		$viewed_content    = $this->get_content_viewed_by_user();
+		$restrictions      = $this->get_restriction_settings();
 		$content_post_type = get_post_type( $this->post_id );
 
 		foreach( $restrictions['post_types'] as $restriction ) {
 
-			if ( !isset( $restriction['taxonomy'] ) ) {
+			if ( ! isset( $restriction['taxonomy'] ) ) {
 				$restriction['taxonomy'] = 'all';
 			}
 
-			if ( $restriction['post_type'] == $content_post_type && $restriction['taxonomy'] == 'all'  ) {
+			if ( $restriction['post_type'] == $content_post_type && 'all' == $restriction['taxonomy']  ) {
 
 				if ( 'on' == $settings['enable_combined_restrictions'] ) {
-					$allowed_value = $settings['combined_restrictions_total_allowed'];
+					$allowed_value         = $settings['combined_restrictions_total_allowed'];
 					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
 				} else {
-					$allowed_value = $restriction['allowed_value'];
+					$allowed_value         = $restriction['allowed_value'];
 					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? count( $viewed_content[$content_post_type] ) : 0;
 				}
 
@@ -367,9 +359,9 @@ class Leaky_Paywall_Restrictions {
 					return false;
 				}
 				
-				if ( $allowed_value == 0 ) {
+				if ( 0 == $allowed_value ) {
 					return true;
-				} else if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+				} else if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 					// max views reached so block the content
 					return true;
 				} else {
@@ -383,22 +375,22 @@ class Leaky_Paywall_Restrictions {
 				
 				// this only needs to calculate for this term (unless combined)
 				if ( 'on' == $settings['enable_combined_restrictions'] ) {
-					$allowed_value = $settings['combined_restrictions_total_allowed'];
+					$allowed_value         = $settings['combined_restrictions_total_allowed'];
 					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
 				} else {
-					$allowed_value = $restriction['allowed_value'];
+					$allowed_value         = $restriction['allowed_value'];
 					$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 				}
 				
 				// first, see if the content has already been viewed. if so, let them view it (keys are the post_id)
-				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type]) ) ) {
+				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type] ) ) ) {
 					return false;
 				}
 
 				// max views reached so block the content
-				if ( $allowed_value == 0 ) {
+				if ( 0 == $allowed_value ) {
 					return true;
-				} else if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+				} else if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 					return true;
 				} else {
 					$this->update_content_viewed_by_user();
@@ -412,7 +404,7 @@ class Leaky_Paywall_Restrictions {
 				$allowed_value = $settings['combined_restrictions_total_allowed'];
 
 				// first, see if the content has already been viewed. if so, let them view it (keys are the post_id)
-				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type]) ) ) {
+				if ( isset( $viewed_content[$content_post_type] ) && in_array( $this->post_id, array_keys( $viewed_content[$content_post_type] ) ) ) {
 					return false;
 				}
 
@@ -420,15 +412,14 @@ class Leaky_Paywall_Restrictions {
 				$number_already_viewed = isset( $viewed_content[$content_post_type] ) ? $this->get_total_content_viewed() : 0;
 
 				// max views reached so block the content
-				if ( $allowed_value == 0 ) {
+				if ( 0 == $allowed_value ) {
 					return true;
-				} else if ( !empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+				} else if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 					return true;
 				} else {
 					$this->update_content_viewed_by_user();
 					return false;
 				}
-
 
 			}
 
@@ -441,6 +432,7 @@ class Leaky_Paywall_Restrictions {
 	{
 
 		$viewed_content = $this->get_content_viewed_by_user();
+
 		$num = 0;
 
 		foreach( $viewed_content as $post_type => $items ) {
@@ -449,7 +441,7 @@ class Leaky_Paywall_Restrictions {
 
 				// if all, then count every one
 				// @todo had to add this condition to account for the "all" term
-				if ( $term_id == 'all' ) {
+				if ( 'all' == $term_id ) {
 					$num++;
 				}  else if ( $this->content_taxonomy_matches( $term_id, $post_id ) ) {
 					$num++;
@@ -460,7 +452,6 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		return $num;
-
 	}
 
 	/**
@@ -476,7 +467,7 @@ class Leaky_Paywall_Restrictions {
 	{
 
 		$viewed_content = $this->get_content_viewed_by_user();
-		$total_viewed = 0;
+		$total_viewed   = 0;
 
 		foreach( $viewed_content as $content ) {
 
@@ -488,46 +479,45 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
-	 public function display_subscribe_nag() 
-	 {
-	 	add_filter( 'the_content', array( $this, 'get_subscribe_nag' ), 999 );
-	 }
+	public function display_subscribe_nag() 
+	{
+		add_filter( 'the_content', array( $this, 'get_subscribe_nag' ), 999 );
+	}
 
-	 public function get_subscribe_nag( $content = '' ) 
-	 {
+	public function get_subscribe_nag( $content = '' ) 
+	{
+		if ( ! $content ) {
+			$content = get_the_content( $this->post_id );
+		}
 
-	 	if ( !$content ) {
-	 		$content = get_the_content( $this->post_id );
-	 	}
-
-	 	$message = $this->the_content_paywall_message();
-	 	$new_content = $this->get_nag_excerpt( $content ) . $message;
+		$message     = $this->the_content_paywall_message();
+		$new_content = $this->get_nag_excerpt( $content ) . $message;
 
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content );
-	 }
+	}
 
-	 public function get_nag_excerpt( $content ) 
-	 {
-	 	$settings = get_leaky_paywall_settings();
+	public function get_nag_excerpt( $content ) 
+	{
+		$settings = get_leaky_paywall_settings();
 
-	 	if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
+		if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
 			$excerpt = substr( strip_tags( get_the_content( get_the_ID() ) ), 0, intval( $settings['custom_excerpt_length'] ) );
 		} else {
 			$excerpt = substr( strip_tags( $content ), 0, 100 );
 		}
 
-	 	return apply_filters( 'leaky_paywall_nag_excerpt', strip_shortcodes( $excerpt ), $this->post_id );
-	 }
+		return apply_filters( 'leaky_paywall_nag_excerpt', strip_shortcodes( $excerpt ), $this->post_id );
+	}
 
 	public function the_content_paywall_message() 
 	{
 
 		$settings = get_leaky_paywall_settings();
-		$text = '';
+		$text     = '';
 		
 		$message = '<div class="leaky_paywall_message_wrap"><div id="leaky_paywall_message">';
 
-		if ( !is_user_logged_in() ) {
+		if ( ! is_user_logged_in() ) {
 			$text .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
 		} else {
 			$text .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
@@ -575,10 +565,10 @@ class Leaky_Paywall_Restrictions {
 		$message = str_ireplace( '{{LOGIN_URL}}', $login_url, $message );
 
 		//Deprecated
-		if ( !empty( $settings['price'] ) ) {
+		if ( ! empty( $settings['price'] ) ) {
 			$message = str_ireplace( '{{PRICE}}', $settings['price'], $message );
 		}
-		if ( !empty( $settings['interval_count'] ) && !empty( $settings['interval'] ) ) {
+		if ( ! empty( $settings['interval_count'] ) && !empty( $settings['interval'] ) ) {
 			$message = str_ireplace( '{{LENGTH}}', leaky_paywall_human_readable_interval( $settings['interval_count'], $settings['interval'] ), $message );
 		}
 
@@ -596,7 +586,7 @@ class Leaky_Paywall_Restrictions {
 	public function user_role_can_bypass_paywall() 
 	{
 
-		if ( !is_user_logged_in() ) {
+		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
@@ -637,7 +627,7 @@ class Leaky_Paywall_Restrictions {
 
 	}
 
-		/**
+	/**
 	 * Determine if the current content can be viewed based on the Leaky Paywall visibility settings on the content item
 	 *
 	 * @since 4.10.3
@@ -648,9 +638,9 @@ class Leaky_Paywall_Restrictions {
 	{
 
 		$visibility = get_post_meta( $this->post_id, '_issuem_leaky_paywall_visibility', true );
-		$level_ids = leaky_paywall_subscriber_current_level_ids();
+		$level_ids  = leaky_paywall_subscriber_current_level_ids();
 
-		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+		if ( false !== $visibility && ! empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
 
 			switch( $visibility['visibility_type'] ) {
 
@@ -669,7 +659,7 @@ class Leaky_Paywall_Restrictions {
 					}
 
 					// level id of the user matches those selected in the settings, and the user currently has access to that level
-					if ( !empty( $always ) && leaky_paywall_user_has_access() ) {
+					if ( ! empty( $always ) && leaky_paywall_user_has_access() ) {
 						return true;
 					}
 					break;
@@ -678,7 +668,7 @@ class Leaky_Paywall_Restrictions {
 					$onlyalways = array_intersect( $level_ids, $visibility['only_always_visible'] );
 					if ( empty( $onlyalways ) ) {
 						return false;
-					} else if ( !empty( $onlyalways ) && leaky_paywall_user_has_access() ) {
+					} else if ( ! empty( $onlyalways ) && leaky_paywall_user_has_access() ) {
 						return true; //always visible, don't need process anymore
 					}
 					break;
@@ -688,7 +678,6 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		return false;
-
 	}
 
 	/**
@@ -702,13 +691,13 @@ class Leaky_Paywall_Restrictions {
 	 */
 	public function visibility_restricts_access()
 	{
-		$visibility = get_post_meta( $this->post_id, '_issuem_leaky_paywall_visibility', true );
-		$level_ids = leaky_paywall_subscriber_current_level_ids();
+		$visibility    = get_post_meta( $this->post_id, '_issuem_leaky_paywall_visibility', true );
+		$level_ids     = leaky_paywall_subscriber_current_level_ids();
 		$is_restricted = false;
 
-		if ( false !== $visibility && !empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
+		if ( false !== $visibility && ! empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
 
-			if ( $visibility['visibility_type'] == 'only' ) {
+			if ( 'only' == $visibility['visibility_type'] ) {
 				$only = array_intersect( $level_ids, $visibility['only_visible'] );
 				if ( empty( $only ) ) {
 					$is_restricted = true;
@@ -741,7 +730,7 @@ class Leaky_Paywall_Restrictions {
 
 		foreach( $restrictions['post_types'] as $key => $restriction ) {
 
-			if ( !is_numeric( $key ) ) {
+			if ( ! is_numeric( $key ) ) {
 				continue;
 			}
 			
@@ -749,7 +738,7 @@ class Leaky_Paywall_Restrictions {
 			
 			$restriction_taxomony = isset( $restriction['taxonomy'] ) ? $restriction['taxonomy'] : 'all';
 			
-			if ( $restriction['post_type'] == $content_post_type && $restriction_taxomony == 'all'  ) {
+			if ( $restriction['post_type'] == $content_post_type && 'all' == $restriction_taxomony ) {
 				return true;
 			}
 
@@ -769,15 +758,15 @@ class Leaky_Paywall_Restrictions {
 	public function pdf_access()
 	{
 
-		$settings = get_leaky_paywall_settings();
+		$settings       = get_leaky_paywall_settings();
 		$has_pdf_access = apply_filters( 'leaky_paywall_pdf_access', leaky_paywall_user_has_access() );
 
-		//Admins or subscribed users can download PDFs
+		// Admins or subscribed users can download PDFs
 		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) || $has_pdf_access ) {
 			leaky_paywall_server_pdf_download( $_REQUEST['issuem-pdf-download'] );
 		} else {
 
-			$output = '<h3>' . __( 'Unauthorized PDF Download', 'leaky-paywall' ) . '</h3>';
+			$output  = '<h3>' . __( 'Unauthorized PDF Download', 'leaky-paywall' ) . '</h3>';
 			$output .= '<p>' . sprintf( __( 'You must be logged in with a valid subscription to download Issue PDFs. Please <a href="%s">log in</a> or <a href="%s">subscribe</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_login'] ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
 
@@ -796,7 +785,7 @@ class Leaky_Paywall_Restrictions {
 	public function content_taxonomy_matches( $restricted_term_id, $post_id = '' ) 
 	{
 
-		if ( !$post_id ) {
+		if ( ! $post_id ) {
 			$post_id = $this->post_id;
 		}
 
@@ -832,27 +821,28 @@ class Leaky_Paywall_Restrictions {
 	public function get_content_viewed_by_user()
 	{
 
-		if ( !empty( $_COOKIE[$this->get_cookie_name()] ) ) {
+		if ( ! empty( $_COOKIE[$this->get_cookie_name()] ) ) {
 			$content_viewed = json_decode( stripslashes( $_COOKIE[$this->get_cookie_name()] ), true );
 		} else {
 			$content_viewed = array();
 		}
 
 		return apply_filters( 'leaky_paywall_available_content', $content_viewed );
-
 	}
 
 	public function update_content_viewed_by_user() 
 	{
 
-		$viewed_content = $this->get_content_viewed_by_user();
+		$viewed_content       = $this->get_content_viewed_by_user();
 		$restricted_post_type = get_post_type( $this->post_id );
+
 		$viewed_content[$restricted_post_type][$this->post_id] = $this->get_expiration_time();
+
 		$json_viewed_content = json_encode( $viewed_content );
 
 		$cookie = setcookie( $this->get_cookie_name(), $json_viewed_content, $this->get_expiration_time(), '/' );
-		$_COOKIE[$this->get_cookie_name()] = $json_viewed_content;
 
+		$_COOKIE[$this->get_cookie_name()] = $json_viewed_content;
 	}
 
 	/**
@@ -901,7 +891,6 @@ class Leaky_Paywall_Restrictions {
 		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 
 		return apply_filters( 'leaky_paywall_expiration_time', $expiration );
-
 	}
 
 	public function hide_initial_content_display() 

@@ -1,20 +1,20 @@
 <?php
 	
-if ( !function_exists( 'leaky_paywall_hash' ) ) {
+if ( ! function_exists( 'leaky_paywall_hash' ) ) {
 	function leaky_paywall_hash( $str ) {
         _deprecated_function( __FUNCTION__, 'CHANGEME', 'create_leaky_paywall_login_hash( $str )' );
 		return create_leaky_paywall_login_hash( $str );
 	}
 }
 
-if ( !function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
+if ( ! function_exists( 'is_issuem_leaky_subscriber_logged_in' ) ) {
 	function is_issuem_leaky_subscriber_logged_in() {
         _deprecated_function( __FUNCTION__, 'CHANGEME', 'leaky_paywall_has_user_paid()' );
 		return leaky_paywall_has_user_paid();
 	}
 }
 
-if ( !function_exists( 'get_leaky_paywall_subscriber_by_hash' ) ) {
+if ( ! function_exists( 'get_leaky_paywall_subscriber_by_hash' ) ) {
 	function get_leaky_paywall_subscriber_by_hash( $hash, $mode ) {
         _deprecated_function( __FUNCTION__, 'CHANGEME' );
         
@@ -65,7 +65,7 @@ function leaky_paywall_old_payment_gateway_processing() {
 add_action('init', 'leaky_paywall_old_payment_gateway_processing' );
 
 
-if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
+if ( ! function_exists( 'leaky_paywall_process_free_registration' ) ) {
     function leaky_paywall_process_free_registration() {
         if ( isset( $_POST['leaky_paywall_user_login'] ) && wp_verify_nonce( $_POST['leaky_paywall_register_nonce'], 'leaky_paywall-register-nonce' ) ) {
             $user_login     = $_POST['leaky_paywall_user_login'];   
@@ -189,7 +189,7 @@ if ( !function_exists( 'leaky_paywall_process_free_registration' ) ) {
 }
 
 
-if ( !function_exists( 'leaky_paywall_maybe_process_webhooks' ) ) {
+if ( ! function_exists( 'leaky_paywall_maybe_process_webhooks' ) ) {
     
  function leaky_paywall_maybe_process_webhooks() {
                     
@@ -212,7 +212,7 @@ if ( !function_exists( 'leaky_paywall_maybe_process_webhooks' ) ) {
 }
 
 
-if ( !function_exists( 'leaky_paywall_maybe_process_payment' ) ) {
+if ( ! function_exists( 'leaky_paywall_maybe_process_payment' ) ) {
     
  function leaky_paywall_maybe_process_payment() {
 
@@ -233,7 +233,7 @@ if ( !function_exists( 'leaky_paywall_maybe_process_payment' ) ) {
 }
 
 
-if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
+if ( ! function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
     
     function leaky_paywall_process_stripe_payment() {
         
@@ -380,7 +380,7 @@ if ( !function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
     
 }
 
-if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
+if ( ! function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
     
     function leaky_paywall_process_paypal_payment() {
         
@@ -530,7 +530,7 @@ if ( !function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
     
 }
 
-if ( !function_exists( 'leaky_paywall_free_registration_form' ) ) {
+if ( ! function_exists( 'leaky_paywall_free_registration_form' ) ) {
     
     function leaky_paywall_free_registration_form() {
 
@@ -599,7 +599,7 @@ if ( !function_exists( 'leaky_paywall_free_registration_form' ) ) {
 
 
 
-if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
+if ( ! function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 
     /**
      * Processes a PayPal IPN
@@ -855,7 +855,7 @@ if ( !function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
 
 
 
-if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
+if ( ! function_exists( 'issuem_process_stripe_webhook' ) ) {
     
     function issuem_process_stripe_webhook( $mode = 'live' ) {
         
@@ -937,7 +937,7 @@ if ( !function_exists( 'issuem_process_stripe_webhook' ) ) {
 
 
 
-if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
+if ( ! function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 
     function leaky_paywall_pay_with_stripe( $level, $level_id ) {
     
@@ -1032,7 +1032,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
 
 }
 
-if ( !function_exists( 'leaky_paywall_pay_with_paypal_standard' ) ) {
+if ( ! function_exists( 'leaky_paywall_pay_with_paypal_standard' ) ) {
 
     function leaky_paywall_pay_with_paypal_standard( $level, $level_id ) {
         
@@ -1097,7 +1097,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_paypal_standard' ) ) {
 
 }
 
-if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
+if ( ! function_exists( 'leaky_paywall_pay_with_email' ) ) {
     
     function leaky_paywall_pay_with_email( $level, $level_id ) {
         
@@ -1110,7 +1110,7 @@ if ( !function_exists( 'leaky_paywall_pay_with_email' ) ) {
     
 }
 
-if ( !function_exists( 'get_asites' ) ) {
+if ( ! function_exists( 'get_asites' ) ) {
 	
 	function get_asites() {
 	

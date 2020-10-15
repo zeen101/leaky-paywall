@@ -34,7 +34,7 @@ class LP_Export {
 		$settings = get_leaky_paywall_settings();
 		
 		$blog_id = get_current_blog_id();
-		if ( is_multisite_premium() && !is_main_site( $blog_id ) ) {
+		if ( is_multisite_premium() && ! is_main_site( $blog_id ) ) {
 			$this->site = '_' . $blog_id;
 		} else {
 			$this->site = '';
@@ -42,7 +42,7 @@ class LP_Export {
 
 		$this->mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
-		$this->data = $this->getData();
+		$this->data    = $this->getData();
 		$this->headers = $this->getHeaders();
 
 	}
@@ -50,7 +50,7 @@ class LP_Export {
 	public function generate() 
 	{
 			
-		if ( $this->type == 'csv' ) {
+		if ( 'csv' == $this->type ) {
 			$this->buildCsv();
 		}
 
@@ -59,14 +59,14 @@ class LP_Export {
 	private function buildCsv() 
 	{
 		
-		$file_name = date('Ymd_His') . '-export.csv';
+		$file_name = date( 'Ymd_His' ) . '-export.csv';
 
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		header('Content-Description: File Transfer');
-		header("Content-type: text/csv");
-		header("Content-Disposition: attachment; filename={$file_name}");
-		header("Expires: 0");
-		header("Pragma: public");
+		header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );
+		header( 'Content-Description: File Transfer' );
+		header( "Content-type: text/csv" );
+		header( "Content-Disposition: attachment; filename={$file_name}" );
+		header( "Expires: 0" );
+		header( "Pragma: public" );
 
 		$out = fopen( 'php://output', 'w' );
 
@@ -91,7 +91,7 @@ class LP_Export {
 
 		// need to get real data at some point
 		$args = array(
-			'role'	=> 'Subscriber',
+			'role' => 'Subscriber',
 		);
 
 		$users = new WP_User_Query( $args );
@@ -108,27 +108,27 @@ class LP_Export {
 				continue;
 			}
 			
-			$level = get_leaky_paywall_subscription_level( $level_id );
+			$level   = get_leaky_paywall_subscription_level( $level_id );
 			$expires = esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_expires' . $this->site, true ) );
 
-			if ( !$expires ) {
+			if ( ! $expires ) {
 				$expires = 'never';
 			} else {
 				$expires = date( 'Y-m-d', strtotime( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_expires' . $this->site, true ) ) );
 			}
 
 			$data[] = array(
-				'email' 		=> $user->user_email,
-				'first_name'	=> $user->first_name,
-				'last_name'		=> $user->last_name,
-				'username'		=> $user->user_login,
-				'level'			=> $level['label'],
-				'subscriber_id'	=> get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_subscriber_id' . $this->site, true ),
-				'plan_id'			=> get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_plan' . $this->site, true ),
-				'payment_gateway'		=> get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_payment_gateway' . $this->site, true ),
-				'status'		=> get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_payment_status' . $this->site, true ),
-				'created'		=> date('Y-m-d', strtotime( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_created' . $this->site, true ) ) ),
-				'expires'		=> $expires
+				'email'           => $user->user_email,
+				'first_name'      => $user->first_name,
+				'last_name'       => $user->last_name,
+				'username'        => $user->user_login,
+				'level'           => $level['label'],
+				'subscriber_id'	  => get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_subscriber_id' . $this->site, true ),
+				'plan_id'         => get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_plan' . $this->site, true ),
+				'payment_gateway' => get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_payment_gateway' . $this->site, true ),
+				'status'          => get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_payment_status' . $this->site, true ),
+				'created'         => date( 'Y-m-d', strtotime( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $this->mode . '_created' . $this->site, true ) ) ),
+				'expires'         => $expires
 			);
 		}
 

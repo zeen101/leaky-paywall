@@ -35,7 +35,7 @@ class LP_Incomplete_User {
             'description'        => __( 'Leaky Paywall Incomplete Users', 'leaky-paywall' ),
             'public'             => false,
             'publicly_queryable' => false,
-            'exclude_fromsearch' 	=> true,
+            'exclude_fromsearch' => true,
             'show_ui'            => true,
             'show_in_menu'       => false,
             'query_var'          => true,
@@ -57,7 +57,7 @@ class LP_Incomplete_User {
     public function incomplete_user_details_func( $post )
     {
         
-        $user_data = get_post_meta( $post->ID, '_user_data', true );
+        $user_data     = get_post_meta( $post->ID, '_user_data', true );
         $customer_data = get_post_meta( $post->ID, '_customer_data', true );
 
         ?>

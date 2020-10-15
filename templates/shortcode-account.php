@@ -11,21 +11,22 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Don't allow direct access
 
-$user = wp_get_current_user();
-$action = isset( $_GET['action'] ) ? $_GET['action'] : 'overview';
-$settings = get_leaky_paywall_settings();
-$mode = leaky_paywall_get_current_mode();
-$site = leaky_paywall_get_current_site();
+// Variables used throughout this template file.
+$user          = wp_get_current_user();
+$action        = isset( $_GET['action'] ) ? $_GET['action'] : 'overview';
+$settings      = get_leaky_paywall_settings();
+$mode          = leaky_paywall_get_current_mode();
+$site          = leaky_paywall_get_current_site();
 $subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+$plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 
 if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 	$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-	$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-	$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-	$level = get_leaky_paywall_subscription_level( $level_id );
+	$status     = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+	$level_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+	$plan       = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+	$level      = get_leaky_paywall_subscription_level( $level_id );
 
 	\Stripe\Stripe::setApiKey( $secret_key );
 
@@ -39,11 +40,11 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 	    leaky_paywall_log( $user->user_email, 'credit card updated');
 
-	    if ( strcasecmp('deactivated', $status) == 0 ) { // only runs if the user account is deactivated
+	    if ( 0 == strcasecmp( 'deactivated', $status ) ) { // only runs if the user account is deactivated
 
-	    	$subs = \Stripe\Subscription::all(['customer' => $subscriber_id, 'status' => 'all']);
+	    	$subs = \Stripe\Subscription::all( ['customer' => $subscriber_id, 'status' => 'all'] );
 
-		    if ( !empty( $subs->data ) ) {
+		    if ( ! empty( $subs->data ) ) {
 
 		    	foreach( $subs->data as $sub ) {
 
@@ -52,20 +53,20 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 		    			continue;
 		    		}
 
-		    		if ( $sub->status == 'active' || $sub->status == 'past_due' || $sub->status == 'trialing' ) {
-		    			
-		    			leaky_paywall_log( $user->user_email, 'has a subscription, did not create a new subscription after card update');
+		    		if ( 'active' == $sub->status || 'past_due' == $sub->status || 'trialing' == $sub->status ) {
+
+		    			leaky_paywall_log( $user->user_email, 'has a subscription, did not create a new subscription after card update' );
 
 		    		} else {
 		    				
 		    			// only create a new subscription if the subscriber does not have a current subscription
 		    			// such as expired or canceled
-		    			$new_sub = \Stripe\Subscription::create([
+		    			$new_sub = \Stripe\Subscription::create( [
 		    			  'customer' => $cu->id,
-		    			  'items' => [['plan' => $plan]],
+		    			  'items'    => [['plan' => $plan]],
 		    			]);
 
-		    			leaky_paywall_log( $user->user_email, 'created new subscription after card update');
+		    			leaky_paywall_log( $user->user_email, 'created new subscription after card update' );
 
 		    		}
 		    	}
@@ -76,13 +77,13 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 	    }
 
 	  }
-	  catch(\Stripe\Error\Card $e) {
+	  catch( \Stripe\Error\Card $e ) {
 
 	    $body = $e->getJsonBody();
 	    $err  = $body['error'];
 	    $update_card_error = $err['message'];
 
-	  } catch(\Stripe\Error\InvalidRequest $e) {
+	  } catch( \Stripe\Error\InvalidRequest $e ) {
 	  	$body = $e->getJsonBody();
 	  	$err  = $body['error'];
 	  	$update_card_error = $err['message'];
@@ -102,7 +103,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				<a class="<?php echo $action == 'edit_profile' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=edit_profile"><?php _e( 'Edit Profile', 'leaky-paywall' ); ?></a>
 			</li>
 
-			<?php if ( !leaky_paywall_user_can_bypass_paywall_by_role( $user ) && $plan ) {
+			<?php if ( ! leaky_paywall_user_can_bypass_paywall_by_role( $user ) && $plan ) {
 				?>
 				<li>
 					<a class="<?php echo $action == 'payment_info' ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=payment_info"><?php _e( 'Payment Info', 'leaky-paywall' ); ?></a>
@@ -110,7 +111,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				<?php 
 			} ?>
 			<li>
-				<a href="<?php echo wp_logout_url('/'); ?>"><?php _e( 'Logout', 'leaky-paywall' ); ?></a>
+				<a href="<?php echo wp_logout_url( '/' ); ?>"><?php _e( 'Logout', 'leaky-paywall' ); ?></a>
 			</li>
 		</ul>
 	</div>
@@ -120,11 +121,11 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 	<?php 
 
 		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-		$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-		$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-		$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-		$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-		$level = get_leaky_paywall_subscription_level( $level_id );
+		$status          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+		$expires         = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+		$plan            = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+		$level_id        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+		$level           = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
 			$expires = __( 'Never', 'leaky-paywall' );
@@ -132,7 +133,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 			$expires = mysql2date( 'F j, Y', $expires );
 		}
 
-		if ( strcasecmp('active', $status) == 0 && !leaky_paywall_user_has_access( $user ) ) {
+		if ( 0 == strcasecmp( 'active', $status ) && ! leaky_paywall_user_has_access( $user ) ) {
 			$status_name = 'Expired';
 		} else {
 			$status_name = ucfirst( $status );
@@ -147,9 +148,9 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 		$expires_label = 'Ends on';
 
-		if ( !empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
+		if ( ! empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
 			
-			if ( $status == 'canceled' ) {
+			if ( 'canceled' == $status ) {
 				$expires_label = 'Ends on';
 			} else {
 				$expires_label = 'Recurs on';
@@ -157,27 +158,27 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 			
 		}
 
-		if ( $status_name == 'Expired' ) {
+		if ( 'Expired' == $status_name ) {
 			$expires_label = 'Expired on';
 		}
 
-		$paid = leaky_paywall_has_user_paid( $user->user_email, $site );
+		$paid       = leaky_paywall_has_user_paid( $user->user_email, $site );
 		$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-		$cancel = '';
+		$cancel     = '';
 
 		if ( empty( $expires) || '0000-00-00 00:00:00' === $expiration) {
 			$cancel = '';
-		} else if ( strcasecmp('active', $status) == 0 && $plan && 'Canceled' !== $plan ) {
-			$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+		} else if ( 0 == strcasecmp( 'active', $status ) && $plan && 'Canceled' !== $plan ) {
+			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 
-			if ( $payment_gateway == 'free_registration' ) {
+			if ( 'free_registration' == $payment_gateway ) {
 				$cancel = '';
 			} else {
 				$cancel = sprintf( __( '<a href="%s">Cancel your subscription</a>', 'leaky-paywall' ), '?lp_cancel=request&cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
 			}
 			
-		} else if ( !empty( $plan ) && 'Canceled' == $plan ) {
+		} else if ( ! empty( $plan ) && 'Canceled' == $plan ) {
 			$cancel .= '<p>' . sprintf( __( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 		}
 
@@ -291,11 +292,11 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 			
 			case 'payment_info':
 
-				$payment_form = '';
+				$payment_form    = '';
 				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-				$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+				$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 				$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
-				$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+				$secret_key      = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 				
 
 				if ( $subscriber_id && 'stripe' == $payment_gateway ) {
@@ -312,7 +313,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 					$payment_form .= '<h3 class="leaky-paywall-account-section-title">Payment Method</h3><p>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
 
-					if ( strcasecmp('deactivated', $status) == 0 ) {
+					if ( 0 == strcasecmp( 'deactivated', $status ) ) {
 						$data_label = 'Update Credit Card Details & Restart Subscription';
 					} else {
 						$data_label = 'Update Credit Card Details';
@@ -355,8 +356,6 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 		}
 
 	?>
-
-		
 
 	</div>
 </div>

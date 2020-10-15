@@ -26,9 +26,9 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 		 */
 		function __construct( $plugin_slug, $plugin_name ) {
 
-			$this->plugin_slug = $plugin_slug;
-			$this->plugin_name = $plugin_name;
-			$this->plugin_prefix = str_replace('-', '_', $plugin_slug );
+			$this->plugin_slug   = $plugin_slug;
+			$this->plugin_name   = $plugin_name;
+			$this->plugin_prefix = str_replace( '-', '_', $plugin_slug );
 
 			add_action( 'admin_init', array( $this, 'activate_license' ) );
 			add_action( 'admin_init', array( $this, 'deactivate_license' ) );
@@ -45,8 +45,8 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 		public function get_settings() {
 			
 			$defaults = array( 
-				'license_key'					=> '',
-				'license_status'				=> '',
+				'license_key'    => '',
+				'license_status' => '',
 			);
 		
 			$defaults = apply_filters( $this->plugin_slug . '_default_license_settings', $defaults );
@@ -91,8 +91,8 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
                             <td>
                             	<input type="text" id="<?php echo $this->plugin_prefix; ?>_license_key" class="regular-text" name="<?php echo $this->plugin_prefix; ?>_license_key" value="<?php echo htmlspecialchars( stripcslashes( $settings['license_key'] ) ); ?>" />
                             
-	                            <?php if( $settings['license_status'] !== false 
-										&& $settings['license_status'] == 'valid' ) { 
+	                            <?php if( false !== $settings['license_status'] 
+										&& 'valid' == $settings['license_status'] ) { 
 	                            		// license is active
 								?>
 											<span style="color:green;"><?php _e('active'); ?></span>
@@ -100,10 +100,10 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 												name="<?php echo $this->plugin_prefix; ?>_license_deactivate" 
 												value="<?php _e( 'Deactivate License', $this->plugin_slug ); ?>"/>
 
-								<?php } else if ( $settings['license_status'] == 'invalid' ) {	
+								<?php } else if ( 'invalid' == $settings['license_status'] ) {	
 										// license is invalid
 								?>
-											<span style="color:red;"><?php _e('invalid'); ?></span>
+											<span style="color:red;"><?php _e( 'invalid' ); ?></span>
 											<input type="submit" class="button-secondary" 
 												name="<?php echo $this->plugin_prefix; ?>_license_activate" 
 												value="<?php _e( 'Activate License', $this->plugin_slug ); ?>"/>
@@ -134,27 +134,27 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 		 */
 		function activate_license() {
 
-			if ( !isset( $_POST[$this->plugin_prefix . '_license_activate'] ) ) {
+			if ( ! isset( $_POST[$this->plugin_prefix . '_license_activate'] ) ) {
 				return;
 			}
 
-			if( ! check_admin_referer( 'verify', 'leaky_paywall_license_wpnonce' ) ) {
+			if ( ! check_admin_referer( 'verify', 'leaky_paywall_license_wpnonce' ) ) {
 				return;
 			}
 
 			$settings = $this->get_settings();
 
-			if ( !empty( $_POST[$this->plugin_prefix . '_license_key'] ) ) {
+			if ( ! empty( $_POST[$this->plugin_prefix . '_license_key'] ) ) {
 				$settings['license_key'] = $_POST[$this->plugin_prefix . '_license_key'];
 			}
 
 			$license = trim( $settings['license_key'] );
-	
+
 			// data to send in our API request
 			$api_params = array( 
-				'edd_action'=> 'activate_license', 
-				'license' 	=> $license, 
-				'item_name' => urlencode( $this->plugin_name ) // the name of our product in EDD
+				'edd_action' => 'activate_license', 
+				'license'    => $license, 
+				'item_name'  => urlencode( $this->plugin_name ) // the name of our product in EDD
 			);
 			
 			// Call the custom API.
@@ -180,11 +180,11 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 		 */
 		public function deactivate_license() {
 			
-			if( !isset( $_POST[$this->plugin_prefix . '_license_deactivate'] ) ) {
+			if ( ! isset( $_POST[$this->plugin_prefix . '_license_deactivate'] ) ) {
 				return;
 			}
 
-			if( ! check_admin_referer( 'verify', 'leaky_paywall_license_wpnonce' ) ) {
+			if ( ! check_admin_referer( 'verify', 'leaky_paywall_license_wpnonce' ) ) {
 				return; 
 			}
 			
@@ -212,7 +212,7 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 			$license_data = json_decode( wp_remote_retrieve_body( $response ) );
 			
 			// $license_data->license will be either "deactivated" or "failed"
-			if ( $license_data->license == 'deactivated' || $license_data->license == 'failed' ) {
+			if ( 'deactivated' == $license_data->license || 'failed' == $license_data->license ) {
 				
 				unset( $settings['license_key'] );
 				unset( $settings['license_status'] );

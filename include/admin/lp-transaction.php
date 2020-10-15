@@ -8,12 +8,10 @@ class LP_Transaction_Post_Type {
 	function __construct()	{
         add_action( 'init', array( $this, 'register_post_type' ) );
         add_action( 'add_meta_boxes', array( $this, 'meta_box_create' ) );
-        add_action( 'save_post', array( $this, 'save_meta') );
+        add_action( 'save_post', array( $this, 'save_meta' ) );
 
-        add_filter('manage_edit-lp_transaction_columns' , array( $this, 'transaction_columns') );
-        add_action('manage_lp_transaction_posts_custom_column' , array( $this, 'transaction_custom_columns' ), 10, 2 );
-
-
+        add_filter( 'manage_edit-lp_transaction_columns' , array( $this, 'transaction_columns' ) );
+        add_action( 'manage_lp_transaction_posts_custom_column' , array( $this, 'transaction_custom_columns' ), 10, 2 );
     }
 
 	public function register_post_type()
@@ -41,7 +39,7 @@ class LP_Transaction_Post_Type {
             'description'        => __( 'Leaky Paywall Transactions', 'leaky-paywall' ),
             'public'             => false,
             'publicly_queryable' => false,
-            'exclude_fromsearch' 	=> true,
+            'exclude_fromsearch' => true,
             'show_ui'            => true,
             'show_in_menu'       => false,
             'query_var'          => true,
@@ -64,9 +62,9 @@ class LP_Transaction_Post_Type {
     {
         
         $level_id = esc_attr( get_post_meta( $post->ID, '_level_id', true ) );
-        $level = get_leaky_paywall_subscription_level( $level_id );
+        $level    = get_leaky_paywall_subscription_level( $level_id );
 
-        $gateway = esc_attr( get_post_meta( $post->ID, '_gateway', true ) );
+        $gateway        = esc_attr( get_post_meta( $post->ID, '_gateway', true ) );
         $gateway_txn_id = esc_attr( get_post_meta( $post->ID, '_gateway_txn_id', true ) );
 
         wp_nonce_field( 'lp_transaction_meta_box_nonce', 'meta_box_nonce' ); 
@@ -108,7 +106,7 @@ class LP_Transaction_Post_Type {
 				</tr>
 
                 <?php 
-                    if ( $gateway_txn_id && $gateway == 'stripe' ) {
+                    if ( $gateway_txn_id && 'stripe' == $gateway ) {
                         ?>
                         <tr valign="top">
                             <th scope="row">
@@ -163,33 +161,28 @@ class LP_Transaction_Post_Type {
             echo '<p><strong>Paypal Response</strong></p>';
             echo '<pre>';
             print_r( json_decode( get_post_meta( $post->ID, '_paypal_request', true ) ) );
-            echo '</pre>';
-            
-           
+            echo '</pre>';           
         } ?>
 
         <?php do_action( 'leaky_paywall_after_transaction_meta_box', $post ); ?>
 
         <?php 
-
     }
 
     public function save_meta( $post_id )
     {
         
-        if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return; 
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return; 
      
         // if our nonce isn't there, or we can't verify it, bail 
-        if( !isset( $_POST['meta_box_nonce'] ) || !wp_verify_nonce( $_POST['meta_box_nonce'], 'lp_transaction_meta_box_nonce' ) ) return; 
-        
-       
-    
+        if ( ! isset( $_POST['meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['meta_box_nonce'], 'lp_transaction_meta_box_nonce' ) ) return; 
+
         // checkbox save
         // update_post_meta( $post_id, '_en_sold_out', $_POST['en_sold_out'] );
 
         if ( isset( $_POST['apc_box1_title'] ) ) {
-       //     update_post_meta( $post_id, '_apc_box1_title',strip_tags( $_POST['apc_box1_title'] ) );
-        }  
+            // update_post_meta( $post_id, '_apc_box1_title',strip_tags( $_POST['apc_box1_title'] ) );
+        }
         
     }
 
@@ -197,24 +190,23 @@ class LP_Transaction_Post_Type {
     {
 
         $columns = array(
-            'cb' => '<input type="checkbox" />',
-            'email' => __( 'Email' ),
-            'level' => __( 'Level' ),
-            'price' => __( 'Price' ),
+            'cb'      => '<input type="checkbox" />',
+            'email'   => __( 'Email' ),
+            'level'   => __( 'Level' ),
+            'price'   => __( 'Price' ),
             'created' => __( 'Created' ),
-            'status' => __( 'Status' ),
-            'type'  => __( 'Payment Type' )
+            'status'  => __( 'Status' ),
+            'type'    => __( 'Payment Type' )
         );
 
         return $columns;
-
     }
 
     public function transaction_custom_columns( $column, $post_id ) 
     {
 
         $level_id = esc_attr( get_post_meta( $post_id, '_level_id', true ) );
-        $level = get_leaky_paywall_subscription_level( $level_id );
+        $level    = get_leaky_paywall_subscription_level( $level_id );
         
         switch ( $column ) {
         
