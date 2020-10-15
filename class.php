@@ -177,7 +177,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 					$output  = '<h3>' . __( 'Invalid or Expired Login Link', 'leaky-paywall' ) . '</h3>';
 					$output .= '<p>' . sprintf( __( 'Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'leaky-paywall' ), get_page_link($settings['page_for_login'] ) ) . '</p>';
-					$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leak-paywall' ), $settings['site_name'] ) . '</a>';
+					$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leaky-paywall' ), $settings['site_name'] ) . '</a>';
 
 					wp_die( apply_filters( 'leaky_paywall_invalid_login_link', $output ) );
 				}
@@ -1227,8 +1227,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										<th><?php _e( 'Enable Apple Pay', 'leaky-paywall' ); ?></th>
 										<td>
 											<select id="enable_apple_pay" name="enable_apple_pay">
-												<option <?php selected( 'yes', $settings['enable_apple_pay'] ); ?> value="yes">Yes</option>
-												<option <?php selected( 'no', $settings['enable_apple_pay'] ); ?> value="no">No</option>
+												<option <?php selected( 'yes', $settings['enable_apple_pay'] ); ?> value="yes"><?php _e( 'Yes', 'leaky-paywall' ); ?></option>
+												<option <?php selected( 'no', $settings['enable_apple_pay'] ); ?> value="no"><?php _e( 'No', 'leaky-paywall' ); ?></option>
 											</select>
 											<p class="description">You must <a target="_blank" href="https://stripe.com/docs/stripe-js/elements/payment-request-button">verify your domain with Apple Pay</a> to complete the Apple Pay setup.</p>
 									</tr>
@@ -1365,10 +1365,10 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 									<td>
 										<select id="leaky_paywall_currency_position" name="leaky_paywall_currency_position">
 
-											<option value="left" <?php selected( 'left', $settings['leaky_paywall_currency_position'] ); ?>>Left ($99.99)</option>
-											<option value="right" <?php selected( 'right', $settings['leaky_paywall_currency_position'] ); ?>>Right (99.99$)</option>
-											<option value="left_space" <?php selected( 'left_space', $settings['leaky_paywall_currency_position'] ); ?>>Left with space ($ 99.99)</option>
-											<option value="right_space" <?php selected( 'right_space', $settings['leaky_paywall_currency_position'] ); ?>>Right with space (99.99 $)</option>
+											<option value="left" <?php selected( 'left', $settings['leaky_paywall_currency_position'] ); ?>><?php _e( 'Left', 'leaky-paywall' ); ?> ($99.99)</option>
+											<option value="right" <?php selected( 'right', $settings['leaky_paywall_currency_position'] ); ?>><?php _e( 'Right', 'leaky-paywall' ); ?> (99.99$)</option>
+											<option value="left_space" <?php selected( 'left_space', $settings['leaky_paywall_currency_position'] ); ?>><?php _e( 'Left with space', 'leaky-paywall' ); ?> ($ 99.99)</option>
+											<option value="right_space" <?php selected( 'right_space', $settings['leaky_paywall_currency_position'] ); ?>><?php _e( 'Right with space', 'leaky-paywall' ); ?> (99.99 $)</option>
 										</select>
 									</td>
 								</tr>
@@ -1451,9 +1451,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 										<table>
 											<tr>
-												<th>Post Type</th>
-												<th>Taxonomy <span style="font-weight: normal; font-size: 11px; color: #999;"> Category,tag,etc.</span></th>
-												<th>Number Allowed</th>
+												<th><?php _e( 'Post Type', 'leaky-paywall' ); ?></th>
+												<th><?php _e( 'Taxonomy', 'leaky-paywall' ); ?> <span style="font-weight: normal; font-size: 11px; color: #999;"> Category,tag,etc.</span></th>
+												<th><?php _e( 'Number Allowed', 'leaky-paywall' ); ?></th>
 												<th>&nbsp;</th>
 											</tr>
 
@@ -1510,8 +1510,8 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 										<?php if ( $this->check_for_caching() && 'on' != $settings['enable_js_cookie_restrictions'] ) {
 										?>
 											<div class="notice-info notice">
-												<p><strong>We noticed your site might use caching.</strong></p>
-												<p> We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.<br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+												<p><strong><?php _e( 'We noticed your site might use caching.', 'leaky-paywall' ); ?></strong></p>
+												<p><?php _e( 'We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall' ); ?><br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
 											</div>
 										<?php
 										} ?>
@@ -1578,7 +1578,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 							<h2><?php _e( 'Subscription Levels', 'leaky-paywall' ); ?></span></h2>
 
-							<p><a id="collapse-levels" href="#">Collapse All</a> / <a id="expand-levels" href="#">Expand All</a></p>
+							<p><a id="collapse-levels" href="#"><?php _e( 'Collapse All', 'leaky-paywall' ); ?></a> / <a id="expand-levels" href="#"><?php _e( 'Expand All', 'leaky-paywall' ); ?></a></p>
 
 							<div id="leaky_paywall_subscription_level_options">
 
@@ -1638,7 +1638,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<?php do_action( 'leaky_paywall_after_subscriptions_settings' ); ?>
 
 							<p class="submit">
-								<input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'issuem-leaky-paywall') ?>" />
+								<input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php _e( 'Save Settings', 'leaky-paywall') ?>" />
 							</p>
 
 						<?php endif; ?>
@@ -1679,25 +1679,24 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				<div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
 
 					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need more functionality?</h3>
-						<p><a target="_blank" href="https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Browse our Add-Ons</a></p>
+						<h3><?php _e( 'Need more functionality?', 'leaky-paywall' ); ?></h3>
+						<p><a target="_blank" href="https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings"><?php _e( 'Browse our Add-Ons', 'leaky-paywall' ); ?></a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need software and support?</h3>
-						<p><a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out PubCare</a></p>
+						<h3><?php _e( 'Need software and support?', 'leaky-paywall' ); ?></h3>
+						<p><a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings"><?php _e( 'Check out PubCare', 'leaky-paywall' ); ?></a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need apps to generate more subscribers?</h3>
-						<p><a target="_blank" href="https://zeen101.com/unipress/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
+						<h3><?php _e( 'Need apps to generate more subscribers?', 'leaky-paywall' ); ?></h3>
+						<p><a target="_blank" href="https://zeen101.com/unipress/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings"><?php _e( 'Check out UniPress', 'leaky-paywall' ); ?></a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
-						<h3>Are you a local news publisher?</h3>
-						<p><a target="_blank" href="https://livemarket.pub/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Explode your digital ad revenue with LiveMarket</a></p>
+						<h3><?php _e( 'Are you a local news publisher?', 'leaky-paywall' ); ?></h3>
+						<p><a target="_blank" href="https://livemarket.pub/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings"><?php _e( 'Explode your digital ad revenue with LiveMarket', 'leaky-paywall' ); ?></a></p>
 					</div>
-
 
 				</div>
 			</div>
@@ -1733,7 +1732,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 			<div class="wrap">
 
 				<div id="icon-users" class="icon32"><br /></div>
-				<h2><?php _e( 'Leaky Paywall Subscribers', 'issuem-leaky-paywall' ); ?></h2>
+				<h2><?php _e( 'Leaky Paywall Subscribers', 'leaky-paywall' ); ?></h2>
 
 				<?php
 				if ( ! empty( $_POST['leaky_paywall_add_subscriber'] ) ) {
@@ -1760,7 +1759,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 								'level_id'        => $_POST['leaky-paywall-subscriber-level-id'],
 								'subscriber_id'   => $subscriber_id,
 								'price'           => trim( $_POST['leaky-paywall-subscriber-price'] ),
-								'description'     => __( 'Manual Addition', 'issuem-leaky-paywall' ),
+								'description'     => __( 'Manual Addition', 'leaky-paywall' ),
 								'expires'         => $expires,
 								'payment_gateway' => $payment_gateway,
 								'payment_status'  => $_POST['leaky-paywall-subscriber-status'],
@@ -2014,7 +2013,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 					<!-- Now we can render the completed list table -->
 					<div class="tablenav top">
 						<?php $subscriber_table->user_views(); ?>
-						<?php $subscriber_table->search_box( __( 'Search Subscribers' ), 'leaky-paywall' ); ?>
+						<?php $subscriber_table->search_box( __( 'Search Subscribers', 'leaky-paywall' ), 'leaky-paywall' ); ?>
 					</div>
 					<?php $subscriber_table->display(); ?>
 				</form>
@@ -2051,27 +2050,27 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<img src="https://zeen101.com/wp-content/uploads/2019/06/Leaky_Paywall_Add-Ons_Archives_-_ZEEN101-1.jpg" alt="Ad Dropper">
-									<h3>Leaky Paywall - Multiple Levels</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Give your readers different subscription options by creating an unlimited number of subscriber levels.</p>
+									<h3><?php _e( 'Leaky Paywall - Multiple Levels', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'Give your readers different subscription options by creating an unlimited number of subscriber levels.', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-recurring-payments/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2019/06/Leaky_Paywall_Add-Ons_Archives_-_ZEEN101.jpg" alt="Leaky Paywall MailChimp"></a>
-									<h3>Leaky Paywall - Recurring Payments</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-recurring-payments/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Easily add recurring payments to any subscription level.</p>
+									<h3><?php _e( 'Leaky Paywall - Recurring Payments', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-recurring-payments/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'Easily add recurring payments to any subscription level.', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2019/06/Leaky_Paywall_Add-Ons_Archives_-_ZEEN101-2.jpg" alt="Leaky Paywall MailChimp"></a>
-									<h3>Leaky Paywall - MailChimp</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Automatically add new Leaky Paywall subscribers to your MailChimp lists.</p>
+									<h3><?php _e( 'Leaky Paywall - MailChimp', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'Automatically add new Leaky Paywall subscribers to your MailChimp lists.', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 						</tr>
@@ -2079,27 +2078,27 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-coupons.jpg" alt="Leaky Paywall Coupons"></a>
-									<h3>Leaky Paywall – Coupons</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Create unlimited coupon codes. Assign them to individual subscription levels and more.</p>
+									<h3><?php _( 'Leaky Paywall – Coupons', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'Create unlimited coupon codes. Assign them to individual subscription levels and more.', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-gift-subscriptions.jpg" alt="Leaky Paywall Gift Subscriptions"></a>
-									<h3>Leaky Paywall - Gift Subscriptions</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Generate more subscriptions to your publication by letting friends and family buy gift subscriptions!</p>
+									<h3><?php _e( 'Leaky Paywall - Gift Subscriptions', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'Generate more subscriptions to your publication by letting friends and family buy gift subscriptions!', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<a target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons"><img src="https://zeen101.com/wp-content/uploads/2015/11/leaky-paywall-reporting.jpg" alt="Leaky Paywall Reporting Tool"></a>
-									<h3>Leaky Paywall - Reporting Tool</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Filter and download (CSV) the subscriber info you need to analyze your subscriptions.</p>
+									<h3><?php _e( 'Leaky Paywall - Reporting Tool', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'Filter and download (CSV) the subscriber info you need to analyze your subscriptions.', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 						</tr>
@@ -2107,9 +2106,9 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<img src="https://zeen101.com/wp-content/uploads/2015/03/unipress.jpg" alt="UniPress">
-									<h3>UniPress</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/unipress/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>UniPress is the first WordPress-to-App publishing framework. It is now simple, quick, and affordable to offer your publication as an app.</p>
+									<h3><?php _e( 'UniPress', 'leaky-paywall' ); ?></h3>
+									<a class="button" target="_blank" href="https://zeen101.com/unipress/?ref=leaky_paywall_addons"><?php _e( 'Get this Add-on', 'leaky-paywall' ); ?></a>
+									<p><?php _e( 'UniPress is the first WordPress-to-App publishing framework. It is now simple, quick, and affordable to offer your publication as an app.', 'leaky-paywall' ); ?></p>
 								</div>
 							</td>
 						</tr>
@@ -2133,7 +2132,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 
 							<form id="issuem" method="post" action="">
 
-								<h2 style='margin-bottom: 10px;'><?php _e( "Leaky Paywall Updater", 'issuem-leaky-paywall' ); ?></h2>
+								<h2 style='margin-bottom: 10px;'><?php _e( "Leaky Paywall Updater", 'leaky-paywall' ); ?></h2>
 
 								<?php
 
@@ -2222,7 +2221,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 							<div id="leaky-paywall-2-0-0-update-nag" class="update-nag">
 								<?php
 								$update_link = esc_url( add_query_arg( array( 'page' => 'leaky-paywall-update' ), admin_url('admin.php' ) ) );
-								printf( __( 'You must update the Leaky Paywall Database to version 2 to continue using this plugin... %s', 'issuem-leaky-paywall' ), '<a class="btn" href="' . $update_link . '">' . __( 'Update Now', 'issuem-leaky-paywall') . '</a>' );
+								printf( __( 'You must update the Leaky Paywall Database to version 2 to continue using this plugin... %s', 'leaky-paywall' ), '<a class="btn" href="' . $update_link . '">' . __( 'Update Now', 'leaky-paywall' ) . '</a>' );
 								?>
 							</div>
 				<?php
@@ -2238,7 +2237,7 @@ if ( ! class_exists( 'Leaky_Paywall' ) ) {
 				?>
 				<div id="missing-paypal-settings" class="update-nag notice">
 					<?php
-					$settings_link = esc_url( add_query_arg( array( 'page' => 'issuem-leaky-paywall', 'tab' => 'payments' ), admin_url( 'admin.php' ) ) );
+					$settings_link = esc_url( add_query_arg( array( 'page' => 'leaky-paywall', 'tab' => 'payments' ), admin_url( 'admin.php' ) ) );
 					printf( __( 'Please complete your PayPal setup for Leaky Paywall. %s.', 'leaky-paywall' ), '<a class="btn" href="' . $settings_link . '">' . __( 'Complete Your Setup Now', 'leaky-paywall' ) . '</a>' );
 					?>
 				</div>

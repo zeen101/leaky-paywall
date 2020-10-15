@@ -404,7 +404,7 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 				} 
 
 				if ( 'stripe' == $payment_gateway ) {
-					$profile_payment = 'Credit Card';
+					$profile_payment = __( 'Credit Card', 'leaky-paywall' );
 				} else {
 					$profile_payment = leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway );
 				}
@@ -777,18 +777,16 @@ function do_leaky_paywall_register_form( $atts ) {
 				<div class="leaky-paywall-form-steps">
 					<div class="leaky-paywall-form-account-setup-step leaky-paywall-form-step active">
 						<span class="step-number">1</span>
-						<span class="step-title">Account Setup</span>
+						<span class="step-title"><?php _e( 'Account Setup', 'leaky-paywall' ); ?></span>
 					</div>
 					<div class="leaky-paywall-form-payment-setup-step leaky-paywall-form-step">
 						<span class="step-number">2</span>
-						<span class="step-title">Payment</span>
+						<span class="step-title"><?php _e( 'Payment', 'leaky-paywall' ); ?></span>
 					</div>
 				</div>
 				<?php 
 			}
 		?>
-
-		
 
 		<form action="" method="POST" name="payment-form" id="leaky-paywall-payment-form" class="leaky-paywall-payment-form">
 		  <span class="payment-errors"></span>
@@ -894,7 +892,7 @@ function do_leaky_paywall_register_form( $atts ) {
 				<?php if ( leaky_paywall_get_current_mode() == 'test' ) {
 					?>
 					<div class="leaky-paywall-test-mode-wrapper">
-						<p class="leaky-paywall-test-mode-text">The site is currently in test mode.</p>
+						<p class="leaky-paywall-test-mode-text"><?php _e( 'The site is currently in test mode.', 'leaky-paywall' ); ?></p>
 					<?php 
 				} ?>
 				
@@ -938,7 +936,6 @@ function do_leaky_paywall_register_form( $atts ) {
 		  ?>
 
 		  <style>
-			
 			#leaky-paywall-registration-errors {
 				display: none;
 				padding: .75rem 1.25rem;

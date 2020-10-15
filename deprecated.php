@@ -84,39 +84,39 @@ if ( ! function_exists( 'leaky_paywall_process_free_registration' ) ) {
             $return = '';
             if ( $level = get_leaky_paywall_subscription_level( $level_id ) ) {
                 if ( !empty( $level['price'] ) ) {
-                    leaky_paywall_errors()->add( 'subscriptoin_level_not_free', __( 'Requested subscription level is not free', 'issuem-leaky-paywall' ) );
+                    leaky_paywall_errors()->add( 'subscriptoin_level_not_free', __( 'Requested subscription level is not free', 'leaky-paywall' ) );
                 }
             } else {
-                leaky_paywall_errors()->add( 'invalid_subscription_level', __( 'Not a valid subscription level', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'invalid_subscription_level', __( 'Not a valid subscription level', 'leaky-paywall' ) );
             }
      
             if ( username_exists( $user_login ) ) {
                 // Username already registered
-                leaky_paywall_errors()->add( 'username_unavailable', __( 'Username already taken', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'username_unavailable', __( 'Username already taken', 'leaky-paywall' ) );
             }
             if ( !validate_username($user_login) ) {
                 // invalid username
-                leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky-paywall' ) );
             }
             if ( empty( $user_login ) ) {
                 // empty username
-                leaky_paywall_errors()->add( 'username_empty', __( 'Please enter a username', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'username_empty', __( 'Please enter a username', 'leaky-paywall' ) );
             }
             if ( !is_email( $user_email ) ) {
                 //invalid email
-                leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky-paywall' ) );
             }
             if ( email_exists( $user_email ) ) {
                 //Email address already registered
-                leaky_paywall_errors()->add( 'email_used', __( 'Email already registered', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'email_used', __( 'Email already registered', 'leaky-paywall' ) );
             }
             if ( $user_pass == '' ) {
                 // passwords do not match
-                leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky-paywall' ) );
             }
             if ( $user_pass != $pass_confirm ) {
                 // passwords do not match
-                leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'issuem-leaky-paywall' ) );
+                leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky-paywall' ) );
             }
      
             $errors = leaky_paywall_errors()->get_error_messages();
@@ -271,7 +271,7 @@ if ( ! function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
                             if ( !empty( $subscriber_id ) ) {
                                 $cu = \Stripe\Customer::retrieve( $subscriber_id );
                             } else {
-                                throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'issuem-leaky-paywall' ) );
+                                throw new Exception( __( 'Unable to find valid Stripe customer ID.', 'leaky-paywall' ) );
                             }
                         }
                         catch( Exception $e ) {
@@ -368,7 +368,7 @@ if ( ! function_exists( 'leaky_paywall_process_stripe_payment' ) ) {
                 
             } catch ( Exception $e ) {
                 
-                return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
+                return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) );
                 
             }
             
@@ -424,10 +424,10 @@ if ( ! function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
                     switch( strtolower( $transaction_status ) ) {
                         
                         case 'denied' :
-                            throw new Exception( __( 'Error: PayPal denied this payment.', 'issuem-leaky-paywall' ) );
+                            throw new Exception( __( 'Error: PayPal denied this payment.', 'leaky-paywall' ) );
                             break;
                         case 'failed' :
-                            throw new Exception( __( 'Error: Payment failed.', 'issuem-leaky-paywall' ) );
+                            throw new Exception( __( 'Error: Payment failed.', 'leaky-paywall' ) );
                             break;
                         case 'completed':
                         case 'success':
@@ -467,10 +467,10 @@ if ( ! function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
                         }
                             
                         if ( $transaction_id != $response_array['TRANSACTIONID'] )
-                            throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'issuem-leaky-paywall' ) );
+                            throw new Exception( __( 'Error: Transaction IDs do not match! %s, %s', 'leaky-paywall' ) );
                         
                         if ( number_format( $response_array['AMT'], '2', '', '' ) != number_format( $level['price'], '2', '', '' ) )
-                            throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'issuem-leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
+                            throw new Exception( sprintf( __( 'Error: Amount charged is not the same as the subscription total! %s | %s', 'leaky-paywall' ), $response_array['AMT'], $level['price'] ) );
     
                         $args = array(
                             'level_id'          => $response_array['L_NUMBER0'],
@@ -516,7 +516,7 @@ if ( ! function_exists( 'leaky_paywall_process_paypal_payment' ) ) {
                 }
                 catch ( Exception $e ) {
                     
-                    return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) );
+                    return new WP_Error( 'broke', sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) );
     
                 }
                 
@@ -550,46 +550,46 @@ if ( ! function_exists( 'leaky_paywall_free_registration_form' ) ) {
                     echo '</div>';
                 }   
                 
-                $return .= '<h3>' . sprintf( __( 'Register for %s', 'issuem-leaky-paywall' ), $level['label'] ) . '</h3>';
+                $return .= '<h3>' . sprintf( __( 'Register for %s', 'leaky-paywall' ), $level['label'] ) . '</h3>';
                 $return .= '<form id="leaky_paywall_registration_form" class="leaky_paywall_form" action="" method="POST">';
                 $return .= '<fieldset>';
                 $return .= '<p>';
-                $return .= '<label for="leaky_paywall_user_Login" class="leaky-paywall-field-label">' . __( 'Username', 'issuem-leaky-paywall' ) . '</label>';
+                $return .= '<label for="leaky_paywall_user_Login" class="leaky-paywall-field-label">' . __( 'Username', 'leaky-paywall' ) . '</label>';
                 $return .= '<input name="leaky_paywall_user_login" id="leaky_paywall_user_login" class="required" type="text"/>';
                 $return .= '</p>';
                 $return .= '<p>';
-                $return .= '<label for="leaky_paywall_user_email" class="leaky-paywall-field-label">' . __( 'Email', 'issuem-leaky-paywall'  ) . '</label>';
+                $return .= '<label for="leaky_paywall_user_email" class="leaky-paywall-field-label">' . __( 'Email', 'leaky-paywall'  ) . '</label>';
                 $return .= '<input name="leaky_paywall_user_email" id="leaky_paywall_user_email" class="required" type="email"/>';
                 $return .= '</p>';
                 $return .= '<p>';
-                $return .= '<label for="leaky_paywall_user_first" class="leaky-paywall-field-label">' . __( 'First Name', 'issuem-leaky-paywall'  ) . '</label>';
+                $return .= '<label for="leaky_paywall_user_first" class="leaky-paywall-field-label">' . __( 'First Name', 'leaky-paywall'  ) . '</label>';
                 $return .= '<input name="leaky_paywall_user_first" id="leaky_paywall_user_first" type="text"/>';
                 $return .= '</p>';
                 $return .= '<p>';
-                $return .= '<label for="leaky_paywall_user_last" class="leaky-paywall-field-label">' . __( 'Last Name', 'issuem-leaky-paywall'  ) . '</label>';
+                $return .= '<label for="leaky_paywall_user_last" class="leaky-paywall-field-label">' . __( 'Last Name', 'leaky-paywall'  ) . '</label>';
                 $return .= '<input name="leaky_paywall_user_last" id="leaky_paywall_user_last" type="text"/>';
                 $return .= '</p>';
                 $return .= '<p>';
-                $return .= '<label for="password" class="leaky-paywall-field-label">' . __( 'Password', 'issuem-leaky-paywall'  ) . '</label>';
+                $return .= '<label for="password" class="leaky-paywall-field-label">' . __( 'Password', 'leaky-paywall'  ) . '</label>';
                 $return .= '<input name="leaky_paywall_user_pass" id="password" class="required" type="password"/>';
                 $return .= '</p>';
                 $return .= '<p>';
-                $return .= '<label for="password_again" class="leaky-paywall-field-label">' . __( 'Password Again', 'issuem-leaky-paywall'  ) . '</label>';
+                $return .= '<label for="password_again" class="leaky-paywall-field-label">' . __( 'Password Again', 'leaky-paywall'  ) . '</label>';
                 $return .= '<input name="leaky_paywall_user_pass_confirm" id="password_again" class="required" type="password"/>';
                 $return .= '</p>';
                 $return  = apply_filters( 'leaky_paywall_after_registration_fields', $return );
                 $return .= '<p>';
                 $return .= '<input type="hidden" name="leaky_paywall_register_nonce" value="' . wp_create_nonce('leaky_paywall-register-nonce') . '"/>';
                 $return .= '<input type="hidden" name="leaky_paywall_register_level_id" value="' . $level_id . '"/>';
-                $return .= '<input type="submit" name="issuem-leaky-paywall-free-return" value="' . __( 'Register Now', 'issuem-leaky-paywall' ) . '"/>';
+                $return .= '<input type="submit" name="issuem-leaky-paywall-free-return" value="' . __( 'Register Now', 'leaky-paywall' ) . '"/>';
                 $return .= '</p>';
                 $return .= '</fieldset>';
                 $return .= '</form>';
             } else {
-                $return .= __( 'Requested subscription level is not free', 'issuem-leaky-paywall' );
+                $return .= __( 'Requested subscription level is not free', 'leaky-paywall' );
             }
         } else {
-            $return .= __( 'Not a valid subscription level', 'issuem-leaky-paywall' );
+            $return .= __( 'Not a valid subscription level', 'leaky-paywall' );
         }
         
         return $return;
@@ -843,7 +843,7 @@ if ( ! function_exists( 'issuem_process_paypal_standard_ipn' ) ) {
         
         } else {
             
-            error_log( sprintf( __( 'Invalid IPN sent from PayPal: %s', 'issuem-leaky-paywall' ), maybe_serialize( $payload ) ) );
+            error_log( sprintf( __( 'Invalid IPN sent from PayPal: %s', 'leaky-paywall' ), maybe_serialize( $payload ) ) );
 
         }
         
@@ -1007,7 +1007,7 @@ if ( ! function_exists( 'leaky_paywall_pay_with_stripe' ) ) {
                                 
             } catch ( Exception $e ) {
 
-                $results = '<h1>' . sprintf( __( 'Error processing request: %s', 'issuem-leaky-paywall' ), $e->getMessage() ) . '</h1>';
+                $results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) . '</h1>';
 
             }
             

@@ -273,13 +273,13 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$user_type = !empty( $_GET['user-type'] ) ? $_GET['user-type'] : 'lpsubs';
 	
 		echo '<div class="alignleft actions">';
-		echo '<label for="user-type-selector" class="screen-reader-text">' . __( 'Select User Type' ) . '</label>';
+		echo '<label for="user-type-selector" class="screen-reader-text">' . __( 'Select User Type', 'leaky-paywall' ) . '</label>';
 		echo '<select name="user-type" id="user-type-selector">';
-		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . __( 'Leaky Paywall Subscribers' ) . '</option>';
-		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . __( 'All WordPress Users' ) . '</option>';
+		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . __( 'Leaky Paywall Subscribers', 'leaky-paywall' ) . '</option>';
+		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . __( 'All WordPress Users', 'leaky-paywall' ) . '</option>';
 		echo '</select>';
 
-		submit_button( __( 'Apply' ), 'primary', false, false );
+		submit_button( __( 'Apply', 'leaky-paywall' ), 'primary', false, false );
 		echo '</div>';
 
 	}
@@ -300,9 +300,9 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		?>
 		
 		<div class="alignleft actions">
-			<label for="filter-by-level" class="screen-reader-text">Filter by level</label>
+			<label for="filter-by-level" class="screen-reader-text"><?php _e( 'Filter by level', 'leaky-paywall' ); ?></label>
 			<select name="filter-level" id="filter-by-level">
-				<option value="all" <?php selected( $lev, 'all' ); ?>>All Levels</option>
+				<option value="all" <?php selected( $lev, 'all' ); ?>><?php _e( 'All Levels', 'leaky-paywall' ); ?></option>
 				<?php 
 					foreach( $levels as $key => $level ) {
 						echo '<option ' . selected( $key, $lev, false ) . ' value="' . $key . '">' . $level['label'] . '</option>';
@@ -319,7 +319,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				) );
 			?>
 
-			<label for="filter-by-status" class="screen-reader-text">Filter by status</label>
+			<label for="filter-by-status" class="screen-reader-text"><?php _e( 'Filter by status', 'leaky-paywall'); ?></label>
 			<select name="filter-status" id="filter-by-status">
 
 				<?php foreach( $status_filter_args as $key => $value ) {
@@ -413,7 +413,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$edit_wp_link = admin_url() . 'user-edit.php?user_id=' . $user->ID;
 							echo "<td $attributes>"; ?>
 								<strong><?php echo $user->user_email; ?></strong>
-								<br><a href="<?php echo $edit_link; ?>" class="edit">Edit LP Sub</a> | <a href="<?php echo $edit_wp_link; ?>">Edit WP user</a>
+								<br><a href="<?php echo $edit_link; ?>" class="edit"><?php _e( 'Edit LP Sub', 'leaky-paywall'); ?></a> | <a href="<?php echo $edit_wp_link; ?>"><?php _e( 'Edit WP user', 'leaky-paywall' ); ?></a>
 							</td>
 						<?php
 						break;
@@ -576,7 +576,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		?>
 		<p class="search-box">
 			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo $text; ?>:</label>
-			<input type="checkbox" name="custom_field_search"> Search custom fields<br>
+			<input type="checkbox" name="custom_field_search"> <?php _e( 'Search custom fields', 'leaky-paywall' ); ?><br>
 			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo $search_query; ?>" />
 
 			<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>

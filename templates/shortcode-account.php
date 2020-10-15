@@ -204,7 +204,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 				<?php
 					if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
-						echo '<h3 class="leaky-paywall-account-section-title">Your user role can see all content.</h3>';
+						echo '<h3 class="leaky-paywall-account-section-title">' . __( 'Your user role can see all content.', 'leaky-paywall' ) . '</h3>';
 					} else {
 						?>
 						<h3 class="leaky-paywall-account-section-title your-plan-title"><?php _e( 'Your plan', 'leaky-paywall' ); ?></h3>
@@ -314,9 +314,9 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 					$payment_form .= '<h3 class="leaky-paywall-account-section-title">Payment Method</h3><p>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
 
 					if ( 0 == strcasecmp( 'deactivated', $status ) ) {
-						$data_label = 'Update Credit Card Details & Restart Subscription';
+						$data_label = __( 'Update Credit Card Details & Restart Subscription', 'leaky-paywall' );
 					} else {
-						$data_label = 'Update Credit Card Details';
+						$data_label = __( 'Update Credit Card Details', 'leaky-paywall' );
 					}
 
 					$payment_form .= '<form action="" method="POST">
@@ -344,7 +344,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				
 				<?php
 					if ( $cancel ) {
-					echo '<h3 class="leaky-paywall-account-section-title">Manage</h3>';
+					echo '<h3 class="leaky-paywall-account-section-title">' . __( 'Manage', 'leaky-paywall' ) . '</h3>';
 					echo '<p class="leaky-paywall-cancel-link">' . apply_filters( 'leaky_paywall_cancel_link', $cancel ) . '</p>';
 				}
 				?>
