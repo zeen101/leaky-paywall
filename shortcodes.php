@@ -70,6 +70,10 @@ if (!function_exists('do_leaky_paywall_login')) {
 
 			$results .= '<div id="leaky-paywall-login-form">';
 
+			if (isset($_GET['login']) && $_GET['login'] == 'failed') {
+				$results .= '<div class="leaky_paywall_message error"><p>' . __('Incorrect username or password.', 'leaky-paywall') . '</p></div>';
+			}
+
 			add_action('login_form_bottom', 'leaky_paywall_add_lost_password_link');
 			$args = array(
 				'echo' => false,

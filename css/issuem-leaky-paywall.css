@@ -166,6 +166,7 @@
 
 .leaky_paywall_message.error p {
 	margin-bottom: 5px;
+	margin-top: 0;
 	font-size: .875em;
 	color: #721c24;
 }

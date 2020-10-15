@@ -3590,3 +3590,15 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		update_post_meta($transaction_id, '_gateway_txn_id', $gateway_transaction_id);
 	}
+
+
+	add_action('wp_login_failed', 'leaky_paywall_login_fail');
+	function leaky_paywall_login_fail($username)
+	{
+		$referrer = wp_get_referer();
+
+		if (!empty($referrer) && !strstr($referrer, 'wp-login') && !strstr($referrer, 'wp-admin')) {
+			wp_redirect($referrer . '/?login=failed');
+			exit;
+		}
+	}
