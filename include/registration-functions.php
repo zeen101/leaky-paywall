@@ -293,7 +293,8 @@ function leaky_paywall_process_user_registration_validation()
 	}
 
 	$subscriber_id = get_user_meta($user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
-	\Stripe\Stripe::setApiKey(leaky_paywall_get_stripe_secret_key());
+
+	leaky_paywall_initialize_stripe_api();
 
 	if (!empty($subscriber_id)) {
 
@@ -332,7 +333,7 @@ function leaky_paywall_process_user_registration_validation()
 		wp_send_json($return);
 	}
 
-	// need something to store the data on
+	// temporary place to store the data
 	leaky_paywall_create_incomplete_user($user, $cu);
 
 	// create a paymentIntent (if not recurring)

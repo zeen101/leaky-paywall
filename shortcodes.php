@@ -249,7 +249,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 					}
 				}
 
-				\Stripe\Stripe::setApiKey($secret_key);
+				leaky_paywall_initialize_stripe_api();
 
 				try {
 
@@ -459,7 +459,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 							if ($secret_key) {
 
-								\Stripe\Stripe::setApiKey($secret_key);
+								leaky_paywall_initialize_stripe_api();
 
 								$cu = \Stripe\Customer::retrieve(
 									["id" => $subscriber_id]

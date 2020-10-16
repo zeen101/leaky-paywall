@@ -540,13 +540,7 @@ if (!function_exists('leaky_paywall_has_user_paid')) {
 
 				// check with Stripe to make sure the user has an active subscription
 
-				if ($mode == 'test') {
-					$secret_key = isset($settings['test_secret_key']) ? trim($settings['test_secret_key']) : '';
-				} else {
-					$secret_key = isset($settings['live_secret_key']) ? trim($settings['live_secret_key']) : '';
-				}
-
-				\Stripe\Stripe::setApiKey($secret_key);
+				leaky_paywall_initialize_stripe_api();
 
 				try {
 					if (empty($subscriber_id)) {

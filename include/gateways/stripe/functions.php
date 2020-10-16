@@ -203,7 +203,7 @@ function leaky_paywall_create_stripe_checkout_session()
 		$redirect_url = home_url();
 	}
 
-	\Stripe\Stripe::setApiKey(leaky_paywall_get_stripe_secret_key());
+	leaky_paywall_initialize_stripe_api();
 
 	$data = array(
 		'cancel_url' => home_url('cancel'),
@@ -288,7 +288,7 @@ function leaky_paywall_create_stripe_checkout_subscription()
 
 	$settings = get_leaky_paywall_settings();
 
-	\Stripe\Stripe::setApiKey(leaky_paywall_get_stripe_secret_key());
+	leaky_paywall_initialize_stripe_api();
 
 	$data = array(
 		'invoice_settings' => array(
@@ -304,6 +304,8 @@ function leaky_paywall_create_stripe_checkout_subscription()
 		$customer->invoice_settings->default_payment_method = $paymentMethodId;
 		$customer->save();
 	} catch (\Throwable $th) {
+
+		leaky_paywall_log('error 1', 'stripe checkout subscription');
 
 		wp_send_json(array(
 			'error'  => $th->jsonBody
@@ -323,15 +325,17 @@ function leaky_paywall_create_stripe_checkout_subscription()
 	);
 
 	try {
-
-		$subscriptions = $customer->subscriptions->all(array('limit' => '1'));
+		leaky_paywall_log('before get subs', 'stripe checkout subscription for ' . $customerId);
+		leaky_paywall_log($customer, 'stripe checkout subscription for ' . $customerId);
+		$subscriptions = $customer->subscriptions->all(array('limit' => '1')); // generating an error
+		leaky_paywall_log('after get subs', 'stripe checkout subscription for ' . $customerId);
 
 		if (empty($subscriptions->data)) {
+			leaky_paywall_log('empty sub data', 'stripe checkout subscription for ' . $customerId);
 			$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields));
 		} else {
 
 			foreach ($subscriptions->data as $subscription) {
-
 				$sub = $customer->subscriptions->retrieve($subscription->id);
 				$sub->plan = $planId;
 				do_action('leaky_paywall_before_update_stripe_subscription', $customer, $sub, $level);
@@ -341,6 +345,7 @@ function leaky_paywall_create_stripe_checkout_subscription()
 			}
 		}
 	} catch (\Throwable $th) {
+		leaky_paywall_log('error 2', 'stripe checkout subscription');
 		wp_send_json(array(
 			'error'  => $th->jsonBody
 		));
@@ -469,4 +474,21 @@ function leaky_paywall_is_valid_stripe_subscription($subscription)
 	}
 
 	return false;
+}
+
+/**
+ * Initialize a call to the Stripe API with Leaky Paywall App Info
+ *
+ * @since 4.15.4
+ */
+function leaky_paywall_initialize_stripe_api()
+{
+	\Stripe\Stripe::setApiKey(leaky_paywall_get_stripe_secret_key());
+	\Stripe\Stripe::setApiVersion(LEAKY_PAYWALL_STRIPE_API_VERSION);
+	\Stripe\Stripe::setAppInfo(
+		'WordPress Leaky Paywall',
+		LEAKY_PAYWALL_VERSION,
+		esc_url(site_url()),
+		LEAKY_PAYWALL_STRIPE_PARTNER_ID
+	);
 }

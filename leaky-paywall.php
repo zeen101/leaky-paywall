@@ -32,6 +32,9 @@ define('LEAKY_PAYWALL_PATH', 		plugin_dir_path(__FILE__));
 define('LEAKY_PAYWALL_BASENAME',	plugin_basename(__FILE__));
 define('LEAKY_PAYWALL_REL_DIR',	dirname(LEAKY_PAYWALL_BASENAME));
 
+define('LEAKY_PAYWALL_STRIPE_API_VERSION', '2020-03-02');
+define('LEAKY_PAYWALL_STRIPE_PARTNER_ID', 'pp_partner_IDILs8UMcYIw41');
+
 if (!defined('PAYPAL_LIVE_URL'))
 	define('PAYPAL_LIVE_URL', 'https://www.paypal.com/');
 if (!defined('PAYPAL_SANDBOX_URL'))
