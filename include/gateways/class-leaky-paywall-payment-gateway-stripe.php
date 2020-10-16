@@ -291,6 +291,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				</div>
 			<?php } ?>
 
+			<?php
+			if (!is_ssl()) {
+				echo '<div class="leaky_paywall_message error"><p>' . __('This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes.', 'leaky-paywall') . '</p></div>';
+			}
+			?>
+
 
 			<div class="form-row">
 				<label for="card-element">
