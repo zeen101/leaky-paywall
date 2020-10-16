@@ -513,7 +513,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 					break; //We only want the first match
 					// }
 				} else if (!empty($plan) && 'Canceled' == $plan) {
-					// $results .= '<h2 class="leaky-paywall-subscription-status-header">' . __('Your Subscription Has Been Canceled', 'leaky-paywall') . '</h2>';
+					$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __('Your Subscription Has Been Canceled', 'leaky-paywall') . '</h2>';
 					// $results .= '<p>' . sprintf(__('You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall'), get_page_link($settings['page_for_subscription'])) . '</p>';
 				} else {
 
