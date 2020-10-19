@@ -23,6 +23,13 @@
             );
             $("#leaky-paywall-registration-next").text("Next");
             $("#leaky-paywall-registration-errors").show();
+
+            $("html, body").animate(
+              {
+                scrollTop: $(".leaky-paywall-registration-error").offset().top,
+              },
+              1000
+            );
           });
         } else {
           if (resp.pi_client) {

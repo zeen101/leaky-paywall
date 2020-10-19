@@ -121,8 +121,8 @@
         $("#leaky-paywall-submit").prop("disabled", false);
         $("#leaky-paywall-registration-next").prop("disabled", false);
       } else {
-        $("#leaky-paywall-submit").prop("disabled", true);
-        $("#leaky-paywall-registration-next").prop("disabled", true);
+        // $("#leaky-paywall-submit").prop("disabled", true);
+        // $("#leaky-paywall-registration-next").prop("disabled", true);
       }
     }
   });
