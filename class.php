@@ -177,7 +177,7 @@ if (!class_exists('Leaky_Paywall')) {
 
 					$output  = '<h3>' . __('Invalid or Expired Login Link', 'leaky-paywall') . '</h3>';
 					$output .= '<p>' . sprintf(__('Sorry, this login link is invalid or has expired. <a href="%s">Try again?</a>', 'leaky-paywall'), get_page_link($settings['page_for_login'])) . '</p>';
-					$output .= '<a href="' . get_home_url() . '">' . sprintf(__('back to %s', 'leak-paywall'), $settings['site_name']) . '</a>';
+					$output .= '<a href="' . get_home_url() . '">' . sprintf(__('back to %s', 'leaky-paywall'), $settings['site_name']) . '</a>';
 
 					wp_die(apply_filters('leaky_paywall_invalid_login_link', $output));
 				}

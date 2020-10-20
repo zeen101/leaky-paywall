@@ -976,7 +976,7 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 
 				$form .= apply_filters('leaky_paywall_cancel_subscription_description', $cancel_description);
 
-				$form .= '<a href="' . esc_url(add_query_arg(array('cancel' => 'confirm'))) . '">' . __('Yes, cancel my subscription!', 'leaky-paywall') . '</a> | <a href="' . get_page_link($settings['page_for_profile']) . '">' . __('No, get me outta here!', 'leak-paywall') . '</a>';
+				$form .= '<a href="' . esc_url(add_query_arg(array('cancel' => 'confirm'))) . '">' . __('Yes, cancel my subscription!', 'leaky-paywall') . '</a> | <a href="' . get_page_link($settings['page_for_profile']) . '">' . __('No, get me outta here!', 'leaky-paywall') . '</a>';
 			} else if (!empty($_REQUEST['cancel']) && 'confirm' === $_REQUEST['cancel']) {
 
 				$user = wp_get_current_user();
@@ -1014,7 +1014,7 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 							$form .= '<p>' . sprintf(__('ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'leaky-paywall'), $settings['site_name']) . '</p>';
 						}
 
-						$form .= '<a href="' . get_home_url() . '">' . sprintf(__('Return to %s...', 'leak-paywall'), $settings['site_name']) . '</a>';
+						$form .= '<a href="' . get_home_url() . '">' . sprintf(__('Return to %s...', 'leaky-paywall'), $settings['site_name']) . '</a>';
 					} catch (Exception $e) {
 
 						$results = '<h1>' . sprintf(__('Error processing request: %s', 'leaky-paywall'), $e->getMessage()) . '</h1>';
@@ -1473,7 +1473,7 @@ if (!function_exists('leaky_paywall_server_pdf_download')) {
 				$output = '<h3>' . __('Error Downloading PDF', 'leaky-paywall') . '</h3>';
 
 				$output .= '<p>' . sprintf(__('Download Error: %s', 'leaky-paywall'), $response->get_error_message()) . '</p>';
-				$output .= '<a href="' . get_home_url() . '">' . __('Home', 'leak-paywall') . '</a>';
+				$output .= '<a href="' . get_home_url() . '">' . __('Home', 'leaky-paywall') . '</a>';
 
 				wp_die($output);
 			}

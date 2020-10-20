@@ -543,27 +543,27 @@ if (!function_exists('leaky_paywall_card_form_full')) {
 
 		<div class="leaky-paywall-card-details">
 			<p class="form-row">
-				<label><?php _e('Card Number', 'rcp'); ?></label>
+				<label><?php _e('Card Number', 'leaky-paywall'); ?></label>
 				<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Card CVC', 'rcp'); ?></label>
+				<label><?php _e('Card CVC', 'leaky-paywall'); ?></label>
 				<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Address', 'rcp'); ?></label>
+				<label><?php _e('Address', 'leaky-paywall'); ?></label>
 				<input type="text" size="20" name="card_address" class="card-address" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('City', 'rcp'); ?></label>
+				<label><?php _e('City', 'leaky-paywall'); ?></label>
 				<input type="text" size="20" name="card_city" class="card-city" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('State or Providence', 'rcp'); ?></label>
+				<label><?php _e('State or Providence', 'leaky-paywall'); ?></label>
 				<input type="text" size="20" name="card_state" class="card-state" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Country', 'rcp'); ?></label>
+				<label><?php _e('Country', 'leaky-paywall'); ?></label>
 				<select name="card_country" class="card-country">
 					<option value="">Country</option>
 					<option value="US">United States</option>
@@ -814,15 +814,15 @@ if (!function_exists('leaky_paywall_card_form_full')) {
 				</select>
 			</p>
 			<p class="form-row">
-				<label><?php _e('Card ZIP or Postal Code', 'rcp'); ?></label>
+				<label><?php _e('Card ZIP or Postal Code', 'leaky-paywall'); ?></label>
 				<input type="text" size="10" name="card_zip" class="card-zip" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Name on Card', 'rcp'); ?></label>
+				<label><?php _e('Name on Card', 'leaky-paywall'); ?></label>
 				<input type="text" size="20" name="card_name" class="card-name" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Expiration (MM/YYYY)', 'rcp'); ?></label>
+				<label><?php _e('Expiration (MM/YYYY)', 'leaky-paywall'); ?></label>
 				<select name="card_exp_month" class="ccard-expiry-month">
 					<?php for ($i = 1; $i <= 12; $i++) : ?>
 						<option value="<?php echo $i; ?>"><?php echo $i . ' - ' . leaky_paywall_get_month_name($i); ?></option>
