@@ -1009,6 +1009,7 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
 
 							do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
+							leaky_paywall_log($results, 'leaky paywall canceled stripe subscription for ' . $user->user_email);
 						} else {
 
 							$form .= '<p>' . sprintf(__('ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'leaky-paywall'), $settings['site_name']) . '</p>';
