@@ -59,8 +59,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$incomplete_user = get_posts(array(
 			'post_type' => 'lp_incomplete_user',
 			'posts_per_page' => 1,
-			'name' => $this->email
+			'meta_key'	=> '_email',
+			'meta_value' => $this->email
 		));
+
+		if (empty($incomplete_user)) {
+			wp_die(__('An error occurred, please contact the site administrator: ', 'leaky-paywall') . get_bloginfo('admin_email'), __('Error', 'leaky-paywall'), array('response' => '401'));
+		}
 
 		$customer_data = get_post_meta($incomplete_user[0]->ID, '_customer_data', true);
 		$customer_id = $customer_data->id;

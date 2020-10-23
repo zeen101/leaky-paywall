@@ -969,6 +969,7 @@ function leaky_paywall_create_incomplete_user($user_data, $customer_data)
 
 	update_post_meta($incomplete_user, '_user_data', $user_data);
 	update_post_meta($incomplete_user, '_customer_data', $customer_data);
+	update_post_meta($incomplete_user, '_email', $user_data['email']);
 }
 
 function leaky_paywall_cleanup_incomplete_user($email)
@@ -976,8 +977,9 @@ function leaky_paywall_cleanup_incomplete_user($email)
 
 	$incomplete_users = get_posts(array(
 		'post_type' => 'lp_incomplete_user',
-		's'	=> $email,
-		'posts_per_page' => 99
+		'posts_per_page' => 99,
+		'meta_key'	=> '_email',
+		'meta_value' => $email
 	));
 
 	if (empty($incomplete_users)) {
