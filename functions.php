@@ -3030,6 +3030,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		if (is_array($data)) {
 			foreach ($data as $key => $value) {
+				if (is_array($value)) {
+					$value = 'array';
+				}
 				$str .= $key . ': ' . $value . ',';
 			}
 		} else {

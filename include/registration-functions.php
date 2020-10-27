@@ -410,7 +410,7 @@ function leaky_paywall_validate_user_data()
 		$user['need_new']         = false;
 	}
 
-	if ('stripe' == $_POST['payment_method']) {
+	if (isset($_POST['payment_method']) && 'stripe' == $_POST['payment_method']) {
 		return apply_filters('leaky_paywall_user_registration_data', $user);
 	}
 
