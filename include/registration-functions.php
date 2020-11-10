@@ -293,10 +293,11 @@ function leaky_paywall_process_user_registration_validation()
 	}
 
 	$subscriber_id = get_user_meta($user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
+	$subscriber_payment_gateway = get_user_meta($user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
 
 	leaky_paywall_initialize_stripe_api();
 
-	if (!empty($subscriber_id)) {
+	if (!empty($subscriber_id) && 'stripe' == $subscriber_payment_gateway) {
 
 		// retrieve Stripe customer
 		try {
