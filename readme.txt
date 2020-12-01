@@ -17,6 +17,8 @@ Get your content discovered in Google search and shared in social media. As simp
 
 Leaky Paywall also integrates with our award winning IssueM issue publisher, our UniPress iOS and Android apps and many 3rd party print subscription services.
 
+https://www.youtube.com/watch?v=caAwkRRi9wI&feature=emb_logo&ab_channel=ZEEN101
+
 **Features**
 
 * Can be easily configured as a metered paywall, hybrid paywall, hard paywall, and membership platform.
