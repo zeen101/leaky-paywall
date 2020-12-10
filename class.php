@@ -1696,6 +1696,12 @@ if (!class_exists('Leaky_Paywall')) {
 
 							<p><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">Setting Up Leaky Paywall</a></p>
 
+							<iframe width="560" height="315" src="https://www.youtube.com/embed/blUGogGw4H8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+							<h2><?php _e('Setting Up Stripe in Leaky Paywall', 'leaky-paywall'); ?></h2>
+
+							<iframe width="560" height="315" src="https://www.youtube.com/embed/QlrYpL72L4E" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 							<h2><?php _e('Documentation Articles'); ?></h2>
 
 							<p><a target="_blank" href="https://zeen101.helpscoutdocs.com/collection/30-leaky-paywall">View All</a></p>
