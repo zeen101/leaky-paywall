@@ -333,9 +333,9 @@ if (!function_exists('do_leaky_paywall_profile')) {
 				$status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 
 				if (leaky_paywall_user_has_access()) {
-					$has_access = 'Yes';
+					$has_access = __('Yes', 'leaky-paywall');
 				} else {
-					$has_access = 'No';
+					$has_access = __('No', 'leaky-paywall');
 				}
 
 				$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
@@ -388,15 +388,19 @@ if (!function_exists('do_leaky_paywall_profile')) {
 				}
 
 				if ('stripe' == $payment_gateway) {
-					$profile_payment = 'Credit Card';
+					$profile_payment = __('Credit Card', 'leaky-paywall');
 				} else {
 					$profile_payment = leaky_paywall_translate_payment_gateway_slug_to_name($payment_gateway);
 				}
 
 				if (strcasecmp('active', $status) == 0 && !leaky_paywall_user_has_access()) {
-					$status_name = 'Expired';
+					$status_name = __('Expired', 'leaky-paywall');
 				} else {
 					$status_name = ucfirst($status);
+
+					if ($status_name == 'Active') {
+						$status_name = __('Active', 'leaky-paywall');
+					}
 				}
 
 				if (!empty($status) && !empty($level_name) && !empty($payment_gateway) && !empty($expires)) {
@@ -761,11 +765,11 @@ function do_leaky_paywall_register_form($atts)
 		<div class="leaky-paywall-form-steps">
 			<div class="leaky-paywall-form-account-setup-step leaky-paywall-form-step active">
 				<span class="step-number">1</span>
-				<span class="step-title">Account Setup</span>
+				<span class="step-title"><?php _e('Account Setup', 'leaky-paywall'); ?></span>
 			</div>
 			<div class="leaky-paywall-form-payment-setup-step leaky-paywall-form-step">
 				<span class="step-number">2</span>
-				<span class="step-title">Payment</span>
+				<span class="step-title"><?php _e('Payment', 'leaky-paywall'); ?></span>
 			</div>
 		</div>
 	<?php
@@ -844,7 +848,7 @@ function do_leaky_paywall_register_form($atts)
 			<?php if ($level['price'] != 0) {
 			?>
 				<p>
-					<button id="leaky-paywall-registration-next" type="button">Next</button>
+					<button id="leaky-paywall-registration-next" type="button"><?php _e('Next', 'leaky-paywall'); ?></button>
 				</p>
 			<?php
 			} ?>

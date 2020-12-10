@@ -122,31 +122,31 @@ if (isset($_POST['stripeToken']) && $subscriber_id) {
 		}
 
 		if (strcasecmp('active', $status) == 0 && !leaky_paywall_user_has_access($user)) {
-			$status_name = 'Expired';
+			$status_name = __('Expired', 'leaky-paywall');
 		} else {
 			$status_name = ucfirst($status);
 		}
 
 
 		if ('stripe' == $payment_gateway) {
-			$profile_payment = 'Credit Card';
+			$profile_payment = __('Credit Card', 'leaky-paywall');
 		} else {
 			$profile_payment = leaky_paywall_translate_payment_gateway_slug_to_name($payment_gateway);
 		}
 
-		$expires_label = 'Ends on';
+		$expires_label = __('Ends on', 'leaky-paywall');
 
 		if (!empty($plan) && 'Canceled' !== $plan && 'Never' !== $expires) {
 
 			if ($status == 'canceled') {
-				$expires_label = 'Ends on';
+				$expires_label = __('Ends on', 'leaky-paywall');
 			} else {
-				$expires_label = 'Recurs on';
+				$expires_label = __('Recurs on', 'leaky-paywall');
 			}
 		}
 
 		if ($status_name == 'Expired') {
-			$expires_label = 'Expired on';
+			$expires_label = __('Expired on', 'leaky-paywall');
 		}
 
 		$paid = leaky_paywall_has_user_paid($user->user_email, $site);
@@ -211,7 +211,7 @@ if (isset($_POST['stripeToken']) && $subscriber_id) {
 							</tr>
 							<tr>
 								<td class="profile-table-label"><?php _e('Has Access', 'leaky-paywall'); ?></td>
-								<td class="profile-table-value"><?php echo leaky_paywall_user_has_access() ? 'Yes' : 'No'; ?></td>
+								<td class="profile-table-value"><?php echo leaky_paywall_user_has_access() ? __('Yes', 'leaky-paywall') : __('No', 'leaky-paywall'); ?></td>
 							</tr>
 							<tr>
 								<td class="profile-table-label"><?php _e('Payment Method', 'leaky-paywall'); ?></td>
