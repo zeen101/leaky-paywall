@@ -1838,6 +1838,7 @@ if (!class_exists('Leaky_Paywall')) {
 								$status = $_POST['leaky-paywall-subscriber-status'];
 								$payment_gateway = trim(rawurldecode($_POST['leaky-paywall-subscriber-payment-gateway']));
 								$subscriber_id = trim(rawurldecode($_POST['leaky-paywall-subscriber-id']));
+								$plan = trim(rawurldecode($_POST['leaky-paywall-plan']));
 
 								if (empty($_POST['leaky-paywall-subscriber-expires'])) {
 									$expires = 0;
@@ -1855,6 +1856,8 @@ if (!class_exists('Leaky_Paywall')) {
 									update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, $payment_gateway);
 								if ($subscriber_id !== get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true))
 									update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, $subscriber_id);
+								if ($plan !== get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true))
+									update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
 
 								if ($orig_email !== $new_email) {
 									$args = array('ID' => $user->ID);
@@ -1915,6 +1918,7 @@ if (!class_exists('Leaky_Paywall')) {
 						$login = $user->user_login;
 
 						$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
+						$plan = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true);
 						$subscriber_level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
 						$payment_status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 						$payment_gateway = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
@@ -1976,6 +1980,10 @@ if (!class_exists('Leaky_Paywall')) {
 								</p>
 								<p>
 									<label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php _e('Subscriber ID', 'leaky-paywall'); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo $subscriber_id; ?>" name="leaky-paywall-subscriber-id" />
+								</p>
+								<p>
+									<label for="leaky-paywall-plan" style="display:table-cell"><?php _e('Plan', 'leaky-paywall'); ?></label><input id="leaky-paywall-plan" class="regular-text" type="text" value="<?php echo $plan; ?>" name="leaky-paywall-plan" />
+									<br><span style="color: #999;"><?php _e('Leave empty for Non-Recurring', 'leaky-paywall'); ?></span>
 								</p>
 								<p>
 									<label for="leaky-paywall-subscriber-notes" style="display:table-cell"><?php _e('Subscriber Notes', 'leaky-paywall'); ?></label>
