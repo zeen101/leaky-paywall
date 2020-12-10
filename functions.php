@@ -3589,11 +3589,20 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		update_post_meta($transaction_id, '_gateway_txn_id', $gateway_transaction_id);
 	}
 
-
 	add_action('wp_login_failed', 'leaky_paywall_login_fail');
 	function leaky_paywall_login_fail($username)
 	{
+
+		$settings = get_leaky_paywall_settings();
 		$referrer = wp_get_referer();
+		$clean_referrer = str_replace(array('http://', 'https://'), '', $referrer);
+		$login_link = str_replace(array('http://', 'https://'), '', get_page_link($settings['page_for_login']));
+		$profile_link = str_replace(array('http://', 'https://'), '', get_page_link($settings['page_for_profile']));
+
+		// Only run this check if the user was on the leaky paywall login page or profile page. This keeps it from breaking other login plugins.
+		if ($clean_referrer != $login_link && $clean_referrer != $profile_link) {
+			return;
+		}
 
 		if (!empty($referrer) && !strstr($referrer, 'wp-login') && !strstr($referrer, 'wp-admin')) {
 			wp_redirect($referrer . '/?login=failed');
