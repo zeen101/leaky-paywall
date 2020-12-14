@@ -404,7 +404,7 @@ if (!function_exists('leaky_paywall_get_current_site')) {
 
 		global $blog_id;
 
-		if (is_multisite_premium() && !is_main_site($blog_id)) {
+		if (is_multisite_premium()) {
 			$site = '_' . $blog_id;
 		} else {
 			$site = '';
