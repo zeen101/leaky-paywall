@@ -14,6 +14,7 @@ The most flexible paywall for WordPress. Sell subscriptions without sacrificing 
 https://www.youtube.com/watch?v=caAwkRRi9wI&feature=emb_logo&ab_channel=ZEEN101
 
 Part of the [ZEEN101](https://zeen101.com/) platform, [Leaky Paywall](https://zeen101.com/for-developers/leakypaywall/) is the first and most flexible metered paywall for WordPress, built to grow visitor traffic, email lists, and paid subscriptions. Simple to set up, Leaky Paywall also offers the unmatched ability to customize access to your content the way you need it. Lock down, open up, meter, and offer free registration access to different levels of content. 
+
 Control and sell access to: all post types, categories, tags, individual articles, in-content sections, audio & video, [time based premium archive content](https://zeen101.com/downloads/leaky-paywall-content-auto-archiver/), [web issues](https://zeen101.com/for-developers/issuem/), premium newsletters, and even apps with our fully integrated [UniPress iOS & Android app platform](https://zeen101.com/unipress/). 
 
 Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://zeen101.com/for-developers/leakypaywall/#integrations), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://zeen101.com/documentation/how-to-be-gdpr-compliant-with-leaky-paywall/). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Paid add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/) offer additional features.
