@@ -457,12 +457,14 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 						$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 
-						foreach ($sites as $site) {
-							$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
-							if (!empty($subscriber_id)) {
-								break;
-							}
-						}
+						// foreach ($sites as $site) {
+						// 	$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
+						// 	if (!empty($subscriber_id)) {
+						// 		break;
+						// 	}
+						// }
+
+						$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
 
 						$secret_key = ('test' === $mode) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 
