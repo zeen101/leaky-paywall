@@ -497,7 +497,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 													customerId: customerId,
 													paymentMethodId: result.paymentMethod.id,
 													invoiceId: invoiceId,
-													priceId: priceId,
+													planId: planId,
 												});
 											} else {
 												// Create the subscription
@@ -511,6 +511,76 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 									});
 
 							}
+
+							function retryInvoiceWithNewPaymentMethod({
+								customerId,
+								paymentMethodId,
+								invoiceId,
+								planId
+							}) {
+
+								let level_id = $('#level-id').val();
+								let data = new FormData();
+								const form_data = $("#leaky-paywall-payment-form").serialize();
+
+								data.append('action', 'leaky_paywall_create_stripe_checkout_subscription');
+								data.append('level_id', level_id);
+								data.append('customerId', customerId);
+								data.append('paymentMethodId', paymentMethodId);
+								data.append('planId', planId);
+								data.append('invoiceId', invoiceId);
+								data.append('formData', form_data);
+
+								return (
+									fetch(leaky_paywall_script_ajax.ajaxurl, {
+										method: 'post',
+										credentials: 'same-origin',
+										// headers: {
+										// 	'Content-type': 'application/json',
+										// },
+										body: data
+									})
+									.then((response) => {
+										return response.json();
+									})
+									// If the card is declined, display an error to the user.
+									.then((result) => {
+										if (result.error) {
+											// The card had an error when trying to attach it to a customer.
+											throw result;
+										}
+										console.log('retry invoice result');
+										console.log(result);
+										return result;
+									})
+									// Normalize the result to contain the object returned by Stripe.
+									// Add the additional details we need.
+									.then((result) => {
+										return {
+											// Use the Stripe 'object' property on the
+											// returned result to understand what object is returned.
+											invoice: result.invoice,
+											paymentMethodId: paymentMethodId,
+											planId: planId,
+											isRetry: true,
+										};
+									})
+									// Some payment methods require a customer to be on session
+									// to complete the payment process. Check the status of the
+									// payment intent to handle these actions.
+									.then(handlePaymentThatRequiresCustomerAction)
+									// No more actions required. Provision your service for the user.
+									.then(onSubscriptionComplete)
+									.catch((error) => {
+										console.log('caught retry invoice error');
+										console.log(error);
+										// An error has happened. Display the failure to the user here.
+										// We utilize the HTML element we created.
+										showCardError(error);
+									})
+								);
+
+							} // end retryInvoiceWithNewPaymentMethod
 
 							function createSubscription({
 								customerId,
@@ -610,8 +680,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 								// If it's a first payment attempt, the payment intent is on the subscription latest invoice.
 								// If it's a retry, the payment intent will be on the invoice itself.
-								// let paymentIntent = invoice ? invoice.payment_intent : subscription.latest_invoice.payment_intent;
-								let paymentIntent = subscription.latest_invoice.payment_intent;
+								let paymentIntent = invoice ? invoice.payment_intent : subscription.latest_invoice.payment_intent;
+								// let paymentIntent = subscription.latest_invoice.payment_intent;
 
 								console.log('payment intent');
 								console.log(paymentIntent);
@@ -726,7 +796,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 								let displayError = document.getElementById('card-errors');
 								if (event.error) {
-									displayError.textContent = event.error.message;
+									if (event.error.message) {
+										displayError.textContent = event.error.message;
+									} else {
+										displayError.textContent = event.error.error.message;
+									}
+
 								} else {
 									displayError.textContent = 'There was an error with your payment. Please try again.';
 								}

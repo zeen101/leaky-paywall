@@ -358,6 +358,59 @@ function leaky_paywall_create_stripe_checkout_subscription()
 	wp_send_json($return);
 }
 
+// https://stripe.com/docs/billing/subscriptions/fixed-price
+add_action('wp_ajax_nopriv_leaky_paywall_retry_invoice_stripe_checkout_subscription', 'leaky_paywall_retry_invoice_stripe_checkout_subscription');
+add_action('wp_ajax_leaky_paywall_retry_invoice_stripe_checkout_subscription', 'leaky_paywall_retry_invoice_stripe_checkout_subscription');
+
+function leaky_paywall_retry_invoice_stripe_checkout_subscription()
+{
+	$level_id = $_POST['level_id'];
+	$level = get_leaky_paywall_subscription_level($level_id);
+	$customerId = $_POST['customerId'];
+	$paymentMethodId = $_POST['paymentMethodId'];
+	$invoiceId = $_POST['invoiceId'];
+	$planId = $_POST['planId'];
+	$form_data = $_POST['formData'];
+	parse_str($form_data, $fields);
+
+	$settings = get_leaky_paywall_settings();
+
+	leaky_paywall_initialize_stripe_api();
+
+	try {
+		$payment_method = \Stripe\PaymentMethod::retrieve($paymentMethodId);
+		$payment_method->attach(array('customer' => $customerId));
+
+		$customer = \Stripe\Customer::retrieve($customerId);
+		$customer->invoice_settings->default_payment_method = $paymentMethodId;
+		$customer->save();
+	} catch (\Throwable $th) {
+
+		leaky_paywall_log($customerId, 'stripe error: retry invoice payment method');
+
+		wp_send_json(array(
+			'error'  => $th->jsonBody
+		));
+	}
+
+	try {
+		$invoice = \Stripe\Invoice::retrieve($invoiceId);
+	} catch (\Throwable $th) {
+
+		leaky_paywall_log($customerId, 'stripe error: retry invoice invoice');
+
+		wp_send_json(array(
+			'error'  => $th->jsonBody
+		));
+	}
+
+	$return = array(
+		'invoice'  => $invoice,
+	);
+
+	wp_send_json($return);
+}
+
 /**
  * Get Stripe Plan
  *
