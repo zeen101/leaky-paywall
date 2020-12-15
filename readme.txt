@@ -2,7 +2,7 @@
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
 Tested up to: 5.6
-Stable tag: 4.15.6
+Stable tag: 4.15.7
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -61,6 +61,7 @@ Some of our [add-ons](https://zeen101.com/downloads/category/leaky-paywall-addon
 
 * [Recurring Payments](https://zeen101.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
 * [Trials](https://zeen101.com/downloads/leaky-paywall-trials/?utm_source=addons&utm_medium=description_tab&utm_content=trials&utm_campaign=readme) allow subscribers to sign up for a trial to any recurring level
+* [Pay Per Post](https://zeen101.com/downloads/leaky-paywall-pay-per-post/?utm_source=addons&utm_medium=description_tab&utm_content=payperpost&utm_campaign=readme) allow a user to pay for access to a single post, page, article or other post type
 * [Multiple Levels](https://zeen101.com/downloads/leaky-paywall-multiple-levels/?utm_source=addons&utm_medium=description_tab&utm_content=multiple_levels&utm_campaign=readme) allows you to give your readers different subscription options
 * [Coupon Codes](https://zeen101.com/downloads/leaky-paywall-coupons/?utm_source=addons&utm_medium=description_tab&utm_content=coupon_codes&utm_campaign=readme) allows you to create unlimited coupon codes for your subscription levels
 * [Gift Subscriptions](https://zeen101.com/downloads/gift-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=gift_subscriptions&utm_campaign=readme) allows friends and family to buy gift subscriptions
@@ -107,6 +108,11 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.15.7 =
+* Update multisite display on profile page
+* Add ability to retry stripe invoices if needed during checkout
+* Update display of multisite subscriber table to remove duplicates
 
 = 4.15.6 =
 * Add field to edit plan of a subscriber
