@@ -1045,7 +1045,7 @@ if (!class_exists('Leaky_Paywall')) {
 							<table id="leaky_paywall_administrator_options" class="form-table">
 
 								<tr>
-									<th><?php _e("Disable New User Notifications", 'leaky-paywall'); ?></th>
+									<th><?php _e("Disable New Subscriber Notifications", 'leaky-paywall'); ?></th>
 									<td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked('on', $settings['new_subscriber_admin_email']); ?> /> <?php _e('Disable the email sent to an admin when a new subscriber is added to Leaky Paywall', 'leaky-paywall'); ?></td>
 								</tr>
 
@@ -1083,8 +1083,10 @@ if (!class_exists('Leaky_Paywall')) {
 
 								<tr>
 									<th><?php _e('Body', 'leaky-paywall'); ?></th>
-									<td><textarea id="new_email_body" class="large-text" name="new_email_body" rows="10" cols="20"><?php echo htmlspecialchars(stripcslashes($settings['new_email_body'])); ?></textarea>
-										<p class="description"><?php _e('The email message that is sent to new subscribers.', 'leaky-paywall'); ?></p>
+									<td>
+										<?php wp_editor(stripslashes($settings['new_email_body']), 'new_email_body'); ?>
+
+										<p class="description"><?php _e('The email message that is sent to new subscribers. HTML is allowed.', 'leaky-paywall'); ?></p>
 										<p class="description"><?php _e('Available template tags:', 'leaky-paywall'); ?> <br>
 											%blogname%, %sitename%, %username%, %useremail%, %password%, %firstname%, %lastname%, %displayname%</p>
 									</td>
