@@ -1085,7 +1085,6 @@ if (!class_exists('Leaky_Paywall')) {
 									<th><?php _e('Body', 'leaky-paywall'); ?></th>
 									<td>
 										<?php wp_editor(stripslashes($settings['new_email_body']), 'new_email_body'); ?>
-
 										<p class="description"><?php _e('The email message that is sent to new subscribers. HTML is allowed.', 'leaky-paywall'); ?></p>
 										<p class="description"><?php _e('Available template tags:', 'leaky-paywall'); ?> <br>
 											%blogname%, %sitename%, %username%, %useremail%, %password%, %firstname%, %lastname%, %displayname%</p>
@@ -1112,7 +1111,8 @@ if (!class_exists('Leaky_Paywall')) {
 
 								<tr>
 									<th><?php _e('Body', 'leaky-paywall'); ?></th>
-									<td><textarea id="renewal_reminder_email_body" class="large-text" name="renewal_reminder_email_body" rows="10" cols="20"><?php echo htmlspecialchars(stripcslashes($settings['renewal_reminder_email_body'])); ?></textarea>
+									<td>
+										<?php wp_editor(stripslashes($settings['renewal_reminder_email_body']), 'renewal_reminder_email_body'); ?>
 										<p class="description"><?php _e('The email message that is sent to remind non-recurring subscribers to renew their subscription.', 'leaky-paywall'); ?></p>
 										<p class="description"><?php _e('Available template tags:', 'leaky-paywall'); ?> <br>
 											%blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>

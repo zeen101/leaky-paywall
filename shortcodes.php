@@ -424,7 +424,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 			}
 
 
-			$results .= apply_filters('leaky_paywall_profile_table', $profile_table, $user, $sites, $mode, $settings);
+			$results .= apply_filters('leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings);
 			$results .= apply_filters('leaky_paywall_profile_your_subscription_end', '');
 
 			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
