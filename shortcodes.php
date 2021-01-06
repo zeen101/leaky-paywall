@@ -210,7 +210,8 @@ if (!function_exists('do_leaky_paywall_profile')) {
 	{
 
 		$settings = get_leaky_paywall_settings();
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 
 		$defaults = array();
 
@@ -223,32 +224,16 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 		if (is_user_logged_in()) {
 
-			// $sites = array('');
-			// global $blog_id;
-			// if (is_multisite_premium()) {
-			// 	if (!is_main_site($blog_id)) {
-			// 		$sites = array('_all', '_' . $blog_id);
-			// 	} else {
-			// 		$sites = array('_all', '_' . $blog_id, '');
-			// 	}
-			// }
-
 			$user = wp_get_current_user();
 
 			if (isset($_POST['stripeToken'])) {
 
 				$secret_key = ('test' === $mode) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-
-				foreach ($sites as $site) {
-					$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
-					$status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
-					$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
-					$plan = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true);
-					$level = get_leaky_paywall_subscription_level($level_id);
-					if (!empty($subscriber_id)) {
-						break;
-					}
-				}
+				$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
+				$status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
+				$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
+				$plan = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true);
+				$level = get_leaky_paywall_subscription_level($level_id);
 
 				leaky_paywall_initialize_stripe_api();
 
@@ -331,9 +316,6 @@ if (!function_exists('do_leaky_paywall_profile')) {
 			$profile_table .= '</tr>';
 			$profile_table .= '</thead>';
 
-			$site = leaky_paywall_get_current_site();
-
-			// foreach ($sites as $site) {
 			$status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 
 			if (leaky_paywall_user_has_access()) {
@@ -416,7 +398,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 				$profile_table .= '	<td>' . $expires . '</td>';
 				$profile_table .= '</tbody>';
 			}
-			// }
+
 			$profile_table .= '</table>';
 
 			if ($cancel) {
@@ -432,10 +414,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 
 			$results .= apply_filters('leaky_paywall_profile_your_payment_info_start', '');
-
 			$results .= apply_filters('leaky_paywall_subscriber_info_paid_subscriber_start', '');
-
-			// foreach ($sites as $site) {
 
 			$payment_gateway = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
 			$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
@@ -456,13 +435,6 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 
 						$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
-
-						// foreach ($sites as $site) {
-						// 	$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
-						// 	if (!empty($subscriber_id)) {
-						// 		break;
-						// 	}
-						// }
 
 						$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
 
@@ -535,7 +507,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 					$results .= '<p>' . sprintf(__('To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall'), get_page_link($settings['page_for_subscription'])) . '</p>';
 				}
 			}
-			// } // endforeach  
+
 			$results .= '</div>';
 			$results .= apply_filters('leaky_paywall_profile_your_payment_info_end', '');
 
