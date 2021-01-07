@@ -137,14 +137,18 @@ $leaky_paywall_settings(document).ready(function ($) {
     ".delete-subscription-level",
     function (event) {
       event.preventDefault();
-      var parent = $(this).parents(
-        ".issuem-leaky-paywall-subscription-level-row-table"
-      );
-      parent.slideUp("normal", function () {
-        $(this).hide();
-        $(".deleted-subscription", this).val(1);
-      });
-      parent.prev(".leaky-paywall-subscription-level-row-header").hide();
+
+      if (window.confirm("Are you sure you want to delete this level?")) {
+        var parent = $(this).parents(
+          ".issuem-leaky-paywall-subscription-level-row-table"
+        );
+        parent.slideUp("normal", function () {
+          $(this).hide();
+          $(".deleted-subscription", this).val(1);
+        });
+        parent.prev(".leaky-paywall-subscription-level-row-header").hide();
+      }
+      
     }
   );
 

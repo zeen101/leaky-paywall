@@ -234,3 +234,11 @@ span.delete-post-type-row {
 .leaky-paywall-restriction-settings .hide-setting {
   display: none;
 }
+
+#leaky_paywall_default_restriction_options .hide-setting {
+  display: none;
+}
+
+#leaky_paywall_subscription_level_options #add-subscription-row {
+  margin-bottom: 20px;
+}

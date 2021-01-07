@@ -394,7 +394,7 @@ if (!class_exists('Leaky_Paywall')) {
 				'login_method'					=> 'traditional', //default over passwordless
 				'post_types'					=> ACTIVE_ISSUEM ? array('article') : array('post'), /* Site Specific */
 				'free_articles'					=> 2,
-				'cookie_expiration' 			=> 24,
+				'cookie_expiration' 			=> 30,
 				'cookie_expiration_interval' 	=> 'day',
 				'subscribe_login_message'		=> __('<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'leaky-paywall'),
 				'subscribe_upgrade_message'		=> __('You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'leaky-paywall'),
