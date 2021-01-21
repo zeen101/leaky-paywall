@@ -249,7 +249,14 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 					if ($card_id) {
 						// update customer default source with the card ID
-						$cu = \Stripe\Customer::update($subscriber_id, array('default_source' => $card_id));
+						$cu = \Stripe\Customer::update(
+							$subscriber_id,
+							array(
+								'invoice_settings' => array(
+									'default_payment_method' => $card_id
+								)
+							)
+						);
 						$update_card_success = __('Your card details have been updated!', 'leaky-paywall');
 						leaky_paywall_log($user->user_email, 'credit card updated to ' . $card_id);
 					}
