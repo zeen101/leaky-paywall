@@ -323,6 +323,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$(document).ready(function() {
 
+					localStorage.removeItem('latestInvoicePaymentIntentStatus');
 					var stripe = Stripe('<?php echo $this->publishable_key; ?>');
 
 					<?php if ('yes' == $settings['enable_apple_pay']) { ?>
