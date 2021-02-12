@@ -803,14 +803,8 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 		}
 
 		$settings = get_leaky_paywall_settings();
-
-		if (is_multisite_premium() && !is_main_site($meta_args['site'])) {
-			$site = '_' . $meta_args['site'];
-		} else {
-			$site = '';
-		}
-
-		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 
 		$expires = '0000-00-00 00:00:00';
 
@@ -823,6 +817,13 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 			$user_id = $user->ID;
 		} else {
 			return false; //User does not exist, cannot update
+		}
+
+		$level = get_leaky_paywall_subscription_level($meta_args['level_id']);
+
+		// do not update levels if it is a pay per post purchase
+		if (isset($level['pay_per_post'])) {
+			return $user_id;
 		}
 
 		leaky_paywall_set_expiration_date($user_id, $meta_args);
