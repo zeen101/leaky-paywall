@@ -622,9 +622,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				}
 
 				// custom will have the correct email address
-				if (!isset($_REQUEST['custom'])) {
-					return true;
-				}
+				// if (!isset($_REQUEST['custom'])) {
+				// 	return true;
+				// }
 
 				if (!empty($_REQUEST['custom']) && is_email($_REQUEST['custom'])) {
 					$user = get_user_by('email', $_REQUEST['custom']);
