@@ -1,8 +1,8 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.6.1
-Stable tag: 4.15.9
+Tested up to: 5.7.0
+Stable tag: 4.16.0
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,9 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.16.0 =
+* Allow for paypal payer_email if custom is not set
 
 = 4.15.9 =
 * Make sure correct email is used for paypal purchases
