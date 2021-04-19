@@ -351,6 +351,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 
 		foreach ($this->items as $user) {
 
+			if (!$user->user_email) {
+				continue;
+			}
+
 			$user = get_user_by('email', $user->user_email);
 
 			$alt = ('alternate' == $alt) ? '' : 'alternate';
@@ -386,9 +390,11 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 
 							<?php
 							// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing
-							if (class_exists('user_switching')) {
-								if ($link = user_switching::maybe_switch_url($user)) {
-									echo '<br><a href="' . esc_url($link) . '">' . esc_html__('Switch&nbsp;To', 'leaky-paywall') . '</a>';
+							if (method_exists('user_switching', 'maybe_switch_url')) {
+								if (is_object($user)) {
+									if ($link = user_switching::maybe_switch_url($user)) {
+										echo '<br><a href="' . esc_url($link) . '">' . esc_html__('Switch&nbsp;To', 'leaky-paywall') . '</a>';
+									}
 								}
 							}
 
