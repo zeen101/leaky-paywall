@@ -324,6 +324,10 @@ function leaky_paywall_create_stripe_checkout_subscription()
 		'expand' => array('latest_invoice.payment_intent'),
 	);
 
+	$subscription_options = array(
+		'idempotency_key' => $customerId
+	);
+
 	try {
 		leaky_paywall_log('before get subs', 'stripe checkout subscription for ' . $customerId);
 		leaky_paywall_log($customer, 'stripe checkout subscription for ' . $customerId);
@@ -332,7 +336,7 @@ function leaky_paywall_create_stripe_checkout_subscription()
 
 		if (empty($subscriptions->data)) {
 			leaky_paywall_log('empty sub data', 'stripe checkout subscription for ' . $customerId);
-			$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields));
+			$subscription = \Stripe\Subscription::create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), $subscription_options);
 		} else {
 
 			foreach ($subscriptions->data as $subscription) {

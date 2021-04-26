@@ -357,8 +357,13 @@ function leaky_paywall_process_user_registration_validation()
 		'description' 	=> $level['label']
 	), $level);
 
+	// add an options array with an idempotencyKey set with the user's Stripe customer id
+	$intent_options = array(
+		'idempotency_key' => $cu->id
+	);
+
 	try {
-		$intent = \Stripe\PaymentIntent::create($intent_args);
+		$intent = \Stripe\PaymentIntent::create($intent_args, $intent_options);
 	} catch (\Throwable $th) {
 		$errors['payment_intent'] = array(
 			'message' =>  __('Could not create payment intent.', 'leaky-paywall')
