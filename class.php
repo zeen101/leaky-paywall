@@ -401,6 +401,7 @@ if (!class_exists('Leaky_Paywall')) {
 				'css_style'						=> 'default',
 				'enable_user_delete_account'	=> 'off',
 				'remove_username_field'			=> 'off',
+				'add_expiration_dates'			=> 'on',
 				'site_name'						=> get_option('blogname'), /* Site Specific */
 				'from_name'						=> get_option('blogname'), /* Site Specific */
 				'from_email'					=> get_option('admin_email'), /* Site Specific */
@@ -596,6 +597,12 @@ if (!class_exists('Leaky_Paywall')) {
 						$settings['remove_username_field'] = $_REQUEST['remove_username_field'];
 					} else {
 						$settings['remove_username_field'] = 'off';
+					}
+
+					if (!empty($_REQUEST['add_expiration_dates'])) {
+						$settings['add_expiration_dates'] = $_REQUEST['add_expiration_dates'];
+					} else {
+						$settings['add_expiration_dates'] = 'off';
 					}
 				}
 
@@ -995,6 +1002,11 @@ if (!class_exists('Leaky_Paywall')) {
 								<tr class="general-options">
 									<th><?php _e('User Account Deletion', 'leaky-paywall'); ?></th>
 									<td><input type="checkbox" id="enable_user_delete_account" name="enable_user_delete_account" <?php checked('on', $settings['enable_user_delete_account']); ?> /> Allow users to delete their account from the My Profile page</td>
+								</tr>
+
+								<tr class="general-options">
+									<th><?php _e('Expiration Dates', 'leaky-paywall'); ?></th>
+									<td><input type="checkbox" id="add_expiration_dates" name="add_expiration_dates" <?php checked('on', $settings['add_expiration_dates']); ?> /> If a current subscriber renews/changes their subscription level, add additional time to their current expiration date. If unchecked, their new expiration date will be calculated from the date of subscription level renewal/change.</td>
 								</tr>
 
 

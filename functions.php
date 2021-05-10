@@ -646,20 +646,27 @@ if (!function_exists('leaky_paywall_set_expiration_date')) {
 			return;
 		}
 
-		if (is_multisite_premium() && !is_main_site($data['site'])) {
-			$site = '_' . $data['site'];
-		} else {
-			$site = '';
-		}
-
+		$expires = '0000-00-00 00:00:00'; // default to never expire
+		$settings = get_leaky_paywall_settings();
 		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 
 		if (isset($data['expires']) && $data['expires']) {
 			$expires = $data['expires'];
 		} else if (!empty($data['interval']) && isset($data['interval_count']) && 1 <= $data['interval_count']) {
 			$expires = date_i18n('Y-m-d 23:59:59', strtotime('+' . $data['interval_count'] . ' ' . $data['interval'])); //we're generous, give them the whole day!
-		} else {
-			$expires = '0000-00-00 00:00:00';
+		}
+
+		if ('on' == $settings['add_expiration_dates']) {
+
+			$current_expires = get_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
+
+			if ($current_expires) {
+				// if they already have an expiration date and aren't expired, add on to their current expiration date
+				if (strtotime($current_expires) > time()) {
+					$expires = date_i18n('Y-m-d 23:59:59', strtotime($current_expires . ' +' . $data['interval_count'] . ' ' . $data['interval']));
+				}
+			}
 		}
 
 		update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, apply_filters('leaky_paywall_set_expiration_date', $expires, $data, $user_id));
