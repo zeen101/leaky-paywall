@@ -23,7 +23,7 @@ Domain Path: /i18n
 if (!defined('ZEEN101_STORE_URL'))
 	define('ZEEN101_STORE_URL',	'http://zeen101.com');
 
-define('LEAKY_PAYWALL_NAME', 		'Leaky PaywalF41l for WordPress');
+define('LEAKY_PAYWALL_NAME', 		'Leaky Paywall for WordPress');
 define('LEAKY_PAYWALL_SLUG', 		'leaky-paywall');
 define('LEAKY_PAYWALL_VERSION',	'4.16.1');
 define('LEAKY_PAYWALL_DB_VERSION',	'1.0.4');
