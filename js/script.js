@@ -69,7 +69,28 @@
       localStorage.removeItem('latestInvoicePaymentIntentStatus');
       let stripe = Stripe(leaky_paywall_script_ajax.stripe_pk);
 
+      if ( 'yes' == leaky_paywall_script_ajax.apple_pay) {
+        let paymentRequest = stripe.paymentRequest({
+          country: 'US',
+          currency: $('input[name="currency"]').val().toLowerCase(),
+          total: {
+            label: $('input[name="description"]').val(),
+            amount: $('input[name="level_price"]').val() * 100,
+          },
+          requestPayerName: true,
+          requestPayerEmail: true,
+        });
+      }
+     
       let elements = stripe.elements();
+
+      if ( 'yes' == leaky_paywall_script_ajax.apple_pay) {
+        let prButton = elements.create('paymentRequestButton', {
+          paymentRequest: paymentRequest,
+        });
+      }
+
+      
 
       let style = {
         base: {
@@ -93,6 +114,52 @@
       });
 
       card.mount('#card-element');
+
+      if ( 'yes' == leaky_paywall_script_ajax.apple_pay ) {
+        // Check the availability of the Payment Request API first.
+        paymentRequest.canMakePayment().then(function(result) {
+          if (result) {
+            prButton.mount('#payment-request-button');
+          } else {
+            document.getElementById('payment-request-button').style.display = 'none';
+          }
+        });
+
+        paymentRequest.on('paymentmethod', function(ev) {
+          // Confirm the PaymentIntent without handling potential next actions (yet).
+          stripe.confirmCardPayment(
+            clientSecret,
+            {payment_method: ev.paymentMethod.id},
+            {handleActions: false}
+          ).then(function(confirmResult) {
+            if (confirmResult.error) {
+              // Report to the browser that the payment failed, prompting it to
+              // re-show the payment interface, or show an error message and close
+              // the payment interface.
+              ev.complete('fail');
+            } else {
+              // Report to the browser that the confirmation was successful, prompting
+              // it to close the browser payment method collection interface.
+              ev.complete('success');
+              // Check if the PaymentIntent requires any actions and if so let Stripe.js
+              // handle the flow. If using an API version older than "2019-02-11" instead
+              // instead check for: `paymentIntent.status === "requires_source_action"`.
+              if (confirmResult.paymentIntent.status === "requires_action") {
+                // Let Stripe.js handle the rest of the payment flow.
+                stripe.confirmCardPayment(clientSecret).then(function(result) {
+                  if (result.error) {
+                    // The payment failed -- ask your customer for a new payment method.
+                  } else {
+                    // The payment has succeeded.
+                  }
+                });
+              } else {
+                // The payment has succeeded.
+              }
+            }
+          });
+        });
+      }
 
       // Handle real-time validation errors from the card Element.
       card.on('change', function(event) {

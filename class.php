@@ -335,7 +335,8 @@ if (!class_exists('Leaky_Paywall')) {
 				'leaky_paywall_script_ajax',
 				array(
 					'ajaxurl' => admin_url('admin-ajax.php', 'relative'),
-					'stripe_pk' => leaky_paywall_get_stripe_public_key()
+					'stripe_pk' => leaky_paywall_get_stripe_public_key(),
+					'apple_pay' => $settings['enable_apple_pay']
 				)
 			);
 		}
@@ -1198,7 +1199,7 @@ if (!class_exists('Leaky_Paywall')) {
 										<?php
 										}
 										?>
-										<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://zeen101.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Taxrates, Pipedrive, fulfillment services and other providers.</p>
+										<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://zeen101.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Pipedrive, fulfillment services and other providers.</p>
 									</td>
 								</tr>
 
