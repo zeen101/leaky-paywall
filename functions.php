@@ -2239,13 +2239,12 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 							$subscription_action .= '<div class="leaky_paywall_subscription_current_level"><span>';
 							$subscription_action .= __('Your Current Subscription', 'leaky-paywall');
 							$subscription_action .= '</span></div>';
-
-							$status = get_user_meta(get_current_user_id(), '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 						}
 
-						if (in_array($level_id, $current_level_ids) && $status == 'active' && $is_recurring) {
+						if (in_array($level_id, $current_level_ids) && leaky_paywall_user_has_access() && $is_recurring) {
 							$subscription_action .= ''; // they already have an active recurring subscription to this level
 						} else {
+
 							$subscription_action .= apply_filters('leaky_paywall_subscription_options_payment_options', $payment_options, $level, $level_id);
 						}
 
