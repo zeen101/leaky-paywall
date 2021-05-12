@@ -160,7 +160,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'charge.succeeded':
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
 				$transaction_id = leaky_paywall_get_transaction_id_from_email($user->user_email);
-				leaky_paywall_set_payment_transaction_id($transaction_id, $stripe_object->id);
+				// do not update transaction id if a recurring payment.  A new LP transaction will be created instead.
+				if ($stripe_object->billing_reason != 'subscription_cycle') {
+					leaky_paywall_set_payment_transaction_id($transaction_id, $stripe_object->id);
+				}
 				break;
 			case 'charge.failed':
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
