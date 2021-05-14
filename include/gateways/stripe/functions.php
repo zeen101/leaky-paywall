@@ -270,6 +270,34 @@ function leaky_paywall_create_stripe_checkout_session()
 	wp_send_json($return);
 }
 
+add_action('wp_ajax_nopriv_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall_create_stripe_payment_intent');
+add_action('wp_ajax_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall_create_stripe_payment_intent');
+
+function leaky_paywall_create_stripe_payment_intent()
+{
+
+	$level_id = $_POST['level_id'];
+	$level = get_leaky_paywall_subscription_level($level_id);
+
+
+	leaky_paywall_initialize_stripe_api();
+
+
+	try {
+		$payment_intent = \Stripe\PaymentIntent::create(array(
+			'amount' => leaky_paywall_get_stripe_amount($level['price']),
+			'currency' => strtolower(leaky_paywall_get_currency()),
+		));
+	} catch (\Throwable $th) {
+		leaky_paywall_log('error', 'stripe payment intent');
+
+		wp_send_json(array(
+			'error'  => $th->jsonBody
+		));
+	}
+
+	wp_send_json(array('clientSecret' => $payment_intent->client_secret));
+}
 
 
 add_action('wp_ajax_nopriv_leaky_paywall_create_stripe_checkout_subscription', 'leaky_paywall_create_stripe_checkout_subscription');
@@ -548,4 +576,23 @@ function leaky_paywall_initialize_stripe_api()
 		esc_url(site_url()),
 		LEAKY_PAYWALL_STRIPE_PARTNER_ID
 	);
+}
+
+/**
+ * Get a stripe formatted price
+ *
+ * @since 4.16.2
+ */
+function leaky_paywall_get_stripe_amount($amount)
+{
+
+	if (in_array(strtoupper(leaky_paywall_get_currency()), array('BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF'))) {
+		//Zero-Decimal Currencies
+		//https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support
+		$stripe_price = number_format($amount, '0', '', '');
+	} else {
+		$stripe_price = number_format($amount, '2', '', ''); //no decimals
+	}
+
+	return $stripe_price;
 }
