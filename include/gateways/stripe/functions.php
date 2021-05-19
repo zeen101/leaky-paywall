@@ -499,6 +499,7 @@ function leaky_paywall_get_stripe_plan($level, $level_id, $plan_args)
 				// does not match
 			} else {
 				$match = $stripe_plan; // this plan matches, so send it back
+				break;
 			}
 		}
 	}
