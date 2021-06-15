@@ -299,9 +299,9 @@ if (!class_exists('Leaky_Paywall')) {
 				wp_enqueue_script('js_cookie_js', LEAKY_PAYWALL_URL . 'js/js-cookie.js', array('jquery'), LEAKY_PAYWALL_VERSION);
 				wp_enqueue_script('leaky_paywall_cookie_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-cookie.js', array('jquery'), LEAKY_PAYWALL_VERSION);
 
-				$post_container = $settings['js_restrictions_post_container'];
-				$page_container = $settings['js_restrictions_page_container'];
-				$lead_in_elements = $settings['lead_in_elements'];
+				$post_container = apply_filters('leaky_paywall_js_restriction_post_container', $settings['js_restrictions_post_container']);
+				$page_container = apply_filters('leaky_paywall_js_restriction_page_container', $settings['js_restrictions_page_container']);
+				$lead_in_elements = apply_filters('leaky_paywall_js_restriction_lead_in_elements', $settings['lead_in_elements']);
 
 				wp_localize_script(
 					'leaky_paywall_cookie_js',

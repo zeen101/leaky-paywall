@@ -538,7 +538,10 @@ function leaky_paywall_create_stripe_plan($level, $level_id, $plan_args)
 
 	try {
 		$stripe_plan = \Stripe\Plan::create(apply_filters('leaky_paywall_create_stripe_plan', $args, $level, $level_id));
+		leaky_paywall_log($args, 'lp create stripe plan success');
 	} catch (Exception $e) {
+		leaky_paywall_log($args, 'lp create stripe plan error');
+		leaky_paywall_log($e, 'lp create stripe plan error');
 		$stripe_plan = false;
 	}
 

@@ -874,14 +874,19 @@ class Leaky_Paywall_Restrictions
 		$settings = get_leaky_paywall_settings();
 
 		if ('on' === $settings['enable_js_cookie_restrictions']) {
-			$container = $settings['js_restrictions_post_container'];
+			$container_setting = $settings['js_restrictions_post_container'];
+			$containers = explode(',', $container_setting);
+
+			echo '<style>';
+			foreach ($containers as $container) {
 		?>
-			<style>
-				.single <?php echo $container; ?> {
-					display: none;
+				.single <?php echo trim($container); ?> {
+				display: none;
 				}
-			</style>
 <?php
+			}
+
+			echo '</style>';
 		}
 	}
 }
