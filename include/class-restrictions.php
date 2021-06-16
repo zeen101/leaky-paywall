@@ -133,6 +133,11 @@ class Leaky_Paywall_Restrictions
 			return false;
 		}
 
+		// check if this post matches any restriction exceptions
+		if ($this->content_matches_restriction_exceptions()) {
+			return false;
+		}
+
 		// check if content is set to be open to everyone
 		if ($this->visibility_allows_access()) {
 			return false;
@@ -609,6 +614,47 @@ class Leaky_Paywall_Restrictions
 		}
 
 		return false;
+	}
+
+	/**
+	 * Determine if the current content matches any restriction exception settings
+	 *
+	 * @since 4.15.3
+	 *
+	 * @return boolean
+	 */
+	public function content_matches_restriction_exceptions()
+	{
+		$match = false;
+		$settings = get_leaky_paywall_settings();
+
+		$category_exceptions = $settings['post_category_exceptions'];
+		$category_exception_ids = explode(',', $category_exceptions);
+
+		if (!empty($category_exception_ids)) {
+			$post_categories = get_the_category($this->post_id);
+
+			foreach ($post_categories as $cat) {
+				if (in_array($cat->term_id, $category_exception_ids)) {
+					$match = true;
+				}
+			}
+		}
+
+		$tag_exceptions = $settings['post_tag_exceptions'];
+		$tag_exception_ids = explode(',', $tag_exceptions);
+
+		if (!empty($tag_exception_ids)) {
+			$post_tag = get_the_tags($this->post_id);
+
+			foreach ($post_tag as $tag) {
+				if (in_array($tag->term_id, $tag_exception_ids)) {
+					$match = true;
+				}
+			}
+		}
+
+		return $match;
 	}
 
 	/**
