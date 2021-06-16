@@ -448,6 +448,8 @@ if (!class_exists('Leaky_Paywall')) {
 				'js_restrictions_page_container' => 'article .entry-content',
 				'lead_in_elements'				=> 2,
 				'bypass_paywall_restrictions' => array('administrator'),
+				'post_tag_exceptions' => '',
+				'post_category_exceptions' => '',
 				'restrictions' 	=> array(
 					'post_types' => array(
 						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
@@ -730,6 +732,15 @@ if (!class_exists('Leaky_Paywall')) {
 							$settings['lead_in_elements'] = '';
 						}
 					}
+
+					if (isset($_POST['post_category_exceptions'])) {
+						$settings['post_category_exceptions'] = sanitize_text_field($_POST['post_category_exceptions']);
+					}
+
+					if (isset($_POST['post_tag_exceptions'])) {
+						$settings['post_tag_exceptions'] = sanitize_text_field($_POST['post_tag_exceptions']);
+					}
+
 
 					if (isset($_POST['js_restrictions_post_container'])) {
 						$settings['js_restrictions_post_container'] = sanitize_text_field($_POST['js_restrictions_post_container']);
@@ -1615,6 +1626,24 @@ if (!class_exists('Leaky_Paywall')) {
 										<p class="description">
 											<?php _e('Allow the selected user roles to always bypass the paywall. Administrators can always bypass the paywall.'); ?>
 										</p>
+									</td>
+								</tr>
+
+								<tr class="restriction-exceptions">
+									<th><?php _e('Restriction Exceptions', 'leaky-paywall'); ?></th>
+									<td>
+										<table>
+											<tr>
+												<td><label for="post_category_exceptions"><?php _e('Post Categories', 'leaky-paywall'); ?></label></td>
+												<td style="width: 80%;"><input type="text" class="large-text" name="post_category_exceptions" value="<?php echo esc_attr($settings['post_category_exceptions']); ?>"></td>
+											</tr>
+											<tr>
+												<td><label for="post_tag_exceptions"><?php _e('Post Tags', 'leaky-paywall'); ?></label></td>
+												<td style="width: 80%;"><input type="text" class="large-text" name="post_tag_exceptions" value="<?php echo esc_attr($settings['post_tag_exceptions']); ?>"></td>
+											</tr>
+										</table>
+
+										<p class="description"><?php _e('Enter a comma separated list of category or tag IDs that should not be restricted.', 'leaky-paywall'); ?></p>
 									</td>
 								</tr>
 
