@@ -74,6 +74,7 @@
       let currency = $('input[name="currency"]').val().toLowerCase();
 
       if ( 'yes' == leaky_paywall_script_ajax.apple_pay) {
+        var amount = parseFloat($('input[name="level_price"]').val()) * 100;
         paymentRequest = stripe.paymentRequest({
           country: 'US',
           currency: currency,
