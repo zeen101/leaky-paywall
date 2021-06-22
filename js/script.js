@@ -80,7 +80,7 @@
           currency: currency,
           total: {
             label: $('input[name="description"]').val(),
-            amount: $('input[name="level_price"]').val() * 100,
+            amount: Math.round(amount),
           },
           requestPayerName: true,
           requestPayerEmail: true,
