@@ -1300,8 +1300,7 @@ if (!function_exists('leaky_paywall_subscriber_current_level_ids')) {
 			}
 		}
 
-
-		return $level_ids;
+		return apply_filters('leaky_paywall_subscriber_current_level_ids', $level_ids);
 	}
 }
 

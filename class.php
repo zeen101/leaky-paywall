@@ -1643,7 +1643,7 @@ if (!class_exists('Leaky_Paywall')) {
 											</tr>
 										</table>
 
-										<p class="description"><?php _e('Enter a comma separated list of category or tag IDs that should not be restricted.', 'leaky-paywall'); ?></p>
+										<p class="description"><?php _e('Enter a comma separated list of category and/or tag IDs that should not be restricted.', 'leaky-paywall'); ?></p>
 									</td>
 								</tr>
 

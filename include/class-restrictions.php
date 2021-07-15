@@ -485,7 +485,7 @@ class Leaky_Paywall_Restrictions
 		$message = $this->the_content_paywall_message();
 		$new_content = $this->get_nag_excerpt($content) . $message;
 
-		return apply_filters('leaky_paywall_subscribe_or_login_message', $new_content, $message, $content);
+		return apply_filters('leaky_paywall_subscribe_or_login_message', $new_content, $message, $content, $this->post_id);
 	}
 
 	public function get_nag_excerpt($content)
