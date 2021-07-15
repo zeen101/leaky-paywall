@@ -866,6 +866,11 @@ class Leaky_Paywall_Restrictions
 		$_COOKIE[$this->get_cookie_name()] = $json_viewed_content;
 	}
 
+	public function clear_cookie()
+	{
+		setcookie($this->get_cookie_name(), '', $this->get_expiration_time(), '/');
+	}
+
 	/**
 	 * Get the cookie name used for Leaky Paywall restrictions
 	 *
