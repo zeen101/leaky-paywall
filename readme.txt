@@ -1,8 +1,8 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.7.2
-Stable tag: 4.16.2
+Tested up to: 5.8
+Stable tag: 4.16.3
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -108,6 +108,15 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.16.3 =
+* Update subscriptions tab to restrictions and levels tab
+* Clear the content the user has viewed after they register
+* Add post_id to leaky_paywall_subscriber_or_login_message filter, 
+* Add leaky_paywall_subscriber_current_level_ids filter
+* Add settings for restriction exceptions for post categories and tags
+* Add ability to enter multiple post containers for alternate restriction handling
+* Optimization for long loading registration page when a level has many plan ids
 
 = 4.16.2 =
 * Update Apply Pay integration
