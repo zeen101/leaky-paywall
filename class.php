@@ -884,7 +884,7 @@ if (!class_exists('Leaky_Paywall')) {
 
 								<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall'); ?>" class="nav-tab<?php if ($current_tab == 'general') { ?> nav-tab-active<?php } ?>"><?php _e('General', 'leaky-paywall'); ?></a>
 
-								<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=subscriptions'); ?>" class="nav-tab<?php if ($current_tab == 'subscriptions') { ?> nav-tab-active<?php } ?>"><?php _e('Subscriptions', 'leaky-paywall'); ?></a>
+								<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=subscriptions'); ?>" class="nav-tab<?php if ($current_tab == 'subscriptions') { ?> nav-tab-active<?php } ?>"><?php _e('Restrictions & Levels', 'leaky-paywall'); ?></a>
 
 								<a href="<?php echo admin_url('admin.php?page=issuem-leaky-paywall&tab=payments'); ?>" class="nav-tab<?php if ($current_tab == 'payments') { ?> nav-tab-active<?php } ?>"><?php _e('Payments', 'leaky-paywall'); ?></a>
 
