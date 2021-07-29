@@ -647,9 +647,11 @@ class Leaky_Paywall_Restrictions
 		if (!empty($tag_exception_ids)) {
 			$post_tag = get_the_tags($this->post_id);
 
-			foreach ($post_tag as $tag) {
-				if (in_array($tag->term_id, $tag_exception_ids)) {
-					$match = true;
+			if (is_array($post_tag)) {
+				foreach ($post_tag as $tag) {
+					if (in_array($tag->term_id, $tag_exception_ids)) {
+						$match = true;
+					}
 				}
 			}
 		}
