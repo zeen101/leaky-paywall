@@ -39,6 +39,19 @@
             $("#stripe-customer-id").val(resp.customer_id);
           }
 
+          if ( resp.session_id ) {
+
+            let stripe = Stripe(leaky_paywall_script_ajax.stripe_pk);
+            
+            $('#checkout').click(function(e) {
+              e.preventDefault();
+  
+              stripe.redirectToCheckout({
+                sessionId: resp.session_id
+              });
+            });
+          };
+
           setInterval(() => {
             $("#leaky-paywall-registration-errors").hide();
             $("#leaky-paywall-registration-next").remove();

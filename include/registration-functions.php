@@ -287,6 +287,122 @@ function leaky_paywall_process_user_registration_validation()
 	// if stripe payment method is not active, we are done
 	$enabled_gateways = leaky_paywall_get_enabled_payment_gateways();
 
+	if (in_array('stripe_checkout', array_keys($enabled_gateways))) {
+
+		leaky_paywall_initialize_stripe_api();
+
+		$stripe_price = number_format($level['price'], 2, '', '');
+
+		// create Stripe customer
+		$customer_array = array(
+			'name'		  => $user['first_name'] . ' ' . $user['last_name'],
+			'email'       => $user['email'],
+			'description' => $level['label']
+		);
+
+		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array);
+
+		try {
+			$cu = \Stripe\Customer::create($customer_array);
+		} catch (\Throwable $th) {
+			$errors['stripe_customer'] = array(
+				'message' =>  __('Could not create customer.', 'leaky-paywall')
+			);
+		}
+
+		if (!empty($errors)) {
+			$return = array(
+				'errors'  => $errors,
+			);
+			wp_send_json($return);
+		}
+
+
+
+		if (isset($level['recurring']) && 'on' == $level['recurring']) {
+
+			$plan_args = array(
+				'stripe_price'	=> $stripe_price,
+				'currency'		=> leaky_paywall_get_currency(),
+				'secret_key'	=> leaky_paywall_get_stripe_secret_key()
+			);
+
+			$stripe_plan = leaky_paywall_get_stripe_plan($level, $level_id, $plan_args);
+
+			if ($stripe_plan) {
+				try {
+					$checkout_session = \Stripe\Checkout\Session::create([
+						'payment_method_types' => [
+							'card',
+						],
+						'customer' => $cu->id,
+						'line_items' => [[
+							'price' => $stripe_plan->id,
+							'quantity' => 1,
+						]],
+						'mode' => 'subscription',
+						'success_url' => home_url() . '?success=true',
+						'cancel_url' => home_url() . '?cancel=true',
+					]);
+				} catch (\Throwable $th) {
+					$errors['checkout_session'] = array(
+						'message' =>  $th->jsonBody['error']['message']
+					);
+				}
+			} else {
+				$errors['checkout_session'] = array(
+					'message' =>  'No subscription plan found.'
+				);
+			}
+		} else {
+			try {
+				$checkout_session = \Stripe\Checkout\Session::create([
+					'payment_method_types' => [
+						'card', 'ideal'
+					],
+					'customer' => $cu->id,
+					'line_items' => [[
+						'price_data' => [
+							'product_data' => [
+								'name' => $level['label']
+							],
+							'currency' => leaky_paywall_get_currency(),
+							'unit_amount' => $stripe_price,
+						],
+						'quantity' => 1,
+					]],
+					'mode' => 'payment',
+					'success_url' => home_url() . '?success=true',
+					'cancel_url' => home_url() . '?cancel=true',
+				]);
+			} catch (\Throwable $th) {
+				$errors['checkout_session'] = array(
+					'message' =>  $th->jsonBody['error']['message']
+				);
+			}
+		}
+
+
+
+
+		if (!empty($errors)) {
+			$return = array(
+				'errors'  => $errors,
+			);
+			wp_send_json($return);
+		}
+
+		leaky_paywall_create_incomplete_user($user, $cu);
+
+		$return = array(
+			'success'  => 1,
+			'session_id' => $checkout_session->id
+		);
+
+		wp_send_json($return);
+	}
+
+
 	if (!in_array('stripe', array_keys($enabled_gateways))) {
 		$return = array(
 			'success'  => 1,
@@ -979,6 +1095,33 @@ function leaky_paywall_create_incomplete_user($user_data, $customer_data)
 	update_post_meta($incomplete_user, '_user_data', $user_data);
 	update_post_meta($incomplete_user, '_customer_data', $customer_data);
 	update_post_meta($incomplete_user, '_email', $user_data['email']);
+}
+
+function leaky_paywall_get_incomplete_user_from_email($email)
+{
+
+	$incomplete_id = '';
+
+	$args = array(
+		'post_type'	=> 'lp_incomplete_user',
+		'number_of_posts'	=> 1,
+		'meta_query' => array(
+			array(
+				'key'     => '_email',
+				'value'   => $email,
+				'compare' => '=',
+			),
+		),
+	);
+
+	$incompletes = get_posts($args);
+
+	if (!empty($incompletes)) {
+		$incomplete = $incompletes[0];
+		$incomplete_id = $incomplete->ID;
+	}
+
+	return $incomplete_id;
 }
 
 function leaky_paywall_cleanup_incomplete_user($email)
