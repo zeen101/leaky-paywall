@@ -358,7 +358,7 @@ function leaky_paywall_process_user_registration_validation()
 			try {
 				$checkout_session = \Stripe\Checkout\Session::create([
 					'payment_method_types' => [
-						'card', 'ideal'
+						'card', 'ideal', 'bancontact', 'sofort'
 					],
 					'customer' => $cu->id,
 					'line_items' => [[
