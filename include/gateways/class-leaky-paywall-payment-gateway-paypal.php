@@ -409,6 +409,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			$paypal_api_url = 'https://ipnpb.paypal.com/cgi-bin/webscr';
 		}
 
+		leaky_paywall_log($payload, 'paypal standard ipn payload');
+
 		$response = wp_remote_post($paypal_api_url, array('body' => $payload, 'httpversion' => '1.1'));
 		$body = wp_remote_retrieve_body($response);
 
