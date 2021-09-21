@@ -291,7 +291,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 							}
 						}
 
-						$update_card_success .= __(' Your subscription has been restarted! Please refresh page to see updated account status.', 'leaky-paywall');
+						$update_card_success .= __(' Your subscription has been restarted! Please <a href="' . get_the_permalink(get_the_ID()) . '">click here</a> to see your updated account status.', 'leaky-paywall');
 					}
 				} catch (\Stripe\Error\Card $e) {
 
