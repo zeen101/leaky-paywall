@@ -300,7 +300,7 @@ function leaky_paywall_process_user_registration_validation()
 			'description' => $level['label']
 		);
 
-		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array);
+		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields);
 
 		try {
 			$cu = \Stripe\Customer::create($customer_array);
@@ -435,7 +435,7 @@ function leaky_paywall_process_user_registration_validation()
 			'description' => $level['label']
 		);
 
-		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array);
+		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields);
 
 		try {
 			$cu = \Stripe\Customer::create($customer_array);
