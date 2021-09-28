@@ -1,8 +1,8 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.8
-Stable tag: 4.16.4
+Tested up to: 5.8.1
+Stable tag: 4.16.5
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -13,11 +13,11 @@ The most flexible paywall for WordPress. Sell subscriptions without sacrificing 
 
 https://www.youtube.com/watch?v=caAwkRRi9wI&feature=emb_logo&ab_channel=ZEEN101
 
-Part of the [ZEEN101](https://zeen101.com/) platform, [Leaky Paywall](https://zeen101.com/for-developers/leakypaywall/) is the first and most flexible metered paywall for WordPress, built to grow visitor traffic, email lists, and paid subscriptions. Simple to set up, Leaky Paywall also offers the unmatched ability to customize access to your content the way you need it. Lock down, open up, meter, and offer free registration access to different levels of content. 
+Part of the [ZEEN101](https://zeen101.com/) platform, [Leaky Paywall](https://zeen101.com/leaky-paywall/) is the first and most flexible metered paywall for WordPress, built to grow visitor traffic, email lists, and paid subscriptions. Simple to set up, Leaky Paywall also offers the unmatched ability to customize access to your content the way you need it. Lock down, open up, meter, and offer free registration access to different levels of content. 
 
 Control and sell access to: all post types, categories, tags, individual articles, in-content sections, audio & video, [time based premium archive content](https://zeen101.com/downloads/leaky-paywall-content-auto-archiver/), [web issues](https://zeen101.com/for-developers/issuem/), premium newsletters, and even apps with our fully integrated [UniPress iOS & Android app platform](https://zeen101.com/unipress/). 
 
-Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://zeen101.com/for-developers/leakypaywall/#integrations), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://zeen101.com/documentation/how-to-be-gdpr-compliant-with-leaky-paywall/). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Paid add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/) offer additional features.
+Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://zeen101.com/leaky-paywall/), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://zeen101.com/documentation/how-to-be-gdpr-compliant-with-leaky-paywall/). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Paid add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/) offer additional features.
 
 **Features**
 
@@ -56,7 +56,7 @@ Leaky Paywall core is free, open source, integrates with the most [3rd party pl
 * More integrations in development, [get in touch](https://zeen101.com/contact/) if you need something special
 
 
-**30+ Add-ons available to power up your publication**
+**40+ Add-ons available to power up your publication**
 Some of our [add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
 
 * [Recurring Payments](https://zeen101.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
@@ -108,6 +108,15 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.16.5 =
+* Update rounding for apple pay
+* Add additional hooks
+* Do not allow free users to register for the same level again
+* Update alternative restriction handling to work with pages and children
+* Update wording when a subscription is restarted
+* Add submitted fields to leaky_paywall_process_stripe_payment_customer_array filter
+* Update dashboard messaging
 
 = 4.16.4 =
 * Add check for no tags on a post
