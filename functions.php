@@ -2847,7 +2847,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			include_once(ABSPATH . WPINC . '/feed.php');
 
 			$output = '';
-			$feedurl = 'http://zeen101.com/feed/?post_type=blast&target=leaky-paywall';
+			$feedurl = 'https://zeen101.com/feed/?post_type=blast&target=leaky-paywall';
 
 			$rss = fetch_feed($feedurl);
 
@@ -2874,8 +2874,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 		add_action('zeen101_dot_com_leaky_rss_feed_check', 'zeen101_dot_com_leaky_rss_feed_check');
 
-		if (!wp_next_scheduled('zeen101_dot_com_leaky_rss_feed_check'))
+		if (!wp_next_scheduled('zeen101_dot_com_leaky_rss_feed_check')) {
 			wp_schedule_event(time(), 'daily', 'zeen101_dot_com_leaky_rss_feed_check');
+		}
 	}
 
 	/**

@@ -1774,15 +1774,14 @@ if (!class_exists('Leaky_Paywall')) {
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need apps to generate more subscribers?</h3>
-						<p><a target="_blank" href="https://zeen101.com/unipress/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
+						<h3>Need subscriber behavior data to make better decisions?</h3>
+						<p><a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings_analytics">Check out Subscriber Analytics</a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
-						<h3>Are you a local news publisher?</h3>
-						<p><a target="_blank" href="https://livemarket.pub/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Explode your digital ad revenue with LiveMarket</a></p>
+						<h3>Need apps to generate more subscribers?</h3>
+						<p><a target="_blank" href="https://zeen101.com/unipress/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
 					</div>
-
 
 				</div>
 			</div>
