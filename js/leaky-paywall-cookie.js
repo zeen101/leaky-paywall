@@ -31,21 +31,17 @@
 
 							var content_container_setting = leaky_paywall_cookie_ajax.post_container;
 							var content_containers = content_container_setting.split(',');
-
+							
 
 							if (response.indexOf("leaky_paywall_message_wrap") >= 0) {
 
 								content_containers.forEach(function (el) {
-
-									console.log(el);
 
 									var content = $(el);
 
 									if (lead_in_elements > 0) {
 
 										children = content.children();
-
-										console.log(children);
 
 										children.each(function (i) {
 
@@ -57,19 +53,28 @@
 
 										});
 
-
-
 									}
 
-									content.html(lead_in + response);
-									content.css('display', 'block');
+									// if content is more than one element, add the stop after the first and then remove the rest
+									if (content.length > 1 ) {
+										content.each(function(i) {
+											
+											if ( i > 0 ) {
+												$(this).html('');
+											} else {
+												$(this).html(lead_in + response);
+												$(this).css('display', 'block');
+											}
+										});
+									} else {
+										
+										content.html(lead_in + response);
+										content.css('display', 'block');
+									}
+									
 								});
 
-								console.log(leaky_paywall_cookie_ajax.post_container);
-
-
-
-
+							
 
 
 							} else {

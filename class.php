@@ -31,8 +31,6 @@ if (!class_exists('Leaky_Paywall')) {
 
 			$settings = $this->get_settings();
 
-			add_action('admin_notices', array($this, 'update_notices'));
-
 			add_action('http_api_curl', array($this, 'force_ssl_version'));
 
 			add_action('admin_init', array($this, 'upgrade'));
@@ -2313,43 +2311,10 @@ if (!class_exists('Leaky_Paywall')) {
 			$settings = $this->get_settings();
 		}
 
-		function update_notices()
-		{
-
-			global $hook_suffix;
-
-			$settings = $this->get_settings();
-
-			if (isset($settings['version']))
-				$old_version = $settings['version'];
-			else
-				$old_version = 0;
-
-			if (empty($old_version)) { //new installs shouldn't see this notice
-				if (current_user_can('manage_options')) {
-					if ('admin_page_leaky-paywall-update' !== $hook_suffix && 'leaky-paywall_page_leaky-paywall-update' !== $hook_suffix) {
-
-						$manual_update_version = get_option('leaky_paywall_manual_update_version');
-
-						if (version_compare($manual_update_version, '2.0.0', '<')) {
-			?>
-							<div id="leaky-paywall-2-0-0-update-nag" class="update-nag">
-								<?php
-								$update_link = esc_url(add_query_arg(array('page' => 'leaky-paywall-update'), admin_url('admin.php')));
-								printf(__('You must update the Leaky Paywall Database to version 2 to continue using this plugin... %s', 'issuem-leaky-paywall'), '<a class="btn" href="' . $update_link . '">' . __('Update Now', 'issuem-leaky-paywall') . '</a>');
-								?>
-							</div>
-				<?php
-						}
-					}
-				}
-			}
-		}
-
 		function paypal_standard_secure_notice()
 		{
 			if (current_user_can('manage_options')) {
-				?>
+			?>
 				<div id="missing-paypal-settings" class="update-nag notice">
 					<?php
 					$settings_link = esc_url(add_query_arg(array('page' => 'issuem-leaky-paywall', 'tab' => 'payments'), admin_url('admin.php')));
