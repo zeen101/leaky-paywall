@@ -998,9 +998,14 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 
 						$subscriptions = $cu->subscriptions->all(array('limit' => '1'));
 
-						foreach ($subscriptions->data as $susbcription) {
-							$sub = $cu->subscriptions->retrieve($susbcription->id);
-							$results = $sub->cancel();
+						if (!empty($subscriptions->data)) {
+							foreach ($subscriptions->data as $susbcription) {
+								$sub = $cu->subscriptions->retrieve($susbcription->id);
+								$results = $sub->cancel();
+							}
+						} else {
+							// no subscriptions found for stripe customer
+							leaky_paywall_log('no subscriptions found', 'leaky paywall canceled stripe subscription for ' . $user->user_email);
 						}
 
 						if (!empty($results->status) && 'canceled' === $results->status) {

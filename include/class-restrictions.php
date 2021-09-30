@@ -192,8 +192,6 @@ class Leaky_Paywall_Restrictions
 				return false;
 			}
 
-
-
 			if ($this->allowed_value_exceeded()) {
 				return false;
 			} else {
