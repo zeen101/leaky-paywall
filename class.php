@@ -386,95 +386,95 @@ if (!class_exists('Leaky_Paywall')) {
 			We love feedback… please help us make your publication better by emailing info@ourpublication.pub … and thanks again!';
 
 			$defaults = array(
-				'page_for_login'				=> 0, /* Site Specific */
-				'page_for_subscription'			=> 0, /* Site Specific */
-				'page_for_register'				=> 0, /* Site Specific */
-				'page_for_after_subscribe'		=> 0,
-				'page_for_profile'				=> 0, /* Site Specific */
-				'custom_excerpt_length'			=> '',
-				'login_method'					=> 'traditional', //default over passwordless
-				'post_types'					=> ACTIVE_ISSUEM ? array('article') : array('post'), /* Site Specific */
-				'free_articles'					=> 2,
-				'cookie_expiration' 			=> 30,
-				'cookie_expiration_interval' 	=> 'day',
-				'subscribe_login_message'		=> __('<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'leaky-paywall'),
-				'subscribe_upgrade_message'		=> __('You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'leaky-paywall'),
-				'css_style'						=> 'default',
-				'enable_user_delete_account'	=> 'off',
-				'remove_username_field'			=> 'off',
-				'add_expiration_dates'			=> 'on',
-				'site_name'						=> get_option('blogname'), /* Site Specific */
-				'from_name'						=> get_option('blogname'), /* Site Specific */
-				'from_email'					=> get_option('admin_email'), /* Site Specific */
-				'new_subscriber_email'			=> 'off',
-				'new_email_subject'				=> '',
-				'new_email_body'				=> $default_email_body,
-				'renewal_reminder_email'		=> 'on',
-				'renewal_reminder_email_subject' => '',
-				'renewal_reminder_email_body'	=> '',
-				'renewal_reminder_days_before'   => '7',
-				'new_subscriber_admin_email'	=> 'off',
-				'admin_new_subscriber_email_subject'	=> 'New subscription on ' . stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8')),
-				'admin_new_subscriber_email_recipients'	=> get_option('admin_email'),
-				'payment_gateway'				=> array('stripe_checkout'),
-				'test_mode'						=> 'off',
-				'live_secret_key'				=> '',
-				'live_publishable_key'			=> '',
-				'test_secret_key'				=> '',
-				'test_publishable_key'			=> '',
-				'stripe_webhooks_enabled'		=> 'off',
-				'enable_stripe_elements'		=> 'no',
-				'enable_apple_pay'				=> 'no',
-				'enable_paypal_on_registration' => 'on',
-				'paypal_live_email'				=> '',
-				'paypal_live_api_username'		=> '',
-				'paypal_live_api_password'		=> '',
-				'paypal_live_api_secret'		=> '',
-				'paypal_image_url'				=> '',
-				'paypal_sand_email'				=> '',
-				'paypal_sand_api_username'		=> '',
-				'paypal_sand_api_password'		=> '',
-				'paypal_sand_api_secret'		=> '',
-				'leaky_paywall_currency'		=> 'USD',
-				'leaky_paywall_currency_position'		=> 'left',
-				'leaky_paywall_thousand_separator'	=> ',',
-				'leaky_paywall_decimal_separator'	=> '.',
-				'leaky_paywall_decimal_number'	=> '2',
-				'restrict_pdf_downloads' 		=> 'off',
-				'enable_combined_restrictions'  => 'off',
-				'combined_restrictions_total_allowed' => '',
-				'enable_js_cookie_restrictions' => 'off',
-				'js_restrictions_post_container' => 'article .entry-content',
-				'js_restrictions_page_container' => 'article .entry-content',
-				'lead_in_elements'				=> 2,
-				'bypass_paywall_restrictions' => array('administrator'),
-				'post_tag_exceptions' => '',
-				'post_category_exceptions' => '',
-				'restrictions' 	=> array(
+				'page_for_login'                        => 0, /* Site Specific */
+				'page_for_subscription'                 => 0, /* Site Specific */
+				'page_for_register'                     => 0, /* Site Specific */
+				'page_for_after_subscribe'              => 0,
+				'page_for_profile'                      => 0, /* Site Specific */
+				'custom_excerpt_length'                 => '',
+				'login_method'                          => 'traditional', //default over passwordless
+				'post_types'                            => ACTIVE_ISSUEM ? array('article') : array('post'), /* Site Specific */
+				'free_articles'                         => 2,
+				'cookie_expiration'                     => 30,
+				'cookie_expiration_interval'            => 'day',
+				'subscribe_login_message'               => __('<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'leaky-paywall'),
+				'subscribe_upgrade_message'             => __('You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'leaky-paywall'),
+				'css_style'                             => 'default',
+				'enable_user_delete_account'            => 'off',
+				'remove_username_field'                 => 'off',
+				'add_expiration_dates'                  => 'on',
+				'site_name'                             => get_option('blogname'), /* Site Specific */
+				'from_name'                             => get_option('blogname'), /* Site Specific */
+				'from_email'                            => get_option('admin_email'), /* Site Specific */
+				'new_subscriber_email'                  => 'off',
+				'new_email_subject'                     => '',
+				'new_email_body'                        => $default_email_body,
+				'renewal_reminder_email'                => 'on',
+				'renewal_reminder_email_subject'        => '',
+				'renewal_reminder_email_body'           => '',
+				'renewal_reminder_days_before'          => '7',
+				'new_subscriber_admin_email'            => 'off',
+				'admin_new_subscriber_email_subject'    => 'New subscription on ' . stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8')),
+				'admin_new_subscriber_email_recipients' => get_option('admin_email'),
+				'payment_gateway'                       => array('stripe_checkout'),
+				'test_mode'                             => 'off',
+				'live_secret_key'                       => '',
+				'live_publishable_key'                  => '',
+				'test_secret_key'                       => '',
+				'test_publishable_key'                  => '',
+				'stripe_webhooks_enabled'               => 'off',
+				'enable_stripe_elements'                => 'no',
+				'enable_apple_pay'                      => 'no',
+				'enable_paypal_on_registration'         => 'on',
+				'paypal_live_email'                     => '',
+				'paypal_live_api_username'              => '',
+				'paypal_live_api_password'              => '',
+				'paypal_live_api_secret'                => '',
+				'paypal_image_url'                      => '',
+				'paypal_sand_email'                     => '',
+				'paypal_sand_api_username'              => '',
+				'paypal_sand_api_password'              => '',
+				'paypal_sand_api_secret'                => '',
+				'leaky_paywall_currency'                => 'USD',
+				'leaky_paywall_currency_position'       => 'left',
+				'leaky_paywall_thousand_separator'      => ',',
+				'leaky_paywall_decimal_separator'       => '.',
+				'leaky_paywall_decimal_number'          => '2',
+				'restrict_pdf_downloads'                => 'off',
+				'enable_combined_restrictions'          => 'off',
+				'combined_restrictions_total_allowed'   => '',
+				'enable_js_cookie_restrictions'         => 'off',
+				'js_restrictions_post_container'        => 'article .entry-content',
+				'js_restrictions_page_container'        => 'article .entry-content',
+				'lead_in_elements'                      => 2,
+				'bypass_paywall_restrictions'           => array('administrator'),
+				'post_tag_exceptions'                   => '',
+				'post_category_exceptions'              => '',
+				'restrictions'                          => array(
 					'post_types' => array(
-						'post_type' 	=> ACTIVE_ISSUEM ? 'article' : 'post',
-						'taxonomy'	=> 'all',
+						'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
+						'taxonomy'      => 'all',
 						'allowed_value' => 2,
 					)
 				),
-				'levels' => array(
+				'levels'                                => array(
 					'0' => array(
-						'label' 					=> __('Digital Access', 'leaky-paywall'),
-						'price' 					=> '',
-						'subscription_length_type' 	=> 'limited',
-						'interval_count' 			=> 1,
-						'interval' 					=> 'month',
-						'recurring' 				=> 'off',
-						'plan_id' 					=> array(),
-						'post_types' => array(
+						'label'                    => __('Digital Access', 'leaky-paywall'),
+						'price'                    => '',
+						'subscription_length_type' => 'limited',
+						'interval_count'           => 1,
+						'interval'                 => 'month',
+						'recurring'                => 'off',
+						'plan_id'                  => array(),
+						'post_types'               => array(
 							array(
-								'post_type' 		=> ACTIVE_ISSUEM ? 'article' : 'post',
-								'allowed' 			=> 'unlimited',
-								'allowed_value' 	=> -1,
+								'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
+								'allowed'       => 'unlimited',
+								'allowed_value' => -1,
 							),
 						),
-						'deleted' 					=> 0,
-						'site' 						=> 'all',
+						'deleted'                  => 0,
+						'site'                     => 'all',
 					)
 				),
 			);
@@ -609,7 +609,6 @@ if (!class_exists('Leaky_Paywall')) {
 					}
 				}
 
-
 				if ($current_tab == 'emails') {
 
 					if (!empty($_REQUEST['site_name']))
@@ -662,11 +661,6 @@ if (!class_exists('Leaky_Paywall')) {
 						$settings['admin_new_subscriber_email_recipients'] = sanitize_text_field($_POST['admin_new_subscriber_email_recipients']);
 					}
 				}
-
-
-
-
-
 
 				if ($current_tab == 'subscriptions') {
 
@@ -793,7 +787,6 @@ if (!class_exists('Leaky_Paywall')) {
 						$settings['enable_apple_pay'] = sanitize_text_field($_POST['enable_apple_pay']);
 					}
 
-
 					if (!empty($_REQUEST['enable_paypal_on_registration']))
 						$settings['enable_paypal_on_registration'] = $_REQUEST['enable_paypal_on_registration'];
 					else
@@ -829,20 +822,20 @@ if (!class_exists('Leaky_Paywall')) {
 					if (!empty($_REQUEST['leaky_paywall_currency']))
 						$settings['leaky_paywall_currency'] = trim($_REQUEST['leaky_paywall_currency']);
 
-					if (isset($_POST['leaky_paywall_currency_position'])) {
+					if (!empty($_POST['leaky_paywall_currency_position'])) {
 						$settings['leaky_paywall_currency_position'] = trim($_POST['leaky_paywall_currency_position']);
 					}
-
-					if (isset($_POST['leaky_paywall_thousand_separator'])) {
-						$settings['leaky_paywall_thousand_separator'] = trim($_POST['leaky_paywall_thousand_separator']);
+					
+					if ( !empty( $_POST['leaky_paywall_thousand_separator'] ) ) {
+						$settings['leaky_paywall_thousand_separator'] = esc_html( trim( $_POST['leaky_paywall_thousand_separator'] ) );
 					}
 
-					if (isset($_POST['leaky_paywall_decimal_separator'])) {
-						$settings['leaky_paywall_decimal_separator'] = trim($_POST['leaky_paywall_decimal_separator']);
+					if ( !empty( $_POST['leaky_paywall_decimal_separator'] ) ) {
+						$settings['leaky_paywall_decimal_separator'] = esc_html( trim( $_POST['leaky_paywall_decimal_separator'] ) );
 					}
 
-					if (isset($_POST['leaky_paywall_decimal_number'])) {
-						$settings['leaky_paywall_decimal_number'] = trim($_POST['leaky_paywall_decimal_number']);
+					if ( !empty($_POST['leaky_paywall_decimal_number'] ) ) {
+						$settings['leaky_paywall_decimal_number'] = absint( trim( $_POST['leaky_paywall_decimal_number'] ) );
 					}
 				}
 
@@ -1424,21 +1417,21 @@ if (!class_exists('Leaky_Paywall')) {
 								<tr>
 									<th><?php _e('Thousand Separator', 'leaky-paywall'); ?></th>
 									<td>
-										<input type="text" class="small-text" id="leaky_paywall_thousand_separator" name="leaky_paywall_thousand_separator" value="<?php echo $settings['leaky_paywall_thousand_separator']; ?>">
+										<input type="text" class="small-text" id="leaky_paywall_thousand_separator" name="leaky_paywall_thousand_separator" value="<?php echo htmlspecialchars(stripcslashes($settings['leaky_paywall_thousand_separator'])); ?>">
 									</td>
 								</tr>
 
 								<tr>
 									<th><?php _e('Decimal Separator', 'leaky-paywall'); ?></th>
 									<td>
-										<input type="text" class="small-text" id="leaky_paywall_decimal_separator" name="leaky_paywall_decimal_separator" value="<?php echo $settings['leaky_paywall_decimal_separator']; ?>">
+										<input type="text" class="small-text" id="leaky_paywall_decimal_separator" name="leaky_paywall_decimal_separator" value="<?php echo htmlspecialchars(stripcslashes($settings['leaky_paywall_decimal_separator'])); ?>">
 									</td>
 								</tr>
 
 								<tr>
 									<th><?php _e('Number of Decimals', 'leaky-paywall'); ?></th>
 									<td>
-										<input type="number" class="small-text" id="leaky_paywall_decimal_number" name="leaky_paywall_decimal_number" value="<?php echo $settings['leaky_paywall_decimal_number']; ?>" min="0" step="1">
+										<input type="number" class="small-text" id="leaky_paywall_decimal_number" name="leaky_paywall_decimal_number" value="<?php echo htmlspecialchars(stripcslashes($settings['leaky_paywall_decimal_number'])); ?>" min="0" step="1">
 									</td>
 								</tr>
 
