@@ -562,7 +562,7 @@ class Leaky_Paywall {
 
 		$current_tab = apply_filters( 'leaky_paywall_current_tab', $tab, $settings_tabs );
 
-		if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) ) {
+		if ( isset( $_REQUEST['update_leaky_paywall_settings'] ) && isset( $_POST['leaky_paywall_update_settings_nonce_field'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_update_settings_nonce_field'] ) ), 'leaky_paywall_update_settings_nonce' ) ) {
 
 			if ( 'general' === $current_tab ) {
 
@@ -713,7 +713,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['restrictions'] ) ) {
-					$settings['restrictions'] = $_POST['restrictions'];
+					$settings['restrictions'] = wp_unslash( $_POST['restrictions'] );
 				} else {
 					$settings['restrictions'] = array();
 				}
@@ -735,7 +735,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['bypass_paywall_restrictions'] ) ) {
-					$settings['bypass_paywall_restrictions']   = array_map( 'sanitize_text_field', $_POST['bypass_paywall_restrictions'] );
+					$settings['bypass_paywall_restrictions']   = array_map( 'sanitize_text_field', wp_unslash( $_POST['bypass_paywall_restrictions'] ) );
 					$settings['bypass_paywall_restrictions'][] = 'administrator';
 				} else {
 					$settings['bypass_paywall_restrictions'] = array( 'administrator' );
@@ -776,7 +776,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['levels'] ) ) {
-					$settings['levels'] = $_POST['levels'];
+					$settings['levels'] = wp_unslash( $_POST['levels'] );
 				}
 			}
 
@@ -789,7 +789,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['payment_gateway'] ) ) {
-					$settings['payment_gateway'] = array_map( 'sanitize_text_field', $_POST['payment_gateway'] );
+					$settings['payment_gateway'] = array_map( 'sanitize_text_field', wp_unslash( $_POST['payment_gateway'] ) );
 				} else {
 					$settings['payment_gateway'] = array( 'stripe' );
 				}
@@ -1005,13 +1005,13 @@ class Leaky_Paywall {
 									<th><?php esc_attr_e( 'Page for Log In', 'leaky-paywall' ); ?></th>
 									<td>
 										<?php
-										echo wp_dropdown_pages(
+										wp_dropdown_pages(
 											array(
 												'name'     => 'page_for_login',
-												'echo'     => 0,
-												'show_option_none' => __( '&mdash; Select &mdash;' ),
+												'echo'     => 1,
+												'show_option_none' => esc_attr__( '&mdash; Select &mdash;' ),
 												'option_none_value' => '0',
-												'selected' => $settings['page_for_login'],
+												'selected' => esc_attr( $settings['page_for_login'] ),
 											)
 										);
 										?>
@@ -1028,13 +1028,13 @@ class Leaky_Paywall {
 									<th><?php esc_attr_e( 'Page for Subscribe Cards', 'leaky-paywall' ); ?></th>
 									<td>
 										<?php
-										echo wp_dropdown_pages(
+										wp_dropdown_pages(
 											array(
 												'name'     => 'page_for_subscription',
-												'echo'     => 0,
-												'show_option_none' => __( '&mdash; Select &mdash;' ),
+												'echo'     => 1,
+												'show_option_none' => esc_attr__( '&mdash; Select &mdash;' ),
 												'option_none_value' => '0',
-												'selected' => $settings['page_for_subscription'],
+												'selected' => esc_attr( $settings['page_for_subscription'] ),
 											)
 										);
 										?>
@@ -1051,13 +1051,13 @@ class Leaky_Paywall {
 									<th><?php esc_attr_e( 'Page for Register Form', 'leaky-paywall' ); ?></th>
 									<td>
 										<?php
-										echo wp_dropdown_pages(
+										wp_dropdown_pages(
 											array(
 												'name'     => 'page_for_register',
-												'echo'     => 0,
-												'show_option_none' => __( '&mdash; Select &mdash;' ),
+												'echo'     => 1,
+												'show_option_none' => esc_attr__( '&mdash; Select &mdash;' ),
 												'option_none_value' => '0',
-												'selected' => $settings['page_for_register'],
+												'selected' => esc_attr( $settings['page_for_register'] ),
 											)
 										);
 										?>
@@ -1074,13 +1074,13 @@ class Leaky_Paywall {
 									<th><?php esc_attr_e( 'Page for Profile', 'leaky-paywall' ); ?></th>
 									<td>
 										<?php
-										echo wp_dropdown_pages(
+										wp_dropdown_pages(
 											array(
 												'name'     => 'page_for_profile',
-												'echo'     => 0,
-												'show_option_none' => __( '&mdash; Select &mdash;' ),
+												'echo'     => 1,
+												'show_option_none' => esc_attr__( '&mdash; Select &mdash;' ),
 												'option_none_value' => '0',
-												'selected' => $settings['page_for_profile'],
+												'selected' => esc_attr( $settings['page_for_profile'] ),
 											)
 										);
 										?>
@@ -1097,13 +1097,13 @@ class Leaky_Paywall {
 									<th><?php esc_attr_e( 'Confirmation Page', 'leaky-paywall' ); ?></th>
 									<td>
 										<?php
-										echo wp_dropdown_pages(
+										wp_dropdown_pages(
 											array(
 												'name'     => 'page_for_after_subscribe',
-												'echo'     => 0,
-												'show_option_none' => __( '&mdash; Select &mdash;' ),
+												'echo'     => 1,
+												'show_option_none' => esc_attr__( '&mdash; Select &mdash;' ),
 												'option_none_value' => '0',
-												'selected' => $settings['page_for_after_subscribe'],
+												'selected' => esc_attr( $settings['page_for_after_subscribe'] ),
 											)
 										);
 										?>
@@ -1126,7 +1126,7 @@ class Leaky_Paywall {
 									<td>
 										<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="3"><?php echo wp_kses_post( stripslashes( $settings['subscribe_upgrade_message'] ) ); ?></textarea>
 										<p class="description">
-											<?php _e( 'Available replacement variables: {{SUBSCRIBE_URL}}', 'leaky-paywall' ); ?>
+											<?php esc_attr_e( 'Available replacement variables: {{SUBSCRIBE_URL}}', 'leaky-paywall' ); ?>
 										</p>
 									</td>
 								</tr>
@@ -1421,7 +1421,7 @@ class Leaky_Paywall {
 									</tr>
 
 								</table>
-								<?php echo apply_filters( 'leaky_paywall_settings_page_stripe_payment_gateway_options', ob_get_clean() ); ?>
+								<?php do_action( 'leaky_paywall_settings_page_stripe_payment_gateway_options' ); ?>
 							<?php } ?>
 
 							<?php
@@ -1521,9 +1521,6 @@ class Leaky_Paywall {
 							<?php } ?>
 
 							<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
-
-							<?php $leaky_paywall_gateway_options = ob_get_clean(); ?>
-							<?php echo apply_filters( 'leaky_paywall_settings_page_gateway_options', $leaky_paywall_gateway_options ); ?>
 
 							<?php do_action( 'leaky_paywall_after_enabled_gateways', $settings ); ?>
 
@@ -1705,8 +1702,8 @@ class Leaky_Paywall {
 										if ( $this->check_for_caching() && 'on' !== $settings['enable_js_cookie_restrictions'] ) {
 											?>
 											<div class="notice-info notice">
-												<p><strong>We noticed your site might use caching.</strong></p>
-												<p> We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.<br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+												<p><strong><?php esc_attr_e( 'We noticed your site might use caching.', 'leaky-paywall' ); ?></strong></p>
+												<p><?php esc_attr_e( 'We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall' ); ?><br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
 											</div>
 											<?php
 										}
@@ -1894,6 +1891,8 @@ class Leaky_Paywall {
 							<?php do_action( 'leaky_paywall_after_help_settings' ); ?>
 
 						<?php endif; ?>
+
+						<?php wp_nonce_field( 'leaky_paywall_update_settings_nonce', 'leaky_paywall_update_settings_nonce_field' ); ?>
 
 					</form>
 
@@ -2106,7 +2105,7 @@ class Leaky_Paywall {
 				$email = '';
 
 				if ( isset( $_GET['edit'] ) ) {
-					$email = sanitize_email( wp_unslash( rawurldecode( $_GET['edit'] ) ) );
+					$email = rawurldecode( sanitize_email( wp_unslash( $_GET['edit'] ) ) );
 				}
 
 				$user = get_user_by( 'email', $email );
