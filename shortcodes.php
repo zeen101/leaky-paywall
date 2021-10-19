@@ -240,7 +240,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 				try {
 
 					// update source
-					$cu = \Stripe\Customer::update($subscriber_id, array('source' => $_POST['stripeToken']));
+					$cu = \Stripe\Customer::update($subscriber_id, array('source' => sanitize_text_field($_POST['stripeToken'])));
 
 					// retrieve sources
 					$sources = \Stripe\Customer::allSources($subscriber_id);
@@ -489,7 +489,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 						$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
 						$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
 						$payment_form .= '<p>' . __("You can update your payment details through PayPal's website.", 'leaky-paywall') . '</p>';
-						$payment_form .= '<p><a href="' . $paypal_url . '"><img src="https://www.paypalobjects.com/webstatic/en_US/btn/btn_pponly_142x27.png" border="0"></a></p>';
+						$payment_form .= '<p><a href="' . $paypal_url . '"><img src="' . LEAKY_PAYWALL_URL . 'images/btn_pponly_142x27.png" border="0"></a></p>';
 						break;
 				}
 
@@ -552,7 +552,7 @@ if (!function_exists('do_leaky_paywall_profile')) {
 
 						if (!empty($_POST['email'])) {
 							if (is_email($_POST['email'])) {
-								$args['user_email'] = sanitize_text_field($_POST['email']);
+								$args['user_email'] = sanitize_email($_POST['email']);
 							} else {
 								throw new Exception(__('Invalid email address.', 'leaky-paywall'));
 							}
@@ -903,14 +903,14 @@ function do_leaky_paywall_register_form($atts)
 
 		</div> <!-- .leaky-paywall-registration-payment-container -->
 
-		<input type="hidden" name="level_price" value="<?php echo $total_price; ?>" />
-		<input type="hidden" name="currency" value="<?php echo $currency; ?>" />
-		<input type="hidden" name="description" value="<?php echo $level['label']; ?>" />
-		<input type="hidden" name="level_id" id="level-id" value="<?php echo $level_id; ?>" />
-		<input type="hidden" name="interval" value="<?php echo $level['interval']; ?>" />
-		<input type="hidden" name="interval_count" value="<?php echo $level['interval_count']; ?>" />
-		<input type="hidden" name="recurring" value="<?php echo empty($level['recurring']) ? '' : $level['recurring']; ?>" />
-		<input type="hidden" name="site" value="<?php echo $site; ?>" />
+		<input type="hidden" name="level_price" value="<?php echo esc_attr($total_price); ?>" />
+		<input type="hidden" name="currency" value="<?php echo esc_attr($currency); ?>" />
+		<input type="hidden" name="description" value="<?php echo esc_attr($level['label']); ?>" />
+		<input type="hidden" name="level_id" id="level-id" value="<?php echo esc_attr($level_id); ?>" />
+		<input type="hidden" name="interval" value="<?php echo esc_attr($level['interval']); ?>" />
+		<input type="hidden" name="interval_count" value="<?php echo esc_attr($level['interval_count']); ?>" />
+		<input type="hidden" name="recurring" value="<?php echo empty($level['recurring']) ? '' : esc_attr($level['recurring']); ?>" />
+		<input type="hidden" name="site" value="<?php echo esc_attr($site); ?>" />
 
 		<input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo wp_create_nonce('leaky-paywall-register-nonce'); ?>" />
 
@@ -1130,7 +1130,7 @@ function leaky_paywall_process_profile_edit()
 
 		if (isset($_POST['email'])) {
 			if (is_email($_POST['email'])) {
-				$args['user_email'] = sanitize_text_field($_POST['email']);
+				$args['user_email'] = sanitize_email($_POST['email']);
 			} else {
 				throw new Exception(__('Invalid email address.', 'leaky-paywall'));
 			}

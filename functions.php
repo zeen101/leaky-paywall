@@ -1033,7 +1033,7 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 					$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
 					$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
 					$form .= '<p>' . sprintf(__('You must cancel your account through PayPal. Please click this unsubscribe button to complete the cancellation process.', 'leaky-paywall'), $settings['site_name']) . '</p>';
-					$form .= '<p><a href="' . $paypal_url . '?cmd=_subscr-find&alias=' . urlencode($paypal_email) . '"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_unsubscribe_LG.gif" border="0"></a></p>';
+					$form .= '<p><a href="' . $paypal_url . '?cmd=_subscr-find&alias=' . urlencode($paypal_email) . '"><img src="' . LEAKY_PAYWALL_URL . 'images/btn_unsubscribe_LG.gif" border="0"></a></p>';
 				} else {
 
 					$form .= '<p>' . __('Unable to determine your payment method. Please contact support for help canceling your account.', 'leaky-paywall') . '</p>';

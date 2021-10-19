@@ -64,7 +64,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		<div class="leaky-paywall-payment-method-container">
 			<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="<?php echo $paypal_button_text; ?>" type="radio">
 
-			<label for="payment_method_paypal"> Paypal <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_150x38.png" alt="PayPal Logo"></label>
+			<label for="payment_method_paypal"> Paypal <img src="<?php echo LEAKY_PAYWALL_URL; ?>images/PP_logo_h_150x38.png" alt="PayPal Logo"></label>
 		</div>
 
 		<script>
