@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Registration Functions
  *
@@ -12,585 +11,580 @@
  * @since       4.0.0
  */
 
-// Exit if accessed directly
-if (!defined('ABSPATH')) exit;
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Regsiter a new user
  *
  * @since 4.0.0
  */
-function leaky_paywall_process_registration()
-{
-
-	if (!isset($_POST['leaky_paywall_register_nonce'])) {
+function leaky_paywall_process_registration() {
+	if ( ! isset( $_POST['leaky_paywall_register_nonce'] ) ) {
 		return;
 	}
 
-	if (!wp_verify_nonce($_POST['leaky_paywall_register_nonce'], 'leaky-paywall-register-nonce')) {
+	if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' ) ) {
 		return;
 	}
 
 	$settings = get_leaky_paywall_settings();
-	$mode = leaky_paywall_get_current_mode();
-	$site = leaky_paywall_get_current_site();
-	$level_id = isset($_POST['level_id']) ? absint($_POST['level_id']) : false;
-	$level = get_leaky_paywall_subscription_level($level_id);
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
+	$level_id = isset( $_POST['level_id'] ) ? absint( $_POST['level_id'] ) : false;
+	$level    = get_leaky_paywall_subscription_level( $level_id );
 
-	// get the selected payment method
-	// leaving this here for backwards compatibility
-	if (!isset($_POST['gateway'])) {
+	// get the selected payment method.
+	// leaving this here for backwards compatibility.
+	if ( ! isset( $_POST['gateway'] ) ) {
 		$gateway = 'paypal';
 	} else {
-		$gateway = sanitize_text_field($_POST['gateway']);
+		$gateway = sanitize_text_field( wp_unslash( $_POST['gateway'] ) );
 	}
 
-	if (isset($_POST['payment_method'])) {
-		$gateway = sanitize_text_field($_POST['payment_method']);
+	if ( isset( $_POST['payment_method'] ) ) {
+		$gateway = sanitize_text_field( wp_unslash( $_POST['payment_method'] ) );
 	}
 
-	/** 
+	/**
 	 * Validate the Form
 	 */
-	// already done via ajax for Stripe transactions
+	// already done via ajax for Stripe transactions.
 
 	$user_data = leaky_paywall_validate_user_data();
 
-
-
-	// retrieve all error messages, if any
+	// retrieve all error messages, if any.
 	$errors = leaky_paywall_errors()->get_error_messages();
 
-	// only send to gateway if their are no errors
-	if (!empty($errors)) {
+	// only send to gateway if their are no errors.
+	if ( ! empty( $errors ) ) {
 		return;
 	}
 
-	$subscription_data = apply_filters('leaky_paywall_subscription_data', array(
-		'amount'			=> sanitize_text_field($_POST['level_price']),
-		'description'		=> sanitize_text_field($_POST['description']),
-		'user_id'			=> $user_data['id'],
-		'user_name'			=> $user_data['login'],
-		'user_email'		=> $user_data['email'],
-		'first_name'		=> $user_data['first_name'],
-		'last_name'			=> $user_data['last_name'],
-		'level_id'			=> $level_id,
-		'subscriber_id' 	=> '',
-		'created' 			=> date('Y-m-d H:i:s'),
-		'price'				=> sanitize_text_field($_POST['level_price']),
-		'plan'				=> isset($_POST['plan_id']) ? sanitize_text_field($_POST['plan_id']) : '',
-		'currency'			=> leaky_paywall_get_currency(),
-		'interval_count'	=> sanitize_text_field($_POST['interval_count']),
-		'interval'			=> sanitize_text_field($_POST['interval']),
-		'recurring'			=> sanitize_text_field($_POST['recurring']),
-		'site'				=> sanitize_text_field($_POST['site']),
-		'new_user'			=> $user_data['need_new'],
-		'payment_gateway' 	=> $gateway,
-		'mode'				=> $mode,
-		'post_data'			=> $_POST
-	));
+	$subscription_data = apply_filters(
+		'leaky_paywall_subscription_data',
+		array(
+			'amount'          => isset( $_POST['level_price'] ) ? sanitize_text_field( wp_unslash( $_POST['level_price'] ) ) : '',
+			'description'     => isset( $_POST['description'] ) ? sanitize_text_field( wp_unslash( $_POST['description'] ) ) : '',
+			'user_id'         => $user_data['id'],
+			'user_name'       => $user_data['login'],
+			'user_email'      => $user_data['email'],
+			'first_name'      => $user_data['first_name'],
+			'last_name'       => $user_data['last_name'],
+			'level_id'        => $level_id,
+			'subscriber_id'   => '',
+			'created'         => gmdate( 'Y-m-d H:i:s' ),
+			'price'           => isset( $_POST['level_price'] ) ? sanitize_text_field( wp_unslash( $_POST['level_price'] ) ) : '',
+			'plan'            => isset( $_POST['plan_id'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_id'] ) ) : '',
+			'currency'        => leaky_paywall_get_currency(),
+			'interval_count'  => isset( $_POST['interval_count'] ) ? sanitize_text_field( wp_unslash( $_POST['interval_count'] ) ) : '',
+			'interval'        => isset( $_POST['interval'] ) ? sanitize_text_field( wp_unslash( $_POST['interval'] ) ) : '',
+			'recurring'       => isset( $_POST['recurring'] ) ? sanitize_text_field( wp_unslash( $_POST['recurring'] ) ) : '',
+			'site'            => isset( $_POST['site'] ) ? sanitize_text_field( wp_unslash( $_POST['site'] ) ) : '',
+			'new_user'        => $user_data['need_new'],
+			'payment_gateway' => $gateway,
+			'mode'            => $mode,
+			'post_data'       => $_POST,
+		)
+	);
 
-	/** 
+	/**
 	 * Send all data to the gateway for processing
 	 */
-	$gateway_data = leaky_paywall_send_to_gateway($gateway, $subscription_data);
+	$gateway_data = leaky_paywall_send_to_gateway( $gateway, $subscription_data );
 
-	// Validate extra fields in gateways
-	do_action('leaky_paywall_form_errors', $_POST, $level_id);
+	// Validate extra fields in gateways.
+	do_action( 'leaky_paywall_form_errors', $_POST, $level_id );
 
-	// retrieve all error messages, if any
+	// retrieve all error messages, if any.
 	$errors = leaky_paywall_errors()->get_error_messages();
 
-	// only create the user if there are no errors
-	if (!empty($errors)) {
+	// only create the user if there are no errors.
+	if ( ! empty( $errors ) ) {
 		return;
 	}
 
-	/** 
+	/**
 	 * Merge all data before creating/updating the subscriber
 	 */
-	$subscriber_data = apply_filters('leaky_paywall_registration_user_meta', array_merge($user_data, $gateway_data), $user_data);
+	$subscriber_data = apply_filters( 'leaky_paywall_registration_user_meta', array_merge( $user_data, $gateway_data ), $user_data );
 
-	if (apply_filters('leaky_paywall_use_alternative_subscriber_registration', false, $subscriber_data, $level)) {
-		do_action('leaky_paywall_alternative_subscriber_registration', $subscriber_data, $level);
+	if ( apply_filters( 'leaky_paywall_use_alternative_subscriber_registration', false, $subscriber_data, $level ) ) {
+		do_action( 'leaky_paywall_alternative_subscriber_registration', $subscriber_data, $level );
 	} else {
-		leaky_paywall_subscriber_registration($subscriber_data);
+		leaky_paywall_subscriber_registration( $subscriber_data );
 	}
 }
-add_action('init', 'leaky_paywall_process_registration', 100);
+add_action( 'init', 'leaky_paywall_process_registration', 100 );
 
 /**
  * Complete the registration process after data is processed by gateway.
  * This allows both the registration form and subscribe card buttons to prepare
- * the subscriber data as needed, and then hand off the subscriber creation here. 
+ * the subscriber data as needed, and then hand off the subscriber creation here.
  *
  * @since 4.9.3
+ *
+ * @param array $subscriber_data The subscriber data.
  */
-function leaky_paywall_subscriber_registration($subscriber_data)
-{
+function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
 	$settings = get_leaky_paywall_settings();
-	$mode = leaky_paywall_get_current_mode();
-	$site = leaky_paywall_get_current_site();
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
 
 	/**
 	 * Create or update the WP user for this subscriber
 	 */
-	if (is_user_logged_in() || !empty($subscriber_data['existing_customer'])) {
-		$status = 'update';
-		$user_id = leaky_paywall_update_subscriber(NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data);
+	if ( is_user_logged_in() || ! empty( $subscriber_data['existing_customer'] ) ) {
+		$status  = 'update';
+		$user_id = leaky_paywall_update_subscriber( null, $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	} else {
 		$status = 'new';
 
-		// create password here so we can send it to the email
-		if (!$subscriber_data['password']) {
+		// create password here so we can send it to the email.
+		if ( ! $subscriber_data['password'] ) {
 			$subscriber_data['password'] = wp_generate_password();
 		}
 
-		$user_id = leaky_paywall_new_subscriber(NULL,  $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data);
+		$user_id = leaky_paywall_new_subscriber( null, $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	}
 
-	if (empty($user_id)) {
-		leaky_paywall_errors()->add('user_not_created', __('A user could not be created. Please check your details and try again.', 'leaky-paywall'), 'register');
+	if ( empty( $user_id ) ) {
+		leaky_paywall_errors()->add( 'user_not_created', __( 'A user could not be created. Please check your details and try again.', 'leaky-paywall' ), 'register' );
 		return;
 	}
 
 	$subscriber_data['user_id'] = $user_id;
 
-	if (leaky_paywall_is_free_registration($subscriber_data)) {
-		do_action('leaky_paywall_after_free_user_created', $user_id, $_POST);
+	if ( leaky_paywall_is_free_registration( $subscriber_data ) ) {
+		do_action( 'leaky_paywall_after_free_user_created', $user_id, $_POST );
 	}
 
-	do_action('leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $subscriber_data['level_id']);
+	do_action( 'leaky_paywall_form_processing', $_POST, $user_id, $subscriber_data['price'], $mode, $site, $subscriber_data['level_id'] );
 
-	$transaction = new LP_Transaction($subscriber_data);
-	$transaction_id = $transaction->create();
+	$transaction                       = new LP_Transaction( $subscriber_data );
+	$transaction_id                    = $transaction->create();
 	$subscriber_data['transaction_id'] = $transaction_id;
 
-	leaky_paywall_cleanup_incomplete_user($subscriber_data['email']);
+	leaky_paywall_cleanup_incomplete_user( $subscriber_data['email'] );
 
-	// Send email notifications
-	leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
+	// Send email notifications.
+	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
 
-	// log the user in
-	leaky_paywall_log_in_user($user_id);
+	// log the user in.
+	leaky_paywall_log_in_user( $user_id );
 
-	do_action('leaky_paywall_after_process_registration', $subscriber_data);
+	do_action( 'leaky_paywall_after_process_registration', $subscriber_data );
 
 	$restrictions = new Leaky_Paywall_Restrictions();
 	$restrictions->clear_cookie();
 
-	// send the newly created user to the appropriate page after logging them in
-	wp_safe_redirect(leaky_paywall_get_redirect_url($settings, $subscriber_data));
-
+	// send the newly created user to the appropriate page after logging them in.
+	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
 	exit;
 }
 
-/** 
+/**
  * Validate first step of multistep registration form
  *
  * @since  4.0.0
  */
-add_action('wp_ajax_nopriv_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation');
-add_action('wp_ajax_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation');
+function leaky_paywall_process_user_registration_validation() {
+	$form_data = isset( $_POST['form_data'] ) ? sanitize_text_field( wp_unslash( $_POST['form_data'] ) ) : '';
+	parse_str( $form_data, $fields );
 
-function leaky_paywall_process_user_registration_validation()
-{
-
-	$form_data = $_POST['form_data'];
-
-	parse_str($form_data, $fields);
-
-	$user = array();
-	$errors = array();
+	$user     = array();
+	$errors   = array();
 	$settings = get_leaky_paywall_settings();
-	$mode = leaky_paywall_get_current_mode();
-	$site = leaky_paywall_get_current_site();
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
 	$level_id = $fields['level_id'];
-	$level = get_leaky_paywall_subscription_level($level_id);
+	$level    = get_leaky_paywall_subscription_level( $level_id );
 
-	if (is_user_logged_in()) {
-		$userdata 			      = wp_get_current_user();
-		$user['id']			      = $userdata->ID;
-		$user['login']		      = $userdata->user_login;
-		$user['email']		      = $userdata->user_email;
-		$user['first_name']       = sanitize_text_field($fields['first_name']);
-		$user['last_name']        = sanitize_text_field($fields['last_name']);
-		$user['level_id']         = $level_id;
-		$user['need_new']         = false;
+	if ( is_user_logged_in() ) {
+		$userdata           = wp_get_current_user();
+		$user['id']         = $userdata->ID;
+		$user['login']      = $userdata->user_login;
+		$user['email']      = $userdata->user_email;
+		$user['first_name'] = sanitize_text_field( $fields['first_name'] );
+		$user['last_name']  = sanitize_text_field( $fields['last_name'] );
+		$user['level_id']   = $level_id;
+		$user['need_new']   = false;
 	} else {
-		$user['id']					= 0;
-		$user['login']				= $settings['remove_username_field'] == 'off' ? sanitize_text_field($fields['username']) : sanitize_text_field($fields['email_address']);
-		$user['password']			= sanitize_text_field($fields['password']);
-		$user['confirm_password']	= sanitize_text_field($fields['confirm_password']);
-		$user['email']				= sanitize_text_field($fields['email_address']);
-		$user['first_name']			= sanitize_text_field($fields['first_name']);
-		$user['last_name']			= sanitize_text_field($fields['last_name']);
-		$user['level_id']           = $level_id;
-		$user['need_new']			= true;
+		$user['id']               = 0;
+		$user['login']            = 'off' === $settings['remove_username_field'] ? sanitize_text_field( $fields['username'] ) : sanitize_text_field( $fields['email_address'] );
+		$user['password']         = sanitize_text_field( $fields['password'] );
+		$user['confirm_password'] = sanitize_text_field( $fields['confirm_password'] );
+		$user['email']            = sanitize_text_field( $fields['email_address'] );
+		$user['first_name']       = sanitize_text_field( $fields['first_name'] );
+		$user['last_name']        = sanitize_text_field( $fields['last_name'] );
+		$user['level_id']         = $level_id;
+		$user['need_new']         = true;
 	}
 
-	if (empty($user['first_name'])) {
+	if ( empty( $user['first_name'] ) ) {
 		$errors['firstname_empty'] = array(
-			'message' =>  __('Please enter your first name', 'leaky-paywall')
+			'message' => __( 'Please enter your first name', 'leaky-paywall' ),
 		);
 	}
 
-	if (empty($user['last_name'])) {
+	if ( empty( $user['last_name'] ) ) {
 		$errors['lastname_empty'] = array(
-			'message' =>  __('Please enter your last name', 'leaky-paywall')
+			'message' => __( 'Please enter your last name', 'leaky-paywall' ),
 		);
 	}
 
-	if (!is_email($user['email'])) {
+	if ( ! is_email( $user['email'] ) ) {
 		$errors['email_invalid'] = array(
-			'message' =>  __('Invalid email', 'leaky-paywall')
+			'message' => __( 'Invalid email', 'leaky-paywall' ),
 		);
 	}
 
-	if (!is_user_logged_in() && email_exists($user['email'])) {
+	if ( ! is_user_logged_in() && email_exists( $user['email'] ) ) {
 		$errors['email_exists'] = array(
-			'message' =>  __('Email already exists. Please log in.', 'leaky-paywall')
+			'message' => __( 'Email already exists. Please log in.', 'leaky-paywall' ),
 		);
 	}
 
-	if ($settings['remove_username_field'] == 'off') {
-		if (!validate_username($user['login'])) {
+	if ( 'off' === $settings['remove_username_field'] ) {
+		if ( ! validate_username( $user['login'] ) ) {
 			$errors['username_invalid'] = array(
-				'message' =>  __('Invalid username', 'leaky-paywall')
+				'message' => __( 'Invalid username', 'leaky-paywall' ),
 			);
 		}
 	}
 
-	if (0 == $user['id'] && empty($user['password'])) {
+	if ( 0 === $user['id'] && empty( $user['password'] ) ) {
 		$errors['password_empty'] = array(
-			'message' =>  __('Please enter a password', 'leaky-paywall')
+			'message' => __( 'Please enter a password', 'leaky-paywall' ),
 		);
 	}
 
-	if (0 == $user['id'] && $user['password'] !== $user['confirm_password']) {
+	if ( 0 === $user['id'] && $user['password'] !== $user['confirm_password'] ) {
 		$errors['password_mismatch'] = array(
-			'message' =>  __('Passwords do not match', 'leaky-paywall')
+			'message' => __( 'Passwords do not match', 'leaky-paywall' ),
 		);
 	}
 
-	// allow 3rd party plugins to validate account setup data
-	$errors = apply_filters('leaky_paywall_account_setup_validation', $errors, $fields);
+	// allow 3rd party plugins to validate account setup data.
+	$errors = apply_filters( 'leaky_paywall_account_setup_validation', $errors, $fields );
 
-	if (!empty($errors)) {
+	if ( ! empty( $errors ) ) {
 		$return = array(
-			'errors'  => $errors,
+			'errors' => $errors,
 		);
-		wp_send_json($return);
+		wp_send_json( $return );
 	}
 
-	// if stripe payment method is not active, we are done
+	// if stripe payment method is not active, we are done.
 	$enabled_gateways = leaky_paywall_get_enabled_payment_gateways();
 
-	if (in_array('stripe_checkout', array_keys($enabled_gateways))) {
+	if ( in_array( 'stripe_checkout', array_keys( $enabled_gateways ) ) ) {
 
 		leaky_paywall_initialize_stripe_api();
 
-		$stripe_price = number_format($level['price'], 2, '', '');
+		$stripe_price = number_format( $level['price'], 2, '', '' );
 
-		// create Stripe customer
+		// create Stripe customer.
 		$customer_array = array(
-			'name'		  => $user['first_name'] . ' ' . $user['last_name'],
+			'name'        => $user['first_name'] . ' ' . $user['last_name'],
 			'email'       => $user['email'],
-			'description' => $level['label']
+			'description' => $level['label'],
 		);
 
-		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields);
+		$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields );
 
 		try {
-			$cu = \Stripe\Customer::create($customer_array);
-		} catch (\Throwable $th) {
+			$cu = \Stripe\Customer::create( $customer_array );
+		} catch ( \Throwable $th ) {
 			$errors['stripe_customer'] = array(
-				'message' =>  __('Could not create customer.', 'leaky-paywall')
+				'message' => __( 'Could not create customer.', 'leaky-paywall' ),
 			);
 		}
 
-		if (!empty($errors)) {
+		if ( ! empty( $errors ) ) {
 			$return = array(
-				'errors'  => $errors,
+				'errors' => $errors,
 			);
-			wp_send_json($return);
+			wp_send_json( $return );
 		}
 
-
-
-		if (isset($level['recurring']) && 'on' == $level['recurring']) {
+		if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 
 			$plan_args = array(
-				'stripe_price'	=> $stripe_price,
-				'currency'		=> leaky_paywall_get_currency(),
-				'secret_key'	=> leaky_paywall_get_stripe_secret_key()
+				'stripe_price' => $stripe_price,
+				'currency'     => leaky_paywall_get_currency(),
+				'secret_key'   => leaky_paywall_get_stripe_secret_key(),
 			);
 
-			$stripe_plan = leaky_paywall_get_stripe_plan($level, $level_id, $plan_args);
+			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
 
-			if ($stripe_plan) {
+			if ( $stripe_plan ) {
 				try {
-					$checkout_session = \Stripe\Checkout\Session::create([
-						'payment_method_types' => [
-							'card',
-						],
-						'customer' => $cu->id,
-						'line_items' => [[
-							'price' => $stripe_plan->id,
-							'quantity' => 1,
-						]],
-						'mode' => 'subscription',
-						'success_url' => home_url() . '?success=true',
-						'cancel_url' => home_url() . '?cancel=true',
-					]);
-				} catch (\Throwable $th) {
+					$checkout_session = \Stripe\Checkout\Session::create(
+						array(
+							'payment_method_types' => array(
+								'card',
+							),
+							'customer'             => $cu->id,
+							'line_items'           => array(
+								array(
+									'price'    => $stripe_plan->id,
+									'quantity' => 1,
+								),
+							),
+							'mode'                 => 'subscription',
+							'success_url'          => home_url() . '?success=true',
+							'cancel_url'           => home_url() . '?cancel=true',
+						)
+					);
+				} catch ( \Throwable $th ) {
 					$errors['checkout_session'] = array(
-						'message' =>  $th->jsonBody['error']['message']
+						'message' => $th->jsonBody['error']['message'],
 					);
 				}
 			} else {
 				$errors['checkout_session'] = array(
-					'message' =>  'No subscription plan found.'
+					'message' => 'No subscription plan found.',
 				);
 			}
 		} else {
 			try {
-				$checkout_session = \Stripe\Checkout\Session::create([
-					'payment_method_types' => [
-						'card', 'ideal', 'bancontact', 'sofort'
-					],
-					'customer' => $cu->id,
-					'line_items' => [[
-						'price_data' => [
-							'product_data' => [
-								'name' => $level['label']
-							],
-							'currency' => leaky_paywall_get_currency(),
-							'unit_amount' => $stripe_price,
-						],
-						'quantity' => 1,
-					]],
-					'mode' => 'payment',
-					'success_url' => home_url() . '?success=true',
-					'cancel_url' => home_url() . '?cancel=true',
-				]);
-			} catch (\Throwable $th) {
+				$checkout_session = \Stripe\Checkout\Session::create(
+					array(
+						'payment_method_types' => array(
+							'card',
+							'ideal',
+							'bancontact',
+							'sofort',
+						),
+						'customer'             => $cu->id,
+						'line_items'           => array(
+							array(
+								'price_data' => array(
+									'product_data' => array(
+										'name' => $level['label'],
+									),
+									'currency'     => leaky_paywall_get_currency(),
+									'unit_amount'  => $stripe_price,
+								),
+								'quantity'   => 1,
+							),
+						),
+						'mode'                 => 'payment',
+						'success_url'          => home_url() . '?success=true',
+						'cancel_url'           => home_url() . '?cancel=true',
+					)
+				);
+			} catch ( \Throwable $th ) {
 				$errors['checkout_session'] = array(
-					'message' =>  $th->jsonBody['error']['message']
+					'message' => $th->jsonBody['error']['message'],
 				);
 			}
 		}
 
-
-
-
-		if (!empty($errors)) {
+		if ( ! empty( $errors ) ) {
 			$return = array(
-				'errors'  => $errors,
+				'errors' => $errors,
 			);
-			wp_send_json($return);
+			wp_send_json( $return );
 		}
 
-		leaky_paywall_create_incomplete_user($user, $cu);
+		leaky_paywall_create_incomplete_user( $user, $cu );
 
 		$return = array(
-			'success'  => 1,
-			'session_id' => $checkout_session->id
+			'success'    => 1,
+			'session_id' => $checkout_session->id,
 		);
 
-		wp_send_json($return);
+		wp_send_json( $return );
 	}
 
-
-	if (!in_array('stripe', array_keys($enabled_gateways))) {
+	if ( ! in_array( 'stripe', array_keys( $enabled_gateways ) ) ) {
 		$return = array(
-			'success'  => 1,
+			'success' => 1,
 		);
 
-		wp_send_json($return);
+		wp_send_json( $return );
 	}
 
-	$subscriber_id = get_user_meta($user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
-	$subscriber_payment_gateway = get_user_meta($user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
+	$subscriber_id              = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+	$subscriber_payment_gateway = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 
 	leaky_paywall_initialize_stripe_api();
 
-	if (!empty($subscriber_id) && 'stripe' == $subscriber_payment_gateway) {
+	if ( ! empty( $subscriber_id ) && 'stripe' === $subscriber_payment_gateway ) {
 
-		// retrieve Stripe customer
+		// retrieve Stripe customer.
 		try {
-			$cu = \Stripe\Customer::retrieve($subscriber_id);
-		} catch (\Throwable $th) {
+			$cu = \Stripe\Customer::retrieve( $subscriber_id );
+		} catch ( \Throwable $th ) {
 			$errors['stripe_customer'] = array(
-				'message' =>  __('Could not retrieve customer.', 'leaky-paywall')
+				'message' => __( 'Could not retrieve customer.', 'leaky-paywall' ),
 			);
 		}
 	} else {
 
-		// create Stripe customer
+		// create Stripe customer.
 		$customer_array = array(
-			'name'		  => $user['first_name'] . ' ' . $user['last_name'],
+			'name'        => $user['first_name'] . ' ' . $user['last_name'],
 			'email'       => $user['email'],
-			'description' => $level['label']
+			'description' => $level['label'],
 		);
 
-		$customer_array = apply_filters('leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields);
+		$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields );
 
 		try {
-			$cu = \Stripe\Customer::create($customer_array);
-		} catch (\Throwable $th) {
+			$cu = \Stripe\Customer::create( $customer_array );
+		} catch ( \Throwable $th ) {
 			$errors['stripe_customer'] = array(
-				'message' =>  __('Could not create customer.', 'leaky-paywall')
+				'message' => __( 'Could not create customer.', 'leaky-paywall' ),
 			);
 		}
 	}
 
-	if (!empty($errors)) {
+	if ( ! empty( $errors ) ) {
 		$return = array(
-			'errors'  => $errors,
+			'errors' => $errors,
 		);
-		wp_send_json($return);
+		wp_send_json( $return );
 	}
 
-	// temporary place to store the data
-	leaky_paywall_create_incomplete_user($user, $cu);
+	// temporary place to store the data.
+	leaky_paywall_create_incomplete_user( $user, $cu );
 
-	// create a paymentIntent (if not recurring)
-	if (isset($level['recurring']) && 'on' == $level['recurring']) {
+	// create a paymentIntent (if not recurring).
+	if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 		$return = array(
-			'success'  => 1,
+			'success'     => 1,
 			'customer_id' => $cu->id,
 		);
 
-		wp_send_json($return);
+		wp_send_json( $return );
 	}
 
-	$stripe_price = number_format($level['price'], 2, '', '');
+	$stripe_price = number_format( $level['price'], 2, '', '' );
 
-	$intent_args = apply_filters('leaky_paywall_payment_intent_args', array(
-		'amount'	=> $stripe_price,
-		'currency'	=> leaky_paywall_get_currency(),
-		'setup_future_usage' => 'off_session',
-		'customer'	=> $cu->id,
-		'description' 	=> $level['label']
-	), $level);
+	$intent_args = apply_filters(
+		'leaky_paywall_payment_intent_args',
+		array(
+			'amount'             => $stripe_price,
+			'currency'           => leaky_paywall_get_currency(),
+			'setup_future_usage' => 'off_session',
+			'customer'           => $cu->id,
+			'description'        => $level['label'],
+		),
+		$level
+	);
 
-	// add an options array with an idempotencyKey set with the user's Stripe customer id
+	// add an options array with an idempotencyKey set with the user's Stripe customer id.
 	$intent_options = array(
-		'idempotency_key' => $cu->id
+		'idempotency_key' => $cu->id,
 	);
 
 	try {
-		$intent = \Stripe\PaymentIntent::create($intent_args, $intent_options);
-	} catch (\Throwable $th) {
+		$intent = \Stripe\PaymentIntent::create( $intent_args, $intent_options );
+	} catch ( \Throwable $th ) {
 		$errors['payment_intent'] = array(
-			'message' =>  __('Could not create payment intent.', 'leaky-paywall')
+			'message' => __( 'Could not create payment intent.', 'leaky-paywall' ),
 		);
 	}
 
-	if (!empty($errors)) {
+	if ( ! empty( $errors ) ) {
 		$return = array(
-			'errors'  => $errors,
+			'errors' => $errors,
 		);
-		wp_send_json($return);
+		wp_send_json( $return );
 	}
 
 	$return = array(
-		'success'  => 1,
+		'success'   => 1,
 		'pi_client' => $intent->client_secret,
-		'pi_id' => $intent->id
+		'pi_id'     => $intent->id,
 	);
 
-	wp_send_json($return);
+	wp_send_json( $return );
 }
+add_action( 'wp_ajax_nopriv_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation' );
+add_action( 'wp_ajax_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation' );
 
-/** 
+/**
  * Validate and setup the user data for registration
  *
  * @since  4.0.0
  */
-function leaky_paywall_validate_user_data()
-{
-
-	$user = array();
+function leaky_paywall_validate_user_data() {
+	$user     = array();
 	$settings = get_leaky_paywall_settings();
 
-	if (!is_user_logged_in()) {
-		$user['id']					= 0;
-		$user['login']				= $settings['remove_username_field'] == 'off' ? sanitize_text_field($_POST['username']) : sanitize_text_field($_POST['email_address']);
-		$user['password']			= sanitize_text_field($_POST['password']);
-		$user['confirm_password']	= sanitize_text_field($_POST['confirm_password']);
-		$user['email']				= sanitize_text_field($_POST['email_address']);
-		$user['first_name']			= sanitize_text_field($_POST['first_name']);
-		$user['last_name']			= sanitize_text_field($_POST['last_name']);
-		$user['need_new']			= true;
+	if ( ! is_user_logged_in() ) {
+		$user['id']               = 0;
+		$user['login']            = 'off' === $settings['remove_username_field'] ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : sanitize_email( wp_unslash( $_POST['email_address'] ) );
+		$user['password']         = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '';
+		$user['confirm_password'] = isset( $_POST['confirm_password'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_password'] ) ) : '';
+		$user['email']            = isset( $_POST['email_address'] ) ? sanitize_text_field( wp_unslash( $_POST['email_address'] ) ) : '';
+		$user['first_name']       = isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '';
+		$user['last_name']        = isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '';
+		$user['need_new']         = true;
 	} else {
-		$userdata 			      = get_userdata(get_current_user_id());
-		$user['id']			      = $userdata->ID;
-		$user['login']		      = $userdata->user_login;
-		$user['email']		      = $userdata->user_email;
-		$user['first_name']       = sanitize_text_field($_POST['first_name']);
-		$user['last_name']        = sanitize_text_field($_POST['last_name']);
-		$user['need_new']         = false;
+		$userdata           = get_userdata( get_current_user_id() );
+		$user['id']         = $userdata->ID;
+		$user['login']      = $userdata->user_login;
+		$user['email']      = $userdata->user_email;
+		$user['first_name'] = isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '';
+		$user['last_name']  = isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '';
+		$user['need_new']   = false;
 	}
 
-	if (isset($_POST['payment_method']) && 'stripe' == $_POST['payment_method']) {
-		return apply_filters('leaky_paywall_user_registration_data', $user);
+	if ( isset( $_POST['payment_method'] ) && 'stripe' === $_POST['payment_method'] ) {
+		return apply_filters( 'leaky_paywall_user_registration_data', $user );
 	}
 
-	if (empty($user['first_name'])) {
-		// empty first name
-		leaky_paywall_errors()->add('firstname_empty', __('Please enter your first name', 'leaky-paywall'), 'register');
+	if ( empty( $user['first_name'] ) ) {
+		leaky_paywall_errors()->add( 'firstname_empty', __( 'Please enter your first name', 'leaky-paywall' ), 'register' );
 	}
 
-	if (empty($user['last_name'])) {
-		// empty last name
-		leaky_paywall_errors()->add('lastname_empty', __('Please enter your last name', 'leaky-paywall'), 'register');
+	if ( empty( $user['last_name'] ) ) {
+		leaky_paywall_errors()->add( 'lastname_empty', __( 'Please enter your last name', 'leaky-paywall' ), 'register' );
 	}
 
-	if (!is_email($user['email'])) {
-		//invalid email
-		leaky_paywall_errors()->add('email_invalid', __('Invalid email', 'leaky-paywall'), 'register');
+	if ( ! is_email( $user['email'] ) ) {
+		leaky_paywall_errors()->add( 'email_invalid', __( 'Invalid email', 'leaky-paywall' ), 'register' );
 	}
 
-	if ($settings['remove_username_field'] == 'off') {
-		if (!validate_username($user['login'])) {
-			// invalid username
-			leaky_paywall_errors()->add('username_invalid', __('Invalid username', 'leaky-paywall'), 'register');
+	if ( 'off' === $settings['remove_username_field'] ) {
+		if ( ! validate_username( $user['login'] ) ) {
+			leaky_paywall_errors()->add( 'username_invalid', __( 'Invalid username', 'leaky-paywall' ), 'register' );
 		}
 	}
 
-
-	if (!is_user_logged_in() && empty($user['password'])) {
-		// password is empty
-		leaky_paywall_errors()->add('password_empty', __('Please enter a password', 'leaky-paywall'), 'register');
+	if ( ! is_user_logged_in() && empty( $user['password'] ) ) {
+		leaky_paywall_errors()->add( 'password_empty', __( 'Please enter a password', 'leaky-paywall' ), 'register' );
 	}
 
-	if (!is_user_logged_in() && $user['password'] !== $user['confirm_password']) {
-		// passwords do not match
-		leaky_paywall_errors()->add('password_mismatch', __('Passwords do not match', 'leaky-paywall'), 'register');
+	if ( ! is_user_logged_in() && $user['password'] !== $user['confirm_password'] ) {
+		leaky_paywall_errors()->add( 'password_mismatch', __( 'Passwords do not match', 'leaky-paywall' ), 'register' );
 	}
 
-	if ($user['need_new']) {
+	if ( $user['need_new'] ) {
 
-		if (email_exists($user['email'])) {
-			//Email address already registered
-			leaky_paywall_errors()->add('email_used', __('Email already registered. Please <a href="' . get_page_link($settings['page_for_login']) . '">login</a>', 'leaky-paywall'), 'register');
+		if ( email_exists( $user['email'] ) ) {
+			/* Translators: %s - login url */
+			leaky_paywall_errors()->add( 'email_used', printf( esc_attr__( 'Email already registered. Please <a href="%s">login</a>', 'leaky-paywall' ), esc_url( get_page_link( $settings['page_for_login'] ) ) ), 'register' );
 		}
 
-		if (username_exists($user['login'])) {
-			// Username already registered
-			leaky_paywall_errors()->add('username_unavailable', __('Username already taken', 'leaky-paywall'), 'register');
+		if ( username_exists( $user['login'] ) ) {
+			leaky_paywall_errors()->add( 'username_unavailable', __( 'Username already taken', 'leaky-paywall' ), 'register' );
 		}
 
-		if (empty($user['login'])) {
-			// empty username
-			leaky_paywall_errors()->add('username_empty', __('Please enter a username', 'leaky-paywall'), 'register');
+		if ( empty( $user['login'] ) ) {
+			leaky_paywall_errors()->add( 'username_empty', __( 'Please enter a username', 'leaky-paywall' ), 'register' );
 		}
 	}
 
-	return apply_filters('leaky_paywall_user_registration_data', $user);
+	return apply_filters( 'leaky_paywall_user_registration_data', $user );
 }
 
 /**
@@ -598,97 +592,95 @@ function leaky_paywall_validate_user_data()
  *
  * @access      public
  * @since       4.0.0
- * @param       string $username The username to validate
+ * @param       string $username The username to validate.
  * @return      bool
  */
-function leaky_paywall_validate_username($username = '')
-{
-	$sanitized = sanitize_user($username, false);
-	$valid = ($sanitized == strtolower($username));
-	return (bool) apply_filters('leaky_paywall_validate_username', $valid, $username);
+function leaky_paywall_validate_username( $username = '' ) {
+	$sanitized = sanitize_user( $username, false );
+	$valid     = ( $sanitized == strtolower( $username ) );
+	return (bool) apply_filters( 'leaky_paywall_validate_username', $valid, $username );
 }
 
-/**
- * Display the credit card fields on the registration form
- *
- * @since  4.0.0 
- */
-if (!function_exists('leaky_paywall_card_form')) {
-	function leaky_paywall_card_form()
-	{
 
-?>
+if ( ! function_exists( 'leaky_paywall_card_form' ) ) {
+
+	/**
+	 * Display the credit card fields on the registration form
+	 *
+	 * @since  4.0.0
+	 */
+	function leaky_paywall_card_form() {
+		?>
 
 		<div class="leaky-paywall-card-details">
 
 			<fieldset id="leaky-paywall-credit-card-form">
 
 				<p class="form-row">
-					<label><?php printf(__('Name on Card', 'leaky-paywall')); ?> <i class="required">*</i></label>
-					<input type="text" size="20" name="card_name" class="card-name" value="<?php leaky_paywall_old_form_value('card_name') ?>" />
+					<label><?php printf( esc_attr__( 'Name on Card', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+					<input type="text" size="20" name="card_name" class="card-name" value="<?php leaky_paywall_old_form_value( 'card_name' ); ?>" />
 				</p>
 
 				<p class="form-row">
-					<label><?php printf(__('Card Number', 'leaky-paywall')); ?> <i class="required">*</i></label>
-					<input type="text" size="20" name="card_num" class="card-num" value="<?php leaky_paywall_old_form_value('card_num') ?>" />
+					<label><?php printf( esc_attr__( 'Card Number', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+					<input type="text" size="20" name="card_num" class="card-num" value="<?php leaky_paywall_old_form_value( 'card_num' ); ?>" />
 				</p>
 
 				<p class="form-row">
-					<label><?php printf(__('CVC', 'leaky-paywall')); ?> <i class="required">*</i></label>
-					<input type="text" size="4" name="cvc" class="cvc" value="<?php leaky_paywall_old_form_value('cvc') ?>" />
+					<label><?php printf( esc_attr__( 'CVC', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+					<input type="text" size="4" name="cvc" class="cvc" value="<?php leaky_paywall_old_form_value( 'cvc' ); ?>" />
 				</p>
 
 				<p class="form-row">
-					<label><?php printf(__('Card Zip or Postal Code', 'leaky-paywall')); ?> <i class="required">*</i></label>
-					<input type="text" size="20" name="card_zip" class="card-zip" value="<?php leaky_paywall_old_form_value('card_zip') ?>" />
+					<label><?php printf( esc_attr__( 'Card Zip or Postal Code', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+					<input type="text" size="20" name="card_zip" class="card-zip" value="<?php leaky_paywall_old_form_value( 'card_zip' ); ?>" />
 				</p>
 
 				<p class="form-row">
-					<label><?php printf(__('Expiration (MM/YYYY)', 'leaky-paywall')); ?> <i class="required">*</i></label>
-					<input type="text" size="2" name="exp_month" class="exp-month" value="<?php leaky_paywall_old_form_value('exp_month') ?>" /> / <input type="text" size="4" name="exp_year" class="exp-year" value="<?php leaky_paywall_old_form_value('exp_year') ?>" />
+					<label><?php printf( esc_attr__( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+					<input type="text" size="2" name="exp_month" class="exp-month" value="<?php leaky_paywall_old_form_value( 'exp_month' ); ?>" /> / <input type="text" size="4" name="exp_year" class="exp-year" value="<?php leaky_paywall_old_form_value( 'exp_year' ); ?>" />
 				</p>
 
 			</fieldset>
 
 		</div>
 
-	<?php
+		<?php
 	}
 }
 
-/**
- * Display the full credit card fields on the registration form
- *
- * @since  4.0.0 
- */
-if (!function_exists('leaky_paywall_card_form_full')) {
-	function leaky_paywall_card_form_full()
-	{
-	?>
+if ( ! function_exists( 'leaky_paywall_card_form_full' ) ) {
+	/**
+	 * Display the full credit card fields on the registration form
+	 *
+	 * @since  4.0.0
+	 */
+	function leaky_paywall_card_form_full() {
+		?>
 
 		<div class="leaky-paywall-card-details">
 			<p class="form-row">
-				<label><?php _e('Card Number', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Card Number', 'leaky-paywall' ); ?></label>
 				<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Card CVC', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Card CVC', 'leaky-paywall' ); ?></label>
 				<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Address', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Address', 'leaky-paywall' ); ?></label>
 				<input type="text" size="20" name="card_address" class="card-address" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('City', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'City', 'leaky-paywall' ); ?></label>
 				<input type="text" size="20" name="card_city" class="card-city" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('State or Providence', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'State or Providence', 'leaky-paywall' ); ?></label>
 				<input type="text" size="20" name="card_state" class="card-state" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Country', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Country', 'leaky-paywall' ); ?></label>
 				<select name="card_country" class="card-country">
 					<option value="">Country</option>
 					<option value="US">United States</option>
@@ -939,173 +931,176 @@ if (!function_exists('leaky_paywall_card_form_full')) {
 				</select>
 			</p>
 			<p class="form-row">
-				<label><?php _e('Card ZIP or Postal Code', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Card ZIP or Postal Code', 'leaky-paywall' ); ?></label>
 				<input type="text" size="10" name="card_zip" class="card-zip" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Name on Card', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Name on Card', 'leaky-paywall' ); ?></label>
 				<input type="text" size="20" name="card_name" class="card-name" />
 			</p>
 			<p class="form-row">
-				<label><?php _e('Expiration (MM/YYYY)', 'leaky-paywall'); ?></label>
+				<label><?php esc_attr_e( 'Expiration (MM/YYYY)', 'leaky-paywall' ); ?></label>
 				<select name="card_exp_month" class="ccard-expiry-month">
-					<?php for ($i = 1; $i <= 12; $i++) : ?>
-						<option value="<?php echo $i; ?>"><?php echo $i . ' - ' . leaky_paywall_get_month_name($i); ?></option>
+					<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+						<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_attr( $i ) . ' - ' . esc_attr( leaky_paywall_get_month_name( $i ) ); ?></option>
 					<?php endfor; ?>
 				</select>
 				<span class="expiry_separator"> / </span>
 				<select name="card_exp_year" class="card-expiry-year">
 					<?php
-					$year = date('Y');
-					for ($i = $year; $i <= $year + 10; $i++) : ?>
-						<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+					$year = gmdate( 'Y' );
+					for ( $i = $year; $i <= $year + 10; $i++ ) :
+						?>
+						<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_attr( $i ); ?></option>
 					<?php endfor; ?>
 				</select>
 			</p>
 		</div>
-<?php
+		<?php
 
+	}
+}
+
+
+if ( ! function_exists( 'leaky_paywall_get_month_name' ) ) {
+	/**
+	 * Converts the month number to the month name
+	 *
+	 * @access public
+	 * @since  4.0.0
+	 *
+	 * @param  int $n Month number.
+	 * @return string The name of the month.
+	 */
+	function leaky_paywall_get_month_name( $n ) {
+		$timestamp = mktime( 0, 0, 0, $n, 1, 2005 );
+
+		return date_i18n( 'F', $timestamp );
+	}
+}
+
+
+if ( ! function_exists( 'leaky_paywall_log_in_user' ) ) {
+	/**
+	 * Login in a user
+	 *
+	 * @since  4.9.3
+	 *
+	 * @param  int $user_id ID of the user.
+	 */
+	function leaky_paywall_log_in_user( $user_id ) {
+
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id, true );
+	}
+}
+
+if ( ! function_exists( 'leaky_paywall_get_redirect_url' ) ) {
+	/**
+	 * Get the redirect url
+	 *
+	 * @param array $settings The Leaky Paywall settings.
+	 * @param array $subscriber_data The subscriber data.
+	 */
+	function leaky_paywall_get_redirect_url( $settings, $subscriber_data ) {
+
+		if ( ! empty( $settings['page_for_after_subscribe'] ) ) {
+			$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
+		} elseif ( ! empty( $settings['page_for_profile'] ) ) {
+			$redirect_url = get_page_link( $settings['page_for_profile'] );
+		} elseif ( ! empty( $settings['page_for_subscription'] ) ) {
+			$redirect_url = get_page_link( $settings['page_for_subscription'] );
+		}
+
+		return apply_filters( 'leaky_paywall_redirect_url', add_query_arg( 'lp_txn_id', $subscriber_data['transaction_id'], $redirect_url ), $subscriber_data );
 	}
 }
 
 /**
- * Converts the month number to the month name
- *
- * @access public
- * @since  4.0.0
- *
- * @param  int $n Month number.
- * @return string The name of the month.
+ * Validate frontend registration
  */
-if (!function_exists('leaky_paywall_get_month_name')) {
-	function leaky_paywall_get_month_name($n)
-	{
-		$timestamp = mktime(0, 0, 0, $n, 1, 2005);
+function leaky_paywall_validate_frontend_registration() {
+	if ( isset( $_POST['email'] ) ) {
 
-		return date_i18n("F", $timestamp);
-	}
-}
+		$email = sanitize_email( wp_unslash( $_POST['email'] ) );
 
-/**
- * Converts the month number to the month name
- *
- * @since  4.9.3
- *
- * @param  int $user_id ID of the user.
- */
-if (!function_exists('leaky_paywall_log_in_user')) {
-	function leaky_paywall_log_in_user($user_id)
-	{
-
-		wp_set_current_user($user_id);
-		wp_set_auth_cookie($user_id, true);
-	}
-}
-
-/**
- * Converts the month number to the month name
- *
- * @since  4.9.3
- *
- * @param  array $settings Leaky Paywall settings.
- * @param  array $subscriber_data data of current subscriber
- * @return 
- */
-if (!function_exists('leaky_paywall_get_redirect_url')) {
-	function leaky_paywall_get_redirect_url($settings, $subscriber_data)
-	{
-
-		if (!empty($settings['page_for_after_subscribe'])) {
-			$redirect_url = get_page_link($settings['page_for_after_subscribe']);
-		} else if (!empty($settings['page_for_profile'])) {
-			$redirect_url = get_page_link($settings['page_for_profile']);
-		} else if (!empty($settings['page_for_subscription'])) {
-			$redirect_url = get_page_link($settings['page_for_subscription']);
-		}
-
-		return apply_filters('leaky_paywall_redirect_url', add_query_arg('lp_txn_id', $subscriber_data['transaction_id'], $redirect_url), $subscriber_data);
-	}
-}
-
-
-add_action('wp_ajax_nopriv_leaky_paywall_validate_registration', 'leaky_paywall_validate_frontend_registration');
-add_action('wp_ajax_leaky_paywall_validate_registration', 'leaky_paywall_validate_frontend_registration');
-
-function leaky_paywall_validate_frontend_registration()
-{
-
-	if (isset($_POST['email'])) {
-
-		$email = trim($_POST['email']);
-
-		if (!is_email($email)) {
+		if ( ! is_email( $email ) ) {
 
 			$return = array(
-				'message'  => 'This email is invalid. Please enter a different email.',
-				'status'       => 'error'
+				'message' => 'This email is invalid. Please enter a different email.',
+				'status'  => 'error',
 			);
 
-			wp_send_json($return);
+			wp_send_json( $return );
 		}
 
-		if (email_exists($email)) {
+		if ( email_exists( $email ) ) {
 
 			$return = array(
-				'message'  => 'This email already exists. Please login or enter a different email.',
-				'status'       => 'error'
+				'message' => 'This email already exists. Please login or enter a different email.',
+				'status'  => 'error',
 			);
 
-			wp_send_json($return);
+			wp_send_json( $return );
 		}
 	}
 
-	if (isset($_POST['username'])) {
+	if ( isset( $_POST['username'] ) ) {
 
-		$username = trim($_POST['username']);
+		$username = sanitize_text_field( wp_unslash( $_POST['username'] ) );
 
-		if (username_exists($username)) {
+		if ( username_exists( $username ) ) {
 
 			$return = array(
-				'message'  => 'Username already taken.',
-				'status'       => 'error'
+				'message' => 'Username already taken.',
+				'status'  => 'error',
 			);
 
-			wp_send_json($return);
+			wp_send_json( $return );
 		}
 	}
 
 	die();
 }
+add_action( 'wp_ajax_nopriv_leaky_paywall_validate_registration', 'leaky_paywall_validate_frontend_registration' );
+add_action( 'wp_ajax_leaky_paywall_validate_registration', 'leaky_paywall_validate_frontend_registration' );
 
-
-function leaky_paywall_create_incomplete_user($user_data, $customer_data)
-{
+/**
+ * Create incomplete user
+ *
+ * @param array $user_data The user.
+ * @param array $customer_data The customer data.
+ */
+function leaky_paywall_create_incomplete_user( $user_data, $customer_data ) {
 
 	$data = array(
-		'post_title'    => wp_strip_all_tags($user_data['email']),
-		'post_content'  => '',
-		'post_status'   => 'publish',
-		'post_author'   => 1,
-		'post_type'		=> 'lp_incomplete_user'
+		'post_title'   => wp_strip_all_tags( $user_data['email'] ),
+		'post_content' => '',
+		'post_status'  => 'publish',
+		'post_author'  => 1,
+		'post_type'    => 'lp_incomplete_user',
 	);
 
-	// Insert the post into the database
-	$incomplete_user = wp_insert_post($data);
+	$incomplete_user = wp_insert_post( $data );
 
-	update_post_meta($incomplete_user, '_user_data', $user_data);
-	update_post_meta($incomplete_user, '_customer_data', $customer_data);
-	update_post_meta($incomplete_user, '_email', $user_data['email']);
+	update_post_meta( $incomplete_user, '_user_data', $user_data );
+	update_post_meta( $incomplete_user, '_customer_data', $customer_data );
+	update_post_meta( $incomplete_user, '_email', $user_data['email'] );
 }
 
-function leaky_paywall_get_incomplete_user_from_email($email)
-{
+/**
+ * Get incomplete user using their email address
+ *
+ * @param string $email The email address.
+ */
+function leaky_paywall_get_incomplete_user_from_email( $email ) {
 
 	$incomplete_id = '';
 
 	$args = array(
-		'post_type'	=> 'lp_incomplete_user',
-		'number_of_posts'	=> 1,
-		'meta_query' => array(
+		'post_type'       => 'lp_incomplete_user',
+		'number_of_posts' => 1,
+		'meta_query'      => array(
 			array(
 				'key'     => '_email',
 				'value'   => $email,
@@ -1114,31 +1109,37 @@ function leaky_paywall_get_incomplete_user_from_email($email)
 		),
 	);
 
-	$incompletes = get_posts($args);
+	$incompletes = get_posts( $args );
 
-	if (!empty($incompletes)) {
-		$incomplete = $incompletes[0];
+	if ( ! empty( $incompletes ) ) {
+		$incomplete    = $incompletes[0];
 		$incomplete_id = $incomplete->ID;
 	}
 
 	return $incomplete_id;
 }
 
-function leaky_paywall_cleanup_incomplete_user($email)
-{
+/**
+ * Cleanup incomplete user
+ *
+ * @param string $email The email address.
+ */
+function leaky_paywall_cleanup_incomplete_user( $email ) {
 
-	$incomplete_users = get_posts(array(
-		'post_type' => 'lp_incomplete_user',
-		'posts_per_page' => 99,
-		'meta_key'	=> '_email',
-		'meta_value' => $email
-	));
+	$incomplete_users = get_posts(
+		array(
+			'post_type'      => 'lp_incomplete_user',
+			'posts_per_page' => 99,
+			'meta_key'       => '_email',
+			'meta_value'     => $email,
+		)
+	);
 
-	if (empty($incomplete_users)) {
+	if ( empty( $incomplete_users ) ) {
 		return;
 	}
 
-	foreach ($incomplete_users as $incomplete) {
-		wp_trash_post($incomplete->ID);
+	foreach ( $incomplete_users as $incomplete ) {
+		wp_trash_post( $incomplete->ID );
 	}
 }
