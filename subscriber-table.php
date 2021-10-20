@@ -1,24 +1,36 @@
 <?php
-
 /*************************** LOAD THE BASE CLASS *******************************
- *******************************************************************************
+ * ******************************************************************************
  * The WP_List_Table class isn't automatically available to plugins, so we need
  * to check if it's available and load it if necessary.
+ *
+ * @package Leaky Paywall
  */
-if (!class_exists('WP_List_Table'))
-	require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
 
-class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
-{
+if ( ! class_exists( 'WP_List_Table' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+}
 
-	function ajax_user_can()
-	{
-		return current_user_can('manage_network_users');
+
+/**
+ * This class builds the subscriber table
+ *
+ * @since 1.0.0
+ */
+class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
+
+	/**
+	 * Ajax user can
+	 */
+	public function ajax_user_can() {
+		return current_user_can( 'manage_network_users' );
 	}
 
-	public function prepare_items()
-	{
-		global $usersearch, $wpdb;
+	/**
+	 * Prepare items for table
+	 */
+	public function prepare_items() {
+		global $wpdb;
 
 		/**
 		 * REQUIRED. Now we need to define our column headers. This includes a complete
@@ -27,8 +39,8 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 		 * can be defined in another method (as we've done here) before being
 		 * used to build the value for our _column_headers property.
 		 */
-		$columns = $this->get_columns();
-		$hidden = array();
+		$columns  = $this->get_columns();
+		$hidden   = array();
 		$sortable = $this->get_sortable_columns();
 
 		/**
@@ -37,60 +49,46 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 		 * 3 other arrays. One for all columns, one for hidden columns, and one
 		 * for sortable columns.
 		 */
-		$this->_column_headers = array($columns, $hidden, $sortable);
+		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		$usersearch = isset($_REQUEST['s']) ? '*' . sanitize_text_field($_REQUEST['s']) . '*' : '';
-
-		// $users_per_page = $this->get_items_per_page( 'users_network_per_page' );
-		$per_page = ($this->is_site_users) ? 'site_users_network_per_page' : 'users_per_page';
-		$users_per_page = $this->get_items_per_page($per_page);
+		$usersearch     = isset( $_REQUEST['s'] ) ? '*' . sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) . '*' : '';
+		$per_page       = ( $this->is_site_users ) ? 'site_users_network_per_page' : 'users_per_page';
+		$users_per_page = $this->get_items_per_page( $per_page );
 
 		$paged = $this->get_pagenum();
 
 		$args = array(
 			'number' => $users_per_page,
-			'offset' => ($paged - 1) * $users_per_page,
+			'offset' => ( $paged - 1 ) * $users_per_page,
 			'search' => $usersearch,
 		);
 
-		// If a search is not being performed, show only the latest users with no paging in order
+		// If a search is not being performed, show only the latest users with no paging in order.
 		// to avoid expensive count queries.
-		if (!$usersearch) {
-			if (!isset($_REQUEST['orderby'])) {
-				$_GET['orderby'] = $_REQUEST['orderby'] = 'ID';
+		if ( ! $usersearch ) {
+			if ( ! isset( $_REQUEST['orderby'] ) ) {
+				$_GET['orderby'] = 'ID';
 			}
-			if (!isset($_REQUEST['order'])) {
-				$_GET['order'] = $_REQUEST['order'] = 'DESC';
+			if ( ! isset( $_REQUEST['order'] ) ) {
+				$_GET['order'] = 'DESC';
 			}
-			// $args['count_total'] = false;
 		}
 
-
-		if ($this->is_site_users) {
+		if ( $this->is_site_users ) {
 			$args['blog_id'] = $this->site_id;
 		}
 
-		if (!empty($_REQUEST['orderby'])) {
-			$args['orderby'] = $_REQUEST['orderby'];
+		if ( ! empty( $_REQUEST['orderby'] ) ) {
+			$args['orderby'] = sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) );
 		}
 
-		if (!empty($_REQUEST['order']))
-			$args['order'] = $_REQUEST['order'];
-
-		// Query the user IDs for this page
-		// global $blog_id;
-		// $results = leaky_paywall_subscriber_query( $args, $blog_id );
+		if ( ! empty( $_REQUEST['order'] ) ) {
+			$args['order'] = sanitize_text_field( wp_unslash( $_REQUEST['order'] ) );
+		}
 
 		$settings = get_leaky_paywall_settings();
-		$mode = leaky_paywall_get_current_mode();
-		$site = leaky_paywall_get_current_site();
-
-		// if ( is_multisite_premium() && is_main_site( $blog_id ) ) {
-		// 	$results = array_merge( $results, leaky_paywall_subscriber_query( $args, false ) );
-		// }
-
-		// $this->items = $results;
-		// 
+		$mode     = leaky_paywall_get_current_mode();
+		$site     = leaky_paywall_get_current_site();
 
 		$args['meta_query'] = array(
 			array(
@@ -99,28 +97,23 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 			),
 		);
 
-		// search by subscriber id
-		if (isset($_GET['custom_field_search']) && 'on' == $_GET['custom_field_search']) {
-
-			// if is custom field, then do the following
+		if ( isset( $_GET['custom_field_search'] ) && 'on' === $_GET['custom_field_search'] ) {
 
 			$args['meta_query']['relation'] = 'AND';
-			$args['meta_query'][] = array(
+			$args['meta_query'][]           = array(
 				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
-				'value'   => $_GET['s'],
-				'compare'	=> 'LIKE'
+				'value'   => isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '',
+				'compare' => 'LIKE',
 			);
 
-			unset($args['search']);
+			unset( $args['search'] );
 		}
 
+		if ( isset( $_GET['filter-level'] ) && isset( $_GET['user-type'] ) && 'lpsubs' === $_GET['user-type'] ) {
 
+			$level = sanitize_text_field( wp_unslash( $_GET['filter-level'] ) );
 
-		if (isset($_GET['filter-level']) && 'lpsubs' == $_GET['user-type']) {
-
-			$level = esc_attr($_GET['filter-level']);
-
-			if ('all' != $level) {
+			if ( 'all' !== $level ) {
 
 				$args['meta_query'][] = array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
@@ -130,11 +123,11 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 			}
 		}
 
-		if (isset($_GET['filter-status']) && 'lpsubs' == $_GET['user-type']) {
+		if ( isset( $_GET['filter-status'] ) && isset( $_GET['user-type'] ) && 'lpsubs' === $_GET['user-type'] ) {
 
-			$status = esc_attr($_GET['filter-status']);
+			$status = sanitize_text_field( wp_unslash( $_GET['filter-status'] ) );
 
-			if ('all' != $status) {
+			if ( 'all' !== $status ) {
 
 				$args['meta_query'][] = array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
@@ -144,193 +137,140 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 			}
 		}
 
-		if (!empty($_GET['user-type']) && 'lpsubs' !== $_GET['user-type']) {
-			unset($args['meta_query']);
+		if ( ! empty( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] ) {
+			unset( $args['meta_query'] );
 		}
 
-		$wp_user_search = new WP_User_Query($args);
-		$this->items = $wp_user_search->get_results();
+		$wp_user_search = new WP_User_Query( $args );
+		$this->items    = $wp_user_search->get_results();
 
-		// $args['number'] = 0;
-		// $this->set_pagination_args( array(
-		// 	'total_items' => count( leaky_paywall_subscriber_query( $args ) ),
-		// 	'per_page' => $users_per_page,
-		// ) );
-
-		$this->set_pagination_args(array(
-			'total_items' => $wp_user_search->get_total(),
-			'per_page' => $users_per_page,
-		));
-	}
-
-	public function new_prepare_items()
-	{
-
-		global $role, $usersearch;
-
-		$usersearch = isset($_REQUEST['s']) ? wp_unslash(trim($_REQUEST['s'])) : '';
-
-		$role = isset($_REQUEST['role']) ? $_REQUEST['role'] : '';
-
-		$per_page = ($this->is_site_users) ? 'site_users_network_per_page' : 'users_per_page';
-		$users_per_page = $this->get_items_per_page($per_page);
-
-		$paged = $this->get_pagenum();
-
-		if ('none' === $role) {
-			$args = array(
-				'number' => $users_per_page,
-				'offset' => ($paged - 1) * $users_per_page,
-				'include' => wp_get_users_with_no_role($this->site_id),
-				'search' => $usersearch,
-				'fields' => 'all_with_meta'
-			);
-		} else {
-			$args = array(
-				'number' => $users_per_page,
-				'offset' => ($paged - 1) * $users_per_page,
-				'role' => $role,
-				'search' => $usersearch,
-				'fields' => 'all_with_meta'
-			);
-		}
-
-		if ('' !== $args['search'])
-			$args['search'] = '*' . $args['search'] . '*';
-
-		if ($this->is_site_users)
-			$args['blog_id'] = $this->site_id;
-
-		if (isset($_REQUEST['orderby']))
-			$args['orderby'] = $_REQUEST['orderby'];
-
-		if (isset($_REQUEST['order']))
-			$args['order'] = $_REQUEST['order'];
-
-		/**
-		 * Filters the query arguments used to retrieve users for the current users list table.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param array $args Arguments passed to WP_User_Query to retrieve items for the current
-		 *                    users list table.
-		 */
-		$args = apply_filters('users_list_table_query_args', $args);
-
-		// Query the user IDs for this page
-		$wp_user_search = new WP_User_Query($args);
-
-		$this->items = $wp_user_search->get_results();
-
-		$this->set_pagination_args(array(
-			'total_items' => $wp_user_search->get_total(),
-			'per_page' => $users_per_page,
-		));
-	}
-
-	function no_items()
-	{
-		_e('No Leaky Paywall subscribers found.');
-	}
-
-	function get_columns()
-	{
-		$users_columns = array(
-			'wp_user_login' => __('WordPress Username', 'leaky-paywall'),
-			'email'         => __('E-mail', 'leaky-paywall'),
-			'name'         => __('Name', 'leaky-paywall'),
-			'level_id' 		=> __('Level ID', 'leaky-paywall'),
-			'susbcriber_id' => __('Subscriber ID', 'leaky-paywall'),
-			'price'         => __('Price', 'leaky-paywall'),
-			'plan'          => __('Plan', 'leaky-paywall'),
-			'created'       => __('Created', 'leaky-paywall'),
-			'expires'       => __('Expires', 'leaky-paywall'),
-			'has_access'    => __('Has Access', 'leaky-paywall'),
-			'gateway'       => __('Gateway', 'leaky-paywall'),
-			'status'        => __('Payment Status', 'leaky-paywall'),
-			'notes'         => __('Notes', 'leaky-paywall'),
+		$this->set_pagination_args(
+			array(
+				'total_items' => $wp_user_search->get_total(),
+				'per_page'    => $users_per_page,
+			)
 		);
-		$users_columns = apply_filters('leaky_paywall_subscribers_columns', $users_columns);
+	}
+
+	/**
+	 * No items text
+	 */
+	public function no_items() {
+		esc_attr_e( 'No Leaky Paywall subscribers found.' );
+	}
+
+	/**
+	 * Get columns
+	 */
+	public function get_columns() {
+		$users_columns = array(
+			'wp_user_login' => __( 'WordPress Username', 'leaky-paywall' ),
+			'email'         => __( 'E-mail', 'leaky-paywall' ),
+			'name'          => __( 'Name', 'leaky-paywall' ),
+			'level_id'      => __( 'Level ID', 'leaky-paywall' ),
+			'susbcriber_id' => __( 'Subscriber ID', 'leaky-paywall' ),
+			'price'         => __( 'Price', 'leaky-paywall' ),
+			'plan'          => __( 'Plan', 'leaky-paywall' ),
+			'created'       => __( 'Created', 'leaky-paywall' ),
+			'expires'       => __( 'Expires', 'leaky-paywall' ),
+			'has_access'    => __( 'Has Access', 'leaky-paywall' ),
+			'gateway'       => __( 'Gateway', 'leaky-paywall' ),
+			'status'        => __( 'Payment Status', 'leaky-paywall' ),
+			'notes'         => __( 'Notes', 'leaky-paywall' ),
+		);
+		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
 
 		return $users_columns;
 	}
 
-	function get_sortable_columns()
-	{
+	/**
+	 * Get sortable columns
+	 */
+	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'wp_user_login' => array('wp_user_login', false),
-			'email'         => array('email', false),
-			'level_id' 		=> array('level_id', false),
-			'susbcriber_id' => array('susbcriber_id', false),
-			'price'         => array('price', false),
-			'plan'          => array('plan', false),
-			'gateway'       => array('payment_gateway', false),
-			'status'        => array('payment_status', false),
+			'wp_user_login' => array( 'wp_user_login', false ),
+			'email'         => array( 'email', false ),
+			'level_id'      => array( 'level_id', false ),
+			'susbcriber_id' => array( 'susbcriber_id', false ),
+			'price'         => array( 'price', false ),
+			'plan'          => array( 'plan', false ),
+			'gateway'       => array( 'payment_gateway', false ),
+			'status'        => array( 'payment_status', false ),
 		);
-		$sortable_columns = apply_filters('leaky_paywall_subscribers_sortable_columns', $sortable_columns);
+		$sortable_columns = apply_filters( 'leaky_paywall_subscribers_sortable_columns', $sortable_columns );
 
 		return $sortable_columns;
 	}
 
-	function user_views()
-	{
-		$user_type = !empty($_GET['user-type']) ? $_GET['user-type'] : 'lpsubs';
+	/**
+	 * Select for user type
+	 */
+	public function user_views() {
+		$user_type = ! empty( $_GET['user-type'] ) ? sanitize_text_field( wp_unslash( $_GET['user-type'] ) ) : 'lpsubs';
 
 		echo '<div class="alignleft actions">';
-		echo '<label for="user-type-selector" class="screen-reader-text">' . __('Select User Type') . '</label>';
+		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_attr__( 'Select User Type' ) . '</label>';
 		echo '<select name="user-type" id="user-type-selector">';
-		echo '<option value="lpsubs" ' . selected('lpsubs', $user_type, false) . '>' . __('Leaky Paywall Subscribers') . '</option>';
-		echo '<option value="wpusers" ' . selected('wpusers', $user_type, false) . '>' . __('All WordPress Users') . '</option>';
+		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_attr__( 'Leaky Paywall Subscribers' ) . '</option>';
+		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_attr__( 'All WordPress Users' ) . '</option>';
 		echo '</select>';
 
-		submit_button(__('Apply'), 'primary', false, false);
+		submit_button( __( 'Apply' ), 'primary', false, false );
 		echo '</div>';
 	}
 
-	public function extra_tablenav($which)
-	{
-
-		if ($which != 'top') {
+	/**
+	 * Display subscriber table navigation
+	 *
+	 * @param string $which The location of the nav.
+	 */
+	public function extra_tablenav( $which ) {
+		if ( 'top' !== $which ) {
 			return;
 		}
 
-		if (isset($_GET['user-type']) && $_GET['user-type'] != 'lpsubs') {
+		if ( isset( $_GET['user-type'] ) && 'lpsubs' !== $_GET['user-type'] ) {
 			return;
 		}
 
 		$levels = leaky_paywall_get_levels();
-		$lev = isset($_GET['filter-level']) ? esc_attr($_GET['filter-level']) : 'all';
-		$stat = isset($_GET['filter-status']) ? esc_attr($_GET['filter-status']) : 'all';
-?>
+		$lev    = isset( $_GET['filter-level'] ) ? sanitize_text_field( wp_unslash( $_GET['filter-level'] ) ) : 'all';
+		$stat   = isset( $_GET['filter-status'] ) ? sanitize_text_field( wp_unslash( $_GET['filter-status'] ) ) : 'all';
+		?>
 
 		<div class="alignleft actions">
 			<label for="filter-by-level" class="screen-reader-text">Filter by level</label>
 			<select name="filter-level" id="filter-by-level">
-				<option value="all" <?php selected($lev, 'all'); ?>>All Levels</option>
+				<option value="all" <?php selected( $lev, 'all' ); ?>>All Levels</option>
 				<?php
-				foreach ($levels as $key => $level) {
-					echo '<option ' . selected($key, $lev, false) . ' value="' . $key . '">' . $level['label'] . '</option>';
+				foreach ( $levels as $key => $level ) {
+					echo '<option ' . selected( $key, $lev, false ) . ' value="' . esc_attr( $key ) . '">' . esc_attr( $level['label'] ) . '</option>';
 				}
 				?>
 			</select>
 
 			<?php
-			$status_filter_args = apply_filters('leaky_paywall_status_filter_args', array(
-				'all'	=> 'All Statuses',
-				'active'	=> 'Active',
-				'deactivated'	=> 'Deactivated',
-				'canceled'	=> 'Canceled',
-			));
+			$status_filter_args = apply_filters(
+				'leaky_paywall_status_filter_args',
+				array(
+					'all'         => 'All Statuses',
+					'active'      => 'Active',
+					'deactivated' => 'Deactivated',
+					'canceled'    => 'Canceled',
+				)
+			);
 			?>
 
 			<label for="filter-by-status" class="screen-reader-text">Filter by status</label>
 			<select name="filter-status" id="filter-by-status">
 
-				<?php foreach ($status_filter_args as $key => $value) {
-				?>
-					<option value="<?php echo $key; ?>" <?php selected($stat, $key); ?>><?php echo $value; ?></option>
 				<?php
-				} ?>
+				foreach ( $status_filter_args as $key => $value ) {
+					?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $stat, $key ); ?>><?php echo esc_attr( $value ); ?></option>
+					<?php
+				}
+				?>
 
 			</select>
 
@@ -340,207 +280,240 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 		<?php
 	}
 
-	function display_rows()
-	{
-
+	/**
+	 * Display rows in subscriber table
+	 */
+	public function display_rows() {
 		$settings = get_leaky_paywall_settings();
-		$mode = leaky_paywall_get_current_mode();
-		$site = leaky_paywall_get_current_site();
+		$mode     = leaky_paywall_get_current_mode();
+		$site     = leaky_paywall_get_current_site();
 
 		$alt = '';
 
-		foreach ($this->items as $user) {
+		foreach ( $this->items as $user ) {
 
-			if (!$user->user_email) {
+			if ( ! $user->user_email ) {
 				continue;
 			}
 
-			$user = get_user_by('email', $user->user_email);
+			$user = get_user_by( 'email', $user->user_email );
 
-			$alt = ('alternate' == $alt) ? '' : 'alternate';
+			$alt = ( 'alternate' === $alt ) ? '' : 'alternate';
 
-			$payment_gateway = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
+			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 
-			if (!empty($_GET['user-type']) && 'wpusers' !== $_GET['user-type']) {
-				if (empty($payment_gateway)) {
+			if ( ! empty( $_GET['user-type'] ) && 'wpusers' !== $_GET['user-type'] ) {
+				if ( empty( $payment_gateway ) ) {
 					$payment_gateway = 'manual';
 				}
 			}
 
-		?>
-			<tr class="<?php echo $alt; ?>">
+			?>
+			<tr class="<?php echo esc_attr( $alt ); ?>">
 				<?php
 
 				list($columns, $hidden) = $this->get_column_info();
 
-				foreach ($columns as $column_name => $column_display_name) {
+				foreach ( $columns as $column_name => $column_display_name ) {
 
-					$class = "class='$column_name column-$column_name'";
+					$class = "$column_name column-$column_name";
 
 					$style = '';
-					if (in_array($column_name, $hidden))
-						$style = ' style="display:none;"';
+					if ( in_array( $column_name, $hidden, true ) ) {
+						$style = 'display:none;';
+					}
 
-					$attributes = "$class$style";
-
-					switch ($column_name) {
+					switch ( $column_name ) {
 						case 'wp_user_login':
-							echo "<td $attributes>"; ?>
-							<strong><?php echo $user->user_login; ?></strong>
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							?>
+							<strong><?php echo esc_attr( $user->user_login ); ?></strong>
 
 							<?php
-							// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing
-							if (method_exists('user_switching', 'maybe_switch_url')) {
-								if (is_object($user)) {
-									if ($link = user_switching::maybe_switch_url($user)) {
-										echo '<br><a href="' . esc_url($link) . '">' . esc_html__('Switch&nbsp;To', 'leaky-paywall') . '</a>';
+							// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing.
+							if ( method_exists( 'user_switching', 'maybe_switch_url' ) ) {
+								if ( is_object( $user ) ) {
+									$link = user_switching::maybe_switch_url( $user );
+									if ( $link ) {
+										echo '<br><a href="' . esc_url( $link ) . '">' . esc_html__( 'Switch&nbsp;To', 'leaky-paywall' ) . '</a>';
 									}
 								}
 							}
 
 							?>
 							</td>
-						<?php
+							<?php
 							break;
 						case 'email':
-							$edit_link = esc_url(add_query_arg('edit', urlencode($user->user_email)));
+							$edit_link    = esc_url( add_query_arg( 'edit', rawurlencode( $user->user_email ) ) );
 							$edit_wp_link = admin_url() . 'user-edit.php?user_id=' . $user->ID;
-							echo "<td $attributes>"; ?>
-							<strong><?php echo $user->user_email; ?></strong>
-							<br><a href="<?php echo $edit_link; ?>" class="edit">Edit LP Sub</a> | <a href="<?php echo $edit_wp_link; ?>">Edit WP user</a>
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							?>
+							<strong><?php echo esc_attr( $user->user_email ); ?></strong>
+							<br><a href="<?php echo esc_url( $edit_link ); ?>" class="edit">Edit LP Sub</a> | <a href="<?php echo esc_url( $edit_wp_link ); ?>">Edit WP user</a>
 							</td>
-						<?php
+							<?php
 							break;
 
 						case 'name':
-
-							echo "<td $attributes>"; ?>
-							<?php echo $user->first_name; ?> <?php echo $user->last_name; ?>
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							?>
+							<?php echo esc_attr( $user->first_name ); ?> <?php echo esc_attr( $user->last_name ); ?>
 							</td>
-				<?php
+							<?php
 							break;
 
 						case 'level_id':
-							if (is_multisite_premium()) {
-								$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
+							if ( is_multisite_premium() ) {
+								$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
 							} else {
-								$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true);
+								$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
 							}
 
-							$level_id = apply_filters('get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site);
-							$level_id = apply_filters('get_leaky_paywall_subscription_level_level_id', $level_id);
-							if (false === $level_id || empty($settings['levels'][$level_id]['label'])) {
-								$level_name = __('Undefined', 'leaky-paywall');
+							$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
+							$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
+							if ( false === $level_id || empty( $settings['levels'][ $level_id ]['label'] ) ) {
+								$level_name = __( 'Undefined', 'leaky-paywall' );
 							} else {
-								$level_name = stripcslashes($settings['levels'][$level_id]['label']);
+								$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
 							}
-
-							echo "<td $attributes>" . $level_name . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo esc_attr( $level_name );
+							echo '</td>';
 							break;
 
 						case 'susbcriber_id':
-							if (is_multisite_premium()) {
-								echo "<td $attributes>" . get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true) . '</td>';
+							if ( is_multisite_premium() ) {
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
+								echo '</td>';
 							} else {
-								echo "<td $attributes>" . get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true) . '</td>';
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true ) );
+								echo '</td>';
 							}
 
 							break;
 
 						case 'price':
-							if (is_multisite_premium()) {
-								echo "<td $attributes>" . number_format((float)get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true), '2') . '</td>';
+							if ( is_multisite_premium() ) {
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo number_format( (float) get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true ), '2' );
+								echo '</td>';
 							} else {
-								echo "<td $attributes>" . number_format((float)get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true), '2') . '</td>';
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo number_format( (float) get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ), '2' );
+								echo '</td>';
 							}
 
 							break;
 
 						case 'plan':
-							if (is_multisite_premium()) {
-								$plan = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true);
+							if ( is_multisite_premium() ) {
+								$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 							} else {
-								$plan = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true);
+								$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan', true );
 							}
 
-							if (empty($plan)) {
-								$plan = __('Non-Recurring', 'leaky-paywall');
-							} else if ('paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway) {
-								$plan = sprintf(__('Recurring every %s', 'leaky-paywall'), str_replace(array('D', 'W', 'M', 'Y'), array('Days', 'Weeks', 'Months', 'Years'), $plan));
+							if ( empty( $plan ) ) {
+								$plan = __( 'Non-Recurring', 'leaky-paywall' );
+							} elseif ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
+								/* Translators: %s: type of time */
+								$plan = sprintf( __( 'Recurring every %s', 'leaky-paywall' ), str_replace( array( 'D', 'W', 'M', 'Y' ), array( 'Days', 'Weeks', 'Months', 'Years' ), $plan ) );
 							}
 
-							echo "<td $attributes>" . $plan . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo esc_attr( $plan );
+							echo '</td>';
 							break;
 
 						case 'created':
-							if (is_multisite_premium()) {
-								$created = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_created' . $site, true);
+							if ( is_multisite_premium() ) {
+								$created = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_created' . $site, true );
 							} else {
-								$created = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_created', true);
+								$created = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_created', true );
 							}
 
-							$created = apply_filters('do_leaky_paywall_profile_shortcode_created_column', $created, $user, $mode, $site, $level_id);
+							$created = apply_filters( 'do_leaky_paywall_profile_shortcode_created_column', $created, $user, $mode, $site, $level_id );
 
 							$date_format = 'F j, Y';
-							$created = mysql2date($date_format, $created);
+							$created     = mysql2date( $date_format, $created );
 
-							echo "<td $attributes>" . $created . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo esc_attr( $created );
+							echo '</td>';
 							break;
 
 						case 'expires':
-							if (is_multisite_premium()) {
-								$expires = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
+							if ( is_multisite_premium() ) {
+								$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 							} else {
-								$expires = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true);
+								$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires', true );
 							}
 
-							$expires = apply_filters('do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id);
+							$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
 
-							if (empty($expires) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires) {
-								$expires = __('Never', 'leaky-paywall');
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
+								$expires = __( 'Never', 'leaky-paywall' );
 							} else {
 
 								$date_format = 'F j, Y';
-								$expires = mysql2date($date_format, $expires);
+								$expires     = mysql2date( $date_format, $expires );
 							}
 
-							echo "<td $attributes>" . $expires . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo esc_attr( $expires );
+							echo '</td>';
 							break;
 
 						case 'has_access':
-							$has_access = leaky_paywall_user_has_access($user);
+							$has_access = leaky_paywall_user_has_access( $user );
 
-							if ($has_access) {
-								echo '<td ' . $attributes . '>' . __('Yes', 'leaky-paywall') . '</td>';
+							if ( $has_access ) {
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo esc_attr__( 'Yes', 'leaky-paywall' );
+								echo '</td>';
 							} else {
-								echo '<td ' . $attributes . '>' . __('No', 'leaky-paywall') . '</td>';
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo esc_attr__( 'No', 'leaky-paywall' );
+								echo '</td>';
 							}
 							break;
 
 						case 'gateway':
-							echo "<td $attributes>" . leaky_paywall_translate_payment_gateway_slug_to_name($payment_gateway) . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo esc_attr( leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ) );
+							echo '</td>';
 							break;
 
 						case 'status':
-							if (is_multisite_premium()) {
-								echo "<td $attributes>" . get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true) . '</td>';
+							if ( is_multisite_premium() ) {
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true ) );
+								echo '</td>';
 							} else {
-								echo "<td $attributes>" . get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true) . '</td>';
+								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) );
+								echo '</td>';
 							}
 							break;
 						case 'notes':
-							echo "<td $attributes>" . esc_attr(get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true)) . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo esc_attr( get_user_meta( $user->ID, '_leaky_paywall_subscriber_notes', true ) );
+							echo '</td>';
 							break;
 
 						default:
-							echo "<td $attributes>" . apply_filters('manage_leaky_paywall_subscribers_custom_column', '&nbsp;', $column_name, $user->ID) . '</td>';
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo apply_filters( 'manage_leaky_paywall_subscribers_custom_column', '&nbsp;', $column_name, $user->ID );
+							echo '</td>';
 							break;
 					}
 				}
 
 				?>
 			</tr>
-		<?php
+			<?php
 		}
 	}
 
@@ -553,31 +526,35 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table
 	 * @param string $text     The 'submit' button label.
 	 * @param string $input_id ID attribute value for the search input field.
 	 */
-	public function search_box($text, $input_id)
-	{
-		if (empty($_REQUEST['s']) && !$this->has_items())
+	public function search_box( $text, $input_id ) {
+		if ( empty( $_REQUEST['s'] ) && ! $this->has_items() ) {
 			return;
+		}
 
 		$input_id = $input_id . '-search-input';
 
-		$search_query = isset($_REQUEST['s']) ? trim(esc_attr(wp_unslash($_REQUEST['s']))) : '';
+		$search_query = isset( $_REQUEST['s'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) ) : '';
 
-		if (!empty($_REQUEST['orderby']))
-			echo '<input type="hidden" name="orderby" value="' . esc_attr($_REQUEST['orderby']) . '" />';
-		if (!empty($_REQUEST['order']))
-			echo '<input type="hidden" name="order" value="' . esc_attr($_REQUEST['order']) . '" />';
-		if (!empty($_REQUEST['post_mime_type']))
-			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr($_REQUEST['post_mime_type']) . '" />';
-		if (!empty($_REQUEST['detached']))
-			echo '<input type="hidden" name="detached" value="' . esc_attr($_REQUEST['detached']) . '" />';
+		if ( ! empty( $_REQUEST['orderby'] ) ) {
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) ) . '" />';
+		}
+		if ( ! empty( $_REQUEST['order'] ) ) {
+			echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) ) . '" />';
+		}
+		if ( ! empty( $_REQUEST['post_mime_type'] ) ) {
+			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['post_mime_type'] ) ) ) . '" />';
+		}
+		if ( ! empty( $_REQUEST['detached'] ) ) {
+			echo '<input type="hidden" name="detached" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['detached'] ) ) ) . '" />';
+		}
 		?>
 		<p class="search-box">
-			<label class="screen-reader-text" for="<?php echo esc_attr($input_id); ?>"><?php echo $text; ?>:</label>
+			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo esc_attr( $text ); ?>:</label>
 			<input type="checkbox" name="custom_field_search"> Search custom fields<br>
-			<input type="search" id="<?php echo esc_attr($input_id); ?>" name="s" value="<?php echo $search_query; ?>" />
+			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo esc_attr( $search_query ); ?>" />
 
-			<?php submit_button($text, '', '', false, array('id' => 'search-submit')); ?>
+			<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
 		</p>
-<?php
+		<?php
 	}
 }
