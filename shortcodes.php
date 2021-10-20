@@ -27,62 +27,35 @@ if (!function_exists('do_leaky_paywall_login')) {
 			'login_redirect_url'	=> ''
 		);
 
-		// Merge defaults with passed atts
-		// Extract (make each array element its own PHP var
+		// Merge defaults with passed atts.
 		$args = shortcode_atts($defaults, $atts);
-		// extract( $args );
-
 		$results = '';
 
-		if ('passwordless' === $settings['login_method']) {
-
-			if (isset($_REQUEST['submit-leaky-login'])) {
-
-				if (isset($_REQUEST['email']) && is_email($_REQUEST['email'])) {
-
-					if (send_leaky_paywall_email($_REQUEST['email']))
-						return '<h3>' . $args['email_sent'] . '</h3>';
-					else
-						$results .= '<h1 class="error">' . $args['error_msg'] . '</h1>';
-				} else {
-
-					$results .= '<h1 class="error">' . $args['missing_email_msg'] . '</h1>';
-				}
-			}
-
-			$results .= '<h2>' . $args['heading'] . '</h2>';
-			$results .= '<form action="" method="post">';
-			$results .= '<input type="text" id="leaky-paywall-login-email" name="email" placeholder="valid@email.com" value="" />';
-			$results .= '<input type="submit" id="leaky-paywall-submit-buttom" name="submit-leaky-login" value="' . __('Send Login Email', 'leaky-paywall') . '" />';
-			$results .= '</form>';
-			$results .= '<h3>' . $args['description'] . '</h3>';
-		} else { //traditional
-
-			if ($args['login_redirect_url']) {
-				$page_link = $args['login_redirect_url'];
-			} else if (!empty($settings['page_for_profile'])) {
-				$page_link = get_page_link($settings['page_for_profile']);
-			} else if (!empty($settings['page_for_subscription'])) {
-				$page_link = get_page_link($settings['page_for_subscription']);
-			}
-
-			$results .= apply_filters('leaky_paywall_before_login_form', '');
-
-			$results .= '<div id="leaky-paywall-login-form">';
-
-			if (isset($_GET['login']) && $_GET['login'] == 'failed') {
-				$results .= '<div class="leaky_paywall_message error"><p>' . __('Incorrect username or password.', 'leaky-paywall') . '</p></div>';
-			}
-
-			add_action('login_form_bottom', 'leaky_paywall_add_lost_password_link');
-			$args = array(
-				'echo' => false,
-				'redirect' => $page_link,
-			);
-			$results .= wp_login_form(apply_filters('leaky_paywall_login_form_args', $args));
-
-			$results .= '</div>';
+		if ($args['login_redirect_url']) {
+			$page_link = $args['login_redirect_url'];
+		} else if (!empty($settings['page_for_profile'])) {
+			$page_link = get_page_link($settings['page_for_profile']);
+		} else if (!empty($settings['page_for_subscription'])) {
+			$page_link = get_page_link($settings['page_for_subscription']);
 		}
+
+		$results .= apply_filters('leaky_paywall_before_login_form', '');
+
+		$results .= '<div id="leaky-paywall-login-form">';
+
+		if (isset($_GET['login']) && $_GET['login'] == 'failed') {
+			$results .= '<div class="leaky_paywall_message error"><p>' . __('Incorrect username or password.', 'leaky-paywall') . '</p></div>';
+		}
+
+		add_action('login_form_bottom', 'leaky_paywall_add_lost_password_link');
+		$args = array(
+			'echo' => false,
+			'redirect' => $page_link,
+		);
+		$results .= wp_login_form(apply_filters('leaky_paywall_login_form_args', $args));
+
+		$results .= '</div>';
+		
 
 		return $results;
 	}
