@@ -74,7 +74,7 @@ class Leaky_Paywall_Payment_Gateway {
 
 	public function generate_transaction_id() {
 		$auth_key = defined( 'AUTH_KEY' ) ? AUTH_KEY : '';
-		return strtolower( md5( $this->subscription_key . data( 'Y-m-d H:i:s' ) . $auth_key . uniqid( 'leaky-paywall', true ) ) );
+		return strtolower( md5( $this->subscription_key . gmdate( 'Y-m-d H:i:s' ) . $auth_key . uniqid( 'leaky-paywall', true ) ) );
 	}
 
 	public function renew_member( $recurring = false, $status = 'active' ) {
