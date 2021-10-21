@@ -80,10 +80,14 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		if ( ! empty( $_REQUEST['orderby'] ) ) {
 			$args['orderby'] = sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) );
+		} else {
+			$args['orderby'] = 'ID';
 		}
 
 		if ( ! empty( $_REQUEST['order'] ) ) {
 			$args['order'] = sanitize_text_field( wp_unslash( $_REQUEST['order'] ) );
+		} else {
+			$args['order'] = 'DESC';
 		}
 
 		$settings = get_leaky_paywall_settings();

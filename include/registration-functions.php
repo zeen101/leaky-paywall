@@ -192,7 +192,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
  * @since  4.0.0
  */
 function leaky_paywall_process_user_registration_validation() {
-	$form_data = isset( $_POST['form_data'] ) ? sanitize_text_field( wp_unslash( $_POST['form_data'] ) ) : '';
+	$form_data = isset( $_POST['form_data'] ) ? urldecode( wp_unslash( $_POST['form_data'] ) ) : '';
 	parse_str( $form_data, $fields );
 
 	$user     = array();
@@ -208,18 +208,18 @@ function leaky_paywall_process_user_registration_validation() {
 		$user['id']         = $userdata->ID;
 		$user['login']      = $userdata->user_login;
 		$user['email']      = $userdata->user_email;
-		$user['first_name'] = sanitize_text_field( $fields['first_name'] );
-		$user['last_name']  = sanitize_text_field( $fields['last_name'] );
+		$user['first_name'] = $fields['first_name'];
+		$user['last_name']  = $fields['last_name'];
 		$user['level_id']   = $level_id;
 		$user['need_new']   = false;
 	} else {
 		$user['id']               = 0;
-		$user['login']            = 'off' === $settings['remove_username_field'] ? sanitize_text_field( $fields['username'] ) : sanitize_text_field( $fields['email_address'] );
-		$user['password']         = sanitize_text_field( $fields['password'] );
-		$user['confirm_password'] = sanitize_text_field( $fields['confirm_password'] );
-		$user['email']            = sanitize_text_field( $fields['email_address'] );
-		$user['first_name']       = sanitize_text_field( $fields['first_name'] );
-		$user['last_name']        = sanitize_text_field( $fields['last_name'] );
+		$user['login']            = 'off' === $settings['remove_username_field'] ? $fields['username'] : $fields['email_address'];
+		$user['password']         = $fields['password'];
+		$user['confirm_password'] = $fields['confirm_password'];
+		$user['email']            = $fields['email_address'];
+		$user['first_name']       = $fields['first_name'];
+		$user['last_name']        = $fields['last_name'];
 		$user['level_id']         = $level_id;
 		$user['need_new']         = true;
 	}

@@ -840,8 +840,8 @@ class Leaky_Paywall_Restrictions {
 	/**
 	 * Find taxonomy match
 	 *
-	 * @param integer $restricted_term_id The term id
-	 * @param integer $post_id The post id
+	 * @param integer $restricted_term_id The term id.
+	 * @param integer $post_id The post id.
 	 */
 	public function content_taxonomy_matches( $restricted_term_id, $post_id = '' ) {
 
