@@ -776,7 +776,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['levels'] ) ) {
-					$settings['levels'] = wp_unslash( $_POST['levels'] );
+					$settings['levels'] = $this->sanitize_levels( $_POST['levels'] );
 				}
 			}
 
@@ -2508,5 +2508,51 @@ class Leaky_Paywall {
 
 			curl_setopt( $curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSV1 );
 		}
+	}
+
+	/**
+	 * Sanitize level settings
+	 *
+	 * @param array $levels The levels to sanitize.
+	 * @return array
+	 */
+	public function sanitize_levels( $levels ) {
+		$text_fields     = array( 'label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card' );
+		$textarea_fields = array( 'description', 'registration_form_description' );
+
+		foreach ( $levels as $i => $level ) {
+
+			foreach ( $level as $key => $value ) {
+
+				if ( in_array( $key, $text_fields ) ) {
+					$levels[ $i ][ $key ] = sanitize_text_field( wp_unslash( $value ) );
+				}
+
+				if ( in_array( $key, $textarea_fields ) ) {
+					$levels[ $i ][ $key ] = wp_kses_post( wp_unslash( $value ) );
+				}
+
+				if ( 'post_types' == $key ) {
+					$levels[ $i ][ $key ] = $this->sanitize_level_post_types( $value );
+				}
+			}
+		}
+
+		return $levels;
+	}
+
+	/**
+	* Sanitize level post types
+	*
+	* @param array $post_types The post types to sanitize
+	*/
+	public function sanitize_level_post_types( $post_types ) {
+		foreach ( $post_types as $i => $rules ) {
+			foreach ( $rules as $key => $rule ) {
+				$post_types[ $i ][ $key ] = sanitize_text_field( $rule );
+			}
+		}
+
+		return $post_types;
 	}
 }
