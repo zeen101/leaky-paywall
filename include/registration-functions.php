@@ -192,7 +192,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
  * @since  4.0.0
  */
 function leaky_paywall_process_user_registration_validation() {
-	$form_data = isset( $_POST['form_data'] ) ? urldecode( wp_unslash( $_POST['form_data'] ) ) : '';
+	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
 	parse_str( $form_data, $fields );
 
 	$user     = array();

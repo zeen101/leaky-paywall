@@ -713,7 +713,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['restrictions'] ) ) {
-					$settings['restrictions'] = wp_unslash( $_POST['restrictions'] );
+					$settings['restrictions'] = $this->sanitize_restrictions( $_POST['restrictions'] );
 				} else {
 					$settings['restrictions'] = array();
 				}
@@ -2542,10 +2542,10 @@ class Leaky_Paywall {
 	}
 
 	/**
-	* Sanitize level post types
-	*
-	* @param array $post_types The post types to sanitize
-	*/
+	 * Sanitize level post types
+	 *
+	 * @param array $post_types The post types to sanitize.
+	 */
 	public function sanitize_level_post_types( $post_types ) {
 		foreach ( $post_types as $i => $rules ) {
 			foreach ( $rules as $key => $rule ) {
@@ -2554,5 +2554,24 @@ class Leaky_Paywall {
 		}
 
 		return $post_types;
+	}
+
+	/**
+	 * Sanitize restriction settings
+	 *
+	 * @param array $restrictions restrictions settings.
+	 * @return array
+	 */
+	public function sanitize_restrictions( $restrictions ) {
+		foreach ( $restrictions as $i => $restriction ) {
+
+			foreach ( $restriction as $key => $value ) {
+
+				$restrictions[ $i ] [ $key ] = array_map( 'sanitize_text_field', $value );
+
+			}
+		}
+
+		return $restrictions;
 	}
 }

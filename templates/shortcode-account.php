@@ -336,7 +336,7 @@ esc_attr(
 
 				<?php
 				if ( $payment_form ) {
-					echo $payment_form;
+					echo wp_kses_post( $payment_form );
 				}
 				?>
 
