@@ -2,10 +2,13 @@
 /**
  * Payment Gateway Base Class
  *
- * @package     zeen101's Leaky Paywall
+ * @package     Leaky Paywall
  * @since 4.0.0
-*/
+ */
 
+/**
+ * The payment gateway class
+ */
 class Leaky_Paywall_Payment_Gateway {
 
 	public $supports = array();
@@ -33,38 +36,21 @@ class Leaky_Paywall_Payment_Gateway {
 
 		if ( ! empty( $subscription_data ) ) {
 
-			// $this->email 				= $subscription_data['user_email'];
-			// $this->user_id				= $subscription_data['user_id'];
-			// $this->user_name			= $subscription_data['user_name'];
-			// $this->currency				= $subscription_data['currency'];
-			// $this->amount				= $subscription_data['price'];
-			// $this->discount				= $subscription_data['discount'];
-			// $this->discount_code		= $subscription_data['discount_code'];
-			// $this->length 				= $subscription_data['length'];
-			// $this->length_unit			= $subscription_data['length_unit'];
-			// $this->signup_fee			= $this->supports( 'fees' ) ? $subscription_data['fee'] : 0;
-			// $this->subscription_key		= $subscription_data['key'];
-			// $this->subscription_id		= $subscription_data['subscription_id'];
-			// $this->subscription_name	= $subscription_data['subscription_name'];
-			// $this->auto_renew			= $this->supports( 'recurring' ) ? $subscription_data['auto_renew'] : false;
-			// $this->return_url			= $subscription_data['return_url'];
-			
-			$this->email 				= $subscription_data['user_email'];
-			$this->user_id				= $subscription_data['user_id'];
-			$this->user_name			= $subscription_data['user_name'];
-			$this->first_name 			= $subscription_data['first_name'];
-			$this->last_name 			= $subscription_data['last_name'];
-			$this->currency				= $subscription_data['currency'];
-			$this->amount				= $subscription_data['amount'];
-			$this->length 				= $subscription_data['interval_count'];
-			$this->length_unit			= $subscription_data['interval'];
-			$this->level_id 			= $subscription_data['level_id'];
-			$this->level_price 			= $subscription_data['price'];
-			$this->level_name			= $subscription_data['description'];
-			$this->plan_id				= $subscription_data['plan'];
-			$this->site					= $subscription_data['site'];
-			$this->recurring			= $subscription_data['recurring'];
-			// $this->return_url			= $subscription_data['return_url'];
+			$this->email       = $subscription_data['user_email'];
+			$this->user_id     = $subscription_data['user_id'];
+			$this->user_name   = $subscription_data['user_name'];
+			$this->first_name  = $subscription_data['first_name'];
+			$this->last_name   = $subscription_data['last_name'];
+			$this->currency    = $subscription_data['currency'];
+			$this->amount      = $subscription_data['amount'];
+			$this->length      = $subscription_data['interval_count'];
+			$this->length_unit = $subscription_data['interval'];
+			$this->level_id    = $subscription_data['level_id'];
+			$this->level_price = $subscription_data['price'];
+			$this->level_name  = $subscription_data['description'];
+			$this->plan_id     = $subscription_data['plan'];
+			$this->site        = $subscription_data['site'];
+			$this->recurring   = $subscription_data['recurring'];
 
 		}
 
@@ -100,4 +86,4 @@ class Leaky_Paywall_Payment_Gateway {
 		leaky_paywall_errors()->add( $code, $message, 'register' );
 	}
 
-}	
+}

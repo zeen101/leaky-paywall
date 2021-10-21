@@ -1,13 +1,16 @@
 <?php
-
 /**
  * Payment Gateways Class
  *
+ * @package     Leaky Paywall
  * @since 4.0.0
  */
 
-class Leaky_Paywall_Payment_Gateways
-{
+/**
+ * The payment gateways class
+ */
+class Leaky_Paywall_Payment_Gateways {
+
 
 	public $available_gateways;
 	public $enabled_gateways;
@@ -15,138 +18,135 @@ class Leaky_Paywall_Payment_Gateways
 	/**
 	 *  Get things going
 	 *
-	 * @since 4.0.0 
+	 * @since 4.0.0
 	 */
-	public function __construct()
-	{
-
+	public function __construct() {
 		$this->available_gateways = $this->get_gateways();
-		$this->enabled_gateways = $this->get_enabled_gateways();
+		$this->enabled_gateways   = $this->get_enabled_gateways();
 	}
 
 	/**
 	 * Retrieve a gateway by ID
 	 *
 	 * @since 4.0.0
+	 *
+	 * @param integer $id The id.
 	 * @return object|false
 	 */
-	public function get_gateway($id = '')
-	{
+	public function get_gateway( $id = '' ) {
 
-		if (isset($this->available_gateways[$id])) {
+		if ( isset( $this->available_gateways[ $id ] ) ) {
 
-			return $this->available_gateways[$id];
+			return $this->available_gateways[ $id ];
 		}
 
 		return false;
 	}
 
-	/** 
+	/**
 	 * Retrieve all registered gateways
 	 *
-	 * @since  4.0.0 
+	 * @since  4.0.0
 	 * @return array
 	 */
-	private function get_gateways()
-	{
-
+	private function get_gateways() {
 		$gateways = array(
 			// 'manual'	=> array(
-			// 	'label'		=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
-			// 	'admin_label'	=> __( 'Manual Payment', 'issuem-leaky-paywall' ),
-			// 	'class'			=> 'Leaky_Paywall_Payment_Gateway_Manual'
+			// 'label'     => __( 'Manual Payment', 'issuem-leaky-paywall' ),
+			// 'admin_label'   => __( 'Manual Payment', 'issuem-leaky-paywall' ),
+			// 'class'         => 'Leaky_Paywall_Payment_Gateway_Manual'
 			// ),
-			'paypal_standard'	=> array(
-				'label'		=> __('PayPal', 'leaky-paywall'),
-				'admin_label'	=> __('PayPal Standard', 'leaky-paywall'),
-				'class'			=> __('Leaky_Paywall_Payment_Gateway_PayPal')
+			'paypal_standard' => array(
+				'label'       => __( 'PayPal', 'leaky-paywall' ),
+				'admin_label' => __( 'PayPal Standard', 'leaky-paywall' ),
+				'class'       => __( 'Leaky_Paywall_Payment_Gateway_PayPal' ),
 			),
-			'stripe'	=> array(
-				'label'		=> __('Credit / Debit Card', 'leaky-paywall'),
-				'admin_label'	=> __('Stripe', 'leaky-paywall'),
-				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe'
+			'stripe'          => array(
+				'label'       => __( 'Credit / Debit Card', 'leaky-paywall' ),
+				'admin_label' => __( 'Stripe', 'leaky-paywall' ),
+				'class'       => 'Leaky_Paywall_Payment_Gateway_Stripe',
 			),
 		);
 
-		return apply_filters('leaky_paywall_payment_gateways', $gateways);
+		return apply_filters( 'leaky_paywall_payment_gateways', $gateways );
 	}
 
 	/**
 	 * Retrieve all enabled gateways
 	 *
-	 * @since 4.0.0 
-	 * @return array 
+	 * @since 4.0.0
+	 * @return array
 	 */
-	private function get_enabled_gateways()
-	{
-
+	private function get_enabled_gateways() {
 		$settings = get_leaky_paywall_settings();
 
 		$enabled = array();
-		$saved = isset($settings['payment_gateway']) ? array_map('trim', $settings['payment_gateway']) : array();
+		$saved   = isset( $settings['payment_gateway'] ) ? array_map( 'trim', $settings['payment_gateway'] ) : array();
 
-		if (!empty($saved)) {
+		if ( ! empty( $saved ) ) {
 
-			foreach ($this->available_gateways as $key => $gateway) {
+			foreach ( $this->available_gateways as $key => $gateway ) {
 
-				if (in_array($key, $saved)) {
+				if ( in_array( $key, $saved ) ) {
 
-					$enabled[$key] = $gateway;
+					$enabled[ $key ] = $gateway;
 				}
 			}
 		}
 
-		if (in_array('stripe_checkout', $saved) && !in_array('stripe', $saved)) {
+		if ( in_array( 'stripe_checkout', $saved ) && ! in_array( 'stripe', $saved ) ) {
 
 			$enabled['stripe'] = array(
-				'label' => 'Credit / Debit Card',
+				'label'       => 'Credit / Debit Card',
 				'admin_label' => 'Stripe',
-				'class' => 'Leaky_Paywall_Payment_Gateway_Stripe'
+				'class'       => 'Leaky_Paywall_Payment_Gateway_Stripe',
 			);
 		}
 
-		if (empty($enabled)) {
+		if ( empty( $enabled ) ) {
 
-			$enabled['paypal_standard'] = __('PayPal Standard', 'leaky-paywall');
+			$enabled['paypal_standard'] = __( 'PayPal Standard', 'leaky-paywall' );
 		}
 
-
-
-		return apply_filters('leaky_paywall_enabled_payment_gateways', $enabled, $this->available_gateways);
+		return apply_filters( 'leaky_paywall_enabled_payment_gateways', $enabled, $this->available_gateways );
 	}
 
 	/**
 	 * Determine if a gateway is enabled
 	 *
-	 * @since 4.0.0 
+	 * @since 4.0.0
+	 *
+	 * @param integer $id The id of the gateway.
 	 * @return bool
 	 */
-	public function is_gateway_enabled($id = '')
-	{
-		return isset($this->enabled_gateways[$id]);
+	public function is_gateway_enabled( $id = '' ) {
+		return isset( $this->enabled_gateways[ $id ] );
 	}
 
 	/**
 	 * Loead the fieds for the gateway
 	 *
-	 * @since 4.0.0 
+	 * @since 4.0.0
 	 * @return void
 	 */
-	public function load_fields()
-	{
+	public function load_fields() {
+		if ( ! empty( $_POST['leaky_paywall_gateway'] ) ) {
 
-		if (!empty($_POST['leaky_paywall_gateway'])) {
+			$gateway = $this->get_gateway( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_gateway'] ) ) );
 
-			$gateway = $this->get_gateway(sanitize_text_field($_POST['leaky_paywall_gateway']));
-
-			if (isset($gateway['class'])) {
-				$gateway = new $gateway['class'];
+			if ( isset( $gateway['class'] ) ) {
+				$gateway = new $gateway['class']();
 			}
 
-			if (is_object($gateway)) {
-				wp_send_json_success(array('success'	=> true, 'fields' => $gateway->fields()));
+			if ( is_object( $gateway ) ) {
+				wp_send_json_success(
+					array(
+						'success' => true,
+						'fields'  => $gateway->fields(),
+					)
+				);
 			} else {
-				wp_send_json_error(array('success' => false));
+				wp_send_json_error( array( 'success' => false ) );
 			}
 		}
 	}
