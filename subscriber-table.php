@@ -312,6 +312,12 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				}
 			}
 
+			if ( is_multisite_premium() ) {
+				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+			} else {
+				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
+			}
+
 			?>
 			<tr class="<?php echo esc_attr( $alt ); ?>">
 				<?php
@@ -368,11 +374,6 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							break;
 
 						case 'level_id':
-							if ( is_multisite_premium() ) {
-								$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-							} else {
-								$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
-							}
 
 							$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 							$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
