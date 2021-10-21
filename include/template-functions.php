@@ -1,5 +1,4 @@
-<?php 
-
+<?php
 /**
  * Locate template.
  *
@@ -11,10 +10,10 @@
  *
  * @since 4.14.5
  *
- * @param 	string 	$template_name			Template to load.
- * @param 	string 	$string $template_path	Path to templates.
- * @param 	string	$default_path			Default path to template files.
- * @return 	string 							Path to the template file.
+ * @param   string $template_name          Template to load.
+ * @param   string $string $template_path  Path to templates.
+ * @param   string $default_path           Default path to template files.
+ * @return  string                          Path to the template file.
  */
 function leaky_paywall_locate_template( $template_name, $template_path = '', $default_path = '' ) {
 
@@ -25,14 +24,16 @@ function leaky_paywall_locate_template( $template_name, $template_path = '', $de
 
 	// Set default plugin templates path.
 	if ( ! $default_path ) :
-		$default_path = LEAKY_PAYWALL_PATH . 'templates/'; // Path to the template folder
+		$default_path = LEAKY_PAYWALL_PATH . 'templates/'; // Path to the template folder.
 	endif;
 
 	// Search template file in theme folder.
-	$template = locate_template( array(
-		$template_path . $template_name,
-		$template_name
-	) );
+	$template = locate_template(
+		array(
+			$template_path . $template_name,
+			$template_name,
+		)
+	);
 
 	// Get plugins template file.
 	if ( ! $template ) :
@@ -50,10 +51,10 @@ function leaky_paywall_locate_template( $template_name, $template_path = '', $de
  *
  * @since 4.14.5
  *
- * @param string 	$template_name			Template to load.
- * @param array 	$args					Args passed for the template file.
- * @param string 	$string $template_path	Path to templates.
- * @param string	$default_path			Default path to template files.
+ * @param string $template_name          Template to load.
+ * @param array  $args                   Args passed for the template file.
+ * @param string $string $template_path  Path to templates.
+ * @param string $default_path           Default path to template files.
  */
 function leaky_paywall_get_template( $template_name, $args = array(), $tempate_path = '', $default_path = '' ) {
 

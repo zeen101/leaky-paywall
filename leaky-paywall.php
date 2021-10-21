@@ -76,7 +76,6 @@ function leaky_paywall_plugins_loaded() {
 		$leaky_paywall = new Leaky_Paywall();
 
 		require_once LEAKY_PAYWALL_PATH . 'functions.php';
-		require_once LEAKY_PAYWALL_PATH . 'deprecated.php';
 		require_once LEAKY_PAYWALL_PATH . 'shortcodes.php';
 		require_once LEAKY_PAYWALL_PATH . 'subscriber-table.php';
 		require_once LEAKY_PAYWALL_PATH . 'metaboxes.php';
