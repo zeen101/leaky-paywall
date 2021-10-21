@@ -256,7 +256,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		$payload['cmd'] = '_notify-validate';
 
 		foreach ( $_POST as $key => $value ) {
-			$payload[ $key ] = stripslashes( $value );
+			$payload[ $key ] = sanitize_text_field( wp_unslash( $value ) );
 		}
 
 		if ( 'test' == $mode ) {
@@ -706,7 +706,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		update_post_meta( $transaction_id, '_transaction_status', 'incomplete' );
 
 		if ( isset( $_REQUEST['txn_type'] ) ) {
-			update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+			update_post_meta( $transaction_id, '_paypal_request', array_map( 'sanitize_text_field', wp_unslash( $_REQUEST ) ) );
 			update_post_meta( $transaction_id, '_transaction_status', 'complete' );
 		}
 
