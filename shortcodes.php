@@ -801,7 +801,7 @@ function do_leaky_paywall_register_form( $atts ) {
 			<?php do_action( 'leaky_paywall_after_password_registration_field', $level_id, $level ); ?>
 
 			<?php
-			if ( 0 !== $level['price'] ) {
+			if ( 0 != $level['price'] ) {
 				?>
 				<p>
 					<button id="leaky-paywall-registration-next" type="button"><?php esc_attr_e( 'Next', 'leaky-paywall' ); ?></button>
@@ -819,7 +819,7 @@ function do_leaky_paywall_register_form( $atts ) {
 
 			$gateways = leaky_paywall_get_enabled_payment_gateways( $level_id );
 
-			if ( $gateways && 0 !== $level['price'] ) {
+			if ( $gateways && 0 != $level['price'] ) {
 
 				foreach ( $gateways as $key => $gateway ) {
 
@@ -881,7 +881,7 @@ function do_leaky_paywall_register_form( $atts ) {
 	</form>
 
 	<?php
-	if ( 0 !== $level['price'] ) {
+	if ( 0 != $level['price'] ) {
 		?>
 		<style>
 			.leaky-paywall-registration-payment-container {
