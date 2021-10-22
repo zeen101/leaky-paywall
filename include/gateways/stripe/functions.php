@@ -301,7 +301,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	$customer_id       = isset( $_POST['customerId'] ) ? sanitize_text_field( wp_unslash( $_POST['customerId'] ) ) : '';
 	$payment_method_id = isset( $_POST['paymentMethodId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentMethodId'] ) ) : '';
 	$plan_id           = isset( $_POST['planId'] ) ? sanitize_text_field( wp_unslash( $_POST['planId'] ) ) : '';
-	$form_data         = isset( $_POST['formData'] ) ? urldecode( wp_unslash( $_POST['formData'] ) ) : '';
+	$form_data         = isset( $_POST['formData'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['formData'] ) ) ) : '';
 	parse_str( $form_data, $fields );
 
 	$settings = get_leaky_paywall_settings();
@@ -398,7 +398,7 @@ function leaky_paywall_retry_invoice_stripe_checkout_subscription() {
 	$payment_method_id = isset( $_POST['paymentMethodId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentMethodId'] ) ) : '';
 	$invoice_id        = isset( $_POST['invoiceId'] ) ? sanitize_text_field( wp_unslash( $_POST['invoiceId'] ) ) : '';
 	$plan_id           = isset( $_POST['planId'] ) ? sanitize_text_field( wp_unslash( $_POST['planId'] ) ) : '';
-	$form_data         = isset( $_POST['formData'] ) ? urldecode( wp_unslash( $_POST['formData'] ) ) : '';
+	$form_data         = isset( $_POST['formData'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['formData'] ) ) ) : '';
 	parse_str( $form_data, $fields );
 
 	$settings = get_leaky_paywall_settings();
