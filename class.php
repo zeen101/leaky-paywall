@@ -113,7 +113,7 @@ class Leaky_Paywall {
 		if ( leaky_paywall_has_user_paid() ) {
 
 			if ( $this->is_cancel_request() ) {
-				wp_die( esc_attr( leaky_paywall_cancellation_confirmation() ), esc_attr( $settings['site_name'] ) . ' - Cancel Request' );
+				wp_die( wp_kses_post( leaky_paywall_cancellation_confirmation() ), esc_attr( $settings['site_name'] ) . ' - Cancel Request' );
 			}
 
 			$this->redirect_from_login_page();
