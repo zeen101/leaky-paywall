@@ -622,7 +622,7 @@ function do_leaky_paywall_register_form( $atts ) {
 	}
 
 	// do not let free users register for the same level.
-	if ( is_user_logged_in() ) {
+	if ( is_user_logged_in() && apply_filters( 'leaky_paywall_disable_same_free_level', __return_true() ) ) {
 
 		$user_level_id = leaky_paywall_subscriber_current_level_id();
 
