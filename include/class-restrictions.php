@@ -86,7 +86,7 @@ class Leaky_Paywall_Restrictions {
 	 * Process javascript content restrictions
 	 */
 	public function process_js_content_restrictions() {
-		 add_action( 'wp_ajax_nopriv_leaky_paywall_process_cookie', array( $this, 'check_js_restrictions' ) );
+		add_action( 'wp_ajax_nopriv_leaky_paywall_process_cookie', array( $this, 'check_js_restrictions' ) );
 		add_action( 'wp_ajax_leaky_paywall_process_cookie', array( $this, 'check_js_restrictions' ) );
 	}
 
@@ -98,13 +98,13 @@ class Leaky_Paywall_Restrictions {
 		$this->post_id = isset( $_REQUEST['post_id'] ) ? absint( $_REQUEST['post_id'] ) : '';
 
 		if ( ! $this->is_content_restricted() ) {
-			echo json_encode( 'do not show paywall' );
+			echo json_encode( 'do not show paywall - 1' );
 			exit();
 		}
 
 		// content is restricted, so see if the current user can access it.
-		if ( apply_filters( 'leaky_paywall_current_user_can_access', $this->current_user_can_access() ) ) {
-			echo json_encode( 'do not show paywall' );
+		if ( apply_filters( 'leaky_paywall_current_user_can_access', $this->current_user_can_access(), $this->post_id ) ) {
+			echo json_encode( 'do not show paywall - 2' );
 			exit();
 		}
 
@@ -706,7 +706,7 @@ class Leaky_Paywall_Restrictions {
 		$level_ids  = leaky_paywall_subscriber_current_level_ids();
 
 		if ( false !== $visibility && ! empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
-
+			
 			switch ( $visibility['visibility_type'] ) {
 
 				case 'only':
@@ -792,7 +792,7 @@ class Leaky_Paywall_Restrictions {
 
 			$restriction_taxomony = isset( $restriction['taxonomy'] ) ? $restriction['taxonomy'] : 'all';
 
-			if ( $restriction['post_type'] == $content_post_type && 'all' === $restriction_taxomony ) {
+			if ( $restriction['post_type'] === $content_post_type && 'all' === $restriction_taxomony ) {
 				return true;
 			}
 
@@ -800,6 +800,8 @@ class Leaky_Paywall_Restrictions {
 				return true;
 			}
 		}
+
+		return false;
 	}
 
 	/**
@@ -844,7 +846,7 @@ class Leaky_Paywall_Restrictions {
 	 * @param integer $post_id The post id.
 	 */
 	public function content_taxonomy_matches( $restricted_term_id, $post_id = '' ) {
-
+		
 		if ( ! $post_id ) {
 			$post_id = $this->post_id;
 		}
@@ -859,7 +861,7 @@ class Leaky_Paywall_Restrictions {
 			if ( $terms ) {
 				foreach ( $terms as $term ) {
 					// see if one of the term_ids matches the restricted_term_id.
-					if ( $term->term_id === $restricted_term_id ) {
+					if ( $term->term_id == $restricted_term_id ) {
 						return true;
 					}
 				}
