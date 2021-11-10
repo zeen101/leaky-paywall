@@ -229,7 +229,14 @@ class LP_Transaction_Post_Type {
 				break;
 
 			case 'price':
-				echo esc_attr( leaky_paywall_get_current_currency_symbol() . number_format( esc_attr( get_post_meta( $post_id, '_price', true ) ), 2 ) );
+
+				if ( is_numeric( get_post_meta( $post_id, '_price', true ) ) ) {
+					echo esc_attr( leaky_paywall_get_current_currency_symbol() . number_format( get_post_meta( $post_id, '_price', true ), 2 ) );
+				} else {
+					echo esc_attr( leaky_paywall_get_current_currency_symbol() . get_post_meta( $post_id, '_price', true ), 2 );
+				}
+				
+				
 				break;
 
 			case 'created':

@@ -204,7 +204,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				} else {
 					?>
 					<h3 class="leaky-paywall-account-section-title your-plan-title"><?php esc_attr_e( 'Your plan', 'leaky-paywall' ); ?></h3>
-esc_attr(
+
 					<table class="leaky-paywall-account-table leaky-paywall-account-plan-table">
 						<tbody>
 							<tr>
