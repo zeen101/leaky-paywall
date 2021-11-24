@@ -2138,7 +2138,7 @@ if ( ! function_exists( 'leaky_paywall_subscription_options' ) ) {
 					$payment_options = '';
 					$allowed_content = '';
 
-					if ( in_array( $level_id, $current_level_ids, true ) ) {
+					if ( in_array( $level_id, $current_level_ids ) ) {
 						$current_level = 'current-level';
 					} else {
 						$current_level = '';
