@@ -480,7 +480,9 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 
 	if ( ! empty( $level['plan_id'] ) ) {
 
-		foreach ( (array) $level['plan_id'] as $plan_id ) {
+		$reversed_plans = array_reverse( $level['plan_id'] );
+
+		foreach ( $reversed_plans as $plan_id ) {
 
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
 			try {

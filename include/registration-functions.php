@@ -649,6 +649,7 @@ if ( ! function_exists( 'leaky_paywall_card_form' ) ) {
 	}
 }
 
+
 if ( ! function_exists( 'leaky_paywall_card_form_full' ) ) {
 	/**
 	 * Display the full credit card fields on the registration form
@@ -658,28 +659,41 @@ if ( ! function_exists( 'leaky_paywall_card_form_full' ) ) {
 	function leaky_paywall_card_form_full() {
 		?>
 
-		<div class="leaky-paywall-card-details">
-			<p class="form-row">
-				<label><?php esc_attr_e( 'Card Number', 'leaky-paywall' ); ?></label>
-				<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
+		<div class="leaky-paywall-card-details leaky-paywall-card-form-full">
+			
+			<h3>Billing Name</h3>
+
+			<p class="form-row card-first-name">
+				<label><?php esc_attr_e( 'First Name', 'leaky-paywall' ); ?></label>
+				<input required type="text" size="20" name="card_first_name" class="card-first-name" />
 			</p>
-			<p class="form-row">
-				<label><?php esc_attr_e( 'Card CVC', 'leaky-paywall' ); ?></label>
-				<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
+
+			<p class="form-row card-last-name">
+				<label><?php esc_attr_e( 'Last Name', 'leaky-paywall' ); ?></label>
+				<input required type="text" size="20" name="card_last_name" class="card-last-name" />
 			</p>
-			<p class="form-row">
+
+			<h3>Billing Address</h3>
+
+			<p class="form-row billing-address">
 				<label><?php esc_attr_e( 'Address', 'leaky-paywall' ); ?></label>
-				<input type="text" size="20" name="card_address" class="card-address" />
+				<input required type="text" size="20" name="card_address" class="card-address" />
 			</p>
-			<p class="form-row">
+			<p class="form-row billing-city">
 				<label><?php esc_attr_e( 'City', 'leaky-paywall' ); ?></label>
-				<input type="text" size="20" name="card_city" class="card-city" />
+				<input required type="text" size="20" name="card_city" class="card-city" />
 			</p>
-			<p class="form-row">
+			<p class="form-row billing-state">
 				<label><?php esc_attr_e( 'State or Providence', 'leaky-paywall' ); ?></label>
-				<input type="text" size="20" name="card_state" class="card-state" />
+				<input required type="text" size="20" name="card_state" class="card-state" />
 			</p>
-			<p class="form-row">
+
+			<p class="form-row billing-zip">
+				<label><?php esc_attr_e( 'Card ZIP or Postal Code', 'leaky-paywall' ); ?></label>
+				<input required type="text" size="10" name="card_zip" class="card-zip" />
+			</p>
+
+			<p class="form-row billing-country">
 				<label><?php esc_attr_e( 'Country', 'leaky-paywall' ); ?></label>
 				<select name="card_country" class="card-country">
 					<option value="">Country</option>
@@ -930,23 +944,27 @@ if ( ! function_exists( 'leaky_paywall_card_form_full' ) ) {
 					<option value="ZW">Zimbabwe</option>
 				</select>
 			</p>
+
+			<h3>Payment Method</h3>
+			
 			<p class="form-row">
-				<label><?php esc_attr_e( 'Card ZIP or Postal Code', 'leaky-paywall' ); ?></label>
-				<input type="text" size="10" name="card_zip" class="card-zip" />
+				<label><?php esc_attr_e( 'Card Number', 'leaky-paywall' ); ?></label>
+				<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
 			</p>
 			<p class="form-row">
-				<label><?php esc_attr_e( 'Name on Card', 'leaky-paywall' ); ?></label>
-				<input type="text" size="20" name="card_name" class="card-name" />
+				<label><?php esc_attr_e( 'Card CVC', 'leaky-paywall' ); ?></label>
+				<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
 			</p>
+
 			<p class="form-row">
 				<label><?php esc_attr_e( 'Expiration (MM/YYYY)', 'leaky-paywall' ); ?></label>
-				<select name="card_exp_month" class="ccard-expiry-month">
+				<select name="exp_month" class="card-expiry-month">
 					<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
 						<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_attr( $i ) . ' - ' . esc_attr( leaky_paywall_get_month_name( $i ) ); ?></option>
 					<?php endfor; ?>
 				</select>
 				<span class="expiry_separator"> / </span>
-				<select name="card_exp_year" class="card-expiry-year">
+				<select name="exp_year" class="card-expiry-year">
 					<?php
 					$year = gmdate( 'Y' );
 					for ( $i = $year; $i <= $year + 10; $i++ ) :
