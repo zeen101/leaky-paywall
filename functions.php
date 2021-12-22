@@ -731,6 +731,7 @@ if ( ! function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			$user = get_user_by( 'login', $login );
 			while ( $user ) {
 				$login = $user->user_login . '_' . substr( uniqid(), 5 );
+				$user = get_user_by( 'login', $login );
 			}
 
 			if ( isset( $meta_args['password'] ) ) {
