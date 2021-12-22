@@ -1,8 +1,8 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 4.6.0
-Tested up to: 5.8.1
-Stable tag: 4.16.12
+Tested up to: 5.8.2
+Stable tag: 4.16.13
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -13,31 +13,34 @@ The most flexible paywall for WordPress. Sell subscriptions without sacrificing 
 
 https://www.youtube.com/watch?v=caAwkRRi9wI&feature=emb_logo&ab_channel=ZEEN101
 
-Part of the [ZEEN101](https://zeen101.com/) platform, [Leaky Paywall](https://zeen101.com/leaky-paywall/) is the first and most flexible metered paywall for WordPress, built to grow visitor traffic, email lists, and paid subscriptions. Simple to set up, Leaky Paywall also offers the unmatched ability to customize access to your content the way you need it. Lock down, open up, meter, and offer free registration access to different levels of content. 
+Leaky Paywall helps news and magazine publishers build email lists, grow subscription revenues, and create new content products… all with the flexibility of WordPress.
 
-Control and sell access to: all post types, categories, tags, individual articles, in-content sections, audio & video, [time based premium archive content](https://zeen101.com/downloads/leaky-paywall-content-auto-archiver/), [web issues](https://zeen101.com/for-developers/issuem/), premium newsletters, and even apps with our fully integrated [UniPress iOS & Android app platform](https://zeen101.com/unipress/). 
+Leaky Paywall lets you customize the paywall experience to precisely match your content offering. Restrict and sell access to: articles, categories/tags, custom post types, in-content PDFs/video/sections, premium newsletters, time based archive content, [issues](https://leakypaywall.com/issuem/), and even [iOS & Android apps](https://leakypaywall.com/unipress-apps/). 
 
-Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://zeen101.com/leaky-paywall/), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://zeen101.com/documentation/how-to-be-gdpr-compliant-with-leaky-paywall/). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Paid add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/) offer additional features.
+Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/leaky-paywall/), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://docs.zeen101.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Paid add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/) offer additional features.
 
 **Features**
 
 * Custom paywall settings out of the box: metered paywall, hybrid paywall, hard paywall, free registrations, donations, paid newsletters, and memberships
-* Flexible restrictions: restrict by post type, category, tag, taxonomy, time based archive content, or even individual posts or content sections
+* Flexible restrictions: restrict by post type, category, tag, taxonomy, time based archive content, individual posts, and in-content sections
+* Restricts incognito browsing
+* [Leaky Paywall Insights](https://leakypaywall.com/insights/) provides actionable data from visitor and subscriber behavior in one dashboard
 * Build your email list with a limited access Free subscription level
-* Granular content restriction: Optionally set any article as subscriber only or always free/public
-* Sell access to web issues: Integrates with our [IssueM](https://zeen101.com/for-developers/issuem/) toolkit to sell access to individual issues or traditional weekly, monthly, quarterly issues
+* Sell access to web issues/flipbooks: Integrates with [IssueM](https://leakypaywall.com/issuem/), our web issue publisher toolkit
 * Sell digital, print, and premium+ subscriptions
 * Leaky Paywall gets your content indexed and ranked in Google search. All your articles can be shared 1000s of times in social media
 * Easy metered paywall setup: Let your readers read X number of free articles before they need to subscribe
-* iOS and Android app publishing: With [UniPress](https://zeen101.com/unipress/), easily give your subscribers access to apps and enjoy discovery in the app stores
+* iOS and Android app publishing: With [UniPress](https://leakypaywall.com/unipress-apps/), easily give your subscribers access to apps and enjoy discovery in the app stores
 * No revenue sharing, all data is under your control
 * We are a [Stripe Verified Partner](https://stripe.com/partners/leaky-paywall)
-* Join our [PubCare](https://zeen101.com/pubcare/) to receive the software and support you need
+* Join our [PubCare](https://leakypaywall.com/pricing/) to receive the software and support you need
+
 
 **Integrations**
 
-* Web issue publishing: Our [free IssueM plugin](https://zeen101.com/for-developers/issuem/) allows publishers to create live web issues that are mobile, search engine, and social sharing optimized. Issues and articles reach today’s modern reader. Now you can promote and sell subscriptions to real web based issues
+* Web issue publishing: Our [free IssueM plugin](https://leakypaywall.com/issuem/) allows publishers to create live web issues that are mobile, search engine, and social sharing optimized. Issues and articles reach today’s modern reader. Now you can promote and sell subscriptions to real web based issues
 * Stripe and Apple Pay (included in core)
+* Authorize.net
 * PayPal (included in core)
 * MailChimp
 * MagHub
@@ -48,45 +51,45 @@ Leaky Paywall core is free, open source, integrates with the most [3rd party pl
 * Campaign Monitor
 * Pipedrive
 * Interlink
-* Enterprise Subscription Processing (ESP)
+* Omeda
 * Palm Coast Data
 * Publisher Service Associates (PSA)
 * Publisher’s Creative Systems (PCS)
-* iOS and Android apps: Leaky Paywall integrates with our [UniPress iOS and Android app platform](https://zeen101.com/unipress/) to give your subscribers native mobile apps for the best reading experience available today. Your subscribers will have instant access to your content in the apps after subscribing with Leaky Paywall. All content is managed right in WordPress for true 1 click publishing
-* More integrations in development, [get in touch](https://zeen101.com/contact/) if you need something special
+* iOS and Android apps: Leaky Paywall integrates with our [UniPress iOS and Android app platform](https://leakypaywall.com/unipress/) to give your subscribers native mobile apps for the best reading experience available today. Your subscribers will have instant access to your content in the apps after subscribing with Leaky Paywall. All content is managed right in WordPress for true 1 click publishing
+* More integrations in development
 
 
 **40+ Add-ons available to power up your publication**
-Some of our [add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
+Some of our [add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
 
-* [Recurring Payments](https://zeen101.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
-* [Trials](https://zeen101.com/downloads/leaky-paywall-trials/?utm_source=addons&utm_medium=description_tab&utm_content=trials&utm_campaign=readme) allow subscribers to sign up for a trial to any recurring level
-* [Pay Per Post](https://zeen101.com/downloads/leaky-paywall-pay-per-post/?utm_source=addons&utm_medium=description_tab&utm_content=payperpost&utm_campaign=readme) allow a user to pay for access to a single post, page, article or other post type
-* [Multiple Levels](https://zeen101.com/downloads/leaky-paywall-multiple-levels/?utm_source=addons&utm_medium=description_tab&utm_content=multiple_levels&utm_campaign=readme) allows you to give your readers different subscription options
-* [Coupon Codes](https://zeen101.com/downloads/leaky-paywall-coupons/?utm_source=addons&utm_medium=description_tab&utm_content=coupon_codes&utm_campaign=readme) allows you to create unlimited coupon codes for your subscription levels
-* [Gift Subscriptions](https://zeen101.com/downloads/gift-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=gift_subscriptions&utm_campaign=readme) allows friends and family to buy gift subscriptions
-* [IP Blocker](https://zeen101.com/downloads/leaky-paywall-ip-blocker/) stops readers from using incognito browsing mode
-* [Custom Registration Fields](https://zeen101.com/downloads/leaky-paywall-custom-registration-fields/) Add custom fields to the Leaky Paywall registration form with our drag and drop form field builder
-* [Basic Shipping](https://zeen101.com/downloads/leaky-paywall-basic-shipping/?utm_source=addons&utm_medium=description_tab&utm_content=shipping&utm_campaign=readme) lets you collect address information for shipping during registration.
-* [IP Exceptions](https://zeen101.com/downloads/ip-exceptions/?utm_source=addons&utm_medium=description_tab&utm_content=ip_exceptions&utm_campaign=readme) allow visitors from designated IPs to view articles and posts without having to subscribe.
-* [Ad Blocker Notice](https://zeen101.com/downloads/leaky-paywall-ad-blocker-notice/) lets you display a notice encouraging users to disable their Ad Blocker or Subscribe to your publication
-* [Corporate subscriptions](https://zeen101.com/downloads/corporate-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=corporate_subscriptions&utm_campaign=readme) allow restricting access by domain or email address.
-* [Reporting Tool](https://zeen101.com/downloads/reporting-tool-free/?utm_source=addons&utm_medium=description_tab&utm_content=reporting_tool&utm_campaign=readme) allows you to filter and download a CSV file of the subscriber info you need.
-* [File restrictions](https://zeen101.com/downloads/subscriber-downloads/?utm_source=addons&utm_medium=description_tab&utm_content=file_restrictions&utm_campaign=readme) hides any link to any file (PDF, image, etc) in your media library.
-* [MailChimp](https://zeen101.com/downloads/leaky-paywall-mailchimp/?utm_source=addons&utm_medium=description_tab&utm_content=mailchimp&utm_campaign=readme) automatically adds new subscribers to a Mailchimp list.
-* [Bulk Import Subscribers](https://zeen101.com/downloads/leaky-paywall-bulk-import-subscribers/?utm_source=addons&utm_medium=description_tab&utm_content=bulk_import&utm_campaign=readme) allows you to bulk import subscribers from a CSV file.
-* [Article Countdown Nag](https://zeen101.com/downloads/article-countdown-nag/?utm_source=addons&utm_medium=description_tab&utm_content=countdown_nag&utm_campaign=readme) lets the reader know how many free articles they have left before they need to subscribe.
-* [More… see all our add-ons](https://zeen101.com/downloads/category/leaky-paywall-addons/)
+* [Recurring Payments](https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
+* [Trials](https://leakypaywall.com/downloads/leaky-paywall-trials/?utm_source=addons&utm_medium=description_tab&utm_content=trials&utm_campaign=readme) allow subscribers to sign up for a trial to any recurring level
+* [Pay Per Post](https://leakypaywall.com/downloads/leaky-paywall-pay-per-post/?utm_source=addons&utm_medium=description_tab&utm_content=payperpost&utm_campaign=readme) allow a user to pay for access to a single post, page, article or other post type
+* [Multiple Levels](https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_source=addons&utm_medium=description_tab&utm_content=multiple_levels&utm_campaign=readme) allows you to give your readers different subscription options
+* [Coupon Codes](https://leakypaywall.com/downloads/leaky-paywall-coupons/?utm_source=addons&utm_medium=description_tab&utm_content=coupon_codes&utm_campaign=readme) allows you to create unlimited coupon codes for your subscription levels
+* [Gift Subscriptions](https://leakypaywall.com/downloads/gift-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=gift_subscriptions&utm_campaign=readme) allows friends and family to buy gift subscriptions
+* [IP Blocker](https://leakypaywall.com/downloads/leaky-paywall-ip-blocker/) stops readers from using incognito browsing mode
+* [Custom Registration Fields](https://leakypaywall.com/downloads/leaky-paywall-custom-registration-fields/) Add custom fields to the Leaky Paywall registration form with our drag and drop form field builder
+* [Basic Shipping](https://leakypaywall.com/downloads/leaky-paywall-basic-shipping/?utm_source=addons&utm_medium=description_tab&utm_content=shipping&utm_campaign=readme) lets you collect address information for shipping during registration.
+* [IP Exceptions](https://leakypaywall.com/downloads/ip-exceptions/?utm_source=addons&utm_medium=description_tab&utm_content=ip_exceptions&utm_campaign=readme) allow visitors from designated IPs to view articles and posts without having to subscribe.
+* [Ad Blocker Notice](https://leakypaywall.com/downloads/leaky-paywall-ad-blocker-notice/) lets you display a notice encouraging users to disable their Ad Blocker or Subscribe to your publication
+* [Corporate subscriptions](https://leakypaywall.com/downloads/corporate-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=corporate_subscriptions&utm_campaign=readme) allow restricting access by domain or email address.
+* [Reporting Tool](https://leakypaywall.com/downloads/reporting-tool-free/?utm_source=addons&utm_medium=description_tab&utm_content=reporting_tool&utm_campaign=readme) allows you to filter and download a CSV file of the subscriber info you need.
+* [File restrictions](https://leakypaywall.com/downloads/subscriber-downloads/?utm_source=addons&utm_medium=description_tab&utm_content=file_restrictions&utm_campaign=readme) hides any link to any file (PDF, image, etc) in your media library.
+* [MailChimp](https://leakypaywall.com/downloads/leaky-paywall-mailchimp/?utm_source=addons&utm_medium=description_tab&utm_content=mailchimp&utm_campaign=readme) automatically adds new subscribers to a Mailchimp list.
+* [Bulk Import Subscribers](https://leakypaywall.com/downloads/leaky-paywall-bulk-import-subscribers/?utm_source=addons&utm_medium=description_tab&utm_content=bulk_import&utm_campaign=readme) allows you to bulk import subscribers from a CSV file.
+* [Article Countdown Nag](https://leakypaywall.com/downloads/article-countdown-nag/?utm_source=addons&utm_medium=description_tab&utm_content=countdown_nag&utm_campaign=readme) lets the reader know how many free articles they have left before they need to subscribe.
+* [More… see all our add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/)
 
 Lots of great documentation available: [https://docs.zeen101.com](https://docs.zeen101.com)
 
 We love contributions! Head over to our GitHub page if your feeling inspired [https://github.com/zeen101/leaky-paywall](https://github.com/zeen101/leaky-paywall)
 
-More info at [https://zeen101.com/](https://zeen101.com/)
+More info at [https://leakypaywall.com/](https://leakypaywall.com/)
 
 == Installation ==
 
-1. Upload the entire `issuem-leaky-paywall` folder to your `/wp-content/plugins/` folder.
+1. Upload the entire `leaky-paywall` folder to your `/wp-content/plugins/` folder.
 1. Go to the 'Plugins' page in the menu and activate the plugin.
 
 == Frequently Asked Questions ==
@@ -108,6 +111,13 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.16.13 =
+* Fix loop when new subscriber is created
+* Fix current level class on subscribe cards
+* Update full card form fields
+* Add icon images for jquery ui
+* Set subscriber to deactivated when customer.subscription.deleted Stripe event is received
 
 = 4.16.12 =
 * Fix restrictions for term matching
