@@ -218,6 +218,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'customer.subscription.updated':
 				$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
 				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
+
+				if ( 'past_due' == $stripe_object->status ) {
+					update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+				}
 				break;
 
 			case 'customer.subscription.created':
@@ -227,7 +231,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'customer.subscription.deleted':
-				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+				$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
+				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
+
+				if ( 'canceled' == $stripe_object->status ) {
+					update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
+				}
+
 				break;
 
 			case 'payment_intent.canceled':
