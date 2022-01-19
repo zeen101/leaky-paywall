@@ -758,7 +758,9 @@ if ( ! function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			leaky_paywall_log( $meta_args, 'could not create user' );
 			return false;
 		} else {
-			leaky_paywall_log( $userdata, 'leaky paywall - new subscriber created' );
+			$logged_userdata = $userdata;
+			unset( $logged_userdata['user_pass']);
+			leaky_paywall_log( $logged_userdata, 'leaky paywall - new subscriber created' );
 		}
 
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
@@ -3590,27 +3592,8 @@ function leaky_paywall_subscriber_can_view() {
  */
 function leaky_paywall_log( $data, $event ) {
 
-	$str = '';
+	leaky_paywall_debug_log( $event . ' | ' . wp_json_encode( $data ) );
 
-	if ( is_object( $data ) ) {
-		$data = json_decode( json_encode( $data ), true );
-	}
-
-	if ( is_array( $data ) ) {
-		foreach ( $data as $key => $value ) {
-			if ( is_array( $value ) ) {
-				$value = 'array';
-			}
-			$str .= $key . ': ' . $value . ',';
-		}
-	} else {
-		$str = $data;
-	}
-
-	$file  = plugin_dir_path( __FILE__ ) . '/lp-log.txt';
-	$open  = fopen( $file, 'a' );
-	$write = fputs( $open, $event . ' - ' . current_time( 'mysql' ) . "\r\n" . $str . "\r\n" );
-	fclose( $open );
 }
 
 /**

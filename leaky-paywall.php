@@ -89,6 +89,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/registration-functions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-restrictions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
+		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';
 
 		// gateways.
 		include LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php';
