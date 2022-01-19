@@ -6,6 +6,10 @@ function lp_display_debug_log() {
 
 	global $lp_logs;
 
+	if ( ! apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) {
+		return;
+	}
+
 	?>
 		<h3><span><?php esc_html_e( 'Debug Log', 'leaky-paywall' ); ?></span></h3>
 		

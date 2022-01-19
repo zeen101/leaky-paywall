@@ -1,18 +1,18 @@
 <?php
 /**
- * Main PHP file used to for initial calls to zeen101's Leak Paywall classes and functions.
+ * Main PHP file used to for initial calls to Leaky Paywall classes and functions.
  *
- * @package zeen101's Leak Paywall
+ * @package Leaky Paywall
  * @since 1.0.0
  */
 
 /*
 Plugin Name: Leaky Paywall
-Plugin URI: https://zeen101.com/
+Plugin URI: https://leakypaywall.com/
 Description: The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
-Author: ZEEN101
-Version: 4.16.13
-Author URI: https://zeen101.com/
+Author: Leaky Paywall
+Version: 4.16.14
+Author URI: https://leakypaywall.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: leaky-paywall
 Domain Path: /i18n
@@ -25,7 +25,7 @@ if ( ! defined( 'ZEEN101_STORE_URL' ) ) {
 
 define( 'LEAKY_PAYWALL_NAME', 'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION', '4.16.13' );
+define( 'LEAKY_PAYWALL_VERSION', '4.16.14' );
 define( 'LEAKY_PAYWALL_DB_VERSION', '1.0.4' );
 define( 'LEAKY_PAYWALL_URL', plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', plugin_dir_path( __FILE__ ) );
