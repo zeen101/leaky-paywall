@@ -606,3 +606,40 @@ function leaky_paywall_get_stripe_amount( $amount ) {
 
 	return $stripe_price;
 }
+
+
+function leaky_paywall_sync_stripe_subscription( $user ) {
+
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
+
+	$subscriber_id    = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+	leaky_paywall_initialize_stripe_api();
+
+	try {
+		$cus = \Stripe\Customer::retrieve( $subscriber_id );
+
+		if ( !is_object( $cus ) ) {
+			return;
+		}
+
+		$subscriptions = $cus->subscriptions['data']; 
+
+		if (empty( $subscriptions ) ) {
+			return;
+		}
+
+		$current_period_end = $subscriptions[0]->current_period_end;
+
+		if ( !$current_period_end ) {
+			return;
+		}
+
+		$expires = date_i18n( 'Y-m-d 23:59:59', $current_period_end );
+		update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
+
+	} catch (\Throwable $th) {
+		return;
+	}
+}

@@ -3639,6 +3639,11 @@ function leaky_paywall_show_extra_profile_fields( $user ) {
 	if ( ! $level_id ) {
 		return;
 	}
+
+	if ( false !== strpos( $subscriber_id, 'cus_' )) {
+		leaky_paywall_sync_stripe_subscription( $user );
+	}
+
 	?>
 
 		<h3>Leaky Paywall</h3>
