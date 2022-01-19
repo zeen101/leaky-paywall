@@ -242,3 +242,11 @@ span.delete-post-type-row {
 #leaky_paywall_subscription_level_options #add-subscription-row {
   margin-bottom: 20px;
 }
+
+button.lp-inline-button {
+  margin: 0 5px;
+}
+
+input[type="submit"].lp-inline-button {
+  margin: 0 5px;
+}
