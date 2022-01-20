@@ -759,7 +759,11 @@ if ( ! function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			return false;
 		} else {
 			$logged_userdata = $userdata;
-			unset( $logged_userdata['user_pass']);
+			
+			if ( is_array( $logged_userdata ) ) {
+				unset( $logged_userdata['user_pass']);
+			}
+			
 			leaky_paywall_log( $logged_userdata, 'leaky paywall - new subscriber created' );
 		}
 
