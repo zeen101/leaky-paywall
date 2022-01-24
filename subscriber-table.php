@@ -442,10 +442,17 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$created = apply_filters( 'do_leaky_paywall_profile_shortcode_created_column', $created, $user, $mode, $site, $level_id );
 
 							$date_format = 'F j, Y';
-							$created     = mysql2date( $date_format, $created );
 
+							if ( is_numeric( $created ) && (int)$created == $created ) {
+								// its a timestamp
+								$formatted_created = date( $date_format, $created );
+							} else {
+								// its a date format
+								$formatted_created     = mysql2date( $date_format, $created );
+							}
+							
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo esc_attr( $created );
+							echo esc_attr( $formatted_created );
 							echo '</td>';
 							break;
 
