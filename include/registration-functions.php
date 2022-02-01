@@ -380,7 +380,7 @@ function leaky_paywall_process_user_registration_validation() {
 				);
 			} catch ( \Throwable $th ) {
 				$errors['checkout_session'] = array(
-					'message' => $th->jsonBody['error']['message'],
+					'message' => $th->getMessage(),
 				);
 			}
 		}
