@@ -327,8 +327,43 @@
 	min-width: 200px;
 }
 
-#leaky-paywall-submit {
+#leaky-paywall-payment-form #checkout {
 	min-width: 200px;
+	display: inline-block;
+    text-align: center;
+    word-break: break-word;
+    background-color: #3D82CE;
+    color: #fff;
+    border: 1px solid #204AA7;
+	border-radius: 3px;
+    padding: 1rem 2rem;
+    margin-top: 1rem;
+    text-decoration: none;
+    font-size: medium;
+    cursor: pointer;
+	text-transform: uppercase;
+	font-weight: normal;
+}
+
+#leaky-paywall-submit, #leaky-paywall-registration-next {
+	min-width: 200px;
+	display: inline-block;
+    text-align: center;
+    word-break: break-word;
+    background-color: #3D82CE;
+    color: #fff;
+    border: 1px solid #204AA7;
+	border-radius: 3px;
+    padding: 1rem 2rem;
+    margin-top: 1rem;
+    text-decoration: none;
+    font-size: medium;
+    cursor: pointer;
+	text-transform: uppercase;
+}
+
+#leaky-paywall-submit:hover, #leaky-paywall-registration-next:hover {
+	text-decoration: underline;
 }
 
 #card-element {
@@ -388,6 +423,10 @@
 
 .leaky-paywall-user-fields input {
 	width: 100%;
+	border: 1px solid var(--wp--preset--color--black);
+    border-radius: 0;
+    font-size: var(--wp--preset--font-size--small);
+    padding: 0.9rem 1.1rem;
 }
 
 .leaky-paywall-account-fields h3 {
@@ -396,6 +435,10 @@
 
 .leaky-paywall-account-fields input {
 	width: 100%;
+	border: 1px solid var(--wp--preset--color--black);
+    border-radius: 0;
+    font-size: var(--wp--preset--font-size--small);
+    padding: 0.9rem 1.1rem;
 }
 
 .StripeElement {

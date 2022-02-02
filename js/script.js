@@ -10,6 +10,7 @@
       const data = {
         action: "leaky_paywall_process_user_registration_validation",
         form_data: form_data,
+        nonce: leaky_paywall_validate_ajax.register_nonce
       };
 
       $.post(leaky_paywall_script_ajax.ajaxurl, data, function (resp) {

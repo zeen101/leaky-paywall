@@ -15,7 +15,9 @@ function lp_display_debug_log() {
 		
 			<form id="lp-debug-log" method="post">
 				<p><?php _e( 'Use this tool to help debug Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
-				<textarea readonly="readonly" class="large-text" rows="15" name="lp-debug-log-contents"><?php echo esc_textarea( $lp_logs->get_file_contents() ); ?></textarea>
+				<textarea readonly="readonly" class="large-text" rows="15" name="lp-debug-log-contents">
+					<?php echo substr( esc_textarea( $lp_logs->get_file_contents() ), 1000 ); ?>
+				</textarea>
 				<p class="submit">
 					<input type="hidden" name="lp_action" value="submit_debug_log" />
 					<?php

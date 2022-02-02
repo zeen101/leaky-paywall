@@ -267,6 +267,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		leaky_paywall_log( $payload, 'paypal standard ipn payload' );
 
+		// https://developer.paypal.com/api/nvp-soap/ipn/IPNTesting/#receive-an-invalid-message
 		$response = wp_remote_post(
 			$paypal_api_url,
 			array(

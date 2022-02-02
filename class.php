@@ -346,6 +346,7 @@ class Leaky_Paywall {
 			'leaky_paywall_validate_ajax',
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
+				'register_nonce' => wp_create_nonce( 'lp_register_nonce' )
 			)
 		);
 
