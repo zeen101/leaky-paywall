@@ -683,6 +683,10 @@ function do_leaky_paywall_register_form( $atts ) {
 
 						$post_type = get_post_type_object( $type['post_type'] );
 
+						if ( null == $post_type ) {
+							continue;
+						}
+
 						if ( 'unlimited' === $type['allowed'] ) {
 							$content_access_description .= ucfirst( $type['allowed'] ) . ' ' . $post_type->labels->name;
 						} else {
