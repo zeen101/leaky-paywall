@@ -336,12 +336,21 @@ function leaky_paywall_process_user_registration_validation() {
 								'card',
 							),
 							'customer'             => $cu->id,
+							// 'customer_update'		=> array(
+							// 	array(
+							// 		'address'	=> 'auto'
+							// 	)
+							// 	),
 							'line_items'           => array(
 								array(
 									'price'    => $stripe_plan->id,
 									'quantity' => 1,
+									'tax_behavior' => 'exclusive',
 								),
 							),
+							'automatic_tax' => [
+								'enabled' => true,
+							],
 							'mode'                 => 'subscription',
 							'success_url'          => home_url() . '?success=true',
 							'cancel_url'           => home_url() . '?cancel=true',
@@ -349,7 +358,7 @@ function leaky_paywall_process_user_registration_validation() {
 					);
 				} catch ( \Throwable $th ) {
 					$errors['checkout_session'] = array(
-						'message' => $th->jsonBody['error']['message'],
+						'message' => $th->getMessage(),
 					);
 				}
 			} else {
@@ -368,18 +377,27 @@ function leaky_paywall_process_user_registration_validation() {
 							'sofort',
 						),
 						'customer'             => $cu->id,
+						'customer_update'		=> array(
+							
+								'address'	=> 'auto'
+							
+							),
 						'line_items'           => array(
 							array(
 								'price_data' => array(
 									'product_data' => array(
 										'name' => $level['label'],
 									),
+									'tax_behavior' => 'exclusive',
 									'currency'     => leaky_paywall_get_currency(),
 									'unit_amount'  => $stripe_price,
 								),
 								'quantity'   => 1,
 							),
 						),
+						'automatic_tax' => [
+							'enabled' => true,
+						  ],
 						'mode'                 => 'payment',
 						'success_url'          => home_url() . '?success=true',
 						'cancel_url'           => home_url() . '?cancel=true',
