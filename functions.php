@@ -3413,7 +3413,7 @@ function leaky_paywall_supported_currencies() {
 if ( ! function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 
 	/**
-	 * Check zeen101.com for new RSS items in the leaky blast feed, to update users of latest Leaky Paywall news
+	 * Check leakypaywall.com for new RSS items in the leaky blast feed, to update users of latest Leaky Paywall news
 	 *
 	 * @since 1.1.1
 	 */
@@ -3422,7 +3422,7 @@ if ( ! function_exists( 'zeen101_dot_com_leaky_rss_feed_check' ) ) {
 		include_once ABSPATH . WPINC . '/feed.php';
 
 		$output  = '';
-		$feedurl = 'https://zeen101.com/feed/?post_type=blast&target=leaky-paywall';
+		$feedurl = 'https://leakypaywall.com/feed/?post_type=blast&target=leaky-paywall';
 
 		$rss = fetch_feed( $feedurl );
 
@@ -3743,7 +3743,7 @@ add_action( 'edit_user_profile', 'leaky_paywall_show_extra_profile_fields' );
  * @return array $links
  */
 function leaky_paywall_plugin_add_settings_link( $links ) {
-	$settings_link  = '<a target="_blank" href="https://zeen101.com/pubcare/">' . __( 'Premium Support' ) . '</a>  | ';
+	$settings_link  = '<a target="_blank" href="https://leakypaywall.com/pricing/">' . __( 'Premium Support' ) . '</a>  | ';
 	$settings_link .= '<a href="admin.php?page=issuem-leaky-paywall">' . __( 'Settings' ) . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;
@@ -3771,7 +3771,7 @@ function leaky_paywall_plugin_row_meta( $input, $file ) {
 				'utm_medium'   => 'plugin-row',
 				'utm_campaign' => 'admin',
 			),
-			'https://zeen101.com/for-developers/leakypaywall/leaky-paywall-add-ons/'
+			'https://leakypaywall.com/downloads/category/leaky-paywall-addons/'
 		)
 	);
 

@@ -995,7 +995,7 @@ class Leaky_Paywall {
 							<?php
 							if ( ! isset( $settings['page_for_subscription'] ) || ! $settings['page_for_subscription'] ) {
 								?>
-								<p>Need help getting started? <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">See our guide</a> or <a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">check out PubCare.</a></p>
+								<p>Need help getting started? <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/39-setting-up-leaky-paywall">See our guide</a> or <a target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">check out PubCare.</a></p>
 								<?php
 							}
 							?>
@@ -1348,7 +1348,7 @@ class Leaky_Paywall {
 											<?php
 										}
 										?>
-										<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://zeen101.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Pipedrive, fulfillment services and other providers.</p>
+										<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://leakypaywall.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Pipedrive, fulfillment services and other providers.</p>
 									</td>
 								</tr>
 
@@ -1837,11 +1837,11 @@ class Leaky_Paywall {
 
 								<?php
 								if ( ! is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
-									echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> add-on.</h4>';
+									echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> add-on.</h4>';
 								}
 
 								if ( ! is_leaky_paywall_recurring() ) {
-									echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://zeen101.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> add-on.</h4>';
+									echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> add-on.</h4>';
 								}
 
 								?>
@@ -1861,7 +1861,7 @@ class Leaky_Paywall {
 
 							<?php do_action( 'leaky_paywall_before_licenses_settings' ); ?>
 
-							<h2><a target="_blank" href="https://zeen101.com/for-developers/leakypaywall/leaky-paywall-add-ons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our add-ons</a></h2>
+							<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our add-ons</a></h2>
 
 							<?php wp_nonce_field( 'verify', 'leaky_paywall_license_wpnonce' ); ?>
 
@@ -1903,22 +1903,22 @@ class Leaky_Paywall {
 
 					<div class="leaky-paywall-sidebar-widget">
 						<h3>Need more functionality?</h3>
-						<p><a target="_blank" href="https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Browse our Add-Ons</a></p>
+						<p><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Browse our Add-Ons</a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
 						<h3>Need software and support?</h3>
-						<p><a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out PubCare</a></p>
+						<p><a target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out PubCare</a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
 						<h3>Need subscriber behavior data to make better decisions?</h3>
-						<p><a target="_blank" href="https://zeen101.com/pubcare/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings_analytics">Check out Subscriber Analytics</a></p>
+						<p><a target="_blank" href="https://leakypaywall.com/insights/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings_analytics">Check out Subscriber Analytics</a></p>
 					</div>
 
 					<div class="leaky-paywall-sidebar-widget">
 						<h3>Need apps to generate more subscribers?</h3>
-						<p><a target="_blank" href="https://zeen101.com/unipress/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
+						<p><a target="_blank" href="https://leakypaywall.com/unipress-apps/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
 					</div>
 
 				</div>
@@ -2285,7 +2285,7 @@ class Leaky_Paywall {
 						<h2 style='margin-bottom: 10px;'><?php esc_attr_e( 'Leaky Paywall Add-Ons', 'leaky-paywall' ); ?></h2>
 						<p><?php esc_attr_e( 'Just a few of the over 40+ add-ons available to extend Leaky Paywall functionality. Click the button below to view them all.', 'leaky-paywall' ); ?></p>
 						<p>
-							<a target="_blank" class="button-primary" href="https://zeen101.com/downloads/category/leaky-paywall-addons/?utm_source=Leaky%20dashboard%20addons&utm_medium=Button&utm_content=Button&utm_campaign=Leaky%20Addons%20dashboard%20Browse%20addons%20button">Browse all add-ons for Leaky Paywall</a>
+							<a target="_blank" class="button-primary" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=Leaky%20dashboard%20addons&utm_medium=Button&utm_content=Button&utm_campaign=Leaky%20Addons%20dashboard%20Browse%20addons%20button">Browse all add-ons for Leaky Paywall</a>
 						</p>
 					</div>
 
@@ -2300,7 +2300,7 @@ class Leaky_Paywall {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<h3>Leaky Paywall - Multiple Levels</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-multiple-levels/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Give your readers different subscription options by creating an unlimited number of subscriber levels.</p>
 								</div>
 							</td>
@@ -2308,7 +2308,7 @@ class Leaky_Paywall {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<h3>Leaky Paywall - Recurring Payments</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-recurring-payments/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Easily add recurring payments to any subscription level.</p>
 								</div>
 							</td>
@@ -2316,7 +2316,7 @@ class Leaky_Paywall {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<h3>Leaky Paywall - MailChimp</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Automatically add new Leaky Paywall subscribers to your MailChimp lists.</p>
 								</div>
 							</td>
@@ -2330,7 +2330,7 @@ class Leaky_Paywall {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<h3>Leaky Paywall – Coupons</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Create unlimited coupon codes. Assign them to individual subscription levels and more.</p>
 								</div>
 							</td>
@@ -2338,7 +2338,7 @@ class Leaky_Paywall {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<h3>Leaky Paywall - Gift Subscriptions</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Generate more subscriptions to your publication by letting friends and family buy gift subscriptions!</p>
 								</div>
 							</td>
@@ -2346,7 +2346,7 @@ class Leaky_Paywall {
 							<td class="available-addon">
 								<div class="available-addon-inner">
 									<h3>Leaky Paywall - Reporting Tool</h3>
-									<a class="button" target="_blank" href="https://zeen101.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons">Get this Add-on</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons">Get this Add-on</a>
 									<p>Filter and download (CSV) the subscriber info you need to analyze your subscriptions.</p>
 								</div>
 							</td>
