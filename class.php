@@ -226,7 +226,7 @@ class Leaky_Paywall {
 	 * @uses do_action() To call 'pigeonpack_admin_menu' for future addons
 	 */
 	public function admin_menu() {
-		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/anvil-16x16.png' );
+		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/lock-icon.png' );
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ) );
 
