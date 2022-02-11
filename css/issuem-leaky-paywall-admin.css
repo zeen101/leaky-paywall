@@ -229,6 +229,94 @@ span.delete-post-type-row {
   background: #fff;
   padding: 10px 20px;
   margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+.leaky-paywall-sidebar-widget .description {
+  font-size: 16px;
+  color: #c35232;
+}
+
+.leaky-paywall-sidebar-widget ul {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.leaky-paywall-sidebar-widget .button {
+  background: #dd6035;
+  color: #fff;
+  border: 1px solid #ea9c47;
+  text-transform: uppercase;
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+}
+
+#leaky-paywall-upgrade-page-wrapper {
+  background: #fff;
+  /* display: flex;
+  flex-direction: row; */
+
+  margin-left: -20px;
+}
+
+#leaky-paywall-upgrade-page-wrapper .content {
+  width: 50%;
+  padding: 50px;
+}
+
+#leaky-paywall-upgrade-page-wrapper .description {
+  font-size: 16px;
+  color: #c35232;
+}
+
+#leaky-paywall-upgrade-page-wrapper h2 {
+  font-size: 36px;
+  line-height: 1.5;
+  margin-top: 0;
+}
+
+#leaky-paywall-upgrade-page-wrapper .header {
+  background: #000;
+  padding: 20px 50px;
+}
+
+#leaky-paywall-upgrade-page-wrapper .header img {
+  max-width: 400px;
+  width: 100%;
+}
+
+#leaky-paywall-upgrade-page-wrapper .logo {
+  background: #000;
+  padding: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  display: none;
+}
+
+#leaky-paywall-upgrade-page-wrapper .logo img {
+  max-width: 600px;
+  width: 100%;
+}
+
+#leaky-paywall-upgrade-page-wrapper ul {
+  list-style-type: disc;
+  margin-left: 20px;
+  margin-bottom: 40px;
+}
+
+#leaky-paywall-upgrade-page-wrapper .button {
+  background: #dd6035;
+  color: #fff;
+  border: 1px solid #ea9c47;
+  text-transform: uppercase;
+  font-weight: bold;
+
+  text-align: center;
+  padding: 10px 20px;
 }
 
 .leaky-paywall-restriction-settings .hide-setting {

@@ -16,6 +16,8 @@ Author URI: https://leakypaywall.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: leaky-paywall
 Domain Path: /i18n
+Requires at least: 5.6
+Requires PHP: 7.0
 */
 
 // Define global variables...
@@ -88,6 +90,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/license-key.php';
 		include LEAKY_PAYWALL_PATH . 'include/error-tracking.php';
 		include LEAKY_PAYWALL_PATH . 'include/registration-functions.php';
+		include LEAKY_PAYWALL_PATH . 'include/rest-functions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-restrictions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';

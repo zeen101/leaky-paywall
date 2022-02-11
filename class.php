@@ -234,7 +234,7 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Add-Ons', 'leaky-paywall' ), __( 'Add-Ons', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-addons', array( $this, 'addons_page' ) );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 	}
 
 
@@ -253,7 +253,7 @@ class Leaky_Paywall {
 			'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix
 			|| 'index.php' === $hook_suffix
-			|| 'leaky-paywall_page_leaky-paywall-addons' === $hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-upgrade' === $hook_suffix
 		) {
 			wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 		}
@@ -419,7 +419,8 @@ class Leaky_Paywall {
 			'css_style'                             => 'default',
 			'enable_user_delete_account'            => 'off',
 			'remove_username_field'                 => 'off',
-			'add_expiration_dates'                  => 'on',
+			'add_expiration_dates'   	            => 'on',
+			'enable_rest_api'                  		=> 'on',
 			'site_name'                             => get_option( 'blogname' ), /* Site Specific */
 			'from_name'                             => get_option( 'blogname' ), /* Site Specific */
 			'from_email'                            => get_option( 'admin_email' ), /* Site Specific */
@@ -625,6 +626,12 @@ class Leaky_Paywall {
 					$settings['add_expiration_dates'] = sanitize_text_field( wp_unslash( $_POST['add_expiration_dates'] ) );
 				} else {
 					$settings['add_expiration_dates'] = 'off';
+				}
+
+				if ( ! empty( $_POST['enable_rest_api'] ) ) {
+					$settings['enable_rest_api'] = sanitize_text_field( wp_unslash( $_POST['enable_rest_api'] ) );
+				} else {
+					$settings['enable_rest_api'] = 'off';
 				}
 			}
 
@@ -1157,7 +1164,10 @@ class Leaky_Paywall {
 									<td><input type="checkbox" id="add_expiration_dates" name="add_expiration_dates" <?php checked( 'on', $settings['add_expiration_dates'] ); ?> /> <?php esc_attr_e( 'If a current subscriber renews/changes their subscription level, add additional time to their current expiration date. If unchecked, their new expiration date will be calculated from the date of subscription level renewal/change.', 'leaky-paywall' ); ?></td>
 								</tr>
 
-
+								<tr class="general-options">
+									<th><?php esc_attr_e( 'WP REST API', 'leaky-paywall' ); ?></th>
+									<td><input type="checkbox" id="enable_rest_api" name="enable_rest_api" <?php checked( 'on', $settings['enable_rest_api'] ); ?> /> <?php esc_attr_e( 'Enable the WP REST API for Leaky Paywall and add subscriber data to the User endpoint.', 'leaky-paywall' ); ?></td>
+								</tr>
 
 								<?php wp_nonce_field( 'issuem_leaky_general_options', 'issuem_leaky_general_options_nonce' ); ?>
 
@@ -1901,25 +1911,49 @@ class Leaky_Paywall {
 				</div>
 				<div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
 
-					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need more functionality?</h3>
-						<p><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Browse our Add-Ons</a></p>
-					</div>
+					<?php if ( !wp_script_is('leaky_paywall_multiple_levels_js', 'enqueued') ) {
+						?>
+							<div class="leaky-paywall-sidebar-widget">
+								<h3>Upgrade to Pro</h3>
+								<p class="description">
+									Gain access to our proven subscription building system and 40+ Leaky Paywall add-ons when you upgrade
+								</p>
+								<ul>
+									<li>Personal setup meeting and priority support</li>
+									<li>One-on-one strategic support meeting</li>
+									<li>Free-to-paid subscription plans, donations, pay per article, timewall, and flipbook access</li>
+									<li>Add smart on-site subscriber level targeting for your promotions</li>
+									<li>Group and corporate access plans</li>
+									<li>Paywall hardening to stop incognito browsing</li>
+									<li>Integrations with CRMs, circulation software, and payment gateways</li>
+									<li>Sell single purchase access to multiple websites</li>
+								</ul>
 
-					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need software and support?</h3>
-						<p><a target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out PubCare</a></p>
-					</div>
+								<p>
+									<a class="button" target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Upgrade Now</a>
+								</p>
+							</div>
+						<?php 
+					} else {
+						?>
+							<div class="leaky-paywall-sidebar-widget">
+								<h3>Documentation</h3>
+								
+								<ul>
+									<li><a target="_blank" href="https://docs.zeen101.com/category/40-getting-started">Getting Started</a></li>
+									<li><a target="_blank" href="https://docs.zeen101.com/category/248-revenue">Revenue</a></li>
+									<li><a target="_blank" href="https://docs.zeen101.com/category/64-how-to-faqs">FAQ</a></li>
+									<li><a target="_blank" href="https://docs.zeen101.com/category/250-troubleshooting">Troubleshooting</a></li>
+									<li><a target="_blank" href="https://docs.zeen101.com/category/249-developers">Developers</a></li>
+									
+								</ul>
 
-					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need subscriber behavior data to make better decisions?</h3>
-						<p><a target="_blank" href="https://leakypaywall.com/insights/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings_analytics">Check out Subscriber Analytics</a></p>
-					</div>
+							</div>
+						<?php 	
+					} ?>
 
-					<div class="leaky-paywall-sidebar-widget">
-						<h3>Need apps to generate more subscribers?</h3>
-						<p><a target="_blank" href="https://leakypaywall.com/unipress-apps/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Check out UniPress</a></p>
-					</div>
+					
+
 
 				</div>
 			</div>
@@ -2276,87 +2310,36 @@ class Leaky_Paywall {
 	 *
 	 * @since 3.1.3
 	 */
-	public function addons_page() {
+	public function upgrade_page() {
 		?>
-			<div class="wrap">
-
-				<div style="max-width: 1035px; margin-bottom: 20px; overflow: hidden;">
-					<div>
-						<h2 style='margin-bottom: 10px;'><?php esc_attr_e( 'Leaky Paywall Add-Ons', 'leaky-paywall' ); ?></h2>
-						<p><?php esc_attr_e( 'Just a few of the over 40+ add-ons available to extend Leaky Paywall functionality. Click the button below to view them all.', 'leaky-paywall' ); ?></p>
-						<p>
-							<a target="_blank" class="button-primary" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=Leaky%20dashboard%20addons&utm_medium=Button&utm_content=Button&utm_campaign=Leaky%20Addons%20dashboard%20Browse%20addons%20button">Browse all add-ons for Leaky Paywall</a>
-						</p>
-					</div>
-
+			<div id="leaky-paywall-upgrade-page-wrapper">
+				<div class="header">
+					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
 				</div>
+				<div class="content">
+					
+					<h2>Upgrade to Leaky Paywall Pro</h2>
+					<p class="description">
+						Gain access to our proven subscription building system and 40+ Leaky Paywall add-ons when you upgrade
+					</p>
+					<ul>
+						<li>Personal setup meeting and priority support</li>
+						<li>One-on-one strategic support meeting</li>
+						<li>Free-to-paid subscription plans, donations, pay per article, timewall, and flipbook access</li>
+						<li>Add smart on-site subscriber level targeting for your promotions</li>
+						<li>Group and corporate access plans</li>
+						<li>Paywall hardening to stop incognito browsing</li>
+						<li>Integrations with CRMs, circulation software, and payment gateways</li>
+						<li>Sell single purchase access to multiple websites</li>
+					</ul>
 
-
-
-				<table id="leaky-paywall-addons" cellpadding="0" cellspacing="0">
-					<tbody>
-						<tr>
-
-							<td class="available-addon">
-								<div class="available-addon-inner">
-									<h3>Leaky Paywall - Multiple Levels</h3>
-									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Give your readers different subscription options by creating an unlimited number of subscriber levels.</p>
-								</div>
-							</td>
-
-							<td class="available-addon">
-								<div class="available-addon-inner">
-									<h3>Leaky Paywall - Recurring Payments</h3>
-									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Easily add recurring payments to any subscription level.</p>
-								</div>
-							</td>
-
-							<td class="available-addon">
-								<div class="available-addon-inner">
-									<h3>Leaky Paywall - MailChimp</h3>
-									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-mailchimp/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Automatically add new Leaky Paywall subscribers to your MailChimp lists.</p>
-								</div>
-							</td>
-
-
-
-						</tr>
-
-						<tr>
-
-							<td class="available-addon">
-								<div class="available-addon-inner">
-									<h3>Leaky Paywall – Coupons</h3>
-									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-coupons/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Create unlimited coupon codes. Assign them to individual subscription levels and more.</p>
-								</div>
-							</td>
-
-							<td class="available-addon">
-								<div class="available-addon-inner">
-									<h3>Leaky Paywall - Gift Subscriptions</h3>
-									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/gift-subscriptions/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Generate more subscriptions to your publication by letting friends and family buy gift subscriptions!</p>
-								</div>
-							</td>
-
-							<td class="available-addon">
-								<div class="available-addon-inner">
-									<h3>Leaky Paywall - Reporting Tool</h3>
-									<a class="button" target="_blank" href="https://leakypaywall.com/downloads/reporting-tool-free/?ref=leaky_paywall_addons">Get this Add-on</a>
-									<p>Filter and download (CSV) the subscriber info you need to analyze your subscriptions.</p>
-								</div>
-							</td>
-
-						</tr>
-
-
-					</tbody>
-				</table>
-
+					<p>
+						<a class="button" target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings">Upgrade Now</a>
+					</p>
+				</div>
+				<div class="logo">
+					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
+				</div>
 			</div>
 
 			<?php
