@@ -1,8 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
-Requires at least: 4.6.0
+Requires at least: 5.6
 Tested up to: 5.9
-Stable tag: 4.16.16
+Requires PHP: 7.0
+Stable tag: 4.16.17
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -13,17 +14,18 @@ The most flexible paywall for WordPress. Sell subscriptions without sacrificing 
 
 https://www.youtube.com/watch?v=caAwkRRi9wI&feature=emb_logo&ab_channel=ZEEN101
 
-Leaky Paywall helps news and magazine publishers build email lists, grow subscription revenues, and create new content products… all with the flexibility of WordPress.
+[Leaky Paywall](https://leakypaywall.com/) helps news and magazine publishers build email lists, grow subscription revenues, and create new content products… all with the native flexibility of WordPress.
 
-Leaky Paywall lets you customize the paywall experience to precisely match your content offering. Restrict and sell access to: articles, categories/tags, custom post types, in-content PDFs/video/sections, premium newsletters, time based archive content, [issues](https://leakypaywall.com/issuem/), and even [iOS & Android apps](https://leakypaywall.com/unipress-apps/). 
+Leaky Paywall lets you customize the paywall experience to precisely match your content offering. Restrict and sell access to: articles, categories/tags, custom post types, in-content PDFs/video/sections, premium newsletters, time based archive content, [issues](https://leakypaywall.com/issuem/), and even [iOS & Android apps](https://leakypaywall.com/unipress-apps/).
 
-Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/leaky-paywall/), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://docs.zeen101.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Paid add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/) offer additional features.
+Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/features/), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://docs.zeen101.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Premium plans](https://leakypaywall.com/pricing/) offer additional features.
 
 **Features**
 
-* Custom paywall settings out of the box: metered paywall, hybrid paywall, hard paywall, free registrations, donations, paid newsletters, and memberships
+* Custom paywall settings out of the box: metered paywall, hybrid paywall, hard paywall, time-wall, free registrations, donations, paid newsletters, and memberships
 * Flexible restrictions: restrict by post type, category, tag, taxonomy, time based archive content, individual posts, and in-content sections
-* Restricts incognito browsing
+* Multiple website access: Our MultiPass lets you sell a single subscription that allows access to two or more of your websites
+Prevents incognito browsing for higher conversions
 * [Leaky Paywall Insights](https://leakypaywall.com/insights/) provides actionable data from visitor and subscriber behavior in one dashboard
 * Build your email list with a limited access Free subscription level
 * Sell access to web issues/flipbooks: Integrates with [IssueM](https://leakypaywall.com/issuem/), our web issue publisher toolkit
@@ -33,15 +35,11 @@ Leaky Paywall core is free, open source, integrates with the most [3rd party pl
 * iOS and Android app publishing: With [UniPress](https://leakypaywall.com/unipress-apps/), easily give your subscribers access to apps and enjoy discovery in the app stores
 * No revenue sharing, all data is under your control
 * We are a [Stripe Verified Partner](https://stripe.com/partners/leaky-paywall)
-* Join our [PubCare](https://leakypaywall.com/pricing/) to receive the software and support you need
 
 
 **Integrations**
 
-* Web issue publishing: Our [free IssueM plugin](https://leakypaywall.com/issuem/) allows publishers to create live web issues that are mobile, search engine, and social sharing optimized. Issues and articles reach today’s modern reader. Now you can promote and sell subscriptions to real web based issues
-* Stripe and Apple Pay (included in core)
-* Authorize.net
-* PayPal (included in core)
+* Stripe and Apple Pay, Authorize.net, PayPal, and many others via our WooCommerce integration
 * MailChimp
 * MagHub
 * RunMags
@@ -111,6 +109,11 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.16.17 =
+* Add integration with WP REST API
+* Update minimum required PHP version to 7.0
+* Update admin styles and branding
 
 = 4.16.16 =
 * Add nonce to register user validation
