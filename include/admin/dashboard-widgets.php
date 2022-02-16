@@ -101,6 +101,11 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 				$name = $user->user_email;
 			}
 			$level_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+
+			if ( !is_numeric( $level_id ) ) {
+				continue;
+			}
+			
 			$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
 
 			echo '<tr><td>' . esc_attr( gmdate( 'M d, Y', strtotime( $date ) ) ) . '</td><td> <a href="' . esc_url( admin_url() ) . '/user-edit.php?user_id=' . absint( $user->ID ) . '">' . esc_attr( $name ) . '</a></td><td>' . esc_attr( $level_name ) . '</td>';
