@@ -88,6 +88,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 	 */
 	public function fields( $level_id ) {
 
+		$level = get_leaky_paywall_subscription_level( $level_id );
+		$price        = $level['price'];
+
+		if ( $price < 1 ) {
+			return;
+		}
+
 		ob_start();
 
 		?>
