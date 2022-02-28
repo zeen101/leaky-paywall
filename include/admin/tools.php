@@ -6,7 +6,7 @@ function lp_display_debug_log() {
 
 	global $lp_logs;
 
-	if ( ! apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) {
+	if ( ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
 		return;
 	}
 
@@ -20,7 +20,6 @@ function lp_display_debug_log() {
 					<?php
 					submit_button( __( 'Download Debug Log File', 'leaky-paywall' ), 'primary', 'lp-download-debug-log', false );
 					submit_button( __( 'Clear Log', 'leaky-paywall' ), 'secondary lp-inline-button', 'lp-clear-debug-log', false );
-					submit_button( __( 'Copy Entire Log', 'leaky-paywall' ), 'secondary lp-inline-button', 'lp-copy-debug-log', false, array( 'onclick' => "this.form['lp-debug-log-contents'].focus();this.form['lp-debug-log-contents'].select();document.execCommand('copy');return false;" ) );
 					?>
 				</p>
 				<?php wp_nonce_field( 'lp_debug_log_action', 'lp_debug_log_field' ); ?>
@@ -41,20 +40,20 @@ function leaky_paywall_handle_submit_debug_log() {
 		return;
 	}
 
-	if ( ! apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) {
+	if ( ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
 		return;
 	}
 
-	if ( isset( $_REQUEST['lp-download-debug-log'] ) ) {
+	if ( isset( $_POST['lp-download-debug-log'] ) ) {
 		nocache_headers();
 
 		header( 'Content-Type: text/plain' );
 		header( 'Content-Disposition: attachment; filename="lp-debug-log.txt"' );
 
-		echo wp_unslash( wp_strip_all_tags( $_REQUEST['lp-debug-log-contents'] ) );
-		exit;
+		print_r( stripslashes_deep( wp_unslash( $lp_logs->get_file_contents() ) ) );
+		die('end of lp log');
 
-	} elseif ( isset( $_REQUEST['lp-clear-debug-log'] ) ) {
+	} elseif ( isset( $_POST['lp-clear-debug-log'] ) ) {
 
 		// Clear the debug log.
 		$lp_logs->clear_log_file();
