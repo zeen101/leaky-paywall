@@ -189,7 +189,7 @@ function leaky_paywall_create_stripe_checkout_session() {
 		$redirect_url = home_url();
 	}
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	$data = array(
 		'cancel_url'           => home_url( 'cancel' ),
@@ -240,7 +240,7 @@ function leaky_paywall_create_stripe_checkout_session() {
 	}
 
 	try {
-		$session = \Stripe\Checkout\Session::create( $data );
+		$session = $stripe->checkout->sessions->create( $data );
 	} catch ( \Throwable $th ) {
 
 		echo '<pre>';
@@ -266,10 +266,10 @@ function leaky_paywall_create_stripe_payment_intent() {
 	$level_id = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
 	$level    = get_leaky_paywall_subscription_level( $level_id );
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$payment_intent = \Stripe\PaymentIntent::create(
+		$payment_intent = $stripe->paymentIntents->create(
 			array(
 				'amount'   => leaky_paywall_get_stripe_amount( $level['price'] ),
 				'currency' => strtolower( leaky_paywall_get_currency() ),
@@ -306,7 +306,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 
 	$settings = get_leaky_paywall_settings();
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	$data = array(
 		'invoice_settings' => array(
@@ -315,10 +315,10 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	);
 
 	try {
-		$payment_method = \Stripe\PaymentMethod::retrieve( $payment_method_id );
+		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id );
 		$payment_method->attach( array( 'customer' => $customer_id ) );
 
-		$customer = \Stripe\Customer::retrieve( $customer_id );
+		$customer = $stripe->customers->retrieve( $customer_id );
 		$customer->invoice_settings->default_payment_method = $payment_method_id;
 		$customer->save();
 	} catch ( \Throwable $th ) {
@@ -344,9 +344,9 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		'expand'   => array( 'latest_invoice.payment_intent' ),
 	);
 
-	$subscription_options = array(
-		'idempotency_key' => $form_data['idem_key'],
-	);
+	// $subscription_options = array(
+	// 	'idempotency_key' => $form_data['idem_key'],
+	// );
 
 	try {
 		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
@@ -356,7 +356,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 
 		if ( empty( $subscriptions->data ) ) {
 			leaky_paywall_log( 'empty sub data', 'stripe checkout subscription for ' . $customer_id );
-			$subscription = \Stripe\Subscription::create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ), $subscription_options );
+			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ) );
 		} else {
 
 			foreach ( $subscriptions->data as $subscription ) {
@@ -368,11 +368,12 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level );
 			}
 		}
-	} catch ( \Throwable $th ) {
+	} catch ( \Stripe\Exception\ApiErrorException $e ) {
 		leaky_paywall_log( 'error 2', 'stripe checkout subscription' );
+		leaky_paywall_log( $form_data, 'stripe checkout subscription form data error 2' );
 		wp_send_json(
 			array(
-				'error' => $th->jsonBody,
+				'error' => 'There has been an error',
 			)
 		);
 	}
@@ -403,13 +404,13 @@ function leaky_paywall_retry_invoice_stripe_checkout_subscription() {
 
 	$settings = get_leaky_paywall_settings();
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$payment_method = \Stripe\PaymentMethod::retrieve( $payment_method_id );
+		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id );
 		$payment_method->attach( array( 'customer' => $customer_id ) );
 
-		$customer = \Stripe\Customer::retrieve( $customer_id );
+		$customer = $stripe->customers->retrieve( $customer_id );
 		$customer->invoice_settings->default_payment_method = $payment_method_id;
 		$customer->save();
 	} catch ( \Throwable $th ) {
@@ -424,7 +425,7 @@ function leaky_paywall_retry_invoice_stripe_checkout_subscription() {
 	}
 
 	try {
-		$invoice = \Stripe\Invoice::retrieve( $invoice_id );
+		$invoice = $stripe->invoices->retrieve( $invoice_id );
 	} catch ( \Throwable $th ) {
 
 		leaky_paywall_log( $customer_id, 'stripe error: retry invoice invoice' );
@@ -461,16 +462,11 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 	$match       = false;
 	$time        = time();
 
-	try {
-		\Stripe\Stripe::setApiKey( $plan_args['secret_key'] );
-	} catch ( Exception $e ) {
-		/* Translators: %s: Error message. */
-		return new WP_Error( 'missing_api_key', sprintf( esc_attr__( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) );
-	}
-
 	if ( ! isset( $level['plan_id'] ) ) {
 		$level['plan_id'] = array();
 	}
+
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	if ( ! is_array( $level['plan_id'] ) ) {
 		$plan_temp                                  = $level['plan_id'];
@@ -486,7 +482,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
 			try {
-				$stripe_plan = \Stripe\Plan::retrieve( $plan_id );
+				$stripe_plan = $stripe->plans->retrieve( $plan_id );
 			} catch ( Exception $e ) {
 				$stripe_plan = false;
 			}
@@ -530,6 +526,8 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
  */
 function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 
+	$stripe = leaky_paywall_initialize_stripe_api();
+
 	$time = time();
 
 	$args = array(
@@ -542,7 +540,7 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 	);
 
 	try {
-		$stripe_plan = \Stripe\Plan::create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
+		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
 	} catch ( Exception $e ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
@@ -577,6 +575,8 @@ function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
  * @since 4.15.4
  */
 function leaky_paywall_initialize_stripe_api() {
+	$stripe = new \Stripe\StripeClient(leaky_paywall_get_stripe_secret_key());
+	
 	\Stripe\Stripe::setApiKey( leaky_paywall_get_stripe_secret_key() );
 	\Stripe\Stripe::setApiVersion( LEAKY_PAYWALL_STRIPE_API_VERSION );
 	\Stripe\Stripe::setAppInfo(
@@ -585,6 +585,8 @@ function leaky_paywall_initialize_stripe_api() {
 		esc_url( site_url() ),
 		LEAKY_PAYWALL_STRIPE_PARTNER_ID
 	);
+
+	return $stripe;
 }
 
 /**
@@ -615,10 +617,10 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 
 	$subscriber_id    = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$cus = \Stripe\Customer::retrieve( $subscriber_id );
+		$cus = $stripe->customers->retrieve( $subscriber_id );
 
 		if ( !is_object( $cus ) ) {
 			return;

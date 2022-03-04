@@ -290,7 +290,7 @@ function leaky_paywall_process_user_registration_validation() {
 
 	if ( in_array( 'stripe_checkout', array_keys( $enabled_gateways ) ) ) {
 
-		leaky_paywall_initialize_stripe_api();
+		$stripe = leaky_paywall_initialize_stripe_api();
 
 		$stripe_price = number_format( $level['price'], 2, '', '' );
 
@@ -304,7 +304,7 @@ function leaky_paywall_process_user_registration_validation() {
 		$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields );
 
 		try {
-			$cu = \Stripe\Customer::create( $customer_array );
+			$cu = $stripe->customers->create( $customer_array );
 		} catch ( \Throwable $th ) {
 			$errors['stripe_customer'] = array(
 				'message' => __( 'Could not create customer.', 'leaky-paywall' ),
@@ -330,7 +330,7 @@ function leaky_paywall_process_user_registration_validation() {
 
 			if ( $stripe_plan ) {
 				try {
-					$checkout_session = \Stripe\Checkout\Session::create(
+					$checkout_session = $stripe->checkout->sessions->create(
 						array(
 							'payment_method_types' => array(
 								'card',
@@ -368,7 +368,7 @@ function leaky_paywall_process_user_registration_validation() {
 			}
 		} else {
 			try {
-				$checkout_session = \Stripe\Checkout\Session::create(
+				$checkout_session = $stripe->checkout->sessions->create(
 					array(
 						'payment_method_types' => array(
 							'card',
@@ -438,13 +438,13 @@ function leaky_paywall_process_user_registration_validation() {
 	$subscriber_id              = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 	$subscriber_payment_gateway = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	if ( ! empty( $subscriber_id ) && 'stripe' === $subscriber_payment_gateway ) {
 
 		// retrieve Stripe customer.
 		try {
-			$cu = \Stripe\Customer::retrieve( $subscriber_id );
+			$cu = $stripe->customers->retrieve( $subscriber_id );
 		} catch ( \Throwable $th ) {
 			$errors['stripe_customer'] = array(
 				'message' => __( 'Could not retrieve customer.', 'leaky-paywall' ),
@@ -462,7 +462,7 @@ function leaky_paywall_process_user_registration_validation() {
 		$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields );
 
 		try {
-			$cu = \Stripe\Customer::create( $customer_array );
+			$cu = $stripe->customers->create( $customer_array );
 		} catch ( \Throwable $th ) {
 			$errors['stripe_customer'] = array(
 				'message' => __( 'Could not create customer.', 'leaky-paywall' ),
@@ -504,12 +504,12 @@ function leaky_paywall_process_user_registration_validation() {
 		$level
 	);
 
-	$intent_options = array(
-		'idempotency_key' => $fields['idem_key'],
-	);
+	// $intent_options = array(
+	// 	'idempotency_key' => $fields['idem_key'],
+	// );
 
 	try {
-		$intent = \Stripe\PaymentIntent::create( $intent_args, $intent_options );
+		$intent = $stripe->paymentIntents->create( $intent_args );
 	} catch ( \Throwable $th ) {
 		$errors['payment_intent'] = array(
 			'message' => __( 'Could not create payment intent.', 'leaky-paywall' ),

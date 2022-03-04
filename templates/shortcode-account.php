@@ -24,11 +24,11 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 	$plan     = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 	$level    = get_leaky_paywall_subscription_level( $level_id );
 
-	leaky_paywall_initialize_stripe_api();
+	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
 
-		$cu         = \Stripe\Customer::retrieve( $subscriber_id ); // stored in your application
+		$cu         = $stripe->customers->retrieve( $subscriber_id ); // stored in your application
 		$cu->source = sanitize_text_field( wp_unslash( $_POST['stripeToken'] ) ); // obtained with Checkout
 		$cu->save();
 
@@ -38,7 +38,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 		if ( strcasecmp( 'deactivated', $status ) == 0 ) { // only runs if the user account is deactivated
 
-			$subs = \Stripe\Subscription::all(
+			$subs = $stripe->subscriptions->all(
 				array(
 					'customer' => $subscriber_id,
 					'status'   => 'all',
@@ -295,8 +295,8 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 
 				if ( $subscriber_id && 'stripe' == $payment_gateway ) {
-					leaky_paywall_initialize_stripe_api();
-					$cu = \Stripe\Customer::Retrieve(
+					$stripe = leaky_paywall_initialize_stripe_api();
+					$cu = $stripe->customers->retrieve(
 						array(
 							'id'     => $subscriber_id,
 							'expand' => array( 'default_source' ),

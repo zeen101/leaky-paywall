@@ -158,7 +158,7 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 		$mode     = leaky_paywall_get_current_mode();
 		$site     = leaky_paywall_get_current_site();
 		$results  = '';
-
+		
 		if ( is_user_logged_in() ) {
 
 			$user = wp_get_current_user();
@@ -172,18 +172,18 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 				$plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 				$level         = get_leaky_paywall_subscription_level( $level_id );
 
-				leaky_paywall_initialize_stripe_api();
+				$stripe = leaky_paywall_initialize_stripe_api();
 
 				try {
 
 					// update source.
-					$cu      = \Stripe\Customer::update( $subscriber_id, array( 'source' => sanitize_text_field( wp_unslash( $_POST['stripeToken'] ) ) ) );
-					$sources = \Stripe\Customer::allSources( $subscriber_id );
+					$cu      = $stripe->customers->update( $subscriber_id, array( 'source' => sanitize_text_field( wp_unslash( $_POST['stripeToken'] ) ) ) );
+					$sources = $stripe->customers->allSources( $subscriber_id );
 					$card_id = isset( $sources->data[0]->id ) ? $sources->data[0]->id : '';
 
 					if ( $card_id ) {
 						// update customer default source with the card ID.
-						$cu                  = \Stripe\Customer::update(
+						$cu                  = $stripe->customers->update(
 							$subscriber_id,
 							array(
 								'invoice_settings' => array(
@@ -197,7 +197,7 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 
 					if ( strcasecmp( 'deactivated', $status ) === 0 ) {
 
-						$subs = \Stripe\Subscription::all(
+						$subs = $stripe->subscriptions->all(
 							array(
 								'customer' => $subscriber_id,
 								'status'   => 'all',
@@ -219,7 +219,7 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 
 									// only create a new subscription if the subscriber does not have a current subscription.
 									// such as expired or canceled.
-									$new_sub = \Stripe\Subscription::create(
+									$new_sub = $stripe->subscriptions->create(
 										array(
 											'customer' => $cu->id,
 											'items'    => array( array( 'plan' => $plan ) ),
@@ -386,41 +386,37 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 
 						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
-						$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+						$stripe = leaky_paywall_initialize_stripe_api();
 
-						if ( $secret_key ) {
-
-							leaky_paywall_initialize_stripe_api();
-
-							$cu = \Stripe\Customer::retrieve(
-								array( 'id' => $subscriber_id )
-							);
-
-							if ( isset( $cu->default_source->brand ) ) {
-
-								$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
-							}
-
-							if ( strcasecmp( 'deactivated', $status ) === 0 ) {
-								$data_label = __( 'Update Credit Card Details & Restart Subscription', 'leaky-paywall' );
-							} else {
-								$data_label = __( 'Update Credit Card Details', 'leaky-paywall' );
-							}
-
-							$payment_form .= '<form action="" method="POST">
-										<script
-										src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-										data-key="' . $publishable_key . '"
-										data-name="' . get_bloginfo( 'name' ) . '"
-										data-panel-label="' . $data_label . '"
-										data-label="' . $data_label . '"
-										data-allow-remember-me=false
-										data-email="' . $user->user_email . '"
-										data-locale="auto">	
-										</script>	
-										</form>';
+						try {
+							$cu = $stripe->customers->retrieve( $subscriber_id );
+						} catch (\Throwable $th) {
+							// 
 						}
 
+						if ( isset( $cu->default_source->brand ) ) {
+							$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+						}
+
+						if ( strcasecmp( 'deactivated', $status ) === 0 ) {
+							$data_label = __( 'Update Credit Card Details & Restart Subscription', 'leaky-paywall' );
+						} else {
+							$data_label = __( 'Update Credit Card Details', 'leaky-paywall' );
+						}
+
+						$payment_form .= '<form action="" method="POST">
+									<script
+									src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+									data-key="' . $publishable_key . '"
+									data-name="' . get_bloginfo( 'name' ) . '"
+									data-panel-label="' . $data_label . '"
+									data-label="' . $data_label . '"
+									data-allow-remember-me=false
+									data-email="' . $user->user_email . '"
+									data-locale="auto">	
+									</script>	
+									</form>';
+					
 						break;
 
 					case 'paypal-standard':

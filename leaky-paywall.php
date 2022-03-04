@@ -105,7 +105,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateway-paypal.php';
 		include LEAKY_PAYWALL_PATH . 'include/gateways/class-leaky-paywall-payment-gateways.php';
 
-		if ( ! class_exists( 'Stripe' ) && ! class_exists( 'Stripe\Stripe' ) ) {
+		if ( ! class_exists( 'Stripe\Stripe' ) ) {
 			require_once LEAKY_PAYWALL_PATH . 'include/stripe/init.php';
 		}
 

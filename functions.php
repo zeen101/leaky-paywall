@@ -546,7 +546,7 @@ if ( ! function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
 				// check with Stripe to make sure the user has an active subscription.
 
-				leaky_paywall_initialize_stripe_api();
+				$stripe = leaky_paywall_initialize_stripe_api();
 
 				try {
 					if ( empty( $subscriber_id ) ) {
@@ -583,7 +583,7 @@ if ( ! function_exists( 'leaky_paywall_has_user_paid' ) ) {
 								break;
 						}
 					} else {
-						$cu = \Stripe\Customer::retrieve( $subscriber_id );
+						$cu = $stripe->customers->retrieve( $subscriber_id );
 
 						if ( ! empty( $cu ) ) {
 							if ( ! empty( $cu->deleted ) && true === $cu->deleted ) {
@@ -602,7 +602,7 @@ if ( ! function_exists( 'leaky_paywall_has_user_paid' ) ) {
 							}
 						}
 
-						$ch = \Stripe\Charge::all(
+						$ch = $stripe->charges->all(
 							array(
 								'count'    => 1,
 								'customer' => $subscriber_id,
@@ -1002,9 +1002,9 @@ if ( ! function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 
 					try {
 
-						$secret_key = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+						$stripe = leaky_paywall_initialize_stripe_api();
 
-						$cu = \Stripe\Customer::retrieve( $subscriber_id );
+						$cu = $stripe->customers->retrieve( $subscriber_id );
 
 						if ( ! empty( $cu ) ) {
 							if ( true === $cu->deleted ) {
