@@ -54,6 +54,12 @@
     box-sizing: border-box;
 }
 
+.leaky_paywall_subscription_option .leaky-paywall-subscription-current-level {
+	color: #007711;
+    font-size: 14px;
+	text-transform: uppercase;
+}
+
 @media (max-width: 990px) { 
 	.leaky_paywall_subscription_option {
 		width: 48%;

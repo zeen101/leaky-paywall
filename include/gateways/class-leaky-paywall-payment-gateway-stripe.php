@@ -209,6 +209,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			case 'invoice.payment_succeeded':
 				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
+				// maybe get the subscription and update expires from that 
+				// $sub = $stripe_object->subscription;
+				// https://stripe.com/docs/api/subscriptions/retrieve?lang=php
+
 				break;
 			case 'invoice.paid':
 				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );

@@ -1532,6 +1532,21 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		</div>
 
 		<table class="issuem-leaky-paywall-subscription-level-row-table leaky-paywall-table <?php echo esc_attr( $deleted ); ?>">
+			<?php 
+			if ( isset( $settings['page_for_register'] ) && $settings['page_for_register'] ) {
+				?>
+					<tr>
+						<th>
+							<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Direct Sign Up Link', 'leaky-paywall' ); ?></label>
+						</th>
+						<td>
+							<p><?php echo get_page_link( $settings['page_for_register'] ) . '?level_id=' . $row_key; ?></p>
+						</td>
+					</tr>	
+				<?php 
+			} ?>
+		
+		
 			<tr>
 				<th>
 					<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Subscription Level Name', 'leaky-paywall' ); ?></label>
@@ -2152,7 +2167,10 @@ if ( ! function_exists( 'leaky_paywall_subscription_options' ) ) {
 					}
 
 					$results .= '<div id="option-' . $level_id . '" class="leaky_paywall_subscription_option ' . $current_level . '">';
-					$results .= '<h3>' . apply_filters( 'leaky_paywall_subscription_option_title', stripslashes( $level['label'] ) ) . '</h3>';
+					if ( $current_level ) {
+						$results .= '<p class="leaky-paywall-subscription-current-level">Your Current Level</p>';
+					}
+					$results .= '<h3 class="leaky_paywall_subscription_option_title">' . apply_filters( 'leaky_paywall_subscription_option_title', stripslashes( $level['label'] ) ) . '</h3>';
 
 					$results .= '<div class="leaky_paywall_subscription_allowed_content">';
 

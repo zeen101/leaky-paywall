@@ -124,33 +124,6 @@ if ( ! function_exists( 'do_leaky_paywall_subscription' ) ) {
 						continue;
 					}
 
-					switch ( $expires ) {
-
-						case 'subscription':
-							if ( ! $plan ) {
-								break;
-							}
-
-							if ( 'free_registration' !== $payment_gateway && 'canceled' !== $status ) {
-								/* Translators: %s - cancel url */
-								$results .= sprintf( __( 'Your subscription will automatically renew until you <a href="%s">cancel</a>', 'leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
-							}
-							break;
-
-						case 'unlimited':
-							$results .= __( 'You are a lifetime subscriber!', 'leaky-paywall' );
-							break;
-
-						case 'canceled':
-							/* Translators: %s - site name */
-							$results .= sprintf( __( 'Your subscription has been canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'leaky-paywall' ), $settings['site_name'] );
-							break;
-
-						default:
-							/* Translators: %1$s - gateway name, %2$s - expires */
-							$results .= sprintf( __( 'You are subscribed via %1$s until %2$s.', 'leaky-paywall' ), leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway ), date_i18n( get_option( 'date_format' ), strtotime( $expires ) ) );
-					}
-
 					$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_end', '' );
 
 					$results .= '<p><a href="' . wp_logout_url( get_page_link( $settings['page_for_login'] ) ) . '">' . __( 'Log Out', 'leaky-paywall' ) . '</a></p>';
@@ -879,6 +852,7 @@ function do_leaky_paywall_register_form( $atts ) {
 		<input type="hidden" name="interval_count" value="<?php echo esc_attr( $level['interval_count'] ); ?>" />
 		<input type="hidden" name="recurring" value="<?php echo empty( $level['recurring'] ) ? '' : esc_attr( $level['recurring'] ); ?>" />
 		<input type="hidden" name="site" value="<?php echo esc_attr( $site ); ?>" />
+		<input type="hidden" name="idem_key" value="<?php echo uniqid(); ?>" />
 
 		<input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo esc_attr( wp_create_nonce( 'leaky-paywall-register-nonce' ) ); ?>" />
 

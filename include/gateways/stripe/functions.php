@@ -345,7 +345,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	);
 
 	$subscription_options = array(
-		'idempotency_key' => $customer_id,
+		'idempotency_key' => $form_data['idem_key'],
 	);
 
 	try {

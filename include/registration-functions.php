@@ -504,9 +504,8 @@ function leaky_paywall_process_user_registration_validation() {
 		$level
 	);
 
-	// add an options array with an idempotencyKey set with the user's Stripe customer id.
 	$intent_options = array(
-		'idempotency_key' => $cu->id,
+		'idempotency_key' => $fields['idem_key'],
 	);
 
 	try {
