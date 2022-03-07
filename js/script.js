@@ -633,7 +633,7 @@
               if (event.error.message) {
                 displayError.textContent = event.error.message;
               } else {
-                displayError.textContent = event.error.error.message;
+                displayError.textContent = event.error;
               }
 
             } else {

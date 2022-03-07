@@ -344,14 +344,10 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		'expand'   => array( 'latest_invoice.payment_intent' ),
 	);
 
-	// $subscription_options = array(
-	// 	'idempotency_key' => $form_data['idem_key'],
-	// );
-
 	try {
 		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
 		leaky_paywall_log( $customer, 'stripe checkout subscription for ' . $customer_id );
-		$subscriptions = $customer->subscriptions->all( array( 'limit' => '1' ) ); // generating an error.
+		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ) ); // generating an error.
 		leaky_paywall_log( 'after get subs', 'stripe checkout subscription for ' . $customer_id );
 
 		if ( empty( $subscriptions->data ) ) {
@@ -360,11 +356,11 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		} else {
 
 			foreach ( $subscriptions->data as $subscription ) {
-				$sub       = $customer->subscriptions->retrieve( $subscription->id );
-				$sub->plan = $plan_id;
-				do_action( 'leaky_paywall_before_update_stripe_subscription', $customer, $sub, $level );
-				$sub->save();
 
+				$sub = $stripe->subscriptions->update( $subscription->id, array( 
+					'plan' => $plan_id
+				) );
+		
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level );
 			}
 		}
@@ -373,7 +369,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		leaky_paywall_log( $form_data, 'stripe checkout subscription form data error 2' );
 		wp_send_json(
 			array(
-				'error' => 'There has been an error',
+				'error' => $e->getMessage(),
 			)
 		);
 	}

@@ -75,12 +75,12 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 			$update_card_success .= __( ' Your subscription has been restarted!', 'leaky-paywall' );
 		}
-	} catch ( \Stripe\Error\Card $e ) {
+	} catch ( \Stripe\Exception\ApiErrorException $e ) {
 
 		$body              = $e->getJsonBody();
 		$err               = $body['error'];
 		$update_card_error = $err['message'];
-	} catch ( \Stripe\Error\InvalidRequest $e ) {
+	} catch ( \Stripe\Exception\ApiErrorException $e ) {
 		$body              = $e->getJsonBody();
 		$err               = $body['error'];
 		$update_card_error = $err['message'];

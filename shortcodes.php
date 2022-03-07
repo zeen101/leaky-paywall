@@ -235,12 +235,12 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 						$update_card_success .= sprintf( __( 'Your subscription has been restarted! Please <a href="%s">click here</a> to see your updated account status.', 'leaky-paywall' ), get_the_permalink( get_the_ID() ) );
 
 					}
-				} catch ( \Stripe\Error\Card $e ) {
+				} catch ( \Stripe\Exception\ApiErrorException $e ) {
 
 					$body              = $e->getJsonBody();
 					$err               = $body['error'];
 					$update_card_error = $err['message'];
-				} catch ( \Stripe\Error\InvalidRequest $e ) {
+				} catch ( \Stripe\Exception\ApiErrorException $e ) {
 					$body              = $e->getJsonBody();
 					$err               = $body['error'];
 					$update_card_error = $err['message'];
