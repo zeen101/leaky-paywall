@@ -209,10 +209,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			case 'invoice.payment_succeeded':
 				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
-				// maybe get the subscription and update expires from that 
-				// $sub = $stripe_object->subscription;
-				// https://stripe.com/docs/api/subscriptions/retrieve?lang=php
-
+				// get the subscription and sync expiration date
+				$stripe = leaky_paywall_initialize_stripe_api();
+				$sub = $stripe->subscriptions->retrieve( $stripe_object->subscription );
+				$expires = date_i18n( 'Y-m-d 23:59:59', $sub->current_period_end );
+				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
 				break;
 			case 'invoice.paid':
 				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
@@ -224,9 +225,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'customer.subscription.updated':
-				$expires = date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end );
-				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
-
+				
 				if ( 'past_due' == $stripe_object->status ) {
 					update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
 				}
