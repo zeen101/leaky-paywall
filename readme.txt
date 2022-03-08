@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 5.9
+Tested up to: 5.9.1
 Requires PHP: 7.0
-Stable tag: 4.16.17
+Stable tag: 4.17.0
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -109,6 +109,14 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.17.0 =
+* Update Stripe library to 7.47.0 ** Requires PHP 7.0 or higher **
+* Update stripe handling when changing recurring subscription levels
+* Sync expiration date during invoice.payment_succeeded stripe event
+* Update logging
+* Fix attaching of Stripe payment id to transaction
+* Fix subscription change when a subscriber currently has a canceled plan
 
 = 4.16.17 =
 * Add integration with WP REST API
