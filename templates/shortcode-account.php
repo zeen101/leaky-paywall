@@ -295,13 +295,19 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 
 				if ( $subscriber_id && 'stripe' == $payment_gateway ) {
-					$stripe = leaky_paywall_initialize_stripe_api();
-					$cu = $stripe->customers->retrieve(
-						array(
-							'id'     => $subscriber_id,
-							'expand' => array( 'default_source' ),
-						)
-					);
+					
+					try {
+						$cu = $stripe->customers->retrieve(
+							array(
+								'id'     => $subscriber_id,
+								'expand' => array( 'default_source' ),
+							)
+						);
+					} catch (\Throwable $th) {
+						//throw $th;
+						$cu = '';
+					}
+					
 
 					if ( isset( $update_card_error ) ) {
 						echo '<div class="leaky_paywall_message error"><p>' . esc_attr( $update_card_error ) . '</p></div>';
@@ -309,8 +315,10 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 						echo '<div class="leaky_paywall_message success"><p>' . esc_attr( $update_card_success ) . '</p></div>';
 					}
 
-					$payment_form .= '<h3 class="leaky-paywall-account-section-title">Payment Method</h3><p>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
-
+					if ( isset( $cu->default_source ) ) {
+						$payment_form .= '<h3 class="leaky-paywall-account-section-title">Payment Method</h3><p>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+					}
+					
 					if ( strcasecmp( 'deactivated', $status ) == 0 ) {
 						$data_label = 'Update Credit Card Details & Restart Subscription';
 					} else {
