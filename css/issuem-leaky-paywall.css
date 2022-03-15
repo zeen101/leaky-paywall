@@ -447,6 +447,22 @@
     padding: 0.9rem 1.1rem;
 }
 
+.leaky-paywall-custom-reg-fields input, .leaky-paywall-custom-reg-fields textarea, .leaky-paywall-custom-reg-fields select {
+	width: 100%;
+	border: 1px solid var(--wp--preset--color--black);
+    border-radius: 0;
+    font-size: var(--wp--preset--font-size--small);
+    padding: 0.9rem 1.1rem;
+}
+
+.leaky-paywall-custom-reg-fields .checkboxes input {
+	width: auto;
+}
+
+.leaky-paywall-custom-reg-fields .checkboxes label {
+	display: inline-block;
+}
+
 .StripeElement {
 	background-color: white;
 	height: auto;
