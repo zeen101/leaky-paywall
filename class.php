@@ -234,7 +234,10 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
+		if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
+		}
+		
 	}
 
 
