@@ -1040,10 +1040,10 @@ if ( ! function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 
 						/* Translators: %s - site name */
 						$form .= '<a href="' . get_home_url() . '">' . sprintf( __( 'Return to %s...', 'leaky-paywall' ), $settings['site_name'] ) . '</a>';
-					} catch ( Exception $e ) {
+					} catch ( \Throwable $th ) {
 
 						/* Translators: %s - error message */
-						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) . '</h1>';
+						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $th->getMessage() ) . '</h1>';
 					}
 				} elseif ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
 
