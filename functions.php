@@ -1011,12 +1011,21 @@ if ( ! function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'leaky-paywall' ) );
 							}
 						}
+					
+						if ( null == $cu ) {
+							throw new Exception( __( 'No subscriptions found for customer ID. Please contact support', 'leaky-paywall' ) );
+						}
 
-						$subscriptions = $cu->subscriptions->all( array( 'limit' => '1' ) );
+						// $subscriptions = $cu->subscriptions->all( array( 'limit' => '1' ) );
+
+						$subscriptions = $stripe->subscriptions->all( array( 
+							'customer' => $cu->id,
+							'limit' => '1' 
+						) );
 
 						if ( ! empty( $subscriptions->data ) ) {
-							foreach ( $subscriptions->data as $susbcription ) {
-								$sub     = $cu->subscriptions->retrieve( $susbcription->id );
+							foreach ( $subscriptions->data as $subscription ) {
+								$sub = $stripe->subscriptions->retrieve( $subscription->id );
 								$results = $sub->cancel();
 							}
 						} else {
@@ -1043,7 +1052,8 @@ if ( ! function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 					} catch ( \Throwable $th ) {
 
 						/* Translators: %s - error message */
-						$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $th->getMessage() ) . '</h1>';
+						$form = '<h3>' . sprintf( __( 'Error processing request: %s. Please contact support.', 'leaky-paywall' ), $th->getMessage() ) . '</h3>';
+						leaky_paywall_log( $th->getMessage(), 'leaky paywall stripe cancel error - for user ' . $user->user_email );
 					}
 				} elseif ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
 
