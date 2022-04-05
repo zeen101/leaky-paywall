@@ -257,7 +257,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		foreach ( $_POST as $key => $value ) {
 			// $payload[ $key ] = sanitize_text_field( wp_unslash( $value ) ); // this is breaking too many integrations
-			$payload[ $key ] = $value;
+			// $payload[ $key ] = $value;
+			$payload[$key] = stripslashes( $value );
 		}
 
 		if ( 'test' == $mode ) {
@@ -276,7 +277,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				'httpversion' => '1.1',
 			)
 		);
-		$body     = wp_remote_retrieve_body( $response );
+		$body = wp_remote_retrieve_body( $response );
 
 		leaky_paywall_log( $body, 'paypal standard ipn body' );
 
