@@ -1007,7 +1007,7 @@ if ( ! function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 						$cu = $stripe->customers->retrieve( $subscriber_id );
 
 						if ( ! empty( $cu ) ) {
-							if ( true === $cu->deleted ) {
+							if ( isset( $cu->deleted ) && true === $cu->deleted ) {
 								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'leaky-paywall' ) );
 							}
 						}
