@@ -332,9 +332,7 @@ function leaky_paywall_process_user_registration_validation() {
 				try {
 					$checkout_session = $stripe->checkout->sessions->create(
 						array(
-							'payment_method_types' => array(
-								'card',
-							),
+							'payment_method_types' => $settings['payment_method_types'],
 							'customer'             => $cu->id,
 							// 'customer_update'		=> array(
 							// 	array(
@@ -345,15 +343,15 @@ function leaky_paywall_process_user_registration_validation() {
 								array(
 									'price'    => $stripe_plan->id,
 									'quantity' => 1,
-									'tax_behavior' => 'exclusive',
+								//	'tax_behavior' => 'exclusive',
 								),
 							),
-							'automatic_tax' => [
-								'enabled' => true,
-							],
+							// 'automatic_tax' => [
+							// 	'enabled' => true,
+							// ],
 							'mode'                 => 'subscription',
-							'success_url'          => home_url() . '?success=true',
-							'cancel_url'           => home_url() . '?cancel=true',
+							'success_url'          => home_url() . '?lp_stripe_checkout_success=true',
+							'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 						)
 					);
 				} catch ( \Throwable $th ) {
@@ -370,12 +368,7 @@ function leaky_paywall_process_user_registration_validation() {
 			try {
 				$checkout_session = $stripe->checkout->sessions->create(
 					array(
-						'payment_method_types' => array(
-							'card',
-							'ideal',
-							'bancontact',
-							'sofort',
-						),
+						'payment_method_types' => $settings['payment_method_types'],
 						'customer'             => $cu->id,
 						'customer_update'		=> array(
 							
@@ -388,19 +381,19 @@ function leaky_paywall_process_user_registration_validation() {
 									'product_data' => array(
 										'name' => $level['label'],
 									),
-									'tax_behavior' => 'exclusive',
+								//	'tax_behavior' => 'exclusive',
 									'currency'     => leaky_paywall_get_currency(),
 									'unit_amount'  => $stripe_price,
 								),
 								'quantity'   => 1,
 							),
 						),
-						'automatic_tax' => [
-							'enabled' => true,
-						  ],
+						// 'automatic_tax' => [
+						// 	'enabled' => true,
+						//   ],
 						'mode'                 => 'payment',
-						'success_url'          => home_url() . '?success=true',
-						'cancel_url'           => home_url() . '?cancel=true',
+						'success_url'          => home_url() . '?lp_stripe_checkout_success=true',
+						'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 					)
 				);
 			} catch ( \Throwable $th ) {

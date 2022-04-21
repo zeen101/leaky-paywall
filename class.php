@@ -338,10 +338,8 @@ class Leaky_Paywall {
 			);
 		}
 
-		if ( ! empty( $settings['page_for_register'] ) && is_page( $settings['page_for_register'] ) ) {
-			wp_enqueue_script( 'leaky_paywall_validate', LEAKY_PAYWALL_URL . 'js/leaky-paywall-validate.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
-		}
-
+		wp_enqueue_script( 'zeen101_micromodal', LEAKY_PAYWALL_URL . 'js/micromodal.min.js', array('jquery'), LEAKY_PAYWALL_VERSION, true);
+		wp_enqueue_script( 'leaky_paywall_validate', LEAKY_PAYWALL_URL . 'js/leaky-paywall-validate.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
 		wp_enqueue_script( 'leaky_paywall_script', LEAKY_PAYWALL_URL . 'js/script.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
 
 		wp_localize_script(
