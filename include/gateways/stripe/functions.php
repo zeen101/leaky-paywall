@@ -647,7 +647,7 @@ add_action( 'leaky_paywall_before_process_stripe_webhook', 'leaky_paywall_proces
 /**
 * Process a Stripe Checkout successful webhook
 *
-* @since 4.17.3
+* @since 4.18.0
 *
 * @param object stripe_event
 */
