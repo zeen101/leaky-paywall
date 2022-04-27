@@ -300,7 +300,12 @@ class Leaky_Paywall_Restrictions {
 					if ( 'unlimited' == $access_rule['allowed'] && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 
 						if ( $this->allowed_value_exceeded() ) {
-							$allows_access = false;
+							
+							// if it has already been set to true by a previous rule, do not unset it
+							if ( !$allows_access ) {
+								$allows_access = false;
+							}
+							
 						} else {
 							$allows_access = true;
 						}

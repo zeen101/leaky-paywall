@@ -641,3 +641,115 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 		return;
 	}
 }
+
+
+add_action( 'leaky_paywall_before_process_stripe_webhook', 'leaky_paywall_process_stripe_checkout_webhook' );
+/**
+* Process a Stripe Checkout successful webhook
+*
+* @since 4.17.3
+*
+* @param object stripe_event
+*/
+function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
+
+	if ($stripe_event->type != 'checkout.session.completed') {
+		return;
+	}
+	
+	$stripe_object = $stripe_event->data->object;
+
+	leaky_paywall_log( $stripe_object->customer, 'stripe checkout event customer' );
+
+	$incomplete_id = leaky_paywall_get_incomplete_user_from_email($stripe_object->customer_details->email);
+
+	if (!$incomplete_id) {
+		leaky_paywall_log($stripe_object->customer, 'stripe checkout event no incomplete found');
+		return;
+	}
+
+	$user_data = get_post_meta($incomplete_id, '_user_data', true);
+	$user = get_user_by('email', $user_data['email']);
+	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
+
+	if ($user) {
+		$existing_customer = true;
+		$status = 'update';
+	} else {
+		$existing_customer = false;
+		$status = 'new';
+	}
+
+	if (isset($level['recurring']) && 'on' == $level['recurring']) {
+
+		$plan_args = array(
+			'stripe_price'	=> $stripe_object->amount_total,
+			'currency'		=> leaky_paywall_get_currency(),
+			'secret_key'	=> leaky_paywall_get_stripe_secret_key()
+		);
+
+		$stripe_plan = leaky_paywall_get_stripe_plan($level, $user_data['level_id'], $plan_args);
+
+		if ($stripe_plan) {
+			$plan_id = $stripe_plan->id;
+		} else {
+			$plan_id = '';
+		}
+	}
+
+	$subscriber_data = array(
+		'email' => $user_data['email'],
+		'password' => $user_data['password'],
+		'first_name'	=> $user_data['first_name'],
+		'last_name'	=> $user_data['last_name'],
+		'level_id'	=> $user_data['level_id'],
+		'subscriber_id'	=> $stripe_object->customer,
+		'created'	=> date('Y-m-d H:i:s'),
+		'price'	=> $stripe_object->amount_total / 100,
+		'plan'	=> $plan_id,
+		'interval_count' => $level['interval_count'],
+		'interval'	=> $level['interval'],
+		'recurring'	=> false,
+		'currency' => leaky_paywall_get_currency(),
+		'new_user'	=> true,
+		'payment_gateway'	=> 'stripe',
+		'payment_status'	=> 'active',
+		'site'	=> leaky_paywall_get_current_site(),
+		'mode' => leaky_paywall_get_current_mode()
+	);
+
+	if ($existing_customer) {
+		$user_id = leaky_paywall_update_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+	} else {
+		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+	}
+
+	$subscriber_data['user_id'] = $user_id;
+
+	$transaction = new LP_Transaction($subscriber_data);
+	$transaction_id = $transaction->create();
+	$subscriber_data['transaction_id'] = $transaction_id;
+
+	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+
+	// Send email notifications
+	leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
+}
+
+function leaky_paywall_get_stripe_checkout_success_url() {
+
+    $settings = get_leaky_paywall_settings();
+
+	if ( ! empty( $settings['page_for_after_subscribe'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
+	} elseif ( ! empty( $settings['page_for_profile'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_profile'] );
+	} elseif ( ! empty( $settings['page_for_login'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_login'] );
+	} else {
+		$redirect_url = home_url();
+	}
+
+	return apply_filters( 'leaky_paywall_stripe_checkout_success_url', $redirect_url );
+
+}

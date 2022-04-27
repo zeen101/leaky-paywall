@@ -798,7 +798,12 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['payment_gateway'] ) ) {
+
 					$settings['payment_gateway'] = array_map( 'sanitize_text_field', wp_unslash( $_POST['payment_gateway'] ) );
+
+					if ( in_array( 'stripe', $settings['payment_gateway']) && in_array( 'stripe_checkout', $settings['payment_gateway']) )  {
+						$settings['payment_gateway'] = array( 'stripe' );
+					}
 				} else {
 					$settings['payment_gateway'] = array( 'stripe' );
 				}
@@ -1347,16 +1352,11 @@ class Leaky_Paywall {
 										$gateways = leaky_paywall_get_payment_gateways();
 
 										foreach ( $gateways as $key => $value ) {
-
-											if ( 'stripe' === $key && in_array( 'stripe_checkout', $settings['payment_gateway'], true ) && ! in_array( 'stripe', $settings['payment_gateway'], true ) ) {
-												$settings['payment_gateway'][] = 'stripe';
-											}
-
 											?>
-											<p>
-												<input id="enable-<?php echo esc_attr( $key ); ?>" type="checkbox" name="payment_gateway[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $settings['payment_gateway'], true ) ); ?> /> <label for="enable-<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $value['admin_label'] ); ?></label>
-											</p>
-											<?php
+												<p>
+													<input id="enable-<?php echo esc_attr( $key ); ?>" type="checkbox" name="payment_gateway[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $settings['payment_gateway'], true ) ); ?> /> <label for="enable-<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $value['admin_label'] ); ?></label>
+												</p>
+											<?php 	
 										}
 										?>
 										<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://leakypaywall.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Pipedrive, fulfillment services and other providers.</p>
@@ -2315,7 +2315,7 @@ class Leaky_Paywall {
 		?>
 			<div id="leaky-paywall-upgrade-page-wrapper">
 				<div class="header">
-					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
+					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
 				</div>
 				<div class="content">
 					
@@ -2339,7 +2339,7 @@ class Leaky_Paywall {
 					</p>
 				</div>
 				<div class="logo">
-					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
+					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
 				</div>
 			</div>
 

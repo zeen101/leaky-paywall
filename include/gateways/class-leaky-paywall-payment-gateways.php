@@ -63,9 +63,14 @@ class Leaky_Paywall_Payment_Gateways {
 			),
 			'stripe'          => array(
 				'label'       => __( 'Credit / Debit Card', 'leaky-paywall' ),
-				'admin_label' => __( 'Stripe', 'leaky-paywall' ),
+				'admin_label' => __( 'Stripe (Credit / Debit Card)', 'leaky-paywall' ),
 				'class'       => 'Leaky_Paywall_Payment_Gateway_Stripe',
 			),
+			'stripe_checkout' => array(
+				'label'		=> __('Stripe Checkout', 'leaky-paywall'),
+				'admin_label'	=> __('Stripe Checkout (this will send the user offsite for payment)', 'leaky-paywall'),
+				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
+			)
 		);
 
 		return apply_filters( 'leaky_paywall_payment_gateways', $gateways );

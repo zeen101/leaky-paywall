@@ -330,9 +330,9 @@ function leaky_paywall_process_user_registration_validation() {
 
 			if ( $stripe_plan ) {
 				try {
+
 					$checkout_session = $stripe->checkout->sessions->create(
 						array(
-							'payment_method_types' => $settings['payment_method_types'],
 							'customer'             => $cu->id,
 							// 'customer_update'		=> array(
 							// 	array(
@@ -350,7 +350,7 @@ function leaky_paywall_process_user_registration_validation() {
 							// 	'enabled' => true,
 							// ],
 							'mode'                 => 'subscription',
-							'success_url'          => home_url() . '?lp_stripe_checkout_success=true',
+							'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
 							'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 						)
 					);
@@ -366,9 +366,11 @@ function leaky_paywall_process_user_registration_validation() {
 			}
 		} else {
 			try {
+
+				// get one time payment method types
+
 				$checkout_session = $stripe->checkout->sessions->create(
 					array(
-						'payment_method_types' => $settings['payment_method_types'],
 						'customer'             => $cu->id,
 						'customer_update'		=> array(
 							
@@ -392,7 +394,7 @@ function leaky_paywall_process_user_registration_validation() {
 						// 	'enabled' => true,
 						//   ],
 						'mode'                 => 'payment',
-						'success_url'          => home_url() . '?lp_stripe_checkout_success=true',
+						'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
 						'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 					)
 				);

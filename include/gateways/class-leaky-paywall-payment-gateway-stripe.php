@@ -253,7 +253,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'payment_intent.succeeded':
 				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active' );
 				break;
-
+			
 			default:
 				break;
 		};
@@ -364,6 +364,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		return ob_get_clean();
 	}
 
+	
 	/**
 	 * Validate additional fields during registration submission
 	 *

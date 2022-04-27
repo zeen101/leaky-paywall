@@ -98,10 +98,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe_Checkout extends Leaky_Paywall_Paymen
 		ob_start();
 
 		?>
-		<a class="button" id="checkout">Continue to Checkout</a>
+		<a class="button" id="checkout"><?php esc_attr_e( 'Continue to Payment', 'leaky-paywall' ); ?></a>
 
 		<style>
-			#leaky-paywall-submit {
+			#leaky-paywall-submit, .leaky-paywall-payment-method-container, .leaky-paywall-card-details {
 				display: none;
 			}
 		</style>
