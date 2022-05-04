@@ -10,21 +10,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $user          = wp_get_current_user();
-$action        = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : 'overview';
+$page_action   = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : 'overview';
 $settings      = get_leaky_paywall_settings();
-$mode          = leaky_paywall_get_current_mode();
+$lp_mode       = leaky_paywall_get_current_mode();
 $site          = leaky_paywall_get_current_site();
-$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-$plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_subscriber_id' . $site, true );
+$plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_plan' . $site, true );
 
-if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
+$stripe = leaky_paywall_initialize_stripe_api();
 
-	$status   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-	$plan     = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_text_field( $_POST['lp_update_card_form_field'] ), 'lp_update_card_form' ) && isset( $_POST['stripeToken'] ) && $subscriber_id ) {
+
+	$payment_status   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_status' . $site, true );
+	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_level_id' . $site, true );
+	$plan     = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_plan' . $site, true );
 	$level    = get_leaky_paywall_subscription_level( $level_id );
-
-	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
 
@@ -36,7 +36,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 		leaky_paywall_log( $user->user_email, 'credit card updated' );
 
-		if ( strcasecmp( 'deactivated', $status ) == 0 ) { // only runs if the user account is deactivated
+		if ( strcasecmp( 'deactivated', $payment_status ) == 0 ) { // only runs if the user account is deactivated
 
 			$subs = $stripe->subscriptions->all(
 				array(
@@ -93,23 +93,23 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 	<div class="leaky-paywall-account-navigation-wrapper">
 		<ul class="leaky-paywall-account-menu">
 			<li>
-				<a class="<?php echo 'overview' == $action ? 'active' : ''; ?>" href="<?php the_permalink(); ?>"><?php esc_attr_e( 'Account Overview', 'leaky-paywall' ); ?></a>
+				<a class="<?php echo 'overview' == $page_action ? 'active' : ''; ?>" href="<?php the_permalink(); ?>"><?php esc_html_e( 'Account Overview', 'leaky-paywall' ); ?></a>
 			</li>
 			<li>
-				<a class="<?php echo 'edit_profile' == $action ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=edit_profile"><?php esc_attr_e( 'Edit Profile', 'leaky-paywall' ); ?></a>
+				<a class="<?php echo 'edit_profile' == $page_action ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=edit_profile"><?php esc_html_e( 'Edit Profile', 'leaky-paywall' ); ?></a>
 			</li>
 
 			<?php
 			if ( ! leaky_paywall_user_can_bypass_paywall_by_role( $user ) && $plan ) {
 				?>
 				<li>
-					<a class="<?php echo 'payment_info' == $action ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=payment_info"><?php esc_attr_e( 'Payment Info', 'leaky-paywall' ); ?></a>
+					<a class="<?php echo 'payment_info' == $page_action ? 'active' : ''; ?>" href="<?php the_permalink(); ?>?action=payment_info"><?php esc_html_e( 'Payment Info', 'leaky-paywall' ); ?></a>
 				</li>
 				<?php
 			}
 			?>
 			<li>
-				<a href="<?php echo esc_url( wp_logout_url( '/' ) ); ?>"><?php esc_attr_e( 'Logout', 'leaky-paywall' ); ?></a>
+				<a href="<?php echo esc_url( wp_logout_url( '/' ) ); ?>"><?php esc_html_e( 'Logout', 'leaky-paywall' ); ?></a>
 			</li>
 		</ul>
 	</div>
@@ -118,11 +118,11 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 		<?php
 
-		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-		$status          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-		$expires         = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-		$plan            = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-		$level_id        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_gateway' . $site, true );
+		$payment_status          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_status' . $site, true );
+		$expires         = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_expires' . $site, true );
+		$plan            = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_plan' . $site, true );
+		$level_id        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_level_id' . $site, true );
 		$level           = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
@@ -131,10 +131,10 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 			$expires = mysql2date( 'F j, Y', $expires );
 		}
 
-		if ( strcasecmp( 'active', $status ) == 0 && ! leaky_paywall_user_has_access( $user ) ) {
+		if ( strcasecmp( 'active', $payment_status ) == 0 && ! leaky_paywall_user_has_access( $user ) ) {
 			$status_name = __( 'Expired', 'leaky-paywall' );
 		} else {
-			$status_name = ucfirst( $status );
+			$status_name = ucfirst( $payment_status );
 		}
 
 
@@ -148,7 +148,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 		if ( ! empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
 
-			if ( 'canceled' == $status ) {
+			if ( 'canceled' == $payment_status ) {
 				$expires_label = __( 'Ends on', 'leaky-paywall' );
 			} else {
 				$expires_label = __( 'Recurs on', 'leaky-paywall' );
@@ -160,72 +160,74 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 		}
 
 		$paid       = leaky_paywall_has_user_paid( $user->user_email, $site );
-		$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-		$cancel     = '';
+		$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_expires' . $site, true );
+		$cancel_url     = '';
+		$cancel_text = '';
 
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expiration ) {
-			$cancel = '';
-		} elseif ( strcasecmp( 'active', $status ) == 0 && $plan && 'Canceled' !== $plan ) {
-			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+			$cancel_text = '';
+		} elseif ( strcasecmp( 'active', $payment_status ) == 0 && $plan && 'Canceled' !== $plan ) {
+			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_subscriber_id' . $site, true );
+			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_gateway' . $site, true );
 
 			if ( 'free_registration' == $payment_gateway ) {
-				$cancel = '';
+				$cancel_text = '';
 			} else {
-				$cancel = sprintf( __( '<a href="%s">Cancel your subscription</a>', 'leaky-paywall' ), '?lp_cancel=request&cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
+				$cancel_text = __( 'Cancel your subscription', 'leaky-paywall' );
+				$cancel_url = '?lp_cancel=request&cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id;
 			}
 		} elseif ( ! empty( $plan ) && 'Canceled' == $plan ) {
-			$cancel .= '<p>' . sprintf( esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
+			$cancel_text = sprintf( esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		}
 
-		switch ( $action ) {
+		switch ( $page_action ) {
 			case 'overview':
 				?>
-				<h2 class="leaky-paywall-account-page-title"><?php esc_attr_e( 'Account overview', 'leaky-paywall' ); ?></h2>
+				<h2 class="leaky-paywall-account-page-title"><?php esc_html_e( 'Account overview', 'leaky-paywall' ); ?></h2>
 
-				<h3 class="leaky-paywall-account-section-title"><?php esc_attr_e( 'Profile', 'leaky-paywall' ); ?></h3>
+				<h3 class="leaky-paywall-account-section-title"><?php esc_html_e( 'Profile', 'leaky-paywall' ); ?></h3>
 
 				<table class="leaky-paywall-account-table leaky-paywall-account-profile-table">
 					<tbody>
 						<tr>
-							<td class="profile-table-label"><?php esc_attr_e( 'Name', 'leaky-paywall' ); ?></td>
-							<td class="profile-table-value"><?php echo $user->first_name ? esc_attr( $user->first_name ) . ' ' . esc_attr( $user->last_name ) : esc_attr( $user->display_name ); ?></td>
+							<td class="profile-table-label"><?php esc_html_e( 'Name', 'leaky-paywall' ); ?></td>
+							<td class="profile-table-value"><?php echo $user->first_name ? esc_html( $user->first_name ) . ' ' . esc_html( $user->last_name ) : esc_html( $user->display_name ); ?></td>
 						</tr>
 						<tr>
-							<td class="profile-table-label"><?php esc_attr_e( 'Email', 'leaky-paywall' ); ?></td>
-							<td class="profile-table-value"><?php echo esc_attr( $user->user_email ); ?></td>
+							<td class="profile-table-label"><?php esc_html_e( 'Email', 'leaky-paywall' ); ?></td>
+							<td class="profile-table-value"><?php echo esc_html( $user->user_email ); ?></td>
 						</tr>
 					</tbody>
 				</table>
 
 				<?php
 				if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
-					echo '<h3 class="leaky-paywall-account-section-title">Your user role can see all content.</h3>';
+					echo '<h3 class="leaky-paywall-account-section-title">' . esc_html__( 'Your user role can see all content.', 'leaky-paywall' ) . '</h3>';
 				} else {
 					?>
-					<h3 class="leaky-paywall-account-section-title your-plan-title"><?php esc_attr_e( 'Your plan', 'leaky-paywall' ); ?></h3>
+					<h3 class="leaky-paywall-account-section-title your-plan-title"><?php esc_html_e( 'Your plan', 'leaky-paywall' ); ?></h3>
 
 					<table class="leaky-paywall-account-table leaky-paywall-account-plan-table">
 						<tbody>
 							<tr>
-								<td class="profile-table-label"><?php esc_attr_e( 'Name', 'leaky-paywall' ); ?></td>
-								<td class="profile-table-value"><?php echo esc_attr( $level['label'] ); ?></td>
+								<td class="profile-table-label"><?php esc_html_e( 'Name', 'leaky-paywall' ); ?></td>
+								<td class="profile-table-value"><?php echo esc_html( $level['label'] ); ?></td>
 							</tr>
 							<tr>
-								<td class="profile-table-label"><?php esc_attr_e( 'Status', 'leaky-paywall' ); ?></td>
-								<td class="profile-table-value"><?php echo esc_attr( $status_name ); ?></td>
+								<td class="profile-table-label"><?php esc_html_e( 'Status', 'leaky-paywall' ); ?></td>
+								<td class="profile-table-value"><?php echo esc_html( $status_name ); ?></td>
 							</tr>
 							<tr>
-								<td class="profile-table-label"><?php echo esc_attr( $expires_label ); ?></td>
-								<td class="profile-table-value"><?php echo esc_attr( $expires ); ?></td>
+								<td class="profile-table-label"><?php echo esc_html( $expires_label ); ?></td>
+								<td class="profile-table-value"><?php echo esc_html( $expires ); ?></td>
 							</tr>
 							<tr>
-								<td class="profile-table-label"><?php esc_attr_e( 'Has Access', 'leaky-paywall' ); ?></td>
-								<td class="profile-table-value"><?php echo leaky_paywall_user_has_access() ? esc_attr__( 'Yes', 'leaky-paywall' ) : esc_attr__( 'No', 'leaky-paywall' ); ?></td>
+								<td class="profile-table-label"><?php esc_html_e( 'Has Access', 'leaky-paywall' ); ?></td>
+								<td class="profile-table-value"><?php echo leaky_paywall_user_has_access() ? esc_html__( 'Yes', 'leaky-paywall' ) : esc_html__( 'No', 'leaky-paywall' ); ?></td>
 							</tr>
 							<tr>
-								<td class="profile-table-label"><?php esc_attr_e( 'Payment Method', 'leaky-paywall' ); ?></td>
-								<td class="profile-table-value"><?php echo esc_attr( $profile_payment ); ?></td>
+								<td class="profile-table-label"><?php esc_html_e( 'Payment Method', 'leaky-paywall' ); ?></td>
+								<td class="profile-table-value"><?php echo esc_html( $profile_payment ); ?></td>
 							</tr>
 						</tbody>
 					</table>
@@ -236,7 +238,7 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 			case 'edit_profile':
 				?>
-				<h2 class="leaky-paywall-account-page-title"><?php esc_attr_e( 'Edit your profile', 'leaky-paywall' ); ?></h2>
+				<h2 class="leaky-paywall-account-page-title"><?php esc_html_e( 'Edit your profile', 'leaky-paywall' ); ?></h2>
 
 				<form id="leaky-paywall-account-edit-profile-form" action="<?php the_permalink(); ?>" method="POST">
 					<p class="form-row">
@@ -287,75 +289,85 @@ if ( isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 				break;
 
 			case 'payment_info':
-				$payment_form    = '';
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-				$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+				$payment_form    = false;
+				$def_payment_method = '';
+				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_gateway' . $site, true );
+				$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_subscriber_id' . $site, true );
 				$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
-				$secret_key      = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+				$secret_key      = ( 'test' === $lp_mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 
 
 				if ( $subscriber_id && 'stripe' == $payment_gateway ) {
+
+					$payment_form = true;
 					
 					try {
 						$cu = $stripe->customers->retrieve(
-							array(
-								'id'     => $subscriber_id,
-								'expand' => array( 'default_source' ),
-							)
+							$subscriber_id,
 						);
+
+						if ( $cu->invoice_settings->default_payment_method ) {
+							$def_payment_method = $stripe->paymentMethods->retrieve( $cu->invoice_settings->default_payment_method );
+						} else if ( $cu->default_source ) {
+							$def_payment_method = $stripe->paymentMethods->retrieve( $cu->default_source );
+						}
+
 					} catch (\Throwable $th) {
-						//throw $th;
 						$cu = '';
 					}
-					
 
 					if ( isset( $update_card_error ) ) {
-						echo '<div class="leaky_paywall_message error"><p>' . esc_attr( $update_card_error ) . '</p></div>';
+						echo '<div class="leaky_paywall_message error"><p>' . esc_html( $update_card_error ) . '</p></div>';
 					} elseif ( isset( $update_card_success ) ) {
-						echo '<div class="leaky_paywall_message success"><p>' . esc_attr( $update_card_success ) . '</p></div>';
-					}
-
-					if ( isset( $cu->default_source ) ) {
-						$payment_form .= '<h3 class="leaky-paywall-account-section-title">Payment Method</h3><p>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+						echo '<div class="leaky_paywall_message success"><p>' . esc_html( $update_card_success ) . '</p></div>';
 					}
 					
-					if ( strcasecmp( 'deactivated', $status ) == 0 ) {
+					if ( strcasecmp( 'deactivated', $payment_status ) == 0 ) {
 						$data_label = 'Update Credit Card Details & Restart Subscription';
 					} else {
 						$data_label = 'Update Credit Card Details';
 					}
 
-					$payment_form .= '<form action="" method="POST">
-						  <script
-						  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-						  data-key="' . $publishable_key . '"
-						  data-name="' . get_bloginfo( 'name' ) . '"
-						  data-panel-label="' . $data_label . '"
-						  data-label="' . $data_label . '"
-						  data-allow-remember-me=false
-						  data-email="' . $user->user_email . '"
-						  data-locale="auto">	
-						  </script>	
-						</form>';
 				}
 
 				?>
-				<h2 class="leaky-paywall-account-page-title"><?php esc_attr_e( 'Your payment information', 'leaky-paywall' ); ?></h2>
+				<h2 class="leaky-paywall-account-page-title"><?php esc_html_e( 'Your payment information', 'leaky-paywall' ); ?></h2>
+
+				<?php 
+					if ( $def_payment_method ) {
+						echo '<h3 class="leaky-paywall-account-section-title">' . esc_html__( 'Payment Method', 'leaky-paywall' ) . '</h3><p>' . esc_html( strtoupper( $def_payment_method->card->brand ) ) . ' ending in ' . esc_html( $def_payment_method->card->last4 ) . ' that expires ' . esc_html( $def_payment_method->card->exp_month ) . '/' . esc_html( $def_payment_method->card->exp_year ) . '</p>';
+					}
+				?>
 
 				<?php
 				if ( $payment_form ) {
-					echo $payment_form;
+					?>
+					<form action="" method="POST">
+						  <script
+						  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+						  data-key="<?php echo esc_attr( $publishable_key ); ?>"
+						  data-name="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+						  data-panel-label="<?php echo esc_attr( $data_label ); ?>"
+						  data-label="<?php echo esc_attr( $data_label ); ?>"
+						  data-allow-remember-me=false
+						  data-email="<?php echo esc_attr( $user->user_email ); ?>"
+						  data-locale="auto">	
+						  </script>	
+						  <?php wp_nonce_field( 'lp_update_card_form', 'lp_update_card_form_field' ); ?>
+					</form>
+					<?php 
 				}
-				?>
-
-				<?php
-				if ( $cancel ) {
-					echo '<h3 class="leaky-paywall-account-section-title">Manage</h3>';
-					echo '<p class="leaky-paywall-cancel-link">' . apply_filters( 'leaky_paywall_cancel_link', $cancel ) . '</p>';
+				
+				if ( $cancel_text ) {
+					echo '<h3 class="leaky-paywall-account-section-title">' . esc_html__( 'Manage', 'leaky-paywall' ) . '</h3>';
+					if ( $cancel_url ) {
+						echo '<p class="leaky-paywall-cancel-link"><a href="' . esc_url( apply_filters( 'leaky_paywall_cancel_link', $cancel_url ) ) . '">' . esc_html( $cancel_text ) . '</a></p>';
+					} else {
+						echo '<p class="leaky-paywall-cancel-link">' . esc_html( $cancel_text ) . '</p>';
+					}
+					
 				}
-				?>
-
-				<?php
+				
 			default:
 				break;
 		}

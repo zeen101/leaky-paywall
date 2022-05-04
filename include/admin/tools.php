@@ -35,7 +35,7 @@ function leaky_paywall_handle_submit_debug_log() {
 	global $lp_logs;
 
 	if ( ! isset( $_POST['lp_debug_log_field'] ) 
-    	|| ! wp_verify_nonce( wp_unslash( $_POST['lp_debug_log_field'] ), 'lp_debug_log_action' ) 
+    	|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['lp_debug_log_field'] ) ), 'lp_debug_log_action' ) 
 	) {
 		return;
 	}

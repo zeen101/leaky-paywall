@@ -35,7 +35,7 @@ class LP_Logging {
 	public function setup_log_file()
 	{
 
-		$upload_dir       = wp_upload_dir();
+		$upload_dir       = wp_get_upload_dir();
 		$this->filename   = wp_hash( home_url( '/' ) ) . '-lp-debug.log';
 		$this->file       = trailingslashit( $upload_dir['basedir'] ) . $this->filename;
 

@@ -517,7 +517,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 						default:
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo apply_filters( 'manage_leaky_paywall_subscribers_custom_column', '&nbsp;', $column_name, $user->ID );
+							echo esc_attr( apply_filters( 'manage_leaky_paywall_subscribers_custom_column', '&nbsp;', $column_name, $user->ID ) );
 							echo '</td>';
 							break;
 					}
