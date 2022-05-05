@@ -130,6 +130,13 @@ add_action( 'init', 'leaky_paywall_process_registration', 100 );
  */
 function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
+	if (
+		! isset( $_POST['leaky_paywall_register_nonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+	) {
+	   return;
+	} 
+
 	$settings = get_leaky_paywall_settings();
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
@@ -193,6 +200,12 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
  */
 function leaky_paywall_process_user_registration_validation() {
 
+	if ( ! check_ajax_referer( 'lp_register_nonce', 'nonce', false ) ) {
+		$errors['nonce'] = array(
+			'message' => __( 'There was an error. Please try again.', 'leaky-paywall' ),
+		);
+	}
+
 	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
 	parse_str( $form_data, $fields );
 
@@ -203,12 +216,6 @@ function leaky_paywall_process_user_registration_validation() {
 	$site     = leaky_paywall_get_current_site();
 	$level_id = $fields['level_id'];
 	$level    = get_leaky_paywall_subscription_level( $level_id );
-
-	if ( ! check_ajax_referer( 'lp_register_nonce', 'nonce', false ) ) {
-		$errors['nonce'] = array(
-			'message' => __( 'There was an error. Please try again.', 'leaky-paywall' ),
-		);
-	}
 
 	if ( is_user_logged_in() ) {
 		$userdata           = wp_get_current_user();
@@ -259,6 +266,12 @@ function leaky_paywall_process_user_registration_validation() {
 		if ( ! validate_username( $user['login'] ) ) {
 			$errors['username_invalid'] = array(
 				'message' => __( 'Invalid username', 'leaky-paywall' ),
+			);
+		}
+
+		if ( ! is_user_logged_in() && username_exists( $user['login'] ) ) {
+			$errors['email_exists'] = array(
+				'message' => __( 'Username already exists. Please log in or try a different one.', 'leaky-paywall' ),
 			);
 		}
 	}
@@ -535,12 +548,28 @@ add_action( 'wp_ajax_leaky_paywall_process_user_registration_validation', 'leaky
  * @since  4.0.0
  */
 function leaky_paywall_validate_user_data() {
+
+	if (
+		! isset( $_POST['leaky_paywall_register_nonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+	) {
+		leaky_paywall_errors()->add( 'not_verified', __( 'Your submission could not be processed.', 'leaky-paywall' ), 'register' );
+	   return;
+	} 
+
 	$user     = array();
 	$settings = get_leaky_paywall_settings();
 
 	if ( ! is_user_logged_in() ) {
+
+		if ( 'off' === $settings['remove_username_field'] ) {
+			$user_login = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
+		} else {
+			$user_login = isset( $_POST['email_address'] ) ? sanitize_email( wp_unslash( $_POST['email_address'] ) ) : '';
+		}
+
 		$user['id']               = 0;
-		$user['login']            = 'off' === $settings['remove_username_field'] ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : sanitize_email( wp_unslash( $_POST['email_address'] ) );
+		$user['login']            = $user_login;
 		$user['password']         = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '';
 		$user['confirm_password'] = isset( $_POST['confirm_password'] ) ? sanitize_text_field( wp_unslash( $_POST['confirm_password'] ) ) : '';
 		$user['email']            = isset( $_POST['email_address'] ) ? sanitize_text_field( wp_unslash( $_POST['email_address'] ) ) : '';
@@ -621,442 +650,444 @@ function leaky_paywall_validate_username( $username = '' ) {
 }
 
 
-if ( ! function_exists( 'leaky_paywall_card_form' ) ) {
+/**
+ * Display the credit card fields on the registration form
+ *
+ * @since  4.0.0
+ */
+function leaky_paywall_card_form() {
+	?>
 
-	/**
-	 * Display the credit card fields on the registration form
-	 *
-	 * @since  4.0.0
-	 */
-	function leaky_paywall_card_form() {
-		?>
+	<div class="leaky-paywall-card-details">
 
-		<div class="leaky-paywall-card-details">
+		<fieldset id="leaky-paywall-credit-card-form">
 
-			<fieldset id="leaky-paywall-credit-card-form">
-
-				<p class="form-row">
-					<label><?php printf( esc_attr__( 'Name on Card', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-					<input type="text" size="20" name="card_name" class="card-name" value="<?php leaky_paywall_old_form_value( 'card_name' ); ?>" />
-				</p>
-
-				<p class="form-row">
-					<label><?php printf( esc_attr__( 'Card Number', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-					<input type="text" size="20" name="card_num" class="card-num" value="<?php leaky_paywall_old_form_value( 'card_num' ); ?>" />
-				</p>
-
-				<p class="form-row">
-					<label><?php printf( esc_attr__( 'CVC', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-					<input type="text" size="4" name="cvc" class="cvc" value="<?php leaky_paywall_old_form_value( 'cvc' ); ?>" />
-				</p>
-
-				<p class="form-row">
-					<label><?php printf( esc_attr__( 'Card Zip or Postal Code', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-					<input type="text" size="20" name="card_zip" class="card-zip" value="<?php leaky_paywall_old_form_value( 'card_zip' ); ?>" />
-				</p>
-
-				<p class="form-row">
-					<label><?php printf( esc_attr__( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
-					<input type="text" size="2" name="exp_month" class="exp-month" value="<?php leaky_paywall_old_form_value( 'exp_month' ); ?>" /> / <input type="text" size="4" name="exp_year" class="exp-year" value="<?php leaky_paywall_old_form_value( 'exp_year' ); ?>" />
-				</p>
-
-			</fieldset>
-
-		</div>
-
-		<?php
-	}
-}
-
-
-if ( ! function_exists( 'leaky_paywall_card_form_full' ) ) {
-	/**
-	 * Display the full credit card fields on the registration form
-	 *
-	 * @since  4.0.0
-	 */
-	function leaky_paywall_card_form_full() {
-		?>
-
-		<div class="leaky-paywall-card-details leaky-paywall-card-form-full">
-			
-			<h3>Billing Name</h3>
-
-			<p class="form-row card-first-name">
-				<label><?php esc_attr_e( 'First Name', 'leaky-paywall' ); ?></label>
-				<input required type="text" size="20" name="card_first_name" class="card-first-name" />
-			</p>
-
-			<p class="form-row card-last-name">
-				<label><?php esc_attr_e( 'Last Name', 'leaky-paywall' ); ?></label>
-				<input required type="text" size="20" name="card_last_name" class="card-last-name" />
-			</p>
-
-			<h3>Billing Address</h3>
-
-			<p class="form-row billing-address">
-				<label><?php esc_attr_e( 'Address', 'leaky-paywall' ); ?></label>
-				<input required type="text" size="20" name="card_address" class="card-address" />
-			</p>
-			<p class="form-row billing-city">
-				<label><?php esc_attr_e( 'City', 'leaky-paywall' ); ?></label>
-				<input required type="text" size="20" name="card_city" class="card-city" />
-			</p>
-			<p class="form-row billing-state">
-				<label><?php esc_attr_e( 'State or Providence', 'leaky-paywall' ); ?></label>
-				<input required type="text" size="20" name="card_state" class="card-state" />
-			</p>
-
-			<p class="form-row billing-zip">
-				<label><?php esc_attr_e( 'Card ZIP or Postal Code', 'leaky-paywall' ); ?></label>
-				<input required type="text" size="10" name="card_zip" class="card-zip" />
-			</p>
-
-			<p class="form-row billing-country">
-				<label><?php esc_attr_e( 'Country', 'leaky-paywall' ); ?></label>
-				<select name="card_country" class="card-country">
-					<option value="">Country</option>
-					<option value="US">United States</option>
-					<option value="CA">Canada</option>
-					<option value="AF">Afghanistan</option>
-					<option value="AL">Albania</option>
-					<option value="DZ">Algeria</option>
-					<option value="AS">American Samoa</option>
-					<option value="AD">Andorra</option>
-					<option value="AO">Angola</option>
-					<option value="AI">Anguilla</option>
-					<option value="AQ">Antarctica</option>
-					<option value="AG">Antigua and Barbuda</option>
-					<option value="AR">Argentina</option>
-					<option value="AM">Armenia</option>
-					<option value="AW">Aruba</option>
-					<option value="AU">Australia</option>
-					<option value="AT">Austria</option>
-					<option value="AZ">Azerbaidjan</option>
-					<option value="BS">Bahamas</option>
-					<option value="BH">Bahrain</option>
-					<option value="BD">Bangladesh</option>
-					<option value="BB">Barbados</option>
-					<option value="BY">Belarus</option>
-					<option value="BE">Belgium</option>
-					<option value="BZ">Belize</option>
-					<option value="BJ">Benin</option>
-					<option value="BM">Bermuda</option>
-					<option value="BT">Bhutan</option>
-					<option value="BO">Bolivia</option>
-					<option value="BA">Bosnia-Herzegovina</option>
-					<option value="BW">Botswana</option>
-					<option value="BV">Bouvet Island</option>
-					<option value="BR">Brazil</option>
-					<option value="IO">British Indian Ocean Territory</option>
-					<option value="BN">Brunei Darussalam</option>
-					<option value="BG">Bulgaria</option>
-					<option value="BF">Burkina Faso</option>
-					<option value="BI">Burundi</option>
-					<option value="KH">Cambodia</option>
-					<option value="CM">Cameroon</option>
-					<option value="CV">Cape Verde</option>
-					<option value="KY">Cayman Islands</option>
-					<option value="CF">Central African Republic</option>
-					<option value="TD">Chad</option>
-					<option value="CL">Chile</option>
-					<option value="CN">China</option>
-					<option value="CX">Christmas Island</option>
-					<option value="CC">Cocos (Keeling) Islands</option>
-					<option value="CO">Colombia</option>
-					<option value="KM">Comoros</option>
-					<option value="CG">Congo</option>
-					<option value="CK">Cook Islands</option>
-					<option value="CR">Costa Rica</option>
-					<option value="HR">Croatia</option>
-					<option value="CU">Cuba</option>
-					<option value="CY">Cyprus</option>
-					<option value="CZ">Czech Republic</option>
-					<option value="DK">Denmark</option>
-					<option value="DJ">Djibouti</option>
-					<option value="DM">Dominica</option>
-					<option value="DO">Dominican Republic</option>
-					<option value="TP">East Timor</option>
-					<option value="EC">Ecuador</option>
-					<option value="EG">Egypt</option>
-					<option value="SV">El Salvador</option>
-					<option value="GQ">Equatorial Guinea</option>
-					<option value="ER">Eritrea</option>
-					<option value="EE">Estonia</option>
-					<option value="ET">Ethiopia</option>
-					<option value="FK">Falkland Islands</option>
-					<option value="FO">Faroe Islands</option>
-					<option value="FJ">Fiji</option>
-					<option value="FI">Finland</option>
-					<option value="CS">Former Czechoslovakia</option>
-					<option value="SU">Former USSR</option>
-					<option value="FR">France</option>
-					<option value="FX">France (European Territory)</option>
-					<option value="GF">French Guyana</option>
-					<option value="TF">French Southern Territories</option>
-					<option value="GA">Gabon</option>
-					<option value="GM">Gambia</option>
-					<option value="GE">Georgia</option>
-					<option value="DE">Germany</option>
-					<option value="GH">Ghana</option>
-					<option value="GI">Gibraltar</option>
-					<option value="GB">Great Britain</option>
-					<option value="GR">Greece</option>
-					<option value="GL">Greenland</option>
-					<option value="GD">Grenada</option>
-					<option value="GP">Guadeloupe (French)</option>
-					<option value="GU">Guam (USA)</option>
-					<option value="GT">Guatemala</option>
-					<option value="GN">Guinea</option>
-					<option value="GW">Guinea Bissau</option>
-					<option value="GY">Guyana</option>
-					<option value="HT">Haiti</option>
-					<option value="HM">Heard and McDonald Islands</option>
-					<option value="HN">Honduras</option>
-					<option value="HK">Hong Kong</option>
-					<option value="HU">Hungary</option>
-					<option value="IS">Iceland</option>
-					<option value="IN">India</option>
-					<option value="ID">Indonesia</option>
-					<option value="INT">International</option>
-					<option value="IR">Iran</option>
-					<option value="IQ">Iraq</option>
-					<option value="IE">Ireland</option>
-					<option value="IL">Israel</option>
-					<option value="IT">Italy</option>
-					<option value="CI">Ivory Coast (Cote D&#39;Ivoire)</option>
-					<option value="JM">Jamaica</option>
-					<option value="JP">Japan</option>
-					<option value="JO">Jordan</option>
-					<option value="KZ">Kazakhstan</option>
-					<option value="KE">Kenya</option>
-					<option value="KI">Kiribati</option>
-					<option value="KW">Kuwait</option>
-					<option value="KG">Kyrgyzstan</option>
-					<option value="LA">Laos</option>
-					<option value="LV">Latvia</option>
-					<option value="LB">Lebanon</option>
-					<option value="LS">Lesotho</option>
-					<option value="LR">Liberia</option>
-					<option value="LY">Libya</option>
-					<option value="LI">Liechtenstein</option>
-					<option value="LT">Lithuania</option>
-					<option value="LU">Luxembourg</option>
-					<option value="MO">Macau</option>
-					<option value="MK">Macedonia</option>
-					<option value="MG">Madagascar</option>
-					<option value="MW">Malawi</option>
-					<option value="MY">Malaysia</option>
-					<option value="MV">Maldives</option>
-					<option value="ML">Mali</option>
-					<option value="MT">Malta</option>
-					<option value="MH">Marshall Islands</option>
-					<option value="MQ">Martinique (French)</option>
-					<option value="MR">Mauritania</option>
-					<option value="MU">Mauritius</option>
-					<option value="YT">Mayotte</option>
-					<option value="MX">Mexico</option>
-					<option value="FM">Micronesia</option>
-					<option value="MD">Moldavia</option>
-					<option value="MC">Monaco</option>
-					<option value="MN">Mongolia</option>
-					<option value="MS">Montserrat</option>
-					<option value="MA">Morocco</option>
-					<option value="MZ">Mozambique</option>
-					<option value="MM">Myanmar</option>
-					<option value="NA">Namibia</option>
-					<option value="NR">Nauru</option>
-					<option value="NP">Nepal</option>
-					<option value="NL">Netherlands</option>
-					<option value="AN">Netherlands Antilles</option>
-					<option value="NT">Neutral Zone</option>
-					<option value="NC">New Caledonia (French)</option>
-					<option value="NZ">New Zealand</option>
-					<option value="NI">Nicaragua</option>
-					<option value="NE">Niger</option>
-					<option value="NG">Nigeria</option>
-					<option value="NU">Niue</option>
-					<option value="NF">Norfolk Island</option>
-					<option value="KP">North Korea</option>
-					<option value="MP">Northern Mariana Islands</option>
-					<option value="NO">Norway</option>
-					<option value="OM">Oman</option>
-					<option value="PK">Pakistan</option>
-					<option value="PW">Palau</option>
-					<option value="PA">Panama</option>
-					<option value="PG">Papua New Guinea</option>
-					<option value="PY">Paraguay</option>
-					<option value="PE">Peru</option>
-					<option value="PH">Philippines</option>
-					<option value="PN">Pitcairn Island</option>
-					<option value="PL">Poland</option>
-					<option value="PF">Polynesia (French)</option>
-					<option value="PT">Portugal</option>
-					<option value="PR">Puerto Rico</option>
-					<option value="QA">Qatar</option>
-					<option value="RE">Reunion (French)</option>
-					<option value="RO">Romania</option>
-					<option value="RU">Russian Federation</option>
-					<option value="RW">Rwanda</option>
-					<option value="GS">S. Georgia & S. Sandwich Isls.</option>
-					<option value="SH">Saint Helena</option>
-					<option value="KN">Saint Kitts & Nevis Anguilla</option>
-					<option value="LC">Saint Lucia</option>
-					<option value="PM">Saint Pierre and Miquelon</option>
-					<option value="ST">Saint Tome (Sao Tome) and Principe</option>
-					<option value="VC">Saint Vincent & Grenadines</option>
-					<option value="WS">Samoa</option>
-					<option value="SM">San Marino</option>
-					<option value="SA">Saudi Arabia</option>
-					<option value="SN">Senegal</option>
-					<option value="SC">Seychelles</option>
-					<option value="SL">Sierra Leone</option>
-					<option value="SG">Singapore</option>
-					<option value="SK">Slovak Republic</option>
-					<option value="SI">Slovenia</option>
-					<option value="SB">Solomon Islands</option>
-					<option value="SO">Somalia</option>
-					<option value="ZA">South Africa</option>
-					<option value="KR">South Korea</option>
-					<option value="ES">Spain</option>
-					<option value="LK">Sri Lanka</option>
-					<option value="SD">Sudan</option>
-					<option value="SR">Suriname</option>
-					<option value="SJ">Svalbard and Jan Mayen Islands</option>
-					<option value="SZ">Swaziland</option>
-					<option value="SE">Sweden</option>
-					<option value="CH">Switzerland</option>
-					<option value="SY">Syria</option>
-					<option value="TJ">Tadjikistan</option>
-					<option value="TW">Taiwan</option>
-					<option value="TZ">Tanzania</option>
-					<option value="TH">Thailand</option>
-					<option value="TG">Togo</option>
-					<option value="TK">Tokelau</option>
-					<option value="TO">Tonga</option>
-					<option value="TT">Trinidad and Tobago</option>
-					<option value="TN">Tunisia</option>
-					<option value="TR">Turkey</option>
-					<option value="TM">Turkmenistan</option>
-					<option value="TC">Turks and Caicos Islands</option>
-					<option value="TV">Tuvalu</option>
-					<option value="UG">Uganda</option>
-					<option value="UA">Ukraine</option>
-					<option value="AE">United Arab Emirates</option>
-					<option value="GB">United Kingdom</option>
-					<option value="UY">Uruguay</option>
-					<option value="MIL">USA Military</option>
-					<option value="UM">USA Minor Outlying Islands</option>
-					<option value="UZ">Uzbekistan</option>
-					<option value="VU">Vanuatu</option>
-					<option value="VA">Vatican City State</option>
-					<option value="VE">Venezuela</option>
-					<option value="VN">Vietnam</option>
-					<option value="VG">Virgin Islands (British)</option>
-					<option value="VI">Virgin Islands (USA)</option>
-					<option value="WF">Wallis and Futuna Islands</option>
-					<option value="EH">Western Sahara</option>
-					<option value="YE">Yemen</option>
-					<option value="YU">Yugoslavia</option>
-					<option value="ZR">Zaire</option>
-					<option value="ZM">Zambia</option>
-					<option value="ZW">Zimbabwe</option>
-				</select>
-			</p>
-
-			<h3>Payment Method</h3>
-			
 			<p class="form-row">
-				<label><?php esc_attr_e( 'Card Number', 'leaky-paywall' ); ?></label>
-				<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
-			</p>
-			<p class="form-row">
-				<label><?php esc_attr_e( 'Card CVC', 'leaky-paywall' ); ?></label>
-				<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
+				<label><?php printf( esc_attr__( 'Name on Card', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+				<input type="text" size="20" name="card_name" class="card-name" value="<?php leaky_paywall_old_form_value( 'card_name' ); ?>" />
 			</p>
 
 			<p class="form-row">
-				<label><?php esc_attr_e( 'Expiration (MM/YYYY)', 'leaky-paywall' ); ?></label>
-				<select name="exp_month" class="card-expiry-month">
-					<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
-						<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_attr( $i ) . ' - ' . esc_attr( leaky_paywall_get_month_name( $i ) ); ?></option>
-					<?php endfor; ?>
-				</select>
-				<span class="expiry_separator"> / </span>
-				<select name="exp_year" class="card-expiry-year">
-					<?php
-					$year = gmdate( 'Y' );
-					for ( $i = $year; $i <= $year + 10; $i++ ) :
-						?>
-						<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_attr( $i ); ?></option>
-					<?php endfor; ?>
-				</select>
+				<label><?php printf( esc_attr__( 'Card Number', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+				<input type="text" size="20" name="card_num" class="card-num" value="<?php leaky_paywall_old_form_value( 'card_num' ); ?>" />
 			</p>
-		</div>
-		<?php
 
-	}
+			<p class="form-row">
+				<label><?php printf( esc_attr__( 'CVC', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+				<input type="text" size="4" name="cvc" class="cvc" value="<?php leaky_paywall_old_form_value( 'cvc' ); ?>" />
+			</p>
+
+			<p class="form-row">
+				<label><?php printf( esc_attr__( 'Card Zip or Postal Code', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+				<input type="text" size="20" name="card_zip" class="card-zip" value="<?php leaky_paywall_old_form_value( 'card_zip' ); ?>" />
+			</p>
+
+			<p class="form-row">
+				<label><?php printf( esc_attr__( 'Expiration (MM/YYYY)', 'leaky-paywall' ) ); ?> <i class="required">*</i></label>
+				<input type="text" size="2" name="exp_month" class="exp-month" value="<?php leaky_paywall_old_form_value( 'exp_month' ); ?>" /> / <input type="text" size="4" name="exp_year" class="exp-year" value="<?php leaky_paywall_old_form_value( 'exp_year' ); ?>" />
+			</p>
+
+		</fieldset>
+
+	</div>
+
+	<?php
 }
 
 
-if ( ! function_exists( 'leaky_paywall_get_month_name' ) ) {
-	/**
-	 * Converts the month number to the month name
-	 *
-	 * @access public
-	 * @since  4.0.0
-	 *
-	 * @param  int $n Month number.
-	 * @return string The name of the month.
-	 */
-	function leaky_paywall_get_month_name( $n ) {
-		$timestamp = mktime( 0, 0, 0, $n, 1, 2005 );
+/**
+ * Display the full credit card fields on the registration form
+ *
+ * @since  4.0.0
+ */
+function leaky_paywall_card_form_full() {
+	?>
 
-		return date_i18n( 'F', $timestamp );
-	}
+	<div class="leaky-paywall-card-details leaky-paywall-card-form-full">
+		
+		<h3>Billing Name</h3>
+
+		<p class="form-row card-first-name">
+			<label><?php esc_html_e( 'First Name', 'leaky-paywall' ); ?></label>
+			<input required type="text" size="20" name="card_first_name" class="card-first-name" />
+		</p>
+
+		<p class="form-row card-last-name">
+			<label><?php esc_html_e( 'Last Name', 'leaky-paywall' ); ?></label>
+			<input required type="text" size="20" name="card_last_name" class="card-last-name" />
+		</p>
+
+		<h3>Billing Address</h3>
+
+		<p class="form-row billing-address">
+			<label><?php esc_html_e( 'Address', 'leaky-paywall' ); ?></label>
+			<input required type="text" size="20" name="card_address" class="card-address" />
+		</p>
+		<p class="form-row billing-city">
+			<label><?php esc_html_e( 'City', 'leaky-paywall' ); ?></label>
+			<input required type="text" size="20" name="card_city" class="card-city" />
+		</p>
+		<p class="form-row billing-state">
+			<label><?php esc_html_e( 'State or Providence', 'leaky-paywall' ); ?></label>
+			<input required type="text" size="20" name="card_state" class="card-state" />
+		</p>
+
+		<p class="form-row billing-zip">
+			<label><?php esc_html_e( 'Card ZIP or Postal Code', 'leaky-paywall' ); ?></label>
+			<input required type="text" size="10" name="card_zip" class="card-zip" />
+		</p>
+
+		<p class="form-row billing-country">
+			<label><?php esc_html_e( 'Country', 'leaky-paywall' ); ?></label>
+			<select name="card_country" class="card-country">
+				<option value="">Country</option>
+				<option value="US">United States</option>
+				<option value="CA">Canada</option>
+				<option value="AF">Afghanistan</option>
+				<option value="AL">Albania</option>
+				<option value="DZ">Algeria</option>
+				<option value="AS">American Samoa</option>
+				<option value="AD">Andorra</option>
+				<option value="AO">Angola</option>
+				<option value="AI">Anguilla</option>
+				<option value="AQ">Antarctica</option>
+				<option value="AG">Antigua and Barbuda</option>
+				<option value="AR">Argentina</option>
+				<option value="AM">Armenia</option>
+				<option value="AW">Aruba</option>
+				<option value="AU">Australia</option>
+				<option value="AT">Austria</option>
+				<option value="AZ">Azerbaidjan</option>
+				<option value="BS">Bahamas</option>
+				<option value="BH">Bahrain</option>
+				<option value="BD">Bangladesh</option>
+				<option value="BB">Barbados</option>
+				<option value="BY">Belarus</option>
+				<option value="BE">Belgium</option>
+				<option value="BZ">Belize</option>
+				<option value="BJ">Benin</option>
+				<option value="BM">Bermuda</option>
+				<option value="BT">Bhutan</option>
+				<option value="BO">Bolivia</option>
+				<option value="BA">Bosnia-Herzegovina</option>
+				<option value="BW">Botswana</option>
+				<option value="BV">Bouvet Island</option>
+				<option value="BR">Brazil</option>
+				<option value="IO">British Indian Ocean Territory</option>
+				<option value="BN">Brunei Darussalam</option>
+				<option value="BG">Bulgaria</option>
+				<option value="BF">Burkina Faso</option>
+				<option value="BI">Burundi</option>
+				<option value="KH">Cambodia</option>
+				<option value="CM">Cameroon</option>
+				<option value="CV">Cape Verde</option>
+				<option value="KY">Cayman Islands</option>
+				<option value="CF">Central African Republic</option>
+				<option value="TD">Chad</option>
+				<option value="CL">Chile</option>
+				<option value="CN">China</option>
+				<option value="CX">Christmas Island</option>
+				<option value="CC">Cocos (Keeling) Islands</option>
+				<option value="CO">Colombia</option>
+				<option value="KM">Comoros</option>
+				<option value="CG">Congo</option>
+				<option value="CK">Cook Islands</option>
+				<option value="CR">Costa Rica</option>
+				<option value="HR">Croatia</option>
+				<option value="CU">Cuba</option>
+				<option value="CY">Cyprus</option>
+				<option value="CZ">Czech Republic</option>
+				<option value="DK">Denmark</option>
+				<option value="DJ">Djibouti</option>
+				<option value="DM">Dominica</option>
+				<option value="DO">Dominican Republic</option>
+				<option value="TP">East Timor</option>
+				<option value="EC">Ecuador</option>
+				<option value="EG">Egypt</option>
+				<option value="SV">El Salvador</option>
+				<option value="GQ">Equatorial Guinea</option>
+				<option value="ER">Eritrea</option>
+				<option value="EE">Estonia</option>
+				<option value="ET">Ethiopia</option>
+				<option value="FK">Falkland Islands</option>
+				<option value="FO">Faroe Islands</option>
+				<option value="FJ">Fiji</option>
+				<option value="FI">Finland</option>
+				<option value="CS">Former Czechoslovakia</option>
+				<option value="SU">Former USSR</option>
+				<option value="FR">France</option>
+				<option value="FX">France (European Territory)</option>
+				<option value="GF">French Guyana</option>
+				<option value="TF">French Southern Territories</option>
+				<option value="GA">Gabon</option>
+				<option value="GM">Gambia</option>
+				<option value="GE">Georgia</option>
+				<option value="DE">Germany</option>
+				<option value="GH">Ghana</option>
+				<option value="GI">Gibraltar</option>
+				<option value="GB">Great Britain</option>
+				<option value="GR">Greece</option>
+				<option value="GL">Greenland</option>
+				<option value="GD">Grenada</option>
+				<option value="GP">Guadeloupe (French)</option>
+				<option value="GU">Guam (USA)</option>
+				<option value="GT">Guatemala</option>
+				<option value="GN">Guinea</option>
+				<option value="GW">Guinea Bissau</option>
+				<option value="GY">Guyana</option>
+				<option value="HT">Haiti</option>
+				<option value="HM">Heard and McDonald Islands</option>
+				<option value="HN">Honduras</option>
+				<option value="HK">Hong Kong</option>
+				<option value="HU">Hungary</option>
+				<option value="IS">Iceland</option>
+				<option value="IN">India</option>
+				<option value="ID">Indonesia</option>
+				<option value="INT">International</option>
+				<option value="IR">Iran</option>
+				<option value="IQ">Iraq</option>
+				<option value="IE">Ireland</option>
+				<option value="IL">Israel</option>
+				<option value="IT">Italy</option>
+				<option value="CI">Ivory Coast (Cote D&#39;Ivoire)</option>
+				<option value="JM">Jamaica</option>
+				<option value="JP">Japan</option>
+				<option value="JO">Jordan</option>
+				<option value="KZ">Kazakhstan</option>
+				<option value="KE">Kenya</option>
+				<option value="KI">Kiribati</option>
+				<option value="KW">Kuwait</option>
+				<option value="KG">Kyrgyzstan</option>
+				<option value="LA">Laos</option>
+				<option value="LV">Latvia</option>
+				<option value="LB">Lebanon</option>
+				<option value="LS">Lesotho</option>
+				<option value="LR">Liberia</option>
+				<option value="LY">Libya</option>
+				<option value="LI">Liechtenstein</option>
+				<option value="LT">Lithuania</option>
+				<option value="LU">Luxembourg</option>
+				<option value="MO">Macau</option>
+				<option value="MK">Macedonia</option>
+				<option value="MG">Madagascar</option>
+				<option value="MW">Malawi</option>
+				<option value="MY">Malaysia</option>
+				<option value="MV">Maldives</option>
+				<option value="ML">Mali</option>
+				<option value="MT">Malta</option>
+				<option value="MH">Marshall Islands</option>
+				<option value="MQ">Martinique (French)</option>
+				<option value="MR">Mauritania</option>
+				<option value="MU">Mauritius</option>
+				<option value="YT">Mayotte</option>
+				<option value="MX">Mexico</option>
+				<option value="FM">Micronesia</option>
+				<option value="MD">Moldavia</option>
+				<option value="MC">Monaco</option>
+				<option value="MN">Mongolia</option>
+				<option value="MS">Montserrat</option>
+				<option value="MA">Morocco</option>
+				<option value="MZ">Mozambique</option>
+				<option value="MM">Myanmar</option>
+				<option value="NA">Namibia</option>
+				<option value="NR">Nauru</option>
+				<option value="NP">Nepal</option>
+				<option value="NL">Netherlands</option>
+				<option value="AN">Netherlands Antilles</option>
+				<option value="NT">Neutral Zone</option>
+				<option value="NC">New Caledonia (French)</option>
+				<option value="NZ">New Zealand</option>
+				<option value="NI">Nicaragua</option>
+				<option value="NE">Niger</option>
+				<option value="NG">Nigeria</option>
+				<option value="NU">Niue</option>
+				<option value="NF">Norfolk Island</option>
+				<option value="KP">North Korea</option>
+				<option value="MP">Northern Mariana Islands</option>
+				<option value="NO">Norway</option>
+				<option value="OM">Oman</option>
+				<option value="PK">Pakistan</option>
+				<option value="PW">Palau</option>
+				<option value="PA">Panama</option>
+				<option value="PG">Papua New Guinea</option>
+				<option value="PY">Paraguay</option>
+				<option value="PE">Peru</option>
+				<option value="PH">Philippines</option>
+				<option value="PN">Pitcairn Island</option>
+				<option value="PL">Poland</option>
+				<option value="PF">Polynesia (French)</option>
+				<option value="PT">Portugal</option>
+				<option value="PR">Puerto Rico</option>
+				<option value="QA">Qatar</option>
+				<option value="RE">Reunion (French)</option>
+				<option value="RO">Romania</option>
+				<option value="RU">Russian Federation</option>
+				<option value="RW">Rwanda</option>
+				<option value="GS">S. Georgia & S. Sandwich Isls.</option>
+				<option value="SH">Saint Helena</option>
+				<option value="KN">Saint Kitts & Nevis Anguilla</option>
+				<option value="LC">Saint Lucia</option>
+				<option value="PM">Saint Pierre and Miquelon</option>
+				<option value="ST">Saint Tome (Sao Tome) and Principe</option>
+				<option value="VC">Saint Vincent & Grenadines</option>
+				<option value="WS">Samoa</option>
+				<option value="SM">San Marino</option>
+				<option value="SA">Saudi Arabia</option>
+				<option value="SN">Senegal</option>
+				<option value="SC">Seychelles</option>
+				<option value="SL">Sierra Leone</option>
+				<option value="SG">Singapore</option>
+				<option value="SK">Slovak Republic</option>
+				<option value="SI">Slovenia</option>
+				<option value="SB">Solomon Islands</option>
+				<option value="SO">Somalia</option>
+				<option value="ZA">South Africa</option>
+				<option value="KR">South Korea</option>
+				<option value="ES">Spain</option>
+				<option value="LK">Sri Lanka</option>
+				<option value="SD">Sudan</option>
+				<option value="SR">Suriname</option>
+				<option value="SJ">Svalbard and Jan Mayen Islands</option>
+				<option value="SZ">Swaziland</option>
+				<option value="SE">Sweden</option>
+				<option value="CH">Switzerland</option>
+				<option value="SY">Syria</option>
+				<option value="TJ">Tadjikistan</option>
+				<option value="TW">Taiwan</option>
+				<option value="TZ">Tanzania</option>
+				<option value="TH">Thailand</option>
+				<option value="TG">Togo</option>
+				<option value="TK">Tokelau</option>
+				<option value="TO">Tonga</option>
+				<option value="TT">Trinidad and Tobago</option>
+				<option value="TN">Tunisia</option>
+				<option value="TR">Turkey</option>
+				<option value="TM">Turkmenistan</option>
+				<option value="TC">Turks and Caicos Islands</option>
+				<option value="TV">Tuvalu</option>
+				<option value="UG">Uganda</option>
+				<option value="UA">Ukraine</option>
+				<option value="AE">United Arab Emirates</option>
+				<option value="GB">United Kingdom</option>
+				<option value="UY">Uruguay</option>
+				<option value="MIL">USA Military</option>
+				<option value="UM">USA Minor Outlying Islands</option>
+				<option value="UZ">Uzbekistan</option>
+				<option value="VU">Vanuatu</option>
+				<option value="VA">Vatican City State</option>
+				<option value="VE">Venezuela</option>
+				<option value="VN">Vietnam</option>
+				<option value="VG">Virgin Islands (British)</option>
+				<option value="VI">Virgin Islands (USA)</option>
+				<option value="WF">Wallis and Futuna Islands</option>
+				<option value="EH">Western Sahara</option>
+				<option value="YE">Yemen</option>
+				<option value="YU">Yugoslavia</option>
+				<option value="ZR">Zaire</option>
+				<option value="ZM">Zambia</option>
+				<option value="ZW">Zimbabwe</option>
+			</select>
+		</p>
+
+		<h3>Payment Method</h3>
+		
+		<p class="form-row">
+			<label><?php esc_html_e( 'Card Number', 'leaky-paywall' ); ?></label>
+			<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
+		</p>
+		<p class="form-row">
+			<label><?php esc_html_e( 'Card CVC', 'leaky-paywall' ); ?></label>
+			<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
+		</p>
+
+		<p class="form-row">
+			<label><?php esc_html_e( 'Expiration (MM/YYYY)', 'leaky-paywall' ); ?></label>
+			<select name="exp_month" class="card-expiry-month">
+				<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+					<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ) . ' - ' . esc_html( leaky_paywall_get_month_name( $i ) ); ?></option>
+				<?php endfor; ?>
+			</select>
+			<span class="expiry_separator"> / </span>
+			<select name="exp_year" class="card-expiry-year">
+				<?php
+				$year = gmdate( 'Y' );
+				for ( $i = $year; $i <= $year + 10; $i++ ) :
+					?>
+					<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></option>
+				<?php endfor; ?>
+			</select>
+		</p>
+	</div>
+	<?php
+
+}
+
+/**
+ * Converts the month number to the month name
+ *
+ * @access public
+ * @since  4.0.0
+ *
+ * @param  int $n Month number.
+ * @return string The name of the month.
+ */
+function leaky_paywall_get_month_name( $n ) {
+	$timestamp = mktime( 0, 0, 0, $n, 1, 2005 );
+
+	return date_i18n( 'F', $timestamp );
 }
 
 
-if ( ! function_exists( 'leaky_paywall_log_in_user' ) ) {
-	/**
-	 * Login in a user
-	 *
-	 * @since  4.9.3
-	 *
-	 * @param  int $user_id ID of the user.
-	 */
-	function leaky_paywall_log_in_user( $user_id ) {
+/**
+ * Login in a user
+ *
+ * @since  4.9.3
+ *
+ * @param  int $user_id ID of the user.
+ */
+function leaky_paywall_log_in_user( $user_id ) {
 
-		wp_set_current_user( $user_id );
-		wp_set_auth_cookie( $user_id, true );
-	}
+	wp_set_current_user( $user_id );
+	wp_set_auth_cookie( $user_id, true );
 }
 
-if ( ! function_exists( 'leaky_paywall_get_redirect_url' ) ) {
-	/**
-	 * Get the redirect url
-	 *
-	 * @param array $settings The Leaky Paywall settings.
-	 * @param array $subscriber_data The subscriber data.
-	 */
-	function leaky_paywall_get_redirect_url( $settings, $subscriber_data ) {
 
-		if ( ! empty( $settings['page_for_after_subscribe'] ) ) {
-			$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
-		} elseif ( ! empty( $settings['page_for_profile'] ) ) {
-			$redirect_url = get_page_link( $settings['page_for_profile'] );
-		} elseif ( ! empty( $settings['page_for_subscription'] ) ) {
-			$redirect_url = get_page_link( $settings['page_for_subscription'] );
-		}
 
-		return apply_filters( 'leaky_paywall_redirect_url', add_query_arg( 'lp_txn_id', $subscriber_data['transaction_id'], $redirect_url ), $subscriber_data );
+/**
+ * Get the redirect url
+ *
+ * @param array $settings The Leaky Paywall settings.
+ * @param array $subscriber_data The subscriber data.
+ */
+function leaky_paywall_get_redirect_url( $settings, $subscriber_data ) {
+
+	if ( ! empty( $settings['page_for_after_subscribe'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
+	} elseif ( ! empty( $settings['page_for_profile'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_profile'] );
+	} elseif ( ! empty( $settings['page_for_subscription'] ) ) {
+		$redirect_url = get_page_link( $settings['page_for_subscription'] );
 	}
+
+	return apply_filters( 'leaky_paywall_redirect_url', add_query_arg( 'lp_txn_id', $subscriber_data['transaction_id'], $redirect_url ), $subscriber_data );
 }
+
 
 /**
  * Validate frontend registration
  */
 function leaky_paywall_validate_frontend_registration() {
+
+	if ( ! check_ajax_referer( 'lp_register_nonce', 'nonce', false ) ) {
+
+		$return = array(
+			'message' => 'There was an error. Please try again.',
+			'status'  => 'error',
+		);
+
+		wp_send_json( $return );
+	}
+
 	if ( isset( $_POST['email'] ) ) {
 
 		$email = sanitize_email( wp_unslash( $_POST['email'] ) );

@@ -44,6 +44,7 @@
       var data = {
         action: "leaky_paywall_validate_registration",
         email: email.val(),
+        nonce: leaky_paywall_validate_ajax.register_nonce
       };
 
       $.post(leaky_paywall_validate_ajax.ajaxurl, data, function (resp) {
@@ -75,6 +76,7 @@
         var data = {
           action: "leaky_paywall_validate_registration",
           username: username.val(),
+          nonce: leaky_paywall_validate_ajax.register_nonce
         };
 
         $.post(leaky_paywall_validate_ajax.ajaxurl, data, function (resp) {
