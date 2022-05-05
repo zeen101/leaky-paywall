@@ -65,7 +65,7 @@ function leaky_paywall_get_template( $template_name, $args = array(), $tempate_p
 	$template_file = leaky_paywall_locate_template( $template_name, $tempate_path, $default_path );
 
 	if ( ! file_exists( $template_file ) ) :
-		_doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> does not exist.', $template_file ), '1.0.0' );
+		_doing_it_wrong( __FUNCTION__, sprintf( '<code>%s</code> does not exist.', esc_url( $template_file ) ), '1.0.0' );
 		return;
 	endif;
 

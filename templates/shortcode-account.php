@@ -214,7 +214,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 								<td class="profile-table-value"><?php echo esc_html( $level['label'] ); ?></td>
 							</tr>
 							<tr>
-								<td class="profile-table-label"><?php esc_html_e( 'Status', 'leaky-paywall' ); ?></td>
+								<td class="profile-table-label"><?php esc_html_e( 'Payment Status', 'leaky-paywall' ); ?></td>
 								<td class="profile-table-value"><?php echo esc_html( $status_name ); ?></td>
 							</tr>
 							<tr>

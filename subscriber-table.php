@@ -561,7 +561,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		}
 		?>
 		<p class="search-box">
-			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo esc_attr( $text ); ?>:</label>
+			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo esc_html( $text ); ?>:</label>
 			<input type="checkbox" name="custom_field_search"> Search custom fields<br>
 			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo esc_attr( $search_query ); ?>" />
 

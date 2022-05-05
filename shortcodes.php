@@ -669,7 +669,7 @@ function do_leaky_paywall_register_form( $atts ) {
 					$content_access_description = stripslashes( $level['registration_form_description'] );
 				}
 
-				echo apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level, $level_id );
+				echo wp_kses_post( apply_filters( 'leaky_paywall_content_access_description', $content_access_description, $level, $level_id ) );
 				?>
 
 			</li>
@@ -680,7 +680,7 @@ function do_leaky_paywall_register_form( $atts ) {
 
 			<?php $display_price = leaky_paywall_get_level_display_price( $level ); ?>
 
-			<strong><?php printf( esc_attr__( 'Total:', 'leaky-paywall' ) ); ?></strong> <?php echo apply_filters( 'leaky_paywall_your_subscription_total', $display_price, $level ); ?>
+			<strong><?php echo esc_html__( 'Total:', 'leaky-paywall' ); ?></strong> <?php echo esc_html( apply_filters( 'leaky_paywall_your_subscription_total', $display_price, $level ) ); ?>
 		</p>
 
 	</div>
@@ -693,11 +693,11 @@ function do_leaky_paywall_register_form( $atts ) {
 		<div class="leaky-paywall-form-steps">
 			<div class="leaky-paywall-form-account-setup-step leaky-paywall-form-step active">
 				<span class="step-number">1</span>
-				<span class="step-title"><?php esc_attr_e( 'Account Setup', 'leaky-paywall' ); ?></span>
+				<span class="step-title"><?php esc_html_e( 'Account Setup', 'leaky-paywall' ); ?></span>
 			</div>
 			<div class="leaky-paywall-form-payment-setup-step leaky-paywall-form-step">
 				<span class="step-number">2</span>
-				<span class="step-title"><?php esc_attr_e( 'Payment', 'leaky-paywall' ); ?></span>
+				<span class="step-title"><?php esc_html_e( 'Payment', 'leaky-paywall' ); ?></span>
 			</div>
 		</div>
 		<?php
@@ -777,7 +777,7 @@ function do_leaky_paywall_register_form( $atts ) {
 			if ( 0 != $level['price'] ) {
 				?>
 				<p>
-					<button id="leaky-paywall-registration-next" type="button"><?php esc_attr_e( 'Next', 'leaky-paywall' ); ?></button>
+					<button id="leaky-paywall-registration-next" type="button"><?php esc_html_e( 'Next', 'leaky-paywall' ); ?></button>
 				</p>
 				<?php
 			}
@@ -834,7 +834,7 @@ function do_leaky_paywall_register_form( $atts ) {
 			<?php } ?>
 
 			<div class="leaky-paywall-checkout-button">
-				<button id="leaky-paywall-submit" type="submit"><?php echo esc_attr( leaky_paywall_get_registration_checkout_button_text() ); ?></button>
+				<button id="leaky-paywall-submit" type="submit"><?php echo esc_html( leaky_paywall_get_registration_checkout_button_text() ); ?></button>
 			</div>
 
 
@@ -848,7 +848,7 @@ function do_leaky_paywall_register_form( $atts ) {
 		<input type="hidden" name="interval_count" value="<?php echo esc_attr( $level['interval_count'] ); ?>" />
 		<input type="hidden" name="recurring" value="<?php echo empty( $level['recurring'] ) ? '' : esc_attr( $level['recurring'] ); ?>" />
 		<input type="hidden" name="site" value="<?php echo esc_attr( $site ); ?>" />
-		<input type="hidden" name="idem_key" value="<?php echo uniqid(); ?>" />
+		<input type="hidden" name="idem_key" value="<?php echo esc_attr( uniqid() ); ?>" />
 
 		<input type="hidden" name="leaky_paywall_register_nonce" value="<?php echo esc_attr( wp_create_nonce( 'leaky-paywall-register-nonce' ) ); ?>" />
 
