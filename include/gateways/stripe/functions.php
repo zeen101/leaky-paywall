@@ -153,109 +153,6 @@ function leaky_paywall_get_stripe_secret_key() {
 }
 
 
-add_action( 'wp_ajax_nopriv_leaky_paywall_create_stripe_checkout_session', 'leaky_paywall_create_stripe_checkout_session' );
-add_action( 'wp_ajax_leaky_paywall_create_stripe_checkout_session', 'leaky_paywall_create_stripe_checkout_session' );
-
-/**
- * Create a stripe checkout session
- */
-function leaky_paywall_create_stripe_checkout_session() {
-	$level_id = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
-	$level    = get_leaky_paywall_subscription_level( $level_id );
-	$settings = get_leaky_paywall_settings();
-
-	// @todo: make this a function so we can use it on the credit card form too.
-	if ( in_array( strtoupper( leaky_paywall_get_currency() ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
-		// Zero-Decimal Currencies
-		// https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support .
-		$stripe_price = number_format( $level['price'], '0', '', '' );
-	} else {
-		$stripe_price = number_format( $level['price'], '2', '', '' ); // no decimals.
-	}
-
-	if ( isset( $level['recurring'] ) && 'on' == $level['recurring'] ) {
-		$mode = 'subscription';
-	} else {
-		$mode = 'payment';
-	}
-
-	if ( ! empty( $settings['page_for_after_subscribe'] ) ) {
-		$redirect_url = get_page_link( $settings['page_for_after_subscribe'] );
-	} elseif ( ! empty( $settings['page_for_profile'] ) ) {
-		$redirect_url = get_page_link( $settings['page_for_profile'] );
-	} elseif ( ! empty( $settings['page_for_subscription'] ) ) {
-		$redirect_url = get_page_link( $settings['page_for_subscription'] );
-	} else {
-		$redirect_url = home_url();
-	}
-
-	$stripe = leaky_paywall_initialize_stripe_api();
-
-	$data = array(
-		'cancel_url'           => home_url( 'cancel' ),
-		'mode'                 => $mode,
-		'payment_method_types' => array( 'card', 'alipay' ),
-		'success_url'          => $redirect_url,
-		'line_items'           => array(
-			array(
-				'price_data'  => array(
-					'currency'     => leaky_paywall_get_currency(),
-					'product_data' => array( 'name' => $level['label'] ),
-					'unit_amount'  => $stripe_price,
-				),
-				'quantity'    => 1,
-				'description' => $level['label'],
-			),
-		),
-	);
-
-	if ( 'subscription' == $mode ) {
-		$data['line_items'] = array(
-			array(
-				'price_data'  => array(
-					'currency'     => leaky_paywall_get_currency(),
-					'product_data' => array( 'name' => $level['label'] ),
-					'unit_amount'  => $stripe_price,
-					'recurring'    => array(
-						'interval'       => $level['interval'],
-						'interval_count' => $level['interval_count'],
-					),
-				),
-				'quantity'    => 1,
-				'description' => $level['label'],
-			),
-		);
-	} else {
-		$data['line_items'] = array(
-			array(
-				'price_data'  => array(
-					'currency'     => leaky_paywall_get_currency(),
-					'product_data' => array( 'name' => $level['label'] ),
-					'unit_amount'  => $stripe_price,
-				),
-				'quantity'    => 1,
-				'description' => $level['label'],
-			),
-		);
-	}
-
-	try {
-		$session = $stripe->checkout->sessions->create( $data );
-	} catch ( \Throwable $th ) {
-
-		echo '<pre>';
-		print_r( $th );
-		echo '</pre>';
-		die( 'stripe error' );
-	}
-
-	$return = array(
-		'session_id' => $session->id,
-	);
-
-	wp_send_json( $return );
-}
-
 add_action( 'wp_ajax_nopriv_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall_create_stripe_payment_intent' );
 add_action( 'wp_ajax_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall_create_stripe_payment_intent' );
 
@@ -263,6 +160,18 @@ add_action( 'wp_ajax_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall
  * Create a stripe payment intent
  */
 function leaky_paywall_create_stripe_payment_intent() {
+
+	if (
+		! isset( $_POST['register_nonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( $_POST['register_nonce'] ), 'lp_register_nonce' )
+	) {
+		wp_send_json(
+			array(
+				'error' => __( 'There was an error. Please try again.', 'leaky-paywall' )
+			)
+		);
+	} 
+
 	$level_id = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
 	$level    = get_leaky_paywall_subscription_level( $level_id );
 
@@ -296,6 +205,7 @@ add_action( 'wp_ajax_leaky_paywall_create_stripe_checkout_subscription', 'leaky_
  * Create a stripe subscription invoice
  */
 function leaky_paywall_create_stripe_checkout_subscription() {
+
 	$level_id          = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
 	$level             = get_leaky_paywall_subscription_level( $level_id );
 	$customer_id       = isset( $_POST['customerId'] ) ? sanitize_text_field( wp_unslash( $_POST['customerId'] ) ) : '';
@@ -304,15 +214,18 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	$form_data         = isset( $_POST['formData'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['formData'] ) ) ) : '';
 	parse_str( $form_data, $fields );
 
-	$settings = get_leaky_paywall_settings();
+	if (
+		! isset( $fields['leaky_paywall_register_nonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( $fields['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+	) {
+		wp_send_json(
+			array(
+				'error' => __( 'There was an error. Please try again.', 'leaky-paywall' )
+			)
+		);
+	} 
 
 	$stripe = leaky_paywall_initialize_stripe_api();
-
-	$data = array(
-		'invoice_settings' => array(
-			'default_payment_method' => $payment_method_id,
-		),
-	);
 
 	try {
 		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id );
@@ -347,7 +260,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	try {
 		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
 		leaky_paywall_log( $customer, 'stripe checkout subscription for ' . $customer_id );
-		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ) ); // generating an error.
+		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ) ); 
 		leaky_paywall_log( 'after get subs', 'stripe checkout subscription for ' . $customer_id );
 
 		if ( empty( $subscriptions->data ) ) {
@@ -381,64 +294,6 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	wp_send_json( $return );
 }
 
-// https://stripe.com/docs/billing/subscriptions/fixed-price .
-add_action( 'wp_ajax_nopriv_leaky_paywall_retry_invoice_stripe_checkout_subscription', 'leaky_paywall_retry_invoice_stripe_checkout_subscription' );
-add_action( 'wp_ajax_leaky_paywall_retry_invoice_stripe_checkout_subscription', 'leaky_paywall_retry_invoice_stripe_checkout_subscription' );
-
-/**
- * Retry a stripe subscription invoice
- */
-function leaky_paywall_retry_invoice_stripe_checkout_subscription() {
-	$level_id          = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
-	$level             = get_leaky_paywall_subscription_level( $level_id );
-	$customer_id       = isset( $_POST['customerId'] ) ? sanitize_text_field( wp_unslash( $_POST['customerId'] ) ) : '';
-	$payment_method_id = isset( $_POST['paymentMethodId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentMethodId'] ) ) : '';
-	$invoice_id        = isset( $_POST['invoiceId'] ) ? sanitize_text_field( wp_unslash( $_POST['invoiceId'] ) ) : '';
-	$plan_id           = isset( $_POST['planId'] ) ? sanitize_text_field( wp_unslash( $_POST['planId'] ) ) : '';
-	$form_data         = isset( $_POST['formData'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['formData'] ) ) ) : '';
-	parse_str( $form_data, $fields );
-
-	$settings = get_leaky_paywall_settings();
-
-	$stripe = leaky_paywall_initialize_stripe_api();
-
-	try {
-		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id );
-		$payment_method->attach( array( 'customer' => $customer_id ) );
-
-		$customer = $stripe->customers->retrieve( $customer_id );
-		$customer->invoice_settings->default_payment_method = $payment_method_id;
-		$customer->save();
-	} catch ( \Throwable $th ) {
-
-		leaky_paywall_log( $customer_id, 'stripe error: retry invoice payment method' );
-
-		wp_send_json(
-			array(
-				'error' => $th->jsonBody,
-			)
-		);
-	}
-
-	try {
-		$invoice = $stripe->invoices->retrieve( $invoice_id );
-	} catch ( \Throwable $th ) {
-
-		leaky_paywall_log( $customer_id, 'stripe error: retry invoice invoice' );
-
-		wp_send_json(
-			array(
-				'error' => $th->jsonBody,
-			)
-		);
-	}
-
-	$return = array(
-		'invoice' => $invoice,
-	);
-
-	wp_send_json( $return );
-}
 
 /**
  * Get Stripe Plan

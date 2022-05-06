@@ -157,6 +157,7 @@
           data.append('action', 'leaky_paywall_create_stripe_payment_intent');
           data.append('level_id', level_id);
           data.append('paymentMethodType', 'card');
+          data.append('register_nonce', leaky_paywall_validate_ajax.register_nonce);
           
           // create paymentIntent
           const {clientSecret} = await fetch(leaky_paywall_script_ajax.ajaxurl, {
@@ -361,7 +362,7 @@
             data.append('planId', planId);
             data.append('invoiceId', invoiceId);
             data.append('formData', form_data);
-
+            
             return (
               fetch(leaky_paywall_script_ajax.ajaxurl, {
                 method: 'post',

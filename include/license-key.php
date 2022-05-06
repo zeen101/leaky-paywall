@@ -99,7 +99,7 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 			?>
 			<div id="modules" class="postbox">
 
-				<h3 class="hndle"><span><?php esc_attr_e( $this->plugin_name, $this->plugin_slug ); ?></span></h3>
+				<h3 class="hndle"><span><?php esc_html( $this->plugin_name, $this->plugin_slug ); ?></span></h3>
 
 				<div class="inside">
 					
@@ -117,7 +117,7 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 										&& 'valid' == $settings['license_status'] ) {
 														   // license is active.
 									?>
-											<span style="color:green;"><?php esc_attr_e( 'active' ); ?></span>
+											<span style="color:green;"><?php esc_html_e( 'active' ); ?></span>
 											<input type="submit" class="button-secondary" 
 												name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_deactivate" 
 												value="<?php esc_attr_e( 'Deactivate License', $this->plugin_slug ); ?>"/>
@@ -126,7 +126,7 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 								} elseif ( 'invalid' == $settings['license_status'] ) {
 										// license is invalid.
 									?>
-											<span style="color:red;"><?php esc_attr_e( 'invalid' ); ?></span>
+											<span style="color:red;"><?php esc_html_e( 'invalid' ); ?></span>
 											<input type="submit" class="button-secondary" 
 												name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_activate" 
 												value="<?php esc_attr_e( 'Activate License', $this->plugin_slug ); ?>"/>
