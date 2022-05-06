@@ -64,6 +64,18 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function process_signup() {
+
+		if (
+			! isset( $_POST['leaky_paywall_register_nonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+		) {
+			wp_die( 
+				esc_html__( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . esc_html( get_bloginfo( 'admin_email' ) ), 
+				esc_html__( 'Error', 'leaky-paywall' ), 
+				array( 'response' => '401' ) 
+			);
+		}
+
 		$level = get_leaky_paywall_subscription_level( $this->level_id );
 
 		$incomplete_user = get_posts(
@@ -76,7 +88,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		);
 
 		if ( empty( $incomplete_user ) ) {
-			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
+			wp_die( 
+				esc_html__( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . esc_html( get_bloginfo( 'admin_email' ) ), 
+				esc_html__( 'Error', 'leaky-paywall' ), 
+				array( 'response' => '401' ) 
+			);
 		}
 
 		$customer_data = get_post_meta( $incomplete_user[0]->ID, '_customer_data', true );
@@ -91,7 +107,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		}
 
 		if ( ! $customer_id ) {
-			wp_die( __( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . get_bloginfo( 'admin_email' ), __( 'Error', 'leaky-paywall' ), array( 'response' => '401' ) );
+			wp_die( 
+				esc_html__( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . esc_html( get_bloginfo( 'admin_email' ) ), 
+				esc_html__( 'Error', 'leaky-paywall' ), 
+				array( 'response' => '401' ) 
+			);
 		}
 
 		$payment_intent_id = isset( $_POST['payment-intent-id'] ) ? sanitize_text_field( wp_unslash( $_POST['payment-intent-id'] ) ) : '';
@@ -272,7 +292,12 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function fields( $level_id ) {
 
-		$level_id = is_numeric( $level_id ) ? $level_id : sanitize_text_field( wp_unslash( $_GET['level_id'] ) );
+		if ( is_numeric( $level_id ) ) {
+			$level_id = $level_id;
+		} else if ( isset( $_GET['level_id'] ) ) {
+			$level_id = sanitize_text_field( wp_unslash( $_GET['level_id'] ) );
+		}
+
 		$level    = get_leaky_paywall_subscription_level( $level_id );
 
 		if ( 0 == $level['price'] ) {
@@ -318,7 +343,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			<input id="payment_method_stripe" class="input-radio" name="payment_method" value="stripe" checked="checked" data-order_button_text="" type="radio">
 
-			<label for="payment_method_stripe"> <?php esc_attr_e( 'Credit Card', 'leaky-paywall' ); ?> <img width="150" src="<?php echo esc_url( LEAKY_PAYWALL_URL ); ?>images/credit_card_logos_5.gif"></label>
+			<label for="payment_method_stripe"> <?php esc_html_e( 'Credit Card', 'leaky-paywall' ); ?> <img width="150" src="<?php echo esc_url( LEAKY_PAYWALL_URL ); ?>images/credit_card_logos_5.gif"></label>
 
 		</div>
 
@@ -337,7 +362,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			<?php
 			if ( ! is_ssl() ) {
-				echo '<div class="leaky_paywall_message error"><p>' . esc_attr__( 'This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes.', 'leaky-paywall' ) . '</p></div>';
+				echo '<div class="leaky_paywall_message error"><p>' . esc_html__( 'This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes.', 'leaky-paywall' ) . '</p></div>';
 			}
 			?>
 
@@ -371,9 +396,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function validate_fields() {
-		if ( empty( $_POST['card_number'] ) ) {
-			leaky_paywall_errors()->add( 'missing_card_number', __( 'The card number you entered is invalid', 'issuem-leaky-paywall' ), 'register' );
-		}
+		
 	}
 
 

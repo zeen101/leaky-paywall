@@ -128,31 +128,4 @@ class Leaky_Paywall_Payment_Gateways {
 		return isset( $this->enabled_gateways[ $id ] );
 	}
 
-	/**
-	 * Loead the fieds for the gateway
-	 *
-	 * @since 4.0.0
-	 * @return void
-	 */
-	public function load_fields() {
-		if ( ! empty( $_POST['leaky_paywall_gateway'] ) ) {
-
-			$gateway = $this->get_gateway( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_gateway'] ) ) );
-
-			if ( isset( $gateway['class'] ) ) {
-				$gateway = new $gateway['class']();
-			}
-
-			if ( is_object( $gateway ) ) {
-				wp_send_json_success(
-					array(
-						'success' => true,
-						'fields'  => $gateway->fields(),
-					)
-				);
-			} else {
-				wp_send_json_error( array( 'success' => false ) );
-			}
-		}
-	}
 }

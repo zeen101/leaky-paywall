@@ -116,6 +116,8 @@ function leaky_paywall_load_gateway_fields( $gateways, $level_id ) {
 		$gateway = new $gateway['class']();
 		$gateway->init();
 
+		// output is properly escaped in the fields method
+		// phpcs:ignore
 		echo $gateway->fields( $level_id );
 
 	}
