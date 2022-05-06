@@ -722,6 +722,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['restrictions'] ) ) {
+					// phpcs:ignore
 					$settings['restrictions'] = $this->sanitize_restrictions( $_POST['restrictions'] );
 				} else {
 					$settings['restrictions'] = array();
@@ -785,6 +786,7 @@ class Leaky_Paywall {
 				}
 
 				if ( ! empty( $_POST['levels'] ) ) {
+					// phpcs:ignore
 					$settings['levels'] = $this->sanitize_levels( $_POST['levels'] );
 				}
 			}
@@ -1821,6 +1823,7 @@ class Leaky_Paywall {
 													if ( ! is_numeric( $key ) ) {
 														continue;
 													}
+													// phpcs:ignore
 													echo build_leaky_paywall_subscription_levels_row( $level, $key );
 													$last_key = $key;
 
@@ -1835,6 +1838,7 @@ class Leaky_Paywall {
 													// set the default key to one more than they last key value.
 													$default_key = count( $settings['levels'] );
 
+													// phpcs:ignore
 													echo build_leaky_paywall_subscription_levels_row( '', $default_key );
 												}
 											}
