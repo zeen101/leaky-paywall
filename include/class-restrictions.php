@@ -54,7 +54,7 @@ class Leaky_Paywall_Restrictions {
 		?>
 		<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 9999;">
 			<?php
-			echo '<pre>' . esc_attr__( 'Viewed Content:', 'leaky-paywall' ) . ' ';
+			echo '<pre>' . esc_html__( 'Viewed Content:', 'leaky-paywall' ) . ' ';
 			print_r( $this->get_content_viewed_by_user() );
 			echo '</pre>';
 			?>
@@ -832,7 +832,7 @@ class Leaky_Paywall_Restrictions {
 			/* Translators: %s: site name. */
 			$output .= '<a href="' . get_home_url() . '">' . sprintf( __( 'back to %s', 'leaky-paywall' ), $settings['site_name'] ) . '</a>';
 
-			wp_die( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ), $settings['site_name'] . ' - Error' );
+			wp_die( wp_kses_post( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ) ), esc_html( $settings['site_name'] ) . ' - Error' );
 		}
 	}
 
@@ -885,7 +885,7 @@ class Leaky_Paywall_Restrictions {
 	 */
 	public function get_content_viewed_by_user() {
 		if ( ! empty( $_COOKIE[ $this->get_cookie_name() ] ) ) {
-			$content_viewed = json_decode( wp_unslash( $_COOKIE[ $this->get_cookie_name() ] ), true );
+			$content_viewed = json_decode( sanitize_text_field( wp_unslash( $_COOKIE[ $this->get_cookie_name() ] ) ), true );
 		} else {
 			$content_viewed = array();
 		}

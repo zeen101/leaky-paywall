@@ -1089,11 +1089,11 @@ if ( ! function_exists( 'create_leaky_paywall_login_hash' ) ) {
 	 */
 	function create_leaky_paywall_login_hash( $str ) {
 
-		if ( defined( SECURE_AUTH_SALT ) ) {
+		if ( defined( 'SECURE_AUTH_SALT' ) ) {
 			$salt[] = SECURE_AUTH_SALT;
 		}
 
-		if ( defined( AUTH_SALT ) ) {
+		if ( defined( 'AUTH_SALT' ) ) {
 			$salt[] = AUTH_SALT;
 		}
 
@@ -1469,7 +1469,7 @@ if ( ! function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 					$output .= '<p>' . sprintf( __( 'Download Error: Invalid response: %s', 'leaky-paywall' ), wp_remote_retrieve_response_code( $response ) ) . '</p>';
 					$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'leaky-paywall' ) . '</a>';
 
-					wp_die( $output );
+					wp_die( wp_kses_post( $output ) );
 				}
 			} else {
 				$output = '<h3>' . __( 'Error Downloading PDF', 'leaky-paywall' ) . '</h3>';
@@ -1478,7 +1478,7 @@ if ( ! function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 				$output .= '<p>' . sprintf( __( 'Download Error: %s', 'leaky-paywall' ), $response->get_error_message() ) . '</p>';
 				$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'leaky-paywall' ) . '</a>';
 
-				wp_die( $output );
+				wp_die( wp_kses_post( $output ) );
 			}
 		}
 	}
@@ -1537,7 +1537,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		?>
 
 		<div class="leaky-paywall-subscription-level-row-header <?php echo esc_attr( $deleted ); ?>">
-			<p class="leaky-paywall-subscription-level-row-header-title"><?php echo esc_attr( $level['label'] ); ?> <span class="leaky-paywall-subscription-level-row-header-title-id">ID: <?php echo esc_attr( $row_key ); ?></span></p>
+			<p class="leaky-paywall-subscription-level-row-header-title"><?php echo esc_html( $level['label'] ); ?> <span class="leaky-paywall-subscription-level-row-header-title-id">ID: <?php echo esc_html( $row_key ); ?></span></p>
 			<p class="leaky-paywall-subscription-level-row-header-toggler"><span class="dashicons dashicons-arrow-up"></span><span class="dashicons dashicons-arrow-down"></span></p>
 		</div>
 
@@ -1547,10 +1547,10 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				?>
 					<tr>
 						<th>
-							<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Direct Sign Up Link', 'leaky-paywall' ); ?></label>
+							<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Direct Sign Up Link', 'leaky-paywall' ); ?></label>
 						</th>
 						<td>
-							<p><?php echo get_page_link( $settings['page_for_register'] ) . '?level_id=' . $row_key; ?></p>
+							<p><?php echo esc_url( get_page_link( $settings['page_for_register'] ) ) . '?level_id=' . esc_attr( $row_key ); ?></p>
 						</td>
 					</tr>	
 				<?php 
@@ -1559,7 +1559,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		
 			<tr>
 				<th>
-					<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Subscription Level Name', 'leaky-paywall' ); ?></label>
+					<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Subscription Level Name', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
 					<input id="level-name-<?php echo esc_attr( $row_key ); ?>" type="text" class="regular-text" name="levels[<?php echo esc_attr( $row_key ); ?>][label]" value="<?php echo esc_attr( $level['label'] ); ?>" />
@@ -1570,21 +1570,21 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 
 			<tr>
 				<th>
-					<label for="level-description-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Subscribe Card Description', 'leaky-paywall' ); ?></label>
+					<label for="level-description-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Subscribe Card Description', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
-					<textarea id="level-description-<?php echo esc_attr( $row_key ); ?>" name="levels[<?php echo esc_attr( $row_key ); ?>][description]" class="large-text"><?php echo esc_attr( $level['description'] ); ?></textarea>
-					<p class="description"><?php esc_attr_e( 'If entered, this will replace the auto-generated access description on the subscribe cards. HTML allowed.', 'leaky-paywall' ); ?></p>
+					<textarea id="level-description-<?php echo esc_attr( $row_key ); ?>" name="levels[<?php echo esc_attr( $row_key ); ?>][description]" class="large-text"><?php echo esc_textarea( $level['description'] ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'If entered, this will replace the auto-generated access description on the subscribe cards. HTML allowed.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
 				<th>
-					<label for="level-registration-form-description-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Registration Form Description', 'leaky-paywall' ); ?></label>
+					<label for="level-registration-form-description-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Registration Form Description', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
-					<textarea id="level-registration-form-description-<?php echo esc_attr( $row_key ); ?>" name="levels[<?php echo esc_attr( $row_key ); ?>][registration_form_description]" class="large-text"><?php echo esc_attr( $level['registration_form_description'] ); ?></textarea>
-					<p class="description"><?php esc_attr_e( 'If entered, this will replace the auto-generated content access description on the registration form. HTML allowed.', 'leaky-paywall' ); ?></p>
+					<textarea id="level-registration-form-description-<?php echo esc_attr( $row_key ); ?>" name="levels[<?php echo esc_attr( $row_key ); ?>][registration_form_description]" class="large-text"><?php echo esc_textarea( $level['registration_form_description'] ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'If entered, this will replace the auto-generated content access description on the registration form. HTML allowed.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
@@ -1593,7 +1593,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				?>
 				<tr>
 					<th>
-						<label for="level-recurring-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Recurring', 'leaky-paywall' ); ?></label>
+						<label for="level-recurring-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Recurring', 'leaky-paywall' ); ?></label>
 					</th>
 					<td>
 						<input id="level-recurring-<?php echo esc_attr( $row_key ); ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo esc_attr( $row_key ); ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments<br>
@@ -1626,31 +1626,31 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 
 			<tr>
 				<th>
-					<label for="level-hide-subscribe-card-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Hide Subscribe Card', 'leaky-paywall' ); ?></label>
+					<label for="level-hide-subscribe-card-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Hide Subscribe Card', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
-					<input id="level-hide-subscribe-card-<?php echo esc_attr( $row_key ); ?>" class="hide-subscribe- card" type="checkbox" name="levels[<?php echo esc_attr( $row_key ); ?>][hide_subscribe_card]" value="on" <?php echo checked( 'on', $level['hide_subscribe_card'], false ); ?> /> <?php esc_attr_e( 'Do not display subscribe card on subscribe page', 'leaky-paywall' ); ?>
+					<input id="level-hide-subscribe-card-<?php echo esc_attr( $row_key ); ?>" class="hide-subscribe- card" type="checkbox" name="levels[<?php echo esc_attr( $row_key ); ?>][hide_subscribe_card]" value="on" <?php echo checked( 'on', $level['hide_subscribe_card'], false ); ?> /> <?php esc_html_e( 'Do not display subscribe card on subscribe page', 'leaky-paywall' ); ?>
 				</td>
 			</tr>
 
 			<tr>
 				<th>
-					<label for="level-price-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Subscription Price', 'leaky-paywall' ); ?></label>
+					<label for="level-price-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Subscription Price', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
 					<input id="level-price-<?php echo esc_attr( $row_key ); ?>" type="text" style="width: 100px;" name="levels[<?php echo esc_attr( $row_key ); ?>][price]" value="<?php echo esc_attr( $level['price'] ); ?>" />
-					<p class="description"><?php esc_attr_e( '0 for Free Subscriptions', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( '0 for Free Subscriptions', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
 				<th>
-					<label for="level-interval-count-<?php echo esc_attr( $row_key ); ?>"><?php esc_attr_e( 'Subscription Length', 'leaky-paywall' ); ?></label>
+					<label for="level-interval-count-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Subscription Length', 'leaky-paywall' ); ?></label>
 				</th>
 				<td>
 					<select class="subscription_length_type" name="levels[<?php echo esc_attr( $row_key ); ?>][subscription_length_type]">
-						<option value="unlimited" <?php echo selected( 'unlimited', $level['subscription_length_type'], false ); ?>><?php esc_attr_e( 'Forever', 'leaky-paywall' ); ?></option>
-						<option value="limited" <?php echo selected( 'limited', $level['subscription_length_type'], false ); ?>> <?php esc_attr_e( 'Limited for...', 'leaky-paywall' ); ?></option>
+						<option value="unlimited" <?php echo selected( 'unlimited', $level['subscription_length_type'], false ); ?>><?php esc_html_e( 'Forever', 'leaky-paywall' ); ?></option>
+						<option value="limited" <?php echo selected( 'limited', $level['subscription_length_type'], false ); ?>> <?php esc_html_e( 'Limited for...', 'leaky-paywall' ); ?></option>
 					</select>
 
 					<?php
@@ -1664,17 +1664,17 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 					<div class="interval_div" style="<?php echo esc_attr( $subscription_length_input_style ); ?>">
 						<input id="level-interval-count-<?php echo esc_attr( $row_key ); ?>" type="text" class="interval_count small-text" name="levels[<?php echo esc_attr( $row_key ); ?>][interval_count]" value="<?php echo esc_attr( $level['interval_count'] ); ?>" />
 						<select id="interval" name="levels[<?php echo esc_attr( $row_key ); ?>][interval]">
-							<option value="day" <?php echo selected( 'day' === $level['interval'], true, false ); ?>><?php esc_attr_e( 'Day(s)', 'leaky-paywall' ); ?></option>
-							<option value="week" <?php echo selected( 'week' === $level['interval'], true, false ); ?>><?php esc_attr_e( 'Week(s)', 'leaky-paywall' ); ?></option>
-							<option value="month" <?php echo selected( 'month' === $level['interval'], true, false ); ?>><?php esc_attr_e( 'Month(s)', 'leaky-paywall' ); ?></option>
-							<option value="year" <?php echo selected( 'year' === $level['interval'], true, false ); ?>><?php esc_attr_e( 'Year(s)', 'leaky-paywall' ); ?></option>
+							<option value="day" <?php echo selected( 'day' === $level['interval'], true, false ); ?>><?php esc_html_e( 'Day(s)', 'leaky-paywall' ); ?></option>
+							<option value="week" <?php echo selected( 'week' === $level['interval'], true, false ); ?>><?php esc_html_e( 'Week(s)', 'leaky-paywall' ); ?></option>
+							<option value="month" <?php echo selected( 'month' === $level['interval'], true, false ); ?>><?php esc_html_e( 'Month(s)', 'leaky-paywall' ); ?></option>
+							<option value="year" <?php echo selected( 'year' === $level['interval'], true, false ); ?>><?php esc_html_e( 'Year(s)', 'leaky-paywall' ); ?></option>
 						</select>
 					</div>
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Access Options', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Access Options', 'leaky-paywall' ); ?></th>
 				<td id="issuem-leaky-paywall-subsciption-row-<?php echo esc_attr( $row_key ); ?>-post-types">
 
 					<table class="leaky-paywall-interal-setting-table">
@@ -1715,7 +1715,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 					}
 					?>
 
-					<p class="description"><?php esc_attr_e( 'Access processed from top to bottom.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Access processed from top to bottom.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
@@ -1725,25 +1725,25 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			if ( is_multisite_premium() ) {
 				?>
 				<tr>
-					<th><?php esc_attr_e( 'Site', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Site', 'leaky-paywall' ); ?></th>
 					<td id="issuem-leaky-paywall-subsciption-row-<?php echo esc_attr( $row_key ); ?>-site">
 						<select id="site" name="levels[<?php echo esc_attr( $row_key ); ?>][site]">
 							<?php
 							if ( is_super_admin() ) {
 								?>
-								<option value="all" <?php echo selected( 'all', $level['site'], false ); ?>><?php esc_attr_e( 'All Sites', 'leaky-paywall' ); ?></option>
+								<option value="all" <?php echo selected( 'all', $level['site'], false ); ?>><?php esc_html_e( 'All Sites', 'leaky-paywall' ); ?></option>
 								<?php
 								$sites = get_sites();
 								foreach ( $sites as $site ) {
 									$site_details = get_blog_details( $site->id );
 									?>
-									<option value="<?php echo esc_attr( $site->id ); ?>" <?php echo selected( $site->id, $level['site'], false ); ?>><?php echo esc_attr( $site_details->blogname ); ?></option>
+									<option value="<?php echo esc_attr( $site->id ); ?>" <?php echo selected( $site->id, $level['site'], false ); ?>><?php echo esc_html( $site_details->blogname ); ?></option>
 									<?php
 								}
 							} else {
 								$site_details = get_blog_details( get_current_blog_id() );
 								?>
-								<option value="<?php echo get_current_blog_id(); ?>" <?php echo selected( get_current_blog_id(), $level['site'], false ); ?>><?php echo esc_attr( $site_details->blogname ); ?></option>
+								<option value="<?php echo get_current_blog_id(); ?>" <?php echo selected( get_current_blog_id(), $level['site'], false ); ?>><?php echo esc_html( $site_details->blogname ); ?></option>
 								<?php
 							}
 							?>
@@ -1757,7 +1757,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			}
 
 			// leaving for backwards compatibility, but it will deprecated.
-			echo apply_filters( 'build_leaky_paywall_subscription_levels_row_addon_filter', '', $level, $row_key );
+			echo wp_kses_post( apply_filters( 'build_leaky_paywall_subscription_levels_row_addon_filter', '', $level, $row_key ) );
 
 			do_action( 'leaky_paywall_after_subscription_levels_row', $level, $row_key );
 
@@ -1779,6 +1779,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_row_ajax' ) ) {
 	 */
 	function build_leaky_paywall_subscription_row_ajax() {
 		if ( isset( $_REQUEST['row-key'] ) ) {
+			// phpcs:ignore
 			die( build_leaky_paywall_subscription_levels_row( array(), sanitize_text_field( wp_unslash( $_REQUEST['row-key'] ) ) ) );
 		} else {
 			die();
@@ -1812,8 +1813,8 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 
 		echo '<tr class="issuem-leaky-paywall-row-post-type">';
 		echo '<td><select class="allowed_type" name="levels[' . esc_attr( $row_key ) . '][post_types][' . esc_attr( $select_post_key ) . '][allowed]">';
-		echo '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . esc_attr__( 'Unlimited', 'leaky-paywall' ) . '</option>';
-		echo '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . esc_attr__( 'Limit to...', 'leaky-paywall' ) . '</option>';
+		echo '<option value="unlimited" ' . selected( 'unlimited', $select_post_type['allowed'], false ) . '>' . esc_html__( 'Unlimited', 'leaky-paywall' ) . '</option>';
+		echo '<option value="limited" ' . selected( 'limited', $select_post_type['allowed'], false ) . '>' . esc_html__( 'Limit to...', 'leaky-paywall' ) . '</option>';
 		echo '</select>';
 
 		if ( 'unlimited' === $select_post_type['allowed'] ) {
@@ -1835,10 +1836,10 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 				if ( in_array( $post_type->name, $hidden_post_types, true ) ) {
 					continue;
 				}
-				echo '<option value="' . esc_attr( $post_type->name ) . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . esc_attr( $post_type->labels->name ) . '</option>';
+				echo '<option value="' . esc_attr( $post_type->name ) . '" ' . selected( $post_type->name, $select_post_type['post_type'], false ) . '>' . esc_html( $post_type->labels->name ) . '</option>';
 			}
 		} else {
-			echo '<option value="' . esc_attr( $select_post_type['post_type'] ) . '">' . esc_attr( $select_post_type['post_type'] ) . ' &#42;</option>';
+			echo '<option value="' . esc_attr( $select_post_type['post_type'] ) . '">' . esc_html( $select_post_type['post_type'] ) . ' &#42;</option>';
 		}
 		echo '</select></td>';
 
@@ -1868,7 +1869,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_row_post_type' ) ) {
 			);
 
 			foreach ( $terms as $term ) {
-				echo '<option value="' . esc_attr( $term->term_id ) . '" ' . selected( $term->term_id, $select_post_type['taxonomy'], false ) . '>' . esc_attr( $term->name ) . '</option>';
+				echo '<option value="' . esc_attr( $term->term_id ) . '" ' . selected( $term->term_id, $select_post_type['taxonomy'], false ) . '>' . esc_html( $term->name ) . '</option>';
 			}
 
 			echo '</optgroup>';
@@ -1899,6 +1900,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_row_post_type_ajax' ) 
 				}
 			}
 
+			// phpcs:ignore
 			die( build_leaky_paywall_subscription_row_post_type( array(), sanitize_text_field( wp_unslash( $_REQUEST['select-post-key'] ) ), sanitize_text_field( wp_unslash( $_REQUEST['row-key'] ) ) ) );
 		}
 		die();
@@ -1943,7 +1945,7 @@ function build_leaky_paywall_default_restriction_row( $restriction = array(), $r
 			continue;
 		}
 
-		echo '<option value="' . esc_attr( $post_type->name ) . '" ' . selected( $post_type->name, $restriction['post_type'], false ) . '>' . esc_attr( $post_type->labels->name ) . '</option>';
+		echo '<option value="' . esc_attr( $post_type->name ) . '" ' . selected( $post_type->name, $restriction['post_type'], false ) . '>' . esc_html( $post_type->labels->name ) . '</option>';
 	}
 
 	echo '</select></td>';
@@ -1974,7 +1976,7 @@ function build_leaky_paywall_default_restriction_row( $restriction = array(), $r
 		);
 
 		foreach ( $terms as $term ) {
-			echo '<option value="' . esc_attr( $term->term_id ) . '" ' . selected( $term->term_id, $restriction['taxonomy'], false ) . '>' . esc_attr( $term->name ) . '</option>';
+			echo '<option value="' . esc_attr( $term->term_id ) . '" ' . selected( $term->term_id, $restriction['taxonomy'], false ) . '>' . esc_html( $term->name ) . '</option>';
 		}
 
 		echo '</optgroup>';
@@ -2034,7 +2036,7 @@ function leaky_paywall_get_restriction_row_post_type_taxonomies() {
 				);
 
 				foreach ( $terms as $term ) {
-					echo '<option value="' . esc_attr( $term->term_id ) . '">' . esc_attr( $term->name ) . '</option>';
+					echo '<option value="' . esc_attr( $term->term_id ) . '">' . esc_html( $term->name ) . '</option>';
 				}
 
 				echo '</optgroup>';
@@ -2063,6 +2065,7 @@ if ( ! function_exists( 'build_leaky_paywall_default_restriction_row_ajax' ) ) {
 	function build_leaky_paywall_default_restriction_row_ajax() {
 
 		if ( isset( $_REQUEST['row-key'] ) ) {
+			// phpcs:ignore
 			die( build_leaky_paywall_default_restriction_row( array(), sanitize_text_field( wp_unslash( $_REQUEST['row-key'] ) ) ) );
 		} else {
 			die();
@@ -4391,10 +4394,10 @@ function leaky_paywall_display_rate_us_notice() {
 			<div class="leaky-paywall-message-inner">
 
 				<div class="leaky-paywall-message-content">
-					<p><strong><?php echo esc_attr__( 'Congrats!', 'leaky-paywall' ); ?></strong> 🥳<?php esc_attr_e( 'You have more than 100 subscribers with <strong>Leaky Paywall</strong>. Please help us by leaving a review on WordPress.org. <br>We read every review and use your feedback to make Leaky Paywall better for everyone!', 'leaky-paywall' ); ?></p>
+					<p><strong><?php echo esc_html__( 'Congrats!', 'leaky-paywall' ); ?></strong> 🥳<?php esc_html_e( 'You have more than 100 subscribers with Leaky Paywall. Please help us by leaving a review on WordPress.org. We read every review and use your feedback to make Leaky Paywall better for everyone!', 'leaky-paywall' ); ?></p>
 					<p class="leaky-paywall-message-actions">
-						<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php esc_attr_e( 'Leave a Review', 'leaky-paywall' ); ?></a>
-						<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php esc_attr_e( 'Hide', 'leaky-paywall' ); ?></a>
+						<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php esc_html_e( 'Leave a Review', 'leaky-paywall' ); ?></a>
+						<a href="<?php echo esc_url_raw( $dismiss_url ); ?>" class="button leaky-paywall-button-notice-dismiss"><?php esc_html_e( 'Hide', 'leaky-paywall' ); ?></a>
 					</p>
 				</div>
 				<div class="leaky-paywall-message-logo">

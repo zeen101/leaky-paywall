@@ -14,7 +14,7 @@ function lp_display_debug_log() {
 		<h3><span><?php esc_html_e( 'Debug Log', 'leaky-paywall' ); ?></span></h3>
 		
 			<form id="lp-debug-log" method="post">
-				<p><?php esc_attr_e( 'Use this tool to help debug Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
+				<p><?php esc_html_e( 'Use this tool to help debug Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
 				<p class="submit">
 					<input type="hidden" name="lp_action" value="submit_debug_log" />
 					<?php
@@ -24,7 +24,7 @@ function lp_display_debug_log() {
 				</p>
 				<?php wp_nonce_field( 'lp_debug_log_action', 'lp_debug_log_field' ); ?>
 			</form>
-			<p><?php esc_attr_e( 'Log file', 'leaky-paywall' ); ?>: <code><?php echo esc_attr( $lp_logs->get_log_file_path() ); ?></code></p>
+			<p><?php esc_html_e( 'Log file', 'leaky-paywall' ); ?>: <code><?php echo esc_html( $lp_logs->get_log_file_path() ); ?></code></p>
 		
 	
 	<?php 
