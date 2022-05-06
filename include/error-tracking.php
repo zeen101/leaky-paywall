@@ -59,7 +59,7 @@ function leaky_paywall_show_error_messages( $error_id = '' ) {
 	if ( leaky_paywall_errors()->get_error_codes() ) {
 
 		do_action( 'leaky_paywall_errors_before' );
-		echo leaky_paywall_get_error_messages_html( $error_id );
+		echo wp_kses_post( leaky_paywall_get_error_messages_html( $error_id ) );
 		do_action( 'leaky_paywall_errors_after' );
 
 	}

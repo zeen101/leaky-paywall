@@ -285,11 +285,27 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 			if ( ! empty( $_REQUEST['txn_type'] ) ) {
 
+				if ( isset( $_REQUEST['item_number'] ) ) {
+					$level_id = sanitize_text_field( wp_unslash( $_REQUEST['item_number'] ) );
+				} else if ( isset( $_REQUEST['item_number1'] ) ) {
+					$level_id = sanitize_text_field( wp_unslash( $_REQUEST['item_number1'] ) );
+				} else {
+					$level_id = '';
+				}
+
+				if ( isset( $_REQUEST['item_name'] ) ) {
+					$desc = sanitize_text_field( wp_unslash( $_REQUEST['item_name'] ) );
+				} else if ( isset( $_REQUEST['item_name1'] ) ) {
+					$desc = sanitize_text_field( wp_unslash( $_REQUEST['item_name1'] ) );
+				} else {
+					$desc = '';
+				}
+
 				$args = apply_filters(
 					'leaky_paywall_paypal_verified_ipn_args',
 					array(
-						'level_id'        => isset( $_REQUEST['item_number'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['item_number'] ) ) : sanitize_text_field( wp_unslash( $_REQUEST['item_number1'] ) ), // should be universal for all PayPal IPNs we're capturing.
-						'description'     => isset( $_REQUEST['item_name'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['item_name'] ) ) : sanitize_text_field( wp_unslash( $_REQUEST['item_name1'] ) ), // should be universal for all PayPal IPNs we're capturing.
+						'level_id'        => $level_id, // should be universal for all PayPal IPNs we're capturing.
+						'description'     => $desc, // should be universal for all PayPal IPNs we're capturing.
 						'payment_gateway' => 'paypal_standard',
 					)
 				);
@@ -612,8 +628,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				do_action( 'leaky_paywall_after_process_paypal_webhooks', $_REQUEST, $args, $user_id );
 			}
 		} else {
-			/* Translators: %s: The payload. */
-			error_log( sprintf( __( 'Invalid IPN sent from PayPal: %s', 'leaky-paywall' ), maybe_serialize( $payload ) ) );
+			leaky_paywall_log( $payload, 'Invalid IPN sent from PayPal' );
 		}
 
 		return true;
