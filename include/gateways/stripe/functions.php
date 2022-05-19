@@ -163,7 +163,7 @@ function leaky_paywall_create_stripe_payment_intent() {
 
 	if (
 		! isset( $_POST['register_nonce'] )
-		|| ! wp_verify_nonce( sanitize_text_field( $_POST['register_nonce'] ), 'lp_register_nonce' )
+		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['register_nonce'] ) ), 'lp_register_nonce' )
 	) {
 		wp_send_json(
 			array(

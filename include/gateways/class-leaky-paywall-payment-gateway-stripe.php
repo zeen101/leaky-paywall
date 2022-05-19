@@ -67,7 +67,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		if (
 			! isset( $_POST['leaky_paywall_register_nonce'] )
-			|| ! wp_verify_nonce( sanitize_text_field( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_register_nonce'] ) ), 'leaky-paywall-register-nonce' )
 		) {
 			wp_die( 
 				esc_html__( 'An error occurred, please contact the site administrator: ', 'leaky-paywall' ) . esc_html( get_bloginfo( 'admin_email' ) ), 

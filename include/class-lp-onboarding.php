@@ -72,16 +72,16 @@ class LP_Onboarding {
 				<div class="ssp-onboarding__settings-header">
 					<h1>Let's get your publication started</h1>
 				</div>
-				<form class="ssp-onboarding__settings-body" action="<?php echo $step_urls[ $step_number + 1 ] ?>" method="post">
+				<form class="ssp-onboarding__settings-body" action="<?php echo esc_attr( $step_urls[ $step_number + 1 ] ); ?>" method="post">
 					<div class="ssp-onboarding__settings-item">
 						<h2>What’s the name of your publication?</h2>
 						<label for="show_name">This will be the title shown to listeners. You can always change it later.</label>
-						<input id="show_name" class="js-onboarding-field" type="text" name="data_title" value="<?php echo $data_title ?>">
+						<input id="show_name" class="js-onboarding-field" type="text" name="data_title" value="<?php echo esc_attr( $data_title ); ?>">
 					</div>
 					<div class="ssp-onboarding__settings-item">
 						<h2>What’s your publication about?</h2>
 						<label for="show_description">Pique listeners' interest with a a few details about your podcast.</label>
-						<textarea id="show_description" class="js-onboarding-field" name="data_description" rows="7"><?php echo $data_description ?></textarea>
+						<textarea id="show_description" class="js-onboarding-field" name="data_description" rows="7"><?php echo esc_attr( $data_description ); ?></textarea>
 					</div>
 					<div class="ssp-onboarding__submit">
 						<button type="submit" class="js-onboarding-btn" <?php if( empty( $data_title ) || empty( $data_description ) ) echo 'disabled="disabled"' ?>>Proceed</button>
@@ -97,7 +97,7 @@ class LP_Onboarding {
 	{
 		?>
 			<p style="text-align: center;">
-				<img width="300" src="<?php echo LEAKY_PAYWALL_URL; ?>/images/LP_logo_color_lrg.png">
+				<img width="300" src="<?php echo esc_url( LEAKY_PAYWALL_URL ); ?>/images/LP_logo_color_lrg.png">
 			</p>
 		<?php 
 	}

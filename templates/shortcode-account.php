@@ -19,7 +19,7 @@ $plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode .
 
 $stripe = leaky_paywall_initialize_stripe_api();
 
-if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_text_field( $_POST['lp_update_card_form_field'] ), 'lp_update_card_form' ) && isset( $_POST['stripeToken'] ) && $subscriber_id ) {
+if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['lp_update_card_form_field'] ) ), 'lp_update_card_form' ) && isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 	$payment_status   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_status' . $site, true );
 	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_level_id' . $site, true );

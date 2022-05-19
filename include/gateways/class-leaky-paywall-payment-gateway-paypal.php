@@ -141,7 +141,14 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function process_signup() {
-		// for recurring, cmb = _xclick-subscriptions.
+
+		if ( ! isset( $_POST['leaky_paywall_register_nonce'] ) ) {
+			return;
+		}
+	
+		if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' ) ) {
+			return;
+		}
 
 		$this->save_data_to_transaction();
 

@@ -132,7 +132,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
 	if (
 		! isset( $_POST['leaky_paywall_register_nonce'] )
-		|| ! wp_verify_nonce( sanitize_text_field( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_register_nonce'] ) ), 'leaky-paywall-register-nonce' )
 	) {
 	   return;
 	} 
@@ -551,7 +551,7 @@ function leaky_paywall_validate_user_data() {
 
 	if (
 		! isset( $_POST['leaky_paywall_register_nonce'] )
-		|| ! wp_verify_nonce( sanitize_text_field( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_register_nonce'] ) ), 'leaky-paywall-register-nonce' )
 	) {
 		leaky_paywall_errors()->add( 'not_verified', __( 'Your submission could not be processed.', 'leaky-paywall' ), 'register' );
 	   return;
