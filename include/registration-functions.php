@@ -200,7 +200,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
  */
 function leaky_paywall_process_user_registration_validation() {
 
-	if ( ! check_ajax_referer( 'lp_register_nonce', 'nonce', false ) ) {
+	if ( ! check_ajax_referer( 'lp_register_nonce', 'register_nonce', false ) ) {
 		$errors['nonce'] = array(
 			'message' => __( 'There was an error. Please try again.', 'leaky-paywall' ),
 		);

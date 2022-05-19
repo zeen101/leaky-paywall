@@ -847,6 +847,8 @@ if ( ! function_exists( 'leaky_paywall_update_subscriber' ) ) {
 			return $user_id;
 		}
 
+    	$current_level_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+
 		leaky_paywall_set_expiration_date( $user_id, $meta_args );
 		unset( $meta_args['site'] );
 
@@ -861,6 +863,8 @@ if ( ! function_exists( 'leaky_paywall_update_subscriber' ) ) {
 		);
 
 		$meta = apply_filters( 'leaky_paywall_update_subscriber_meta', $meta, $email, $customer_id, $meta_args );
+
+		do_action( 'leaky_paywall_before_update_subscriber', $user_id, $current_level_id, $meta );
 
 		foreach ( $meta as $key => $value ) {
 			update_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value );

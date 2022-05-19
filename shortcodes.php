@@ -951,7 +951,7 @@ function do_leaky_paywall_subscriber_shortcode( $atts, $content = null ) {
 		$content = '<p>' . $a['message'] . '</p>';
 	}
 
-	return $content;
+	return do_shortcode( $content );
 }
 add_shortcode( 'leaky_paywall_subscriber', 'do_leaky_paywall_subscriber_shortcode' );
 
