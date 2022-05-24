@@ -628,6 +628,12 @@ function do_leaky_paywall_register_form( $atts ) {
 	$gateways = leaky_paywall_get_enabled_payment_gateways( $level_id );
 	$one_page_form = in_array( array( 'Stripe Checkout', 'Credit / Debit Card' ), $gateways ) ? false : true;
 
+	if ( array_key_exists( 'stripe', $gateways ) || array_key_exists( 'stripe_checkout', $gateways ) ) {
+		$one_page_form = false;
+	} else {
+		$one_page_form = true;
+	}
+
 	ob_start();
 
 	// show any error messages after form submission.
