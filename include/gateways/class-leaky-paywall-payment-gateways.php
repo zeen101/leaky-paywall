@@ -51,11 +51,11 @@ class Leaky_Paywall_Payment_Gateways {
 	 */
 	private function get_gateways() {
 		$gateways = array(
-			// 'manual'	=> array(
-			// 'label'     => __( 'Manual Payment', 'issuem-leaky-paywall' ),
-			// 'admin_label'   => __( 'Manual Payment', 'issuem-leaky-paywall' ),
-			// 'class'         => 'Leaky_Paywall_Payment_Gateway_Manual'
-			// ),
+			'manual'	=> array(
+				'label'     => __( 'Manual Payment', 'leaky-paywall' ),
+				'admin_label'   => __( 'Manual Payment (useful for testing payments or accepting checks)', 'leaky-paywall' ),
+				'class'         => 'Leaky_Paywall_Payment_Gateway_Manual'
+			),
 			'paypal_standard' => array(
 				'label'       => __( 'PayPal', 'leaky-paywall' ),
 				'admin_label' => __( 'PayPal Standard', 'leaky-paywall' ),

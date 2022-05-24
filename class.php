@@ -807,22 +807,22 @@ class Leaky_Paywall {
 						$settings['payment_gateway'] = array( 'stripe' );
 					}
 				} else {
-					$settings['payment_gateway'] = array( 'stripe' );
+					$settings['payment_gateway'] = array( 'manual' );
 				}
 
-				if ( ! empty( $_POST['live_secret_key'] ) ) {
+				if ( isset( $_POST['live_secret_key'] ) ) {
 					$settings['live_secret_key'] = apply_filters( 'zeen101_demo_stripe_live_secret_key', sanitize_text_field( wp_unslash( $_POST['live_secret_key'] ) ) );
 				}
 
-				if ( ! empty( $_POST['live_publishable_key'] ) ) {
+				if ( isset( $_POST['live_publishable_key'] ) ) {
 					$settings['live_publishable_key'] = apply_filters( 'zeen101_demo_stripe_live_publishable_key', sanitize_text_field( wp_unslash( $_POST['live_publishable_key'] ) ) );
 				}
 
-				if ( ! empty( $_POST['test_secret_key'] ) ) {
+				if ( isset( $_POST['test_secret_key'] ) ) {
 					$settings['test_secret_key'] = apply_filters( 'zeen101_demo_stripe_test_secret_key', sanitize_text_field( wp_unslash( $_POST['test_secret_key'] ) ) );
 				}
 
-				if ( ! empty( $_POST['test_publishable_key'] ) ) {
+				if ( isset( $_POST['test_publishable_key'] ) ) {
 					$settings['test_publishable_key'] = apply_filters( 'zeen101_demo_stripe_test_publishable_key', sanitize_text_field( wp_unslash( $_POST['test_publishable_key'] ) ) );
 				}
 
