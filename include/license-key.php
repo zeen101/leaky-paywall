@@ -99,7 +99,7 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 			?>
 			<div id="modules" class="postbox">
 
-				<h3 class="hndle"><span><?php esc_html( $this->plugin_name, $this->plugin_slug ); ?></span></h3>
+				<h3 style="margin-left: 10px;" class="hndle"><span><?php echo esc_html( $this->plugin_name, $this->plugin_slug ); ?></span></h3>
 
 				<div class="inside">
 					
