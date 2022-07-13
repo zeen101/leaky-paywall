@@ -156,12 +156,34 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		if ( false == $stripe_event->livemode ) {
 			$mode = 'test';
+			$endpoint_secret = $settings['test_signing_secret'];
 		} else {
 			$mode = 'live';
+			$endpoint_secret = $settings['live_signing_secret'];
 		}
 
 		if ( ! isset( $stripe_event->type ) ) {
 			return;
+		}
+
+		if ( $endpoint_secret ) {
+
+			$stripe = leaky_paywall_initialize_stripe_api();
+			$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+
+			try {
+				$event = \Stripe\Webhook::constructEvent(
+					$body, $sig_header, $endpoint_secret
+				);
+			} catch(\UnexpectedValueException $e) {
+				// Invalid payload
+				leaky_paywall_log( $e->getMessage(), 'stripe webhook - invalid payload' );
+				wp_send_json( ['leaky paywall webhook received - invalid payload'], 400 );
+			} catch(\Stripe\Exception\SignatureVerificationException $e) {
+				// Invalid signature
+				leaky_paywall_log( $e->getMessage(), 'stripe webhook - invalid signature' );
+				wp_send_json( ['leaky paywall webhook received - invalid signature'], 400 );
+			}
 		}
 
 		$stripe_object = $stripe_event->data->object;
@@ -282,6 +304,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		// create an action for each event fired by stripe.
 		$action = str_replace( '.', '_', $stripe_event->type );
 		do_action( 'leaky_paywall_stripe_' . $action, $user, $stripe_object );
+
+		wp_send_json( ['leaky paywall webhook received - success'], 200 );
+
 	}
 
 	/**
