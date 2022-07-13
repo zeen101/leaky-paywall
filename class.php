@@ -441,6 +441,8 @@ class Leaky_Paywall {
 			'live_publishable_key'                  => '',
 			'test_secret_key'                       => '',
 			'test_publishable_key'                  => '',
+			'test_signing_secret'	                => '',
+			'live_signing_secret'	                => '',
 			'stripe_webhooks_enabled'               => 'off',
 			'enable_stripe_elements'                => 'no',
 			'enable_apple_pay'                      => 'no',
@@ -834,6 +836,14 @@ class Leaky_Paywall {
 					$settings['stripe_webhooks_enabled'] = 'on';
 				} else {
 					$settings['stripe_webhooks_enabled'] = 'off';
+				}
+
+				if ( isset( $_POST['test_signing_secret'] ) ) {
+					$settings['test_signing_secret'] = sanitize_text_field( wp_unslash( $_POST['test_signing_secret'] ) );
+				}
+
+				if ( isset( $_POST['live_signing_secret'] ) ) {
+					$settings['live_signing_secret'] = sanitize_text_field( wp_unslash( $_POST['live_signing_secret'] ) );
 				}
 
 				if ( isset( $_POST['enable_apple_pay'] ) ) {
@@ -1422,6 +1432,16 @@ class Leaky_Paywall {
 											<p><input type="checkbox" id="stripe_webhooks_enabled" name="stripe_webhooks_enabled" <?php checked( 'on', $settings['stripe_webhooks_enabled'] ); ?> />
 												<?php esc_attr_e( 'I have enabled the Leaky Paywall webhook URL in my Stripe account.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/120-leaky-paywall-recurring-payments"><?php esc_attr_e( 'View Instructions', 'leaky-paywall' ); ?></a></p>
 										</td>
+									</tr>
+
+									<tr>
+										<th><?php esc_attr_e( 'Test Signing Secret', 'leaky-paywall' ); ?></th>
+										<td><input type="password" id="test_signing_secret" class="regular-text" name="test_signing_secret" value="<?php echo esc_attr( $settings['test_signing_secret'] ); ?>" /></td>
+									</tr>
+
+									<tr>
+										<th><?php esc_attr_e( 'Live Signing Secret', 'leaky-paywall' ); ?></th>
+										<td><input type="password" id="live_signing_secret" class="regular-text" name="live_signing_secret" value="<?php echo esc_attr( $settings['live_signing_secret'] ); ?>" /></td>
 									</tr>
 
 									<tr>
