@@ -481,7 +481,7 @@ class Leaky_Paywall {
 			'levels'                                => array(
 				'0' => array(
 					'label'                    => __( 'Digital Access', 'leaky-paywall' ),
-					'price'                    => '',
+					'price'                    => '0',
 					'subscription_length_type' => 'limited',
 					'interval_count'           => 1,
 					'interval'                 => 'month',
