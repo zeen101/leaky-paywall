@@ -2666,9 +2666,9 @@ function leaky_paywall_maybe_send_renewal_reminder() {
 		}
 
 		$date_differ     = leaky_paywall_date_difference( $expiration, gmdate( 'Y-m-d H:i:s' ) );
-		$already_emailed = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true ) ? true : false;
+		$already_emailed = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true );
 
-		if ( ( $date_differ <= $days_before ) && false === $already_emailed ) {
+		if ( !$already_emailed && ( $date_differ <= $days_before ) ) {
 			leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
 			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, current_time( 'timestamp' ) );
 		}
