@@ -42,6 +42,7 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 
 		$settings   = get_leaky_paywall_settings();
 		$visibility = get_post_meta( $post->ID, '_issuem_leaky_paywall_visibility', true );
+		$show_upgrade_message = get_post_meta( $post->ID, '_issuem_leaky_paywall_show_upgrade_message', true );
 		$defaults   = array(
 			'visibility_type'     => 'default',
 			'only_visible'        => array(),
@@ -111,6 +112,15 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		/* Translators: %1$s - post type, %2$s - post type */
 		echo '<p class="description">' . esc_attr( sprintf( __( '"Only and Always" means that only the selected subscription levels can see this %1$s, even if they have reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
 
+		?>
+
+		<hr>
+		
+		<p><input type="checkbox" id="show_upgrade_message" name="show_upgrade_message" <?php checked( 'on', $show_upgrade_message ); ?> />
+		<?php esc_attr_e( 'Always show upgrade message if the nag is triggered on this content.', 'leaky-paywall' ); ?></p>
+			
+
+		<?php 
 		wp_nonce_field( 'leaky_paywall_content_visibility_meta_box', 'leaky_paywall_content_visibility_meta_box_nonce' );
 
 	}
@@ -149,7 +159,11 @@ if ( ! function_exists( 'save_leaky_paywall_content_visibility' ) ) {
 			return;
 		}
 
-		/* OK, it's safe for us to save the data now. */
+		if ( ! empty( $_POST['show_upgrade_message'] ) ) {
+			update_post_meta( $post_id, '_issuem_leaky_paywall_show_upgrade_message', 'on' );
+		} else {
+			update_post_meta( $post_id, '_issuem_leaky_paywall_show_upgrade_message', 'off' );
+		}
 
 		if ( ! empty( $_POST['leaky_paywall_visibility_type'] ) ) {
 			$visibility['visibility_type'] = sanitize_text_field( wp_unslash( $_POST['leaky_paywall_visibility_type'] ) );

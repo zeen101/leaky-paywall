@@ -550,9 +550,11 @@ class Leaky_Paywall_Restrictions {
 		$settings = get_leaky_paywall_settings();
 		$text     = '';
 
+		$show_upgrade_message = get_post_meta( $this->post_id, '_issuem_leaky_paywall_show_upgrade_message', true );
+
 		$message = '<div class="leaky_paywall_message_wrap"><div id="leaky_paywall_message">';
 
-		if ( ! is_user_logged_in() ) {
+		if ( ! is_user_logged_in() && 'on' != $show_upgrade_message ) {
 			$text .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
 		} else {
 			$text .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
