@@ -446,6 +446,8 @@ class Leaky_Paywall {
 			'stripe_webhooks_enabled'               => 'off',
 			'enable_stripe_elements'                => 'no',
 			'enable_apple_pay'                      => 'no',
+			'stripe_automatic_tax'                  => 'no',
+			'stripe_tax_behavior'                   => 'exclusive',
 			'enable_paypal_on_registration'         => 'on',
 			'paypal_live_email'                     => '',
 			'paypal_live_api_username'              => '',
@@ -848,6 +850,16 @@ class Leaky_Paywall {
 
 				if ( isset( $_POST['enable_apple_pay'] ) ) {
 					$settings['enable_apple_pay'] = sanitize_text_field( wp_unslash( $_POST['enable_apple_pay'] ) );
+				}
+
+				if ( ! empty( $_POST['stripe_automatic_tax'] ) ) {
+					$settings['stripe_automatic_tax'] = 'on';
+				} else {
+					$settings['stripe_automatic_tax'] = 'off';
+				}
+
+				if ( isset( $_POST['stripe_tax_behavior'] ) ) {
+					$settings['stripe_tax_behavior'] = sanitize_text_field( wp_unslash( $_POST['stripe_tax_behavior'] ) );
 				}
 
 				if ( ! empty( $_POST['enable_paypal_on_registration'] ) ) {
@@ -1452,7 +1464,31 @@ class Leaky_Paywall {
 												<option <?php selected( 'no', $settings['enable_apple_pay'] ); ?> value="no">No</option>
 											</select>
 											<p class="description">You must <a target="_blank" href="https://stripe.com/docs/stripe-js/elements/payment-request-button">verify your domain with Apple Pay</a> to complete the Apple Pay setup.</p>
+										</td>
 									</tr>
+
+									<?php if ( in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
+										?>
+										<tr>
+											<th><?php esc_attr_e( 'Automatic Tax', 'leaky-paywall' ); ?></th>
+											<td>
+												<p><input type="checkbox" id="stripe_automatic_tax" name="stripe_automatic_tax" <?php checked( 'on', $settings['stripe_automatic_tax'] ); ?> />
+													<?php esc_attr_e( 'Automatically calculate tax for Stripe Checkout transactions.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate">Requires Stripe Tax activation</a></p>
+											</td>
+										</tr>
+
+										<tr>
+											<th><?php esc_attr_e( 'Tax Behavior', 'leaky-paywall' ); ?></th>
+											<td>
+												<select id="stripe_tax_behavior" name="stripe_tax_behavior">
+													<option <?php selected( 'exclusive', $settings['stripe_tax_behavior'] ); ?> value="exclusive">Exclusive</option>
+													<option <?php selected( 'inclusive', $settings['stripe_tax_behavior'] ); ?> value="inclusive">Inclusive</option>
+												</select>
+												<p class="description">When set to exclusive, it adds tax to the subtotal. If set to inclusive, the amount your buyer pays never changes (even if the tax rate varies).</p>
+											</td>
+										</tr>
+										<?php 
+									} ?>
 
 								</table>
 								<?php do_action( 'leaky_paywall_settings_page_stripe_payment_gateway_options' ); ?>

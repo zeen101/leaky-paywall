@@ -342,31 +342,35 @@ function leaky_paywall_process_user_registration_validation() {
 			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
 
 			if ( $stripe_plan ) {
-				try {
 
-					$checkout_session = $stripe->checkout->sessions->create(
+				$stripe_session_args = array(
+					'customer'             => $cu->id,
+					'mode'                 => 'subscription',
+					'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
+					'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
+				);
+
+				if ( $settings['stripe_automatic_tax'] == 'on' ) {
+					$stripe_session_args['automatic_tax'] = [ 'enabled' => true ];
+					$stripe_session_args['line_items'] = array(
 						array(
-							'customer'             => $cu->id,
-							// 'customer_update'		=> array(
-							// 	array(
-							// 		'address'	=> 'auto'
-							// 	)
-							// 	),
-							'line_items'           => array(
-								array(
-									'price'    => $stripe_plan->id,
-									'quantity' => 1,
-								//	'tax_behavior' => 'exclusive',
-								),
-							),
-							// 'automatic_tax' => [
-							// 	'enabled' => true,
-							// ],
-							'mode'                 => 'subscription',
-							'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
-							'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
-						)
+							'price'    => $stripe_plan->id,
+							'quantity' => 1,
+							'tax_behavior' => $settings['stripe_tax_behavior'],
+						),
 					);
+					
+				} else {
+					$stripe_session_args['line_items'] = array(
+						array(
+							'price'    => $stripe_plan->id,
+							'quantity' => 1,
+						),
+					);
+				}
+
+				try {
+					$checkout_session = $stripe->checkout->sessions->create( $stripe_session_args );
 				} catch ( \Throwable $th ) {
 					$errors['checkout_session'] = array(
 						'message' => $th->getMessage(),
@@ -380,37 +384,47 @@ function leaky_paywall_process_user_registration_validation() {
 		} else {
 			try {
 
-				// get one time payment method types
-
-				$checkout_session = $stripe->checkout->sessions->create(
-					array(
-						'customer'             => $cu->id,
-						'customer_update'		=> array(
-							
-								'address'	=> 'auto'
-							
-							),
-						'line_items'           => array(
-							array(
-								'price_data' => array(
-									'product_data' => array(
-										'name' => $level['label'],
-									),
-								//	'tax_behavior' => 'exclusive',
-									'currency'     => leaky_paywall_get_currency(),
-									'unit_amount'  => $stripe_price,
-								),
-								'quantity'   => 1,
-							),
-						),
-						// 'automatic_tax' => [
-						// 	'enabled' => true,
-						//   ],
-						'mode'                 => 'payment',
-						'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
-						'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
-					)
+				$stripe_session_args = array(
+					'customer'             => $cu->id,
+					'customer_update'		=> array(
+						'address'	=> 'auto'
+					),
+					'mode'                 => 'payment',
+					'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
+					'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 				);
+
+				if ( $settings['stripe_automatic_tax'] == 'on' ) {
+					$stripe_session_args['automatic_tax'] = array( 'enabled' => true );
+					$stripe_session_args['line_items'] = array(
+						array(
+							'price_data' => array(
+								'product_data' => array(
+									'name' => $level['label'],
+								),
+								'tax_behavior' => $settings['stripe_tax_behavior'],
+								'currency'     => leaky_paywall_get_currency(),
+								'unit_amount'  => $stripe_price,
+							),
+							'quantity'   => 1,
+						),
+					);
+				} else {
+					$stripe_session_args['line_items'] = array(
+						array(
+							'price_data' => array(
+								'product_data' => array(
+									'name' => $level['label'],
+								),
+								'currency'     => leaky_paywall_get_currency(),
+								'unit_amount'  => $stripe_price,
+							),
+							'quantity'   => 1,
+						),
+					);
+				}
+
+				$checkout_session = $stripe->checkout->sessions->create( $stripe_session_args );
 			} catch ( \Throwable $th ) {
 				$errors['checkout_session'] = array(
 					'message' => $th->getMessage(),
