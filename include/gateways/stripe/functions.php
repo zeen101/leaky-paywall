@@ -585,12 +585,13 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 	$transaction_id = $transaction->create();
 	$subscriber_data['transaction_id'] = $transaction_id;
 
+	do_action( 'leaky_paywall_after_stripe_checkout_completed', $subscriber_data );
+
 	leaky_paywall_cleanup_incomplete_user($user_data['email']);
 
 	// Send email notifications
 	leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
 
-	do_action( 'leaky_paywall_after_stripe_checkout_completed', $subscriber_data );
 }
 
 function leaky_paywall_get_stripe_checkout_success_url() {
