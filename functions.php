@@ -4521,3 +4521,35 @@ function leaky_paywall_login_fail( $username ) {
 	}
 }
 add_action( 'wp_login_failed', 'leaky_paywall_login_fail' );
+
+/**
+ * Gets the IP address of the user.
+ *
+ * @return string The IP address of the user.
+ */
+function leaky_paywall_get_ip() {
+
+	if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
+	{
+		$ip = $_SERVER['HTTP_CLIENT_IP'];
+
+	} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
+	{
+		
+		$ip_array = array_values(array_filter(explode(',',$_SERVER['HTTP_X_FORWARDED_FOR'])));
+
+		if ( is_array( $ip_array ) ) {
+			$ip = $ip_array[0];
+		} else {
+			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}
+
+	} else {
+		$ip = $_SERVER['REMOTE_ADDR'];
+	}
+
+	$ip = apply_filters( 'leaky_paywall_ip_address', $ip );
+
+	return $ip;
+
+}
