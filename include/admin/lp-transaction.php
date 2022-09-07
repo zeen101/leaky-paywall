@@ -81,6 +81,7 @@ class LP_Transaction_Post_Type {
 
 		$gateway        = get_post_meta( $post->ID, '_gateway', true );
 		$gateway_txn_id = get_post_meta( $post->ID, '_gateway_txn_id', true );
+		$nag_location = get_post_meta( $post->ID, '_nag_location_id', true );
 
 		wp_nonce_field( 'lp_transaction_meta_box_nonce', 'meta_box_nonce' );
 		?>
@@ -169,6 +170,20 @@ class LP_Transaction_Post_Type {
 						<?php echo get_post_meta( $post->ID, '_is_recurring', true ) ? 'yes' : 'no'; ?>
 					</td>
 				</tr>
+
+				<?php if ( $nag_location ) {
+					?>
+					<tr valign="top">
+						<th scope="row">
+							<label for="apc_box1_description">Nag Location</label>
+						</th>
+						<td>
+							<?php echo get_the_permalink( $nag_location ); ?>
+						</td>
+					</tr>
+					<?php 
+				} ?>
+
 			</tbody>
 		</table>
 

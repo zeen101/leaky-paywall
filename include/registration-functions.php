@@ -188,6 +188,10 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 	$restrictions = new Leaky_Paywall_Restrictions();
 	$restrictions->clear_cookie();
 
+	if ( isset( $_COOKIE['lp_nag_loc'] ) ) {
+		update_post_meta( $transaction_id, '_nag_location_id', absint( $_COOKIE['lp_nag_loc'] ) );
+	}
+
 	// send the newly created user to the appropriate page after logging them in.
 	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
 	exit;
@@ -1224,4 +1228,17 @@ function leaky_paywall_cleanup_incomplete_user( $email ) {
 	foreach ( $incomplete_users as $incomplete ) {
 		wp_trash_post( $incomplete->ID );
 	}
+}
+
+add_action( 'wp_ajax_nopriv_leaky_paywall_store_nag_location', 'leaky_paywall_store_nag_location' );
+add_action( 'wp_ajax_leaky_paywall_store_nag_location', 'leaky_paywall_store_nag_location' );
+
+function leaky_paywall_store_nag_location() {
+
+	$post_id = absint( $_REQUEST['post_id'] );
+
+	if ( $post_id ) {
+		setcookie( 'lp_nag_loc', $post_id, 0, '/' );
+	}
+	
 }
