@@ -58,10 +58,21 @@ class Leaky_Paywall {
 		add_action( 'wp', array( $this, 'process_pdf_restrictions' ) );
 		add_action( 'wp', array( $this, 'process_cancellation_request' ) );
 		add_action( 'init', array( $this, 'process_js_content_restrictions' ) );
-
+		add_action( 'rest_api_init', array( $this, 'process_rest_content_restrictions' ) );
+		
 		if ( 'on' === $settings['restrict_pdf_downloads'] ) {
 			add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
 		}
+	}
+
+	/**
+	 * Process restrictions with WP REST API
+	 */
+	public function process_rest_content_restrictions() {
+		
+		$restrictions = new Leaky_Paywall_Restrictions();
+		add_filter( 'the_content', array( $restrictions, 'process_rest_content_restrictions' ) );		
+		
 	}
 
 	/**

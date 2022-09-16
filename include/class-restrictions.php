@@ -32,6 +32,13 @@ class Leaky_Paywall_Restrictions {
 	public $is_ajax;
 
 	/**
+	 * Is this an REST request
+	 *
+	 * @var bool
+	 */
+	public $is_rest;
+
+	/**
 	 * Constructor
 	 *
 	 * @param integer $post_id The post id.
@@ -39,6 +46,7 @@ class Leaky_Paywall_Restrictions {
 	public function __construct( $post_id = '' ) {
 		$this->post_id = $post_id ? $post_id : get_the_ID();
 		$this->is_ajax = false;
+		$this->is_rest = false;
 
 		add_action( 'wp_footer', array( $this, 'display_viewed_content_debug' ) );
 		add_action( 'wp_footer', array( $this, 'hide_initial_content_display' ) );
@@ -80,6 +88,27 @@ class Leaky_Paywall_Restrictions {
 		$this->display_subscribe_nag();
 
 		do_action( 'leaky_paywall_is_restricted_content', $this->post_id );
+	}
+	
+	/**
+	 * Process WP REST API content restrictions
+	 */
+	public function process_rest_content_restrictions( $content ) {
+		
+		global $post;
+		$this->post_id = $post->ID;
+		$this->is_rest = true;
+		
+		if ( ! $this->is_content_restricted() ) {
+			return $content;
+		}
+
+		// content is restricted, so see if the current user can access it.
+		if ( apply_filters( 'leaky_paywall_current_user_can_access', $this->current_user_can_access(), $this->post_id ) ) {
+			return $content;
+		}
+
+		return $this->get_subscribe_nag();
 	}
 
 	/**
@@ -148,7 +177,7 @@ class Leaky_Paywall_Restrictions {
 	public function content_matches_restriction_rules() {
 		$settings = get_leaky_paywall_settings();
 
-		if ( ! $this->is_single() ) {
+		if ( ! $this->is_single() && ! $this->is_rest ) {
 			return false;
 		}
 
