@@ -119,6 +119,11 @@ class Leaky_Paywall {
 	 * Process a cancellation request
 	 */
 	public function process_cancellation_request() {
+
+		if ( is_admin() ) {
+			return;
+		}
+
 		$settings = get_leaky_paywall_settings();
 
 		if ( leaky_paywall_has_user_paid() ) {
@@ -237,9 +242,12 @@ class Leaky_Paywall {
 	 * @uses do_action() To call 'pigeonpack_admin_menu' for future addons
 	 */
 	public function admin_menu() {
-		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/lock-icon.png' );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $this, 'settings_page' ) );
+		$settings = new Leaky_Paywall_Settings();
+
+		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/lock-icon.png' );
+
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ) );
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 
@@ -250,8 +258,6 @@ class Leaky_Paywall {
 		}
 		
 	}
-
-
 
 
 	/**
@@ -564,6 +570,9 @@ class Leaky_Paywall {
 	 * @since 1.0.0
 	 */
 	public function settings_page() {
+
+		return;
+
 		// Get the user options.
 		$settings       = $this->get_settings();
 		$settings_saved = false;
@@ -2461,36 +2470,6 @@ class Leaky_Paywall {
 		}
 	}
 
-	/**
-	 * Check if the current site has a caching plugin or known managed hosting setup
-	 *
-	 * @since 4.14.0
-	 */
-	public function check_for_caching() {
-		$found = false;
-
-		include_once ABSPATH . 'wp-admin/includes/plugin.php';
-
-		$checks = array(
-			'wp-rocket/wp-rocket.php',
-			'litespeed-cache/litespeed-cache.php',
-			'wp-fastest-cache/wpFastestCache.php',
-			'w3-total-cache/w3-total-cache.php',
-			'wp-optimize/wp-optimize.php',
-			'autoptimize/autoptimize.php',
-			'cache-enabler/cache-enabler.php',
-			'wp-super-cache/wp-cache.php',
-			'hummingbird-performance/wp-hummingbird.php',
-		);
-
-		foreach ( $checks as $check ) {
-			if ( is_plugin_active( $check ) ) {
-				$found = true;
-			}
-		}
-
-		return $found;
-	}
 
 	/**
 	 * Displays latest RSS item from Zeen101.com on Subscriber page

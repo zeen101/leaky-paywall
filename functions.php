@@ -16,8 +16,11 @@ if ( ! function_exists( 'get_leaky_paywall_settings' ) ) {
 	 * @return mixed Value set for the Leaky paywall settings.
 	 */
 	function get_leaky_paywall_settings() {
-		global $leaky_paywall;
-		return $leaky_paywall->get_settings();
+		// global $leaky_paywall;
+		// return $leaky_paywall->get_settings();
+
+		$settings = new Leaky_Paywall_Settings();
+		return $settings->get_settings();
 	}
 }
 
@@ -438,207 +441,206 @@ if ( ! function_exists( 'leaky_paywall_get_currency' ) ) {
 	}
 }
 
-if ( ! function_exists( 'leaky_paywall_has_user_paid' ) ) {
 
-	/**
-	 * Verified if user has paid through Stripe
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string  $email address of user "logged" in.
-	 * @param integer $blog_id The blog id.
-	 * @return mixed Expiration date or subscriptions status or false if not paid
-	 */
-	function leaky_paywall_has_user_paid( $email = false, $blog_id = null ) {
+/**
+ * Verified if user has paid through Stripe
+ *
+ * @since 1.0.0
+ *
+ * @param string  $email address of user "logged" in.
+ * @param integer $blog_id The blog id.
+ * @return mixed Expiration date or subscriptions status or false if not paid
+ */
+function leaky_paywall_has_user_paid( $email = false, $blog_id = null ) {
 
-		$settings = get_leaky_paywall_settings();
-		$paid     = false;
-		$canceled = false;
-		$expired  = false;
-		$sites    = array( '' ); // Empty String for non-Multisite, so we cycle through "sites" one time with no $site set.
-		$mode     = 'off' === $settings['test_mode'] ? 'live' : 'test';
+	$settings = get_leaky_paywall_settings();
+	$paid     = false;
+	$canceled = false;
+	$expired  = false;
+	$sites    = array( '' ); // Empty String for non-Multisite, so we cycle through "sites" one time with no $site set.
+	$mode     = leaky_paywall_get_current_mode();
+	if ( empty( $email ) ) {
+		$user = wp_get_current_user();
+		if ( 0 === $user->ID ) { // no user.
+			return false;
+		}
+	} else {
+		if ( is_email( $email ) ) {
+			$user = get_user_by( 'email', $email );
 
-		if ( empty( $email ) ) {
-			$user = wp_get_current_user();
-			if ( 0 === $user->ID ) { // no user.
+			if ( ! $user ) { // no user found with that email address.
 				return false;
 			}
 		} else {
-			if ( is_email( $email ) ) {
-				$user = get_user_by( 'email', $email );
-
-				if ( ! $user ) { // no user found with that email address.
-					return false;
-				}
-			} else {
-				return false;
-			}
+			return false;
 		}
+	}
 
-		if ( is_multisite_premium() ) {
-			if ( is_null( $blog_id ) ) {
-				global $blog_id;
-				if ( ! is_main_site( $blog_id ) ) {
-					$sites = array( '_all', '_' . $blog_id );
-				} else {
-					$sites = array( '_all', '_' . $blog_id, '' );
-				}
-			} elseif ( is_int( $blog_id ) ) {
-				$sites = array( '_' . $blog_id );
-			} elseif ( empty( $blog_id ) ) {
-				$sites = array( '' );
+	if ( is_multisite_premium() ) {
+		if ( is_null( $blog_id ) ) {
+			global $blog_id;
+			if ( ! is_main_site( $blog_id ) ) {
+				$sites = array( '_all', '_' . $blog_id );
 			} else {
-				$sites = array( $blog_id );
+				$sites = array( '_all', '_' . $blog_id, '' );
 			}
+		} elseif ( is_int( $blog_id ) ) {
+			$sites = array( '_' . $blog_id );
+		} elseif ( empty( $blog_id ) ) {
+			$sites = array( '' );
+		} else {
+			$sites = array( $blog_id );
 		}
+	}
 
-		foreach ( $sites as $site ) {
+	foreach ( $sites as $site ) {
 
-			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-			$expires         = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-			$payment_status  = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-			$plan            = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+		$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+		$expires         = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+		$payment_status  = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+		$plan            = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
 
-			if ( 'stripe' !== $payment_gateway ) {
+		if ( 'stripe' !== $payment_gateway ) {
 
-				if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
-					if ( ! empty( $plan ) && 'active' === $payment_status ) {
-						return 'subscription';
+			if ( 'paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway ) {
+				if ( ! empty( $plan ) && 'active' === $payment_status ) {
+					return 'subscription';
+				}
+			}
+
+			switch ( $payment_status ) {
+
+				case 'Active':
+				case 'active':
+				case 'refunded':
+				case 'refund':
+					$expires = apply_filters( 'leaky_paywall_has_user_paid_expires', $expires, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+						return 'unlimited';
 					}
-				}
 
-				switch ( $payment_status ) {
-
-					case 'Active':
-					case 'active':
-					case 'refunded':
-					case 'refund':
-						$expires = apply_filters( 'leaky_paywall_has_user_paid_expires', $expires, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return 'unlimited';
-						}
-
-						if ( strtotime( $expires ) < time() ) {
-							$expired = $expires;
-						} else {
-							$paid = true;
-						}
-						break;
-					/* phpcs:ignore to cover any spelling. */
-					case 'cancelled':
-					case 'canceled':
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							$expired = true;
-						} else {
-							$canceled = true;
-						}
-					case 'reversed':
-					case 'buyer_complaint':
-					case 'denied':
-					case 'expired':
-					case 'failed':
-					case 'voided':
-					case 'deactivated':
-						break;
-				}
-			} else {
-
-				// check with Stripe to make sure the user has an active subscription.
-
-				$stripe = leaky_paywall_initialize_stripe_api();
-
-				try {
-					if ( empty( $subscriber_id ) ) {
-						switch ( $payment_status ) {
-							case 'Active':
-							case 'active':
-							case 'refunded':
-							case 'refund':
-								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-									return 'unlimited';
-								}
-
-								if ( strtotime( $expires ) < time() ) {
-									$expired = $expires;
-								} else {
-									$paid = true;
-								}
-								break;
-							case 'cancelled':
-							case 'canceled':
-								if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-									$expired = true;
-								} else {
-									$canceled = true;
-								}
-								break;
-							case 'reversed':
-							case 'buyer_complaint':
-							case 'denied':
-							case 'expired':
-							case 'failed':
-							case 'voided':
-							case 'deactivated':
-								break;
-						}
+					if ( strtotime( $expires ) < time() ) {
+						$expired = $expires;
 					} else {
-						$cu = $stripe->customers->retrieve( $subscriber_id );
+						$paid = true;
+					}
+					break;
+				/* phpcs:ignore to cover any spelling. */
+				case 'cancelled':
+				case 'canceled':
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+						$expired = true;
+					} else {
+						$canceled = true;
+					}
+				case 'reversed':
+				case 'buyer_complaint':
+				case 'denied':
+				case 'expired':
+				case 'failed':
+				case 'voided':
+				case 'deactivated':
+					break;
+			}
+		} else {
 
-						if ( ! empty( $cu ) ) {
-							if ( ! empty( $cu->deleted ) && true === $cu->deleted ) {
-								$canceled = true;
+			// check with Stripe to make sure the user has an active subscription.
+
+			$stripe = leaky_paywall_initialize_stripe_api();
+
+			try {
+				if ( empty( $subscriber_id ) ) {
+					switch ( $payment_status ) {
+						case 'Active':
+						case 'active':
+						case 'refunded':
+						case 'refund':
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+								return 'unlimited';
 							}
-						}
 
-						if ( ! empty( $plan ) ) {
-							if ( isset( $cu->subscriptions ) ) {
-								$subscriptions = $cu->subscriptions->all( array( 'limit' => '1' ) );
-								foreach ( $subscriptions->data as $subscription ) {
-									if ( leaky_paywall_is_valid_stripe_subscription( $subscription ) ) {
-										return 'subscription';
-									}
-								}
-							}
-						}
-
-						$ch = $stripe->charges->all(
-							array(
-								'count'    => 1,
-								'customer' => $subscriber_id,
-							)
-						);
-
-						if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-							return 'unlimited';
-						} else {
 							if ( strtotime( $expires ) < time() ) {
-								if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
-									$expired = $expires;
-								}
+								$expired = $expires;
 							} else {
 								$paid = true;
 							}
+							break;
+						case 'cancelled':
+						case 'canceled':
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+								$expired = true;
+							} else {
+								$canceled = true;
+							}
+							break;
+						case 'reversed':
+						case 'buyer_complaint':
+						case 'denied':
+						case 'expired':
+						case 'failed':
+						case 'voided':
+						case 'deactivated':
+							break;
+					}
+				} else {
+					$cu = $stripe->customers->retrieve( $subscriber_id );
+
+					if ( ! empty( $cu ) ) {
+						if ( ! empty( $cu->deleted ) && true === $cu->deleted ) {
+							$canceled = true;
 						}
 					}
-				} catch ( Exception $e ) {
-					/* Translators: %s - error message */
-					$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) . '</h1>';
+
+					if ( ! empty( $plan ) ) {
+						if ( isset( $cu->subscriptions ) ) {
+							$subscriptions = $cu->subscriptions->all( array( 'limit' => '1' ) );
+							foreach ( $subscriptions->data as $subscription ) {
+								if ( leaky_paywall_is_valid_stripe_subscription( $subscription ) ) {
+									return 'subscription';
+								}
+							}
+						}
+					}
+
+					$ch = $stripe->charges->all(
+						array(
+							'count'    => 1,
+							'customer' => $subscriber_id,
+						)
+					);
+
+					if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+						return 'unlimited';
+					} else {
+						if ( strtotime( $expires ) < time() ) {
+							if ( true === $ch->data[0]->paid && false === $ch->data[0]->refunded ) {
+								$expired = $expires;
+							}
+						} else {
+							$paid = true;
+						}
+					}
 				}
+			} catch ( \Throwable $th ) {
+				/* Translators: %s - error message */
+				$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $th->getMessage() ) . '</h1>';
+
 			}
-		} // end foreach
-
-		if ( is_bool( $canceled ) && $canceled ) {
-			$paid = false;
 		}
+	} // end foreach
 
-		if ( is_bool( $expired ) && $expired ) {
-			$paid = false;
-		}
-
-		return apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
+	if ( is_bool( $canceled ) && $canceled ) {
+		$paid = false;
 	}
+
+	if ( is_bool( $expired ) && $expired ) {
+		$paid = false;
+	}
+
+	return apply_filters( 'leaky_paywall_has_user_paid', $paid, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site );
 }
+
 
 if ( ! function_exists( 'leaky_paywall_set_expiration_date' ) ) {
 

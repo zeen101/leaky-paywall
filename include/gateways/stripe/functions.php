@@ -426,6 +426,13 @@ function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
  * @since 4.15.4
  */
 function leaky_paywall_initialize_stripe_api() {
+
+	$secret_key = leaky_paywall_get_stripe_secret_key();
+
+	if ( !$secret_key ) {
+		return false;
+	}
+
 	$stripe = new \Stripe\StripeClient(leaky_paywall_get_stripe_secret_key());
 	
 	\Stripe\Stripe::setApiKey( leaky_paywall_get_stripe_secret_key() );
@@ -436,7 +443,7 @@ function leaky_paywall_initialize_stripe_api() {
 		esc_url( site_url() ),
 		LEAKY_PAYWALL_STRIPE_PARTNER_ID
 	);
-
+	
 	return $stripe;
 }
 
