@@ -153,7 +153,7 @@ class Leaky_Paywall_Settings {
 		if ( $current_tab == 'general' || !$current_tab ) {
 			$admin_url = admin_url( 'admin.php?page=issuem-leaky-paywall' );
 		} else {
-			$admin_url = admin_url( 'admin.php?page=issuem-leaky-paywal&tab=' . $current_tab );
+			$admin_url = admin_url( 'admin.php?page=issuem-leaky-paywall&tab=' . $current_tab );
 		}
 
 		?>
@@ -193,7 +193,7 @@ class Leaky_Paywall_Settings {
 			case 'restrictions':
 				$this->output_restrictions_settings( $current_section );
 				break;
-			case 'levels':
+			case 'subscriptions':
 				$this->output_levels_settings( $current_section );
 				break;
 			case 'payments':
@@ -201,6 +201,9 @@ class Leaky_Paywall_Settings {
 				break;
 			case 'emails':
 				$this->output_emails_settings( $current_section );
+				break;
+			case 'extensions':
+				$this->output_extensions_settings( $current_section );
 				break;
 			case 'licenses':
 				$this->output_licenses_settings( $current_section );
@@ -218,7 +221,7 @@ class Leaky_Paywall_Settings {
 
 		wp_nonce_field( 'leaky_paywall_update_settings_nonce', 'leaky_paywall_update_settings_nonce_field' ); 
 
-		$hide_submit_tabs = apply_filters( 'leaky_paywall_hide_submit_tabs', array('licenses', 'help') );
+		$hide_submit_tabs = apply_filters( 'leaky_paywall_hide_submit_tabs', array( 'licenses', 'help') );
 
 		 if ( !in_array( $current_tab, $hide_submit_tabs ) ) {
 			?>
@@ -1149,12 +1152,34 @@ class Leaky_Paywall_Settings {
 		<?php 
 	}
 
+	public function output_extensions_settings( $current_section )
+	{
+
+		if ( $current_section == 'general' ) {
+			do_action( 'leaky_paywall_before_extensions_settings' ); ?>
+
+			<p>Edit the settings of any of the extensions that you have purchased by clicking on the menu above.</p>
+
+			<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our extensions</a></h2>
+
+			<style>
+				.submit { display: none; }
+			</style>
+			<?php wp_nonce_field( 'verify', 'leaky_paywall_license_wpnonce' ); ?>
+
+			<?php do_action( 'leaky_paywall_after_extensions_settings' );
+		}
+		
+	}
+
 	public function output_licenses_settings( $current_section )
 	{
 	
 		do_action( 'leaky_paywall_before_licenses_settings' ); ?>
 
-		<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our add-ons</a></h2>
+		<p>Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, please renew your license.</p>
+
+		<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our extensions</a></h2>
 
 		<?php wp_nonce_field( 'verify', 'leaky_paywall_license_wpnonce' ); ?>
 
@@ -1191,9 +1216,10 @@ class Leaky_Paywall_Settings {
 		$tabs = array( 
 			'general', 
 			'restrictions', 
-			'levels', 
+			'subscriptions', 
 			'payments', 
 			'emails', 
+			'extensions',
 			'licenses', 
 			'help'
 		);
@@ -1210,9 +1236,10 @@ class Leaky_Paywall_Settings {
 				'pages',
 			),
 			'restrictions' => array(),
-			'levels' => array(),
+			'subscriptions' => array(),
 			'payments' => array(),
 			'emails' => array(),
+			'extensions' => array(),
 			'licenses' => array(),
 			'help' => array()
 		) );
@@ -1626,7 +1653,7 @@ class Leaky_Paywall_Settings {
 
 		}
 
-		if ( 'levels' == $current_tab ) {
+		if ( 'subscriptions' == $current_tab ) {
 			if ( ! empty( $_POST['levels'] ) ) {
 				// phpcs:ignore
 				$settings['levels'] = $this->sanitize_levels( $_POST['levels'] );
