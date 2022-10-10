@@ -33,7 +33,7 @@ class Leaky_Paywall_Settings {
 
 			<div class="wrap">
 
-				<div style="width:70%;" class="postbox-container">
+				<div style="width:75%;" class="postbox-container">
 
 					<h1 style="margin-bottom: 2px;"><?php esc_html_e( 'Leaky Paywall', 'leaky-paywall' ); ?></h1>
 
@@ -71,7 +71,7 @@ class Leaky_Paywall_Settings {
 
 				</div> <!-- postbox-container -->
 
-				<div class="leaky-paywall-sidebar" style="float: right; width: 28%; margin-top: 110px;">
+				<div class="leaky-paywall-sidebar" style="float: right; width: 23%; margin-top: 110px;">
 
 					<?php if ( !wp_script_is('leaky_paywall_multiple_levels_js', 'enqueued') ) {
 						?>
@@ -162,16 +162,19 @@ class Leaky_Paywall_Settings {
 			<ul class="subsubsub leaky-paywall-settings-sub-nav">
 
 			<?php 
-				foreach( $sections as $section ) {
+				if ( !empty( $sections ) ) {
+					foreach( $sections as $section ) {
 
-					$class = $section == $current_section ? 'current' : '';
-
-					?>
-					<li>
-						<a class="<?php echo $class; ?>" href="<?php echo $admin_url; ?>&section=<?php echo $section; ?>"><?php echo ucwords( str_replace('_', ' ', $section ) ); ?></a>
-					</li>
-					<?php 
+						$class = $section == $current_section ? 'current' : '';
+	
+						?>
+						<li>
+							<a class="<?php echo $class; ?>" href="<?php echo $admin_url; ?>&section=<?php echo $section; ?>"><?php echo ucwords( str_replace('_', ' ', $section ) ); ?></a>
+						</li>
+						<?php 
+					}
 				}
+				
 			?>
 				
 			</ul>
@@ -194,16 +197,13 @@ class Leaky_Paywall_Settings {
 				$this->output_restrictions_settings( $current_section );
 				break;
 			case 'subscriptions':
-				$this->output_levels_settings( $current_section );
+				$this->output_subscriptions_settings( $current_section );
 				break;
 			case 'payments':
 				$this->output_payments_settings( $current_section );
 				break;
 			case 'emails':
 				$this->output_emails_settings( $current_section );
-				break;
-			case 'extensions':
-				$this->output_extensions_settings( $current_section );
 				break;
 			case 'licenses':
 				$this->output_licenses_settings( $current_section );
@@ -645,8 +645,12 @@ class Leaky_Paywall_Settings {
 
 	}
 
-	public function output_levels_settings( $current_section )
+	public function output_subscriptions_settings( $current_section )
 	{
+
+		if ( $current_section != 'general' ) {
+			return;
+		}
 
 		$settings = $this->get_settings();
 
@@ -1152,26 +1156,6 @@ class Leaky_Paywall_Settings {
 		<?php 
 	}
 
-	public function output_extensions_settings( $current_section )
-	{
-
-		if ( $current_section == 'general' ) {
-			do_action( 'leaky_paywall_before_extensions_settings' ); ?>
-
-			<p>Edit the settings of any of the extensions that you have purchased by clicking on the menu above.</p>
-
-			<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our extensions</a></h2>
-
-			<style>
-				.submit { display: none; }
-			</style>
-			<?php wp_nonce_field( 'verify', 'leaky_paywall_license_wpnonce' ); ?>
-
-			<?php do_action( 'leaky_paywall_after_extensions_settings' );
-		}
-		
-	}
-
 	public function output_licenses_settings( $current_section )
 	{
 	
@@ -1219,7 +1203,6 @@ class Leaky_Paywall_Settings {
 			'subscriptions', 
 			'payments', 
 			'emails', 
-			'extensions',
 			'licenses', 
 			'help'
 		);
@@ -1236,10 +1219,11 @@ class Leaky_Paywall_Settings {
 				'pages',
 			),
 			'restrictions' => array(),
-			'subscriptions' => array(),
+			'subscriptions' => array(
+				'general'
+			),
 			'payments' => array(),
 			'emails' => array(),
-			'extensions' => array(),
 			'licenses' => array(),
 			'help' => array()
 		) );
@@ -1653,7 +1637,7 @@ class Leaky_Paywall_Settings {
 
 		}
 
-		if ( 'subscriptions' == $current_tab ) {
+		if ( 'subscriptions' == $current_tab && 'general' == $current_section ) {
 			if ( ! empty( $_POST['levels'] ) ) {
 				// phpcs:ignore
 				$settings['levels'] = $this->sanitize_levels( $_POST['levels'] );

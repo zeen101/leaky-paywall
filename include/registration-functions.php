@@ -309,7 +309,8 @@ function leaky_paywall_process_user_registration_validation() {
 
 		$stripe = leaky_paywall_initialize_stripe_api();
 
-		$stripe_price = number_format( $level['price'], 2, '', '' );
+		$stripe_price = apply_filters( 'leaky_paywall_stripe_checkout_price', number_format( $level['price'], 2, '', '' ), $fields );
+		$stripe_currency = apply_filters( 'leaky_paywall_stripe_checkout_currency', leaky_paywall_get_currency(), $fields );
 
 		// create Stripe customer.
 		$customer_array = array(
@@ -339,7 +340,7 @@ function leaky_paywall_process_user_registration_validation() {
 
 			$plan_args = array(
 				'stripe_price' => $stripe_price,
-				'currency'     => leaky_paywall_get_currency(),
+				'currency'     => $stripe_currency,
 				'secret_key'   => leaky_paywall_get_stripe_secret_key(),
 			);
 
@@ -407,7 +408,7 @@ function leaky_paywall_process_user_registration_validation() {
 									'name' => $level['label'],
 								),
 								'tax_behavior' => $settings['stripe_tax_behavior'],
-								'currency'     => leaky_paywall_get_currency(),
+								'currency'     => $stripe_currency,
 								'unit_amount'  => $stripe_price,
 							),
 							'quantity'   => 1,
@@ -420,7 +421,7 @@ function leaky_paywall_process_user_registration_validation() {
 								'product_data' => array(
 									'name' => $level['label'],
 								),
-								'currency'     => leaky_paywall_get_currency(),
+								'currency'     => $stripe_currency,
 								'unit_amount'  => $stripe_price,
 							),
 							'quantity'   => 1,

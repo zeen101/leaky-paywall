@@ -327,7 +327,7 @@ class Leaky_Paywall {
 	 * @since 1.0.0
 	 */
 	public function frontend_scripts() {
-		$settings = $this->get_settings();
+		$settings = get_leaky_paywall_settings();
 
 		if ( 'default' === $settings['css_style'] ) {
 			wp_enqueue_style( 'issuem-leaky-paywall', LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', LEAKY_PAYWALL_VERSION );
