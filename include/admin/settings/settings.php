@@ -28,6 +28,7 @@ class Leaky_Paywall_Settings {
 		$current_section = ! empty( $_GET['section'] ) && ! empty( $sections ) ? sanitize_text_field( $_GET['section'] ) : 'general';
 
 		$settings_updated = $this->process_settings_update( $current_tab, $current_section );
+		$level_deleted = $this->process_level_deleted( $current_tab, $current_section );
 
 		?>
 
@@ -78,7 +79,7 @@ class Leaky_Paywall_Settings {
 							<div class="leaky-paywall-sidebar-widget">
 								<h3>Upgrade to Pro</h3>
 								<p class="description">
-									Gain access to our proven subscription building system and 40+ Leaky Paywall add-ons when you upgrade
+									Gain access to our proven subscription building system and 40+ Leaky Paywall extensions when you upgrade
 								</p>
 								<ul>
 									<li>Personal setup meeting and priority support</li>
@@ -163,15 +164,22 @@ class Leaky_Paywall_Settings {
 
 			<?php 
 				if ( !empty( $sections ) ) {
+					$i = 1;
 					foreach( $sections as $section ) {
 
 						$class = $section == $current_section ? 'current' : '';
 	
 						?>
 						<li>
-							<a class="<?php echo $class; ?>" href="<?php echo $admin_url; ?>&section=<?php echo $section; ?>"><?php echo ucwords( str_replace('_', ' ', $section ) ); ?></a>
+							<a class="<?php echo $class; ?>" href="<?php echo $admin_url; ?>&section=<?php echo $section; ?>"><?php echo ucwords( str_replace('_', ' ', $section ) ); ?></a> 
+							
+							<?php if ( count( $sections ) != $i ) {
+								echo '|';
+							}
+							?>
 						</li>
 						<?php 
+						$i++;
 					}
 				}
 				
@@ -656,10 +664,22 @@ class Leaky_Paywall_Settings {
 
 		do_action( 'leaky_paywall_before_subscriptions_settings' ); ?>
 
-		<h2><?php esc_attr_e( 'Subscription Levels', 'leaky-paywall' ); ?></span></h2>
+		<?php 
 
-		<p><a id="collapse-levels" href="#">Collapse All</a> / <a id="expand-levels" href="#">Expand All</a></p>
+			if ( isset( $_GET['level_id'] ) ) {
 
+				$current_level = get_leaky_paywall_subscription_level( absint( $_GET['level_id'] ) );
+
+				?>
+					<h2><?php echo $current_level['label']; ?> <a href="<?php echo admin_url(); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions">⤴</a><br><span style="color: #aaa; font-size: 14px; font-weight: normal;">ID: <?php echo absint( $_GET['level_id'] ); ?></span></h2>
+				<?php 
+			} else {
+				?>
+				<h2><?php esc_attr_e( 'Subscription Levels', 'leaky-paywall' ); ?></h2>
+				<?php 
+			}
+		?>
+		
 		<div id="leaky_paywall_subscription_level_options">
 
 			<table id="leaky_paywall_subscription_level_options_table" class="leaky-paywall-table subscription-options form-table">
@@ -673,19 +693,47 @@ class Leaky_Paywall_Settings {
 
 							$deleted = array();
 
+							if ( !isset( $_GET['level_id'] ) ) {
+								echo '<table class="wp-list-table widefat striped" style="margin-bottom: 20px"><thead><tr><td>ID</td><td>Name</td><td>Price</td><td>Duration</td><td>Payment Type</td><td>Direct Link</td></tr></thead>';
+							}
+							
 							foreach ( $settings['levels'] as $key => $level ) {
 
 								if ( ! is_numeric( $key ) ) {
 									continue;
 								}
-								// phpcs:ignore
-								echo build_leaky_paywall_subscription_levels_row( $level, $key );
+
+								if ( isset( $level['deleted'] ) && 1 == $level['deleted'] ) {
+									
+									continue;
+								}
+
+
+								if ( isset( $_GET['level_id'] ) ) {
+
+									if ( $key != $_GET['level_id'] ) {
+										continue;
+									}
+
+									
+									// phpcs:ignore
+									echo build_leaky_paywall_subscription_levels_row( $level, $key );
+
+								} else {
+									echo build_leaky_paywall_subscription_levels_row_summary( $level, $key );
+								}
+
 								$last_key = $key;
 
-								if ( 1 === $level['deleted'] ) {
+								if ( isset( $level['deleted'] ) && 1 === $level['deleted'] ) {
 									$deleted[] = true;
 								}
 							}
+
+							if ( !isset( $_GET['level_id'] ) ) {
+								echo '</table>';
+							}
+							
 
 							// if we have levels but they have all been deleted, add one level.
 							if ( count( $deleted ) === count( $settings['levels'] ) ) {
@@ -707,11 +755,11 @@ class Leaky_Paywall_Settings {
 
 			<?php
 			if ( ! is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
-				echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> add-on.</h4>';
+				echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> extension.</h4>';
 			}
-
-			if ( ! is_leaky_paywall_recurring() ) {
-				echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> add-on.</h4>';
+			
+			if ( ! is_plugin_active( 'leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php' ) ) {
+				echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> extension.</h4>';
 			}
 
 			?>
@@ -1396,6 +1444,24 @@ class Leaky_Paywall_Settings {
 		return apply_filters( 'leaky_paywall_get_settings', $settings );
 	}
 
+	public function process_level_deleted( $current_tab, $current_section )
+	{
+		if ( 'subscriptions' != $current_tab ) {
+			return false;
+		}
+
+		if ( !isset( $_GET['delete_level_id'] ) ) {
+			return false;
+		}
+
+		$settings = $this->get_settings();
+		$level_id = absint( $_GET['delete_level_id'] );
+		$settings['levels'][$level_id]['deleted'] = 1;
+		$this->update_settings( $settings );
+
+		return true;
+	}
+
 	public function process_settings_update( $current_tab, $current_section )
 	{
 
@@ -1639,8 +1705,22 @@ class Leaky_Paywall_Settings {
 
 		if ( 'subscriptions' == $current_tab && 'general' == $current_section ) {
 			if ( ! empty( $_POST['levels'] ) ) {
+
+				foreach( $_POST['levels'] as $key => $level ) {
+
+					if ( isset( $_GET['level_id'] ) ) {
+
+						if ( $key ==  $_GET['level_id'] ) {
+							$settings['levels'][$key] = $this->sanitize_level( $key, $level );
+						}
+						
+					} else {
+						$settings['levels'][$key] = $this->sanitize_level( $key, $level );
+					}
+				}
+				
 				// phpcs:ignore
-				$settings['levels'] = $this->sanitize_levels( $_POST['levels'] );
+				// $settings['levels'][$key] = $this->sanitize_levels( $_POST['levels'] );
 			}
 		}
 
@@ -1813,6 +1893,34 @@ class Leaky_Paywall_Settings {
 		}
 
 		return $levels;
+	}
+
+	/**
+	 * Sanitize level settings
+	 *
+	 * @param array $levels The levels to sanitize.
+	 * @return array
+	 */
+	public function sanitize_level( $level_id, $level ) {
+		$text_fields     = array( 'label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card' );
+		$textarea_fields = array( 'description', 'registration_form_description' );
+
+		foreach ( $level as $key => $value ) {
+
+			if ( in_array( $key, $text_fields ) ) {
+				$levels[ $level_id ][ $key ] = sanitize_text_field( wp_unslash( $value ) );
+			}
+
+			if ( in_array( $key, $textarea_fields ) ) {
+				$levels[ $level_id ][ $key ] = wp_kses_post( wp_unslash( $value ) );
+			}
+
+			if ( 'post_types' == $key ) {
+				$levels[ $level_id ][ $key ] = $this->sanitize_level_post_types( $value );
+			}
+		}
+		
+		return $level;
 	}
 
 	/**

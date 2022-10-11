@@ -16,9 +16,6 @@ if ( ! function_exists( 'get_leaky_paywall_settings' ) ) {
 	 * @return mixed Value set for the Leaky paywall settings.
 	 */
 	function get_leaky_paywall_settings() {
-		// global $leaky_paywall;
-		// return $leaky_paywall->get_settings();
-
 		$settings = new Leaky_Paywall_Settings();
 		return $settings->get_settings();
 	}
@@ -35,8 +32,10 @@ if ( ! function_exists( 'update_leaky_paywall_settings' ) ) {
 	 * @return mixed Value set for the issuem options.
 	 */
 	function update_leaky_paywall_settings( $settings ) {
-		global $leaky_paywall;
-		return $leaky_paywall->update_settings( $settings );
+
+		$lp_settings = new Leaky_Paywall_Settings();
+		$lp_settings->update_settings( $settings );
+
 	}
 }
 
@@ -1483,6 +1482,25 @@ if ( ! function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 	}
 }
 
+function build_leaky_paywall_subscription_levels_row_summary( $level, $row_key ) {
+
+	$settings = get_leaky_paywall_settings();
+	$duration = $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'];
+	$delete_link = admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=subscriptions&delete_level_id=' . $row_key;
+	
+	?>
+	<tr>
+		<td><?php echo $row_key; ?></td>
+		<td><?php echo $level['label']; ?><br><div class="row-actions"><a href="<?php echo admin_url(); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions&level_id=<?php echo $row_key; ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo $row_key; ?>" href="<?php echo $delete_link; ?>">Delete</a></span></div></td>
+		<td><?php echo $level['price']; ?></td>
+		<td><?php echo $duration; ?></td>
+		<td><?php echo isset( $level['recurring'] ) ? 'recurring' : 'one time'; ?></td>
+		<td><?php echo esc_url( get_page_link( $settings['page_for_register'] ) ) . '?level_id=' . esc_attr( $row_key ); ?></td>
+	</tr>
+
+	<?php 
+}
+
 if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 
 	/**
@@ -1535,11 +1553,6 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		ob_start();
 		?>
 
-		<div class="leaky-paywall-subscription-level-row-header <?php echo esc_attr( $deleted ); ?>">
-			<p class="leaky-paywall-subscription-level-row-header-title"><?php echo esc_html( $level['label'] ); ?> <span class="leaky-paywall-subscription-level-row-header-title-id">ID: <?php echo esc_html( $row_key ); ?></span></p>
-			<p class="leaky-paywall-subscription-level-row-header-toggler"><span class="dashicons dashicons-arrow-up"></span><span class="dashicons dashicons-arrow-down"></span></p>
-		</div>
-
 		<table class="issuem-leaky-paywall-subscription-level-row-table leaky-paywall-table <?php echo esc_attr( $deleted ); ?>">
 			<?php 
 			if ( isset( $settings['page_for_register'] ) && $settings['page_for_register'] ) {
@@ -1562,8 +1575,6 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 				</th>
 				<td>
 					<input id="level-name-<?php echo esc_attr( $row_key ); ?>" type="text" class="regular-text" name="levels[<?php echo esc_attr( $row_key ); ?>][label]" value="<?php echo esc_attr( $level['label'] ); ?>" />
-					<span class="delete-x delete-subscription-level">&times;</span>
-					<input type="hidden" class="deleted-subscription" name="levels[<?php echo esc_attr( $row_key ); ?>][deleted]" value="<?php echo esc_attr( $level['deleted'] ); ?>">
 				</td>
 			</tr>
 
@@ -1588,7 +1599,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 			</tr>
 
 			<?php
-			if ( is_leaky_paywall_recurring() ) {
+			if ( is_plugin_active( 'leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php' ) ) {
 				?>
 				<tr>
 					<th>
@@ -3812,7 +3823,7 @@ function leaky_paywall_plugin_row_meta( $input, $file ) {
 	);
 
 	$links = array(
-		'<a href="' . $lp_link . '">' . esc_html__( 'Add-Ons', 'leaky-paywall' ) . '</a>',
+		'<a href="' . $lp_link . '">' . esc_html__( 'Extensions', 'leaky-paywall' ) . '</a>',
 	);
 
 	$input = array_merge( $input, $links );
@@ -3822,28 +3833,7 @@ function leaky_paywall_plugin_row_meta( $input, $file ) {
 add_filter( 'plugin_row_meta', 'leaky_paywall_plugin_row_meta', 10, 2 );
 
 /**
- * Check if Leaky Paywall Recurring plugin is active
- */
-function is_leaky_paywall_recurring() {
-
-	$settings  = get_leaky_paywall_settings();
-	$recurring = false;
-
-	if ( ! isset( $settings['post_4106'] ) ) {
-		$recurring = true;
-	}
-
-	if ( is_plugin_active( 'leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php' ) ) {
-		$recurring = true;
-	}
-
-	return $recurring;
-}
-
-
-
-/**
- * Maybe dlete user
+ * Maybe delete user
  */
 function leaky_paywall_maybe_delete_user() {
 

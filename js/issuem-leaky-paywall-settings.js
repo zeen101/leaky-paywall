@@ -16,13 +16,13 @@ $leaky_paywall_settings(document).ready(function ($) {
     }
   );
 
-  $(".leaky-paywall-subscription-level-row-header").click(function () {
-    $(this)
-      .next(".issuem-leaky-paywall-subscription-level-row-table")
-      .slideToggle("fast", function () {});
-    // .toggleClass("toggled");
-    $(this).toggleClass("toggled");
-  });
+  // $(".leaky-paywall-subscription-level-row-header").click(function () {
+  //   $(this)
+  //     .next(".issuem-leaky-paywall-subscription-level-row-table")
+  //     .slideToggle("fast", function () {});
+  //   // .toggleClass("toggled");
+  //   $(this).toggleClass("toggled");
+  // });
 
   $("#collapse-levels").click(function (e) {
     e.preventDefault();
@@ -165,6 +165,19 @@ $leaky_paywall_settings(document).ready(function ($) {
       });
     }
   );
+
+  $('.leaky-paywall-level-delete').click(function(e) {
+   
+    let levelId = $(this).data('level-id');
+
+    if (window.confirm("Are you sure you want to delete this level?")) {
+      console.log(levelId);
+      
+    } else {
+      e.preventDefault();
+    }
+
+  });
 
   $("#issuem-leaky-paywall-restriction-rows").on(
     "change",

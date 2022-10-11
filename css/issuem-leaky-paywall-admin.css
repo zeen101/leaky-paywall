@@ -11,10 +11,7 @@ body.leaky-paywall_page_leaky-paywall-subscribers table input.small-text {
 }
 
 table.issuem-leaky-paywall-subscription-level-row-table {
-  border: 1px solid #eee;
-  margin-bottom: 20px;
-  padding: 10px;
-  background: #fff;
+ 
 }
 
 table.issuem-leaky-paywall-subscription-level-row-table.toggled {
@@ -47,10 +44,12 @@ table.issuem-leaky-paywall-subscription-level-row-table.toggled {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .leaky-paywall-subscription-level-row-header p {
   font-weight: bold;
+  font-size: 18px;
 }
 
 .leaky-paywall-subscription-level-row-header
@@ -205,6 +204,7 @@ span.delete-restriction-row {
 
 .leaky-paywall-interal-setting-table {
   border: 1px solid #ddd;
+  background: #fff;
 }
 
 .leaky-paywall-interal-setting-table th {

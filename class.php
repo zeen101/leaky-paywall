@@ -678,7 +678,7 @@ class Leaky_Paywall {
 												continue;
 											}
 											echo '<option value="' . esc_attr( $key ) . '">' . esc_attr( stripslashes( $level['label'] ) );
-											echo $level['deleted'] ? '(deleted)' : '';
+											echo isset( $level['deleted'] ) && $level['deleted'] == 1 ? '(deleted)' : '';
 											echo '</option>';
 										}
 										?>
@@ -750,7 +750,7 @@ class Leaky_Paywall {
 					
 					<h2>Upgrade to Leaky Paywall Pro</h2>
 					<p class="description">
-						Gain access to our proven subscription building system and 40+ Leaky Paywall add-ons when you upgrade
+						Gain access to our proven subscription building system and 40+ Leaky Paywall extensions when you upgrade
 					</p>
 					<ul>
 						<li>Personal setup meeting and priority support</li>
