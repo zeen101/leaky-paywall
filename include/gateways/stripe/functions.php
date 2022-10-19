@@ -94,10 +94,10 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 						  </script>
 						  ' . apply_filters( 'leaky_paywall_pay_with_stripe_recurring_payment_form_after_script', '' ) . '
 						</form>';
-		} catch ( Exception $e ) {
+		} catch ( \Throwable $th ) {
 
 			/* Translators: %s - Error message. */
-			$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $e->getMessage() ) . '</h1>';
+			$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $th->getMessage() ) . '</h1>';
 		}
 	} else {
 
@@ -334,7 +334,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
 			try {
 				$stripe_plan = $stripe->plans->retrieve( $plan_id );
-			} catch ( Exception $e ) {
+			} catch ( \Throwable $th ) {
 				$stripe_plan = false;
 			}
 
@@ -393,9 +393,9 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 	try {
 		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
-	} catch ( Exception $e ) {
+	} catch ( \Throwable $th ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
-		leaky_paywall_log( $e, 'lp create stripe plan error' );
+		leaky_paywall_log( $th->getMessage(), 'lp create stripe plan error' );
 		$stripe_plan = false;
 	}
 
