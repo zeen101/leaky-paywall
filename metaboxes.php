@@ -52,13 +52,13 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		$visibility = wp_parse_args( $visibility, $defaults );
 
 		/* Translators: %s - post type */
-		echo '<label for="leaky-paywall-visibility">' . esc_attr( sprintf( __( 'This %s should...', 'leaky-paywall' ), $post->post_type ) ) . '</label> ';
+		echo '<label for="leaky-paywall-visibility">' . esc_html( sprintf( __( 'This %s should...', 'leaky-paywall' ), $post->post_type ) ) . '</label> ';
 
 		echo '<select id="issuem-leaky-paywall-visibility-type" name="leaky_paywall_visibility_type">';
-		echo '  <option value="default" ' . selected( $visibility['visibility_type'], 'default', true ) . '>' . esc_attr__( "obey Leaky Paywall's defaults.", 'leaky-paywall' ) . '</option>';
-		echo '  <option value="only" ' . selected( $visibility['visibility_type'], 'only', true ) . '>' . esc_attr__( 'only be visible to...', 'leaky-paywall' ) . '</option>';
-		echo '  <option value="always" ' . selected( $visibility['visibility_type'], 'always', true ) . '>' . esc_attr__( 'always be visible to...', 'leaky-paywall' ) . '</option>';
-		echo '  <option value="onlyalways" ' . selected( $visibility['visibility_type'], 'onlyalways', true ) . '>' . esc_attr__( 'only and always be visible to...', 'leaky-paywall' ) . '</option>';
+		echo '  <option value="default" ' . selected( $visibility['visibility_type'], 'default', true ) . '>' . esc_html__( "obey Leaky Paywall's defaults.", 'leaky-paywall' ) . '</option>';
+		echo '  <option value="only" ' . selected( $visibility['visibility_type'], 'only', true ) . '>' . esc_html__( 'only be visible to...', 'leaky-paywall' ) . '</option>';
+		echo '  <option value="always" ' . selected( $visibility['visibility_type'], 'always', true ) . '>' . esc_html__( 'always be visible to...', 'leaky-paywall' ) . '</option>';
+		echo '  <option value="onlyalways" ' . selected( $visibility['visibility_type'], 'onlyalways', true ) . '>' . esc_html__( 'only and always be visible to...', 'leaky-paywall' ) . '</option>';
 		echo '</select>';
 
 		if ( 'only' !== $visibility['visibility_type'] ) {
@@ -70,7 +70,7 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-only-visible" name="leaky_paywall_only_visible[]" style="' . esc_attr( $only_visible ) . '"  multiple="multiple">';
 			foreach ( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_visible'] ), true, false ) . '>' . esc_attr( $level['label'] ) . '</option>';
+				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_visible'] ), true, false ) . '>' . esc_html( $level['label'] ) . '</option>';
 			}
 			echo '</select>';
 		}
@@ -83,9 +83,9 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 
 		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-always-visible" name="leaky_paywall_always_visible[]" style="' . esc_attr( $always_visible ) . '" multiple="multiple">';
-			echo '  <option value="-1" ' . selected( in_array( '-1', $visibility['always_visible'], true ), true, false ) . '>' . esc_attr__( 'Everyone', 'leaky-paywall' ) . '</option>';
+			echo '  <option value="-1" ' . selected( in_array( '-1', $visibility['always_visible'], true ), true, false ) . '>' . esc_html__( 'Everyone', 'leaky-paywall' ) . '</option>';
 			foreach ( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['always_visible'] ), true, false ) . '>' . esc_attr( $level['label'] ) . '</option>';
+				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['always_visible'] ), true, false ) . '>' . esc_html( $level['label'] ) . '</option>';
 			}
 			echo '</select>';
 		}
@@ -99,18 +99,18 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-only-always-visible" name="leaky_paywall_only_always_visible[]" style="' . esc_attr( $only_always_visible ) . '" multiple="multiple">';
 			foreach ( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_always_visible'] ), true, false ) . '>' . esc_attr( $level['label'] ) . '</option>';
+				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_always_visible'] ), true, false ) . '>' . esc_html( $level['label'] ) . '</option>';
 			}
 			echo '</select>';
 		}
 
-		echo '<p class="description">' . esc_attr__( 'Hint:', 'leaky-paywall' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Hint:', 'leaky-paywall' ) . '</p>';
 		/* Translators: %1$s - post type, %2$s - post type */
-		echo '<p class="description">' . esc_attr( sprintf( __( '"Only" means that only the selected subscription levels can see this %1$s, if they have not reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
+		echo '<p class="description">' . esc_html( sprintf( __( '"Only" means that only the selected subscription levels can see this %1$s, if they have not reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
 		/* Translators: %1$s - post type, %2$s - post type */
-		echo '<p class="description">' . esc_attr( sprintf( __( '"Always" means that the selected subscription levels can see this %1$s, even if they have reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
+		echo '<p class="description">' . esc_html( sprintf( __( '"Always" means that the selected subscription levels can see this %1$s, even if they have reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
 		/* Translators: %1$s - post type, %2$s - post type */
-		echo '<p class="description">' . esc_attr( sprintf( __( '"Only and Always" means that only the selected subscription levels can see this %1$s, even if they have reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
+		echo '<p class="description">' . esc_html( sprintf( __( '"Only and Always" means that only the selected subscription levels can see this %1$s, even if they have reached their %2$s limit.', 'leaky-paywall' ), $post->post_type, $post->post_type ) ) . '</p>';
 
 		?>
 
