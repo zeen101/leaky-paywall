@@ -139,7 +139,7 @@ class Leaky_Paywall_Settings {
 				$admin_url = 'general' == $tab ? admin_url( 'admin.php?page=issuem-leaky-paywall' ) : admin_url( 'admin.php?page=issuem-leaky-paywall&tab=' . $tab );
 
 				?>
-				<a href="<?php echo esc_url( $admin_url ); ?>" class="nav-tab <?php echo $class; ?>"><?php echo ucfirst( $tab ); ?></a>
+				<a href="<?php echo esc_url( $admin_url ); ?>" class="nav-tab <?php echo esc_attr( $class ); ?>"><?php echo esc_html( ucfirst( $tab ) ); ?></a>
 				<?php 
 			} ?>
 
@@ -171,7 +171,7 @@ class Leaky_Paywall_Settings {
 	
 						?>
 						<li>
-							<a class="<?php echo $class; ?>" href="<?php echo $admin_url; ?>&section=<?php echo $section; ?>"><?php echo ucwords( str_replace('_', ' ', $section ) ); ?></a> 
+							<a class="<?php echo esc_attr( $class ); ?>" href="<?php echo esc_url( $admin_url ); ?>&section=<?php echo esc_attr( $section ); ?>"><?php echo esc_html( ucwords( str_replace('_', ' ', $section ) ) ); ?></a> 
 							
 							<?php if ( count( $sections ) != $i ) {
 								echo '|';
@@ -251,11 +251,11 @@ class Leaky_Paywall_Settings {
 
 			if ( is_multisite_premium() && is_super_admin() ) { ?>
 
-				<h2><?php esc_attr_e( 'Site Wide Options', 'leaky-paywall' ); ?></h2>
+				<h2><?php esc_html_e( 'Site Wide Options', 'leaky-paywall' ); ?></h2>
 	
 				<table id="leaky_paywalll_multisite_settings" class="leaky-paywall-table">
 					<tr>
-						<th rowspan="1"> <?php esc_attr_e( 'Enable Settings Site Wide?', 'leaky-paywall' ); ?></th>
+						<th rowspan="1"> <?php esc_html_e( 'Enable Settings Site Wide?', 'leaky-paywall' ); ?></th>
 						<td>
 						<td><input type="checkbox" id="site_wide_enabled" name="site_wide_enabled" <?php checked( $this->is_site_wide_enabled() ); ?> /></td>
 						</td>
@@ -264,58 +264,58 @@ class Leaky_Paywall_Settings {
 	
 			<?php } ?>
 
-			<h2><?php esc_attr_e( 'General Settings', 'leaky-paywall' ); ?></h2>
+			<h2><?php esc_html_e( 'General Settings', 'leaky-paywall' ); ?></h2>
 
 			<table id="leaky_paywall_administrator_options" class="form-table leaky-paywall-settings-table">
 
 				<tr>
-					<th><?php esc_attr_e( 'Subscribe or Login Message', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Subscribe or Login Message', 'leaky-paywall' ); ?></th>
 					<td>
 						<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="5"><?php echo wp_kses_post( stripslashes( $settings['subscribe_login_message'] ) ); ?></textarea>
 						<p class="description">
-							<?php esc_attr_e( 'Available replacement variables: {{SUBSCRIBE_URL}}  {{LOGIN_URL}}', 'leaky-paywall' ); ?>
+							<?php esc_html_e( 'Available replacement variables: {{SUBSCRIBE_URL}}  {{LOGIN_URL}}', 'leaky-paywall' ); ?>
 						</p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Upgrade Message', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Upgrade Message', 'leaky-paywall' ); ?></th>
 					<td>
 						<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="5"><?php echo wp_kses_post( stripslashes( $settings['subscribe_upgrade_message'] ) ); ?></textarea>
 						<p class="description">
-							<?php esc_attr_e( 'Available replacement variables: {{SUBSCRIBE_URL}}', 'leaky-paywall' ); ?>
+							<?php esc_html_e( 'Available replacement variables: {{SUBSCRIBE_URL}}', 'leaky-paywall' ); ?>
 						</p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'CSS Style', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'CSS Style', 'leaky-paywall' ); ?></th>
 					<td>
 						<select id='css_style' name='css_style'>
-							<option value='default' <?php selected( 'default', $settings['css_style'] ); ?>><?php esc_attr_e( 'Default', 'leaky-paywall' ); ?></option>
-							<option value='none' <?php selected( 'none', $settings['css_style'] ); ?>><?php esc_attr_e( 'None', 'leaky-paywall' ); ?></option>
+							<option value='default' <?php selected( 'default', $settings['css_style'] ); ?>><?php esc_html_e( 'Default', 'leaky-paywall' ); ?></option>
+							<option value='none' <?php selected( 'none', $settings['css_style'] ); ?>><?php esc_html_e( 'None', 'leaky-paywall' ); ?></option>
 						</select>
 					</td>
 				</tr>
 
 				<tr class="general-options">
-					<th><?php esc_attr_e( 'User Account Creation', 'leaky-paywall' ); ?></th>
-					<td><input type="checkbox" id="remove_username_field" name="remove_username_field" <?php checked( 'on', $settings['remove_username_field'] ); ?> /> <?php esc_attr_e( 'Remove the username field during registration and use their email address to generate an account username', 'leaky-paywall' ); ?></td>
+					<th><?php esc_html_e( 'User Account Creation', 'leaky-paywall' ); ?></th>
+					<td><input type="checkbox" id="remove_username_field" name="remove_username_field" <?php checked( 'on', $settings['remove_username_field'] ); ?> /> <?php esc_html_e( 'Remove the username field during registration and use their email address to generate an account username', 'leaky-paywall' ); ?></td>
 				</tr>
 
 				<tr class="general-options">
-					<th><?php esc_attr_e( 'User Account Deletion', 'leaky-paywall' ); ?></th>
-					<td><input type="checkbox" id="enable_user_delete_account" name="enable_user_delete_account" <?php checked( 'on', $settings['enable_user_delete_account'] ); ?> /> <?php esc_attr_e( 'Allow users to delete their account from the My Profile page', 'leaky-paywall' ); ?></td>
+					<th><?php esc_html_e( 'User Account Deletion', 'leaky-paywall' ); ?></th>
+					<td><input type="checkbox" id="enable_user_delete_account" name="enable_user_delete_account" <?php checked( 'on', $settings['enable_user_delete_account'] ); ?> /> <?php esc_html_e( 'Allow users to delete their account from the My Profile page', 'leaky-paywall' ); ?></td>
 				</tr>
 
 				<tr class="general-options">
-					<th><?php esc_attr_e( 'Expiration Dates', 'leaky-paywall' ); ?></th>
-					<td><input type="checkbox" id="add_expiration_dates" name="add_expiration_dates" <?php checked( 'on', $settings['add_expiration_dates'] ); ?> /> <?php esc_attr_e( 'If a current subscriber renews/changes their subscription level, add additional time to their current expiration date. If unchecked, their new expiration date will be calculated from the date of subscription level renewal/change.', 'leaky-paywall' ); ?></td>
+					<th><?php esc_html_e( 'Expiration Dates', 'leaky-paywall' ); ?></th>
+					<td><input type="checkbox" id="add_expiration_dates" name="add_expiration_dates" <?php checked( 'on', $settings['add_expiration_dates'] ); ?> /> <?php esc_html_e( 'If a current subscriber renews/changes their subscription level, add additional time to their current expiration date. If unchecked, their new expiration date will be calculated from the date of subscription level renewal/change.', 'leaky-paywall' ); ?></td>
 				</tr>
 
 				<tr class="general-options">
-					<th><?php esc_attr_e( 'WP REST API', 'leaky-paywall' ); ?></th>
-					<td><input type="checkbox" id="enable_rest_api" name="enable_rest_api" <?php checked( 'on', $settings['enable_rest_api'] ); ?> /> <?php esc_attr_e( 'Enable the WP REST API for Leaky Paywall and add subscriber data to the User endpoint.', 'leaky-paywall' ); ?></td>
+					<th><?php esc_html_e( 'WP REST API', 'leaky-paywall' ); ?></th>
+					<td><input type="checkbox" id="enable_rest_api" name="enable_rest_api" <?php checked( 'on', $settings['enable_rest_api'] ); ?> /> <?php esc_html_e( 'Enable the WP REST API for Leaky Paywall and add subscriber data to the User endpoint.', 'leaky-paywall' ); ?></td>
 				</tr>
 
 
@@ -333,7 +333,7 @@ class Leaky_Paywall_Settings {
 			<table id="leaky_paywall_administrator_options" class="form-table leaky-paywall-settings-table">
 
 			<tr>
-					<th><?php esc_attr_e( 'Page for Log In', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Page for Log In', 'leaky-paywall' ); ?></th>
 					<td>
 						<?php
 						wp_dropdown_pages(
@@ -356,7 +356,7 @@ class Leaky_Paywall_Settings {
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Page for Subscribe Cards', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Page for Subscribe Cards', 'leaky-paywall' ); ?></th>
 					<td>
 						<?php
 						wp_dropdown_pages(
@@ -379,7 +379,7 @@ class Leaky_Paywall_Settings {
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Page for Register Form', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Page for Register Form', 'leaky-paywall' ); ?></th>
 					<td>
 						<?php
 						wp_dropdown_pages(
@@ -402,7 +402,7 @@ class Leaky_Paywall_Settings {
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Page for Profile', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Page for Profile', 'leaky-paywall' ); ?></th>
 					<td>
 						<?php
 						wp_dropdown_pages(
@@ -425,7 +425,7 @@ class Leaky_Paywall_Settings {
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Confirmation Page', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Confirmation Page', 'leaky-paywall' ); ?></th>
 					<td>
 						<?php
 						wp_dropdown_pages(
@@ -438,7 +438,7 @@ class Leaky_Paywall_Settings {
 							)
 						);
 						?>
-						<p class="description"><?php esc_attr_e( 'Page a subscriber is redirected to after they subscribe.  This page cannot be restricted.', 'leaky-paywall' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Page a subscriber is redirected to after they subscribe.  This page cannot be restricted.', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
@@ -458,24 +458,24 @@ class Leaky_Paywall_Settings {
 
 		?>
 	
-		<h2><?php esc_attr_e( 'Content Restrictions', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Content Restrictions', 'leaky-paywall' ); ?></h2>
 
 		<p>Use the settings below to set your content restrictions.  You can also set individual post restrictions with the <a target="_blank" href="https://docs.leakypaywall.com/article/43-how-to-restrict-individual-articles-visibility-setting">visibility settings</a>.</p>
 
 			<table id="leaky_paywall_default_restriction_options" class="form-table">
 
 				<tr class="restriction-options">
-					<th><?php esc_attr_e( 'Limited Article Cookie Expiration', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Limited Article Cookie Expiration', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="number" id="cookie_expiration" class="small-text" name="cookie_expiration" value="<?php echo esc_attr( $settings['cookie_expiration'] ); ?>" />
 						<select id="cookie_expiration_interval" name="cookie_expiration_interval">
-							<option value="hour" <?php selected( 'hour', $settings['cookie_expiration_interval'] ); ?>><?php esc_attr_e( 'Hour(s)', 'leaky-paywall' ); ?></option>
-							<option value="day" <?php selected( 'day', $settings['cookie_expiration_interval'] ); ?>><?php esc_attr_e( 'Day(s)', 'leaky-paywall' ); ?></option>
-							<option value="week" <?php selected( 'week', $settings['cookie_expiration_interval'] ); ?>><?php esc_attr_e( 'Week(s)', 'leaky-paywall' ); ?></option>
-							<option value="month" <?php selected( 'month', $settings['cookie_expiration_interval'] ); ?>><?php esc_attr_e( 'Month(s)', 'leaky-paywall' ); ?></option>
-							<option value="year" <?php selected( 'year', $settings['cookie_expiration_interval'] ); ?>><?php esc_attr_e( 'Year(s)', 'leaky-paywall' ); ?></option>
+							<option value="hour" <?php selected( 'hour', $settings['cookie_expiration_interval'] ); ?>><?php esc_html_e( 'Hour(s)', 'leaky-paywall' ); ?></option>
+							<option value="day" <?php selected( 'day', $settings['cookie_expiration_interval'] ); ?>><?php esc_html_e( 'Day(s)', 'leaky-paywall' ); ?></option>
+							<option value="week" <?php selected( 'week', $settings['cookie_expiration_interval'] ); ?>><?php esc_html_e( 'Week(s)', 'leaky-paywall' ); ?></option>
+							<option value="month" <?php selected( 'month', $settings['cookie_expiration_interval'] ); ?>><?php esc_html_e( 'Month(s)', 'leaky-paywall' ); ?></option>
+							<option value="year" <?php selected( 'year', $settings['cookie_expiration_interval'] ); ?>><?php esc_html_e( 'Year(s)', 'leaky-paywall' ); ?></option>
 						</select>
-						<p class="description"><?php esc_attr_e( 'Choose length of time when a visitor can once again read your articles/posts (up to the # of articles allowed).', 'leaky-paywall' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Choose length of time when a visitor can once again read your articles/posts (up to the # of articles allowed).', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
@@ -483,8 +483,8 @@ class Leaky_Paywall_Settings {
 				if ( ACTIVE_ISSUEM ) {
 					?>
 					<tr class="restriction-options ">
-						<th><?php esc_attr_e( 'IssueM PDF Downloads', 'leaky-paywall' ); ?></th>
-						<td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /> <?php esc_attr_e( 'Restrict PDF issue downloads to active Leaky Paywall subscribers.', 'leaky-paywall' ); ?></td>
+						<th><?php esc_html_e( 'IssueM PDF Downloads', 'leaky-paywall' ); ?></th>
+						<td><input type="checkbox" id="restrict_pdf_downloads" name="restrict_pdf_downloads" <?php checked( 'on', $settings['restrict_pdf_downloads'] ); ?> /> <?php esc_html_e( 'Restrict PDF issue downloads to active Leaky Paywall subscribers.', 'leaky-paywall' ); ?></td>
 					</tr>
 					<?php
 				}
@@ -494,7 +494,7 @@ class Leaky_Paywall_Settings {
 
 				<tr class="restriction-options">
 					<th>
-						<label for="restriction-post-type-' . $row_key . '"><?php esc_attr_e( 'Restrictions', 'leaky-paywall' ); ?></label>
+						<label for="restriction-post-type-' . $row_key . '"><?php esc_html_e( 'Restrictions', 'leaky-paywall' ); ?></label>
 					</th>
 					<td id="issuem-leaky-paywall-restriction-rows">
 
@@ -538,34 +538,34 @@ class Leaky_Paywall_Settings {
 						<p>
 							<input class="button-secondary" id="add-restriction-row" class="add-new-issuem-leaky-paywall-restriction-row" type="submit" name="add_leaky_paywall_restriction_row" value="<?php esc_attr_e( '+ Add Restricted Content', 'leaky-paywall' ); ?>" />
 						</p>
-						<p class="description"><?php esc_attr_e( 'By default all content is allowed.', 'leaky-paywall' ); ?> <?php esc_attr_e( 'Restrictions processed from top to bottom.', 'leaky-paywall' ); ?></p>
+						<p class="description"><?php esc_html_e( 'By default all content is allowed.', 'leaky-paywall' ); ?> <?php esc_html_e( 'Restrictions processed from top to bottom.', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
 				<tr class="restriction-options">
-					<th><?php esc_attr_e( 'Combined Restrictions', 'leaky-paywall' ); ?></th>
-					<td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> <?php esc_attr_e( 'Use a single value for total number allowed regardless of content type or taxonomy. This uses the Post Type and Taxonomy settings from the Restrictions settings above.', 'leaky-paywall' ); ?></td>
+					<th><?php esc_html_e( 'Combined Restrictions', 'leaky-paywall' ); ?></th>
+					<td><input type="checkbox" id="enable_combined_restrictions" name="enable_combined_restrictions" <?php checked( 'on', $settings['enable_combined_restrictions'] ); ?> /> <?php esc_html_e( 'Use a single value for total number allowed regardless of content type or taxonomy. This uses the Post Type and Taxonomy settings from the Restrictions settings above.', 'leaky-paywall' ); ?></td>
 				</tr>
 
 				<tr class="restriction-options combined-restrictions-total-allowed <?php echo 'on' !== $settings['enable_combined_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_attr_e( 'Combined Restrictions Total Allowed', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Combined Restrictions Total Allowed', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="number" id="combined_restrictions_total_allowed" class="small-text" name="combined_restrictions_total_allowed" value="<?php echo esc_attr( $settings['combined_restrictions_total_allowed'] ); ?>" />
-						<p class="description"><?php esc_attr_e( 'If combined restrictions is enabled, the total amount of content items allowed before content is restricted.' ); ?></p>
+						<p class="description"><?php esc_html_e( 'If combined restrictions is enabled, the total amount of content items allowed before content is restricted.' ); ?></p>
 					</td>
 				</tr>
 
 				<tr class="restriction-options">
-					<th><?php esc_attr_e( 'Alternative Restriction Handling', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Alternative Restriction Handling', 'leaky-paywall' ); ?></th>
 					<td>
-						<input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php esc_attr_e( 'Enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying correctly on your site.' ); ?>
+						<input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked( 'on', $settings['enable_js_cookie_restrictions'] ); ?> /> <?php esc_html_e( 'Enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying correctly on your site.' ); ?>
 
 						<?php
 						if ( $this->check_for_caching() && 'on' !== $settings['enable_js_cookie_restrictions'] ) {
 							?>
 							<div class="notice-info notice">
-								<p><strong><?php esc_attr_e( 'We noticed your site might use caching.', 'leaky-paywall' ); ?></strong></p>
-								<p><?php esc_attr_e( 'We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall' ); ?><br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+								<p><strong><?php esc_html_e( 'We noticed your site might use caching.', 'leaky-paywall' ); ?></strong></p>
+								<p><?php esc_html_e( 'We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall' ); ?><br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
 							</div>
 							<?php
 						}
@@ -575,75 +575,75 @@ class Leaky_Paywall_Settings {
 				</tr>
 
 				<tr class="restriction-options-post-container <?php echo 'on' !== $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_attr_e( 'Alternative Restrictions Post Container', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Alternative Restrictions Post Container', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="js_restrictions_post_container" class="large-text" name="js_restrictions_post_container" value="<?php echo esc_attr( $settings['js_restrictions_post_container'] ); ?>" />
-						<p class="description"><?php esc_attr_e( 'CSS selector of the container that contains the content on a post and custom post type.' ); ?></p>
+						<p class="description"><?php esc_html_e( 'CSS selector of the container that contains the content on a post and custom post type.' ); ?></p>
 					</td>
 				</tr>
 
 				<tr class="restriction-options-page-container <?php echo 'on' !== $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_attr_e( 'Alternative Restrictions Page Container', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Alternative Restrictions Page Container', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="js_restrictions_page_container" class="large-text" name="js_restrictions_page_container" value="<?php echo esc_attr( $settings['js_restrictions_page_container'] ); ?>" />
-						<p class="description"><?php esc_attr_e( 'CSS selector of the container that contains the content on a page.' ); ?></p>
+						<p class="description"><?php esc_html_e( 'CSS selector of the container that contains the content on a page.' ); ?></p>
 					</td>
 				</tr>
 
 				<tr class="restriction-options-lead-in-elements <?php echo 'on' !== $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_attr_e( 'Lead In Elements', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Lead In Elements', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="number" id="lead_in_elements" class="small-text" name="lead_in_elements" value="<?php echo esc_attr( $settings['lead_in_elements'] ); ?>">
 						<p class="description">
-							<?php esc_attr_e( 'Number of HTML elements (paragraphs, images, etc.) to show before displaying the subscribe nag.', 'leaky-paywall' ); ?>
+							<?php esc_html_e( 'Number of HTML elements (paragraphs, images, etc.) to show before displaying the subscribe nag.', 'leaky-paywall' ); ?>
 						</p>
 					</td>
 				</tr>
 
 				<tr class="custom-excerpt-length <?php echo 'on' === $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_attr_e( 'Custom Excerpt Length', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Custom Excerpt Length', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="number" id="custom_excerpt_length" class="small-text" name="custom_excerpt_length" value="<?php echo esc_attr( $settings['custom_excerpt_length'] ); ?>">
 						<p class="description">
-							<?php esc_attr_e( 'Amount of content (in characters) to show before displaying the subscribe nag. If nothing is entered then the full excerpt is displayed.', 'leaky-paywall' ); ?>
+							<?php esc_html_e( 'Amount of content (in characters) to show before displaying the subscribe nag. If nothing is entered then the full excerpt is displayed.', 'leaky-paywall' ); ?>
 						</p>
 					</td>
 				</tr>
 
 				<tr class="restriction-options">
-					<th><?php esc_attr_e( 'Bypass Restrictions', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Bypass Restrictions', 'leaky-paywall' ); ?></th>
 					<td>
 						<?php
 						$roles = get_editable_roles();
 
 						foreach ( $roles as $name => $role ) {
 							?>
-							<input type="checkbox" name="bypass_paywall_restrictions[]" <?php echo in_array( $name, $settings['bypass_paywall_restrictions'], true ) ? 'checked' : ''; ?> <?php echo 'administrator' === $name ? 'disabled' : ''; ?> value="<?php echo esc_attr( $name ); ?>"> <?php echo esc_attr( ucfirst( str_replace( '_', ' ', $name ) ) ); ?>&nbsp; &nbsp;
+							<input type="checkbox" name="bypass_paywall_restrictions[]" <?php echo in_array( $name, $settings['bypass_paywall_restrictions'], true ) ? 'checked' : ''; ?> <?php echo 'administrator' === $name ? 'disabled' : ''; ?> value="<?php echo esc_attr( $name ); ?>"> <?php echo esc_html( ucfirst( str_replace( '_', ' ', $name ) ) ); ?>&nbsp; &nbsp;
 							<?php
 						}
 						?>
 
 						<p class="description">
-							<?php esc_attr_e( 'Allow the selected user roles to always bypass the paywall. Administrators can always bypass the paywall.' ); ?>
+							<?php esc_html_e( 'Allow the selected user roles to always bypass the paywall. Administrators can always bypass the paywall.' ); ?>
 						</p>
 					</td>
 				</tr>
 
 				<tr class="restriction-exceptions">
-					<th><?php esc_attr_e( 'Restriction Exceptions', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Restriction Exceptions', 'leaky-paywall' ); ?></th>
 					<td>
 						<table>
 							<tr>
-								<td><label for="post_category_exceptions"><?php esc_attr_e( 'Post Categories', 'leaky-paywall' ); ?></label></td>
+								<td><label for="post_category_exceptions"><?php esc_html_e( 'Post Categories', 'leaky-paywall' ); ?></label></td>
 								<td style="width: 80%;"><input type="text" class="large-text" name="post_category_exceptions" value="<?php echo esc_attr( $settings['post_category_exceptions'] ); ?>"></td>
 							</tr>
 							<tr>
-								<td><label for="post_tag_exceptions"><?php esc_attr_e( 'Post Tags', 'leaky-paywall' ); ?></label></td>
+								<td><label for="post_tag_exceptions"><?php esc_html_e( 'Post Tags', 'leaky-paywall' ); ?></label></td>
 								<td style="width: 80%;"><input type="text" class="large-text" name="post_tag_exceptions" value="<?php echo esc_attr( $settings['post_tag_exceptions'] ); ?>"></td>
 							</tr>
 						</table>
 
-						<p class="description"><?php esc_attr_e( 'Enter a comma separated list of category and/or tag IDs that should not be restricted.', 'leaky-paywall' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Enter a comma separated list of category and/or tag IDs that should not be restricted.', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
@@ -671,11 +671,11 @@ class Leaky_Paywall_Settings {
 				$current_level = get_leaky_paywall_subscription_level( absint( $_GET['level_id'] ) );
 
 				?>
-					<h2><?php echo $current_level['label']; ?> <a href="<?php echo admin_url(); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions">⤴</a><br><span style="color: #aaa; font-size: 14px; font-weight: normal;">ID: <?php echo absint( $_GET['level_id'] ); ?></span></h2>
+					<h2><?php echo esc_html( $current_level['label'] ); ?> <a href="<?php echo esc_url( admin_url() ); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions">⤴</a><br><span style="color: #aaa; font-size: 14px; font-weight: normal;">ID: <?php echo absint( $_GET['level_id'] ); ?></span></h2>
 				<?php 
 			} else {
 				?>
-				<h2><?php esc_attr_e( 'Subscription Levels', 'leaky-paywall' ); ?></h2>
+				<h2><?php esc_html_e( 'Subscription Levels', 'leaky-paywall' ); ?></h2>
 				<?php 
 			}
 		?>
@@ -720,6 +720,7 @@ class Leaky_Paywall_Settings {
 									echo build_leaky_paywall_subscription_levels_row( $level, $key );
 
 								} else {
+									// phpcs:ignore
 									echo build_leaky_paywall_subscription_levels_row_summary( $level, $key );
 								}
 
@@ -777,15 +778,15 @@ class Leaky_Paywall_Settings {
 		
 		do_action( 'leaky_paywall_before_payments_settings' ); ?>
 
-		<h2><?php esc_attr_e( 'Payment Gateway Settings', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Payment Gateway Settings', 'leaky-paywall' ); ?></h2>
 
 		<table id="leaky_paywall_test_option" class="form-table">
 
 			<tr class="gateway-options">
-				<th><?php esc_attr_e( 'Test Mode', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Test Mode', 'leaky-paywall' ); ?></th>
 				<td>
 					<p><input type="checkbox" id="test_mode" name="test_mode" <?php checked( 'on', $settings['test_mode'] ); ?> />
-						<?php esc_attr_e( 'Use the test gateway environment for transactions.', 'leaky-paywall' ); ?></p>
+						<?php esc_html_e( 'Use the test gateway environment for transactions.', 'leaky-paywall' ); ?></p>
 				</td>
 
 			</tr>
@@ -799,7 +800,7 @@ class Leaky_Paywall_Settings {
 		<table id="leaky_paywall_gateway_options" class="form-table">
 
 			<tr class="gateway-options">
-				<th><?php esc_attr_e( 'Enabled Gateways', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Enabled Gateways', 'leaky-paywall' ); ?></th>
 				<td>
 					<?php
 					$gateways = leaky_paywall_get_payment_gateways();
@@ -807,7 +808,7 @@ class Leaky_Paywall_Settings {
 					foreach ( $gateways as $key => $value ) {
 						?>
 							<p>
-								<input id="enable-<?php echo esc_attr( $key ); ?>" type="checkbox" name="payment_gateway[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $settings['payment_gateway'], true ) ); ?> /> <label for="enable-<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $value['admin_label'] ); ?></label>
+								<input id="enable-<?php echo esc_attr( $key ); ?>" type="checkbox" name="payment_gateway[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $settings['payment_gateway'], true ) ); ?> /> <label for="enable-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $value['admin_label'] ); ?></label>
 							</p>
 						<?php 	
 					}
@@ -827,7 +828,7 @@ class Leaky_Paywall_Settings {
 
 				<tr>
 					<th colspan="2">
-						<h3><?php esc_attr_e( 'Stripe Settings', 'leaky-paywall' ); ?></h3>
+						<h3><?php esc_html_e( 'Stripe Settings', 'leaky-paywall' ); ?></h3>
 
 						<?php
 						if ( ! isset( $settings['live_publishable_key'] ) || ! $settings['live_publishable_key'] ) {
@@ -841,52 +842,52 @@ class Leaky_Paywall_Settings {
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Live Publishable Key', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Live Publishable Key', 'leaky-paywall' ); ?></th>
 					<td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo esc_attr( $settings['live_publishable_key'] ); ?>" /></td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Live Secret Key', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Live Secret Key', 'leaky-paywall' ); ?></th>
 					<td><input type="password" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo esc_attr( $settings['live_secret_key'] ); ?>" /></td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Test Publishable Key', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Test Publishable Key', 'leaky-paywall' ); ?></th>
 					<td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo esc_attr( $settings['test_publishable_key'] ); ?>" /></td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Test Secret Key', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Test Secret Key', 'leaky-paywall' ); ?></th>
 					<td><input type="password" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo esc_attr( $settings['test_secret_key'] ); ?>" /></td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Stripe Webhook URL', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Stripe Webhook URL', 'leaky-paywall' ); ?></th>
 					<td>
 						<p class="description"><?php echo esc_url( add_query_arg( 'listener', 'stripe', get_site_url() . '/' ) ); ?></p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Stripe Webhooks Enabled', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Stripe Webhooks Enabled', 'leaky-paywall' ); ?></th>
 					<td>
 						<p><input type="checkbox" id="stripe_webhooks_enabled" name="stripe_webhooks_enabled" <?php checked( 'on', $settings['stripe_webhooks_enabled'] ); ?> />
-							<?php esc_attr_e( 'I have enabled the Leaky Paywall webhook URL in my Stripe account.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/120-leaky-paywall-recurring-payments"><?php esc_attr_e( 'View Instructions', 'leaky-paywall' ); ?></a></p>
+							<?php esc_html_e( 'I have enabled the Leaky Paywall webhook URL in my Stripe account.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/120-leaky-paywall-recurring-payments"><?php esc_html_e( 'View Instructions', 'leaky-paywall' ); ?></a></p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Test Signing Secret', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Test Signing Secret', 'leaky-paywall' ); ?></th>
 					<td><input type="password" id="test_signing_secret" class="regular-text" name="test_signing_secret" value="<?php echo esc_attr( $settings['test_signing_secret'] ); ?>" /></td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Live Signing Secret', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Live Signing Secret', 'leaky-paywall' ); ?></th>
 					<td><input type="password" id="live_signing_secret" class="regular-text" name="live_signing_secret" value="<?php echo esc_attr( $settings['live_signing_secret'] ); ?>" /></td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Enable Apple Pay', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Enable Apple Pay', 'leaky-paywall' ); ?></th>
 					<td>
 						<select id="enable_apple_pay" name="enable_apple_pay">
 							<option <?php selected( 'yes', $settings['enable_apple_pay'] ); ?> value="yes">Yes</option>
@@ -899,15 +900,15 @@ class Leaky_Paywall_Settings {
 				<?php if ( in_array( 'stripe_checkout', $settings['payment_gateway']) ) {
 					?>
 					<tr>
-						<th><?php esc_attr_e( 'Automatic Tax', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Automatic Tax', 'leaky-paywall' ); ?></th>
 						<td>
 							<p><input type="checkbox" id="stripe_automatic_tax" name="stripe_automatic_tax" <?php checked( 'on', $settings['stripe_automatic_tax'] ); ?> />
-								<?php esc_attr_e( 'Automatically calculate tax for Stripe Checkout transactions.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate">Requires Stripe Tax activation</a></p>
+								<?php esc_html_e( 'Automatically calculate tax for Stripe Checkout transactions.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate">Requires Stripe Tax activation</a></p>
 						</td>
 					</tr>
 
 					<tr>
-						<th><?php esc_attr_e( 'Tax Behavior', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Tax Behavior', 'leaky-paywall' ); ?></th>
 						<td>
 							<select id="stripe_tax_behavior" name="stripe_tax_behavior">
 								<option <?php selected( 'exclusive', $settings['stripe_tax_behavior'] ); ?> value="exclusive">Exclusive</option>
@@ -931,85 +932,85 @@ class Leaky_Paywall_Settings {
 
 				<tr>
 					<th colspan="2">
-						<h3><?php esc_attr_e( 'PayPal Standard Settings', 'leaky-paywall' ); ?></h3>
+						<h3><?php esc_html_e( 'PayPal Standard Settings', 'leaky-paywall' ); ?></h3>
 					</th>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Merchant ID', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Merchant ID', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo esc_attr( $settings['paypal_live_email'] ); ?>" />
-						<p class="description"><?php esc_attr_e( 'Need help setting up PayPal?', 'leaky-paywall' ); ?> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/213-how-to-set-up-paypal-as-a-payment-gateway"><?php esc_attr_e( 'See our guide.', 'leaky-paywall' ); ?></a></p>
+						<p class="description"><?php esc_html_e( 'Need help setting up PayPal?', 'leaky-paywall' ); ?> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/213-how-to-set-up-paypal-as-a-payment-gateway"><?php esc_html_e( 'See our guide.', 'leaky-paywall' ); ?></a></p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'API Username', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'API Username', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_live_api_username" class="regular-text" name="paypal_live_api_username" value="<?php echo esc_attr( $settings['paypal_live_api_username'] ); ?>" />
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'API Password', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'API Password', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_live_api_password" class="regular-text" name="paypal_live_api_password" value="<?php echo esc_attr( $settings['paypal_live_api_password'] ); ?>" />
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'API Signature', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'API Signature', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_live_api_secret" class="regular-text" name="paypal_live_api_secret" value="<?php echo esc_attr( $settings['paypal_live_api_secret'] ); ?>" />
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Image URL', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Image URL', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_image_url" class="regular-text" name="paypal_image_url" value="<?php echo esc_url( $settings['paypal_image_url'] ); ?>" />
-						<p class="description"><?php esc_attr_e( 'Enter the URL to a 150x50px image displayed as your logo in the upper left corner of the Paypal checkout pages.', 'leaky-paywall' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Enter the URL to a 150x50px image displayed as your logo in the upper left corner of the Paypal checkout pages.', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Live IPN', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Live IPN', 'leaky-paywall' ); ?></th>
 					<td>
 						<p class="description"><?php echo esc_url( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ); ?></p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Sandbox Merchant ID', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Sandbox Merchant ID', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_sand_email" class="regular-text" name="paypal_sand_email" value="<?php echo esc_attr( $settings['paypal_sand_email'] ); ?>" />
-						<p class="description"><?php esc_attr_e( 'Use PayPal Sandbox Email Address in lieu of Merchant ID', 'leaky-paywall' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Use PayPal Sandbox Email Address in lieu of Merchant ID', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Sandbox API Username', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Sandbox API Username', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_sand_api_username" class="regular-text" name="paypal_sand_api_username" value="<?php echo esc_attr( $settings['paypal_sand_api_username'] ); ?>" />
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Sandbox API Password', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Sandbox API Password', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_sand_api_password" class="regular-text" name="paypal_sand_api_password" value="<?php echo esc_attr( $settings['paypal_sand_api_password'] ); ?>" />
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Sandbox API Signature', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Sandbox API Signature', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_sand_api_secret" class="regular-text" name="paypal_sand_api_secret" value="<?php echo esc_attr( $settings['paypal_sand_api_secret'] ); ?>" />
 					</td>
 				</tr>
 
 				<tr>
-					<th><?php esc_attr_e( 'Sandbox IPN', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Sandbox IPN', 'leaky-paywall' ); ?></th>
 					<td>
 						<p class="description"><?php echo esc_url( add_query_arg( 'listener', 'IPN', get_site_url() . '/' ) ); ?></p>
 					</td>
@@ -1021,27 +1022,27 @@ class Leaky_Paywall_Settings {
 
 		<?php do_action( 'leaky_paywall_after_enabled_gateways', $settings ); ?>
 
-		<h2><?php esc_attr_e( 'Currency Options', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Currency Options', 'leaky-paywall' ); ?></h2>
 
 		<table id="leaky_paywall_currency_options" class="form-table">
 
 			<tr>
-				<th><?php esc_attr_e( 'Currency', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Currency', 'leaky-paywall' ); ?></th>
 				<td>
 					<select id="leaky_paywall_currency" name="leaky_paywall_currency">
 						<?php
 						$currencies = leaky_paywall_supported_currencies();
 						foreach ( $currencies as $key => $currency ) {
-							echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $settings['leaky_paywall_currency'], true ) . '>' . esc_attr( $currency['label'] ) . ' - ' . esc_attr( $currency['symbol'] ) . '</option>';
+							echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $settings['leaky_paywall_currency'], true ) . '>' . esc_html( $currency['label'] ) . ' - ' . esc_html( $currency['symbol'] ) . '</option>';
 						}
 						?>
 					</select>
-					<p class="description"><?php esc_attr_e( 'This controls which currency payment gateways will take payments in.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'This controls which currency payment gateways will take payments in.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Currency Position', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Currency Position', 'leaky-paywall' ); ?></th>
 				<td>
 					<select id="leaky_paywall_currency_position" name="leaky_paywall_currency_position">
 
@@ -1054,21 +1055,21 @@ class Leaky_Paywall_Settings {
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Thousand Separator', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Thousand Separator', 'leaky-paywall' ); ?></th>
 				<td>
 					<input type="text" class="small-text" id="leaky_paywall_thousand_separator" name="leaky_paywall_thousand_separator" value="<?php echo esc_attr( $settings['leaky_paywall_thousand_separator'] ); ?>">
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Decimal Separator', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Decimal Separator', 'leaky-paywall' ); ?></th>
 				<td>
 					<input type="text" class="small-text" id="leaky_paywall_decimal_separator" name="leaky_paywall_decimal_separator" value="<?php echo esc_attr( $settings['leaky_paywall_decimal_separator'] ); ?>">
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Number of Decimals', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Number of Decimals', 'leaky-paywall' ); ?></th>
 				<td>
 					<input type="number" class="small-text" id="leaky_paywall_decimal_number" name="leaky_paywall_decimal_number" value="<?php echo esc_attr( $settings['leaky_paywall_decimal_number'] ); ?>" min="0" step="1">
 				</td>
@@ -1089,111 +1090,111 @@ class Leaky_Paywall_Settings {
 		
 		do_action( 'leaky_paywall_before_email_settings' ); ?>
 
-		<h2><?php esc_attr_e( 'Email Settings', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Email Settings', 'leaky-paywall' ); ?></h2>
 
 		<table id="leaky_paywall_administrator_options" class="form-table">
 
 			<tr>
-				<th><?php esc_attr_e( 'Site Name', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Site Name', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="site_name" class="regular-text" name="site_name" value="<?php echo esc_attr( $settings['site_name'] ); ?>" /></td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'From Name', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'From Name', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="from_name" class="regular-text" name="from_name" value="<?php echo esc_attr( $settings['from_name'] ); ?>" /></td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'From Email', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'From Email', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo esc_attr( $settings['from_email'] ); ?>" /></td>
 			</tr>
 
 		</table>
 
-		<h2><?php esc_attr_e( 'Admin New Subscriber Email', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Admin New Subscriber Email', 'leaky-paywall' ); ?></h2>
 
 		<table id="leaky_paywall_administrator_options" class="form-table">
 
 			<tr>
-				<th><?php esc_attr_e( 'Disable New Subscriber Notifications', 'leaky-paywall' ); ?></th>
-				<td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> <?php esc_attr_e( 'Disable the email sent to an admin when a new subscriber is added to Leaky Paywall', 'leaky-paywall' ); ?></td>
+				<th><?php esc_html_e( 'Disable New Subscriber Notifications', 'leaky-paywall' ); ?></th>
+				<td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked( 'on', $settings['new_subscriber_admin_email'] ); ?> /> <?php esc_html_e( 'Disable the email sent to an admin when a new subscriber is added to Leaky Paywall', 'leaky-paywall' ); ?></td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Subject', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Subject', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="admin_new_subscriber_email_subject" class="regular-text" name="admin_new_subscriber_email_subject" value="<?php echo esc_attr( $settings['admin_new_subscriber_email_subject'] ); ?>" />
-					<p class="description"><?php esc_attr_e( 'The subject line for this email.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The subject line for this email.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Recipient(s)', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Recipient(s)', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="admin_new_subscriber_email_recipients" class="regular-text" name="admin_new_subscriber_email_recipients" value="<?php echo esc_attr( $settings['admin_new_subscriber_email_recipients'] ); ?>" />
-					<p class="description"><?php esc_attr_e( 'Enter recipients (comma separated) for this email.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Enter recipients (comma separated) for this email.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
 		</table>
 
-		<h2><?php esc_attr_e( 'New Subscriber Email', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'New Subscriber Email', 'leaky-paywall' ); ?></h2>
 
 		<table id="leaky_paywall_new_subscriber_email_options" class="form-table">
 
 			<tr>
-				<th><?php esc_attr_e( 'Disable New Subscriber Email', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Disable New Subscriber Email', 'leaky-paywall' ); ?></th>
 				<td><input type="checkbox" id="new_subscriber_email" name="new_subscriber_email" <?php checked( 'on', $settings['new_subscriber_email'] ); ?> /> Disable the new subscriber email sent to a subscriber</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Subject', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Subject', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo esc_attr( $settings['new_email_subject'] ); ?>" />
-					<p class="description"><?php esc_attr_e( 'The subject line for the email sent to new subscribers.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The subject line for the email sent to new subscribers.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Body', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Body', 'leaky-paywall' ); ?></th>
 				<td>
 					<?php wp_editor( stripslashes( $settings['new_email_body'] ), 'new_email_body' ); ?>
-					<p class="description"><?php esc_attr_e( 'The email message that is sent to new subscribers. HTML is allowed.', 'leaky-paywall' ); ?></p>
-					<p class="description"><?php esc_attr_e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
+					<p class="description"><?php esc_html_e( 'The email message that is sent to new subscribers. HTML is allowed.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
 						%blogname%, %sitename%, %username%, %useremail%, %password%, %firstname%, %lastname%, %displayname%</p>
 				</td>
 			</tr>
 
 		</table>
 
-		<h2><?php esc_attr_e( 'Renewal Reminder Email (for non-recurring subscribers)', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Renewal Reminder Email (for non-recurring subscribers)', 'leaky-paywall' ); ?></h2>
 
 		<table id="leaky_paywall_renewal_reminder_email_options" class="form-table">
 
 			<tr>
-				<th><?php esc_attr_e( 'Disable Renewal Reminder Email', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Disable Renewal Reminder Email', 'leaky-paywall' ); ?></th>
 				<td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked( 'on', $settings['renewal_reminder_email'] ); ?> /> Disable the renewal reminder email sent to a non-recurring subscriber</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Subject', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Subject', 'leaky-paywall' ); ?></th>
 				<td><input type="text" id="renewal_reminder_email_subject" class="regular-text" name="renewal_reminder_email_subject" value="<?php echo esc_attr( $settings['renewal_reminder_email_subject'] ); ?>" />
 
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'Body', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'Body', 'leaky-paywall' ); ?></th>
 				<td>
 					<?php wp_editor( stripslashes( $settings['renewal_reminder_email_body'] ), 'renewal_reminder_email_body' ); ?>
-					<p class="description"><?php esc_attr_e( 'The email message that is sent to remind non-recurring subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
-					<p class="description"><?php esc_attr_e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
+					<p class="description"><?php esc_html_e( 'The email message that is sent to remind non-recurring subscribers to renew their subscription.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Available template tags:', 'leaky-paywall' ); ?> <br>
 						%blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
 				</td>
 			</tr>
 
 			<tr>
-				<th><?php esc_attr_e( 'When to Send Reminder', 'leaky-paywall' ); ?></th>
+				<th><?php esc_html_e( 'When to Send Reminder', 'leaky-paywall' ); ?></th>
 				<td>
 					<input type="number" value="<?php echo esc_attr( $settings['renewal_reminder_days_before'] ); ?>" name="renewal_reminder_days_before" />
-					<p class="description"><?php esc_attr_e( 'Days in advance of a non-recurring subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Days in advance of a non-recurring subscriber\'s expiration date to remind them to renew.', 'leaky-paywall' ); ?></p>
 				</td>
 			</tr>
 
@@ -1223,17 +1224,17 @@ class Leaky_Paywall_Settings {
 	{
 		do_action( 'leaky_paywall_before_help_settings' ); ?>
 
-		<h2><?php esc_attr_e( 'Getting Started', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Getting Started', 'leaky-paywall' ); ?></h2>
 
 		<p><a target="_blank" href="https://docs.leakypaywall.com/article/39-setting-up-leaky-paywall">Setting Up Leaky Paywall</a></p>
 
 		<iframe width="560" height="315" src="https://www.youtube.com/embed/blUGogGw4H8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-		<h2><?php esc_attr_e( 'Setting Up Stripe in Leaky Paywall', 'leaky-paywall' ); ?></h2>
+		<h2><?php esc_html_e( 'Setting Up Stripe in Leaky Paywall', 'leaky-paywall' ); ?></h2>
 
 		<iframe width="560" height="315" src="https://www.youtube.com/embed/QlrYpL72L4E" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-		<h2><?php esc_attr_e( 'Documentation Articles' ); ?></h2>
+		<h2><?php esc_html_e( 'Documentation Articles' ); ?></h2>
 
 		<p><a target="_blank" href="https://docs.leakypaywall.com/">View All</a></p>
 
@@ -1705,22 +1706,23 @@ class Leaky_Paywall_Settings {
 
 		if ( 'subscriptions' == $current_tab && 'general' == $current_section ) {
 			if ( ! empty( $_POST['levels'] ) ) {
-
+				// phpcs:ignore
 				foreach( $_POST['levels'] as $key => $level ) {
 
 					if ( isset( $_GET['level_id'] ) ) {
 
 						if ( $key ==  $_GET['level_id'] ) {
+							
 							$settings['levels'][$key] = $this->sanitize_level( $key, $level );
 						}
 						
 					} else {
+						
 						$settings['levels'][$key] = $this->sanitize_level( $key, $level );
 					}
 				}
 				
-				// phpcs:ignore
-				// $settings['levels'][$key] = $this->sanitize_levels( $_POST['levels'] );
+				
 			}
 		}
 
