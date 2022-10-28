@@ -847,7 +847,7 @@ class Leaky_Paywall_Settings {
 
 				<tr>
 					<th><?php esc_attr_e( 'Live Secret Key', 'leaky-paywall' ); ?></th>
-					<td><input type="text" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo esc_attr( $settings['live_secret_key'] ); ?>" /></td>
+					<td><input type="password" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo esc_attr( $settings['live_secret_key'] ); ?>" /></td>
 				</tr>
 
 				<tr>
@@ -857,7 +857,7 @@ class Leaky_Paywall_Settings {
 
 				<tr>
 					<th><?php esc_attr_e( 'Test Secret Key', 'leaky-paywall' ); ?></th>
-					<td><input type="text" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo esc_attr( $settings['test_secret_key'] ); ?>" /></td>
+					<td><input type="password" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo esc_attr( $settings['test_secret_key'] ); ?>" /></td>
 				</tr>
 
 				<tr>
