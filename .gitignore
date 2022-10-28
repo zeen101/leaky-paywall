@@ -2,3 +2,8 @@ lp-log.txt
 ipn-log.txt
 .DS_Store
 .vscode
+.phpcs-cache
+composer.json
+composer.lock
+phpcs.xml
+vendor/

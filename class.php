@@ -794,7 +794,7 @@ class Leaky_Paywall {
 					)
 				);
 				/* Translators: %s - url for settings */
-				printf( esc_attr__( 'Please complete your PayPal setup for Leaky Paywall. %s.', 'leaky-paywall' ), '<a class="btn" href="' . esc_url( $settings_link ) . '">' . esc_attr__( 'Complete Your Setup Now', 'leaky-paywall' ) . '</a>' );
+				printf( esc_attr__( 'Please complete your PayPal setup for Leaky Paywall. %s.', 'leaky-paywall' ), '<a class="btn" href="' . esc_url( $settings_link ) . '">' . esc_html__( 'Complete Your Setup Now', 'leaky-paywall' ) . '</a>' );
 				?>
 				</div>
 				<?php
@@ -821,7 +821,7 @@ class Leaky_Paywall {
 		if ( $last_rss_item ) {
 			echo '<div class="notice notice-success">';
 			echo wp_kses_post( $last_rss_item );
-			echo '<p><a href="#" class="lp-notice-link" data-notice="rss_item" data-type="dismiss">' . esc_attr__( 'Dismiss', 'leaky-paywall' ) . '</a></p>';
+			echo '<p><a href="#" class="lp-notice-link" data-notice="rss_item" data-type="dismiss">' . esc_html__( 'Dismiss', 'leaky-paywall' ) . '</a></p>';
 			echo '</div>';
 		}
 	}

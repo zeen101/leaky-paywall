@@ -1408,77 +1408,6 @@ if ( ! function_exists( 'leaky_paywall_server_pdf_download' ) ) {
 		wp_safe_redirect( $url );
 		die();
 
-		// Attempt to grab file.
-		$response = wp_remote_head( str_replace( ' ', '%20', $url ) );
-		if ( $response ) {
-			if ( ! is_wp_error( $response ) ) {
-				$valid_response_codes = array(
-					200,
-				);
-				if ( in_array( wp_remote_retrieve_response_code( $response ), (array) $valid_response_codes, true ) ) {
-
-					// Get Resource Headers.
-					$headers = wp_remote_retrieve_headers( $response );
-
-					// White list of headers to pass from original resource.
-					$passthru_headers = array(
-						'accept-ranges',
-						'content-length',
-						'content-type',
-					);
-
-					// Set Headers for download from original resource.
-					foreach ( (array) $passthru_headers as $header ) {
-						if ( isset( $headers[ $header ] ) ) {
-							header( esc_attr( $header ) . ': ' . esc_attr( $headers[ $header ] ) );
-						}
-					}
-
-					// Set headers to force download.
-					header( 'Content-Description: File Transfer' );
-					header( 'Content-Disposition: attachment; filename=' . basename( $url ) );
-					header( 'Content-Transfer-Encoding: binary' );
-					header( 'Expires: 0' );
-					header( 'Cache-Control: must-revalidate' );
-					header( 'Pragma: public' );
-
-					// Clear buffer.
-					flush();
-
-					do_action( 'leaky_paywall_before_download_pdf', $url );
-
-					// Deliver the file: readfile, curl, redirect.
-					if ( ini_get( 'allow_url_fopen' ) ) {
-						// Use readfile if allow_url_fopen is on.
-						readfile( str_replace( ' ', '%20', $url ) );
-					} elseif ( is_callable( 'curl_init' ) ) {
-						// Use cURL if allow_url_fopen is off and curl is available.
-						$ch = curl_init( str_replace( ' ', '%20', $url ) );
-						curl_exec( $ch );
-						curl_close( $ch );
-					} else {
-						// Just redirect to the file becuase their host <strike>sucks</strike> doesn't support allow_url_fopen or curl.
-						wp_redirect( str_replace( ' ', '%20', $url ) );
-					}
-					die();
-				} else {
-					$output = '<h3>' . __( 'Error Downloading PDF', 'leaky-paywall' ) . '</h3>';
-
-					$output .= '<p>' . sprintf( __( 'Download Error: Invalid response: %s', 'leaky-paywall' ), wp_remote_retrieve_response_code( $response ) ) . '</p>';
-					$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'leaky-paywall' ) . '</a>';
-
-					wp_die( wp_kses_post( $output ) );
-				}
-			} else {
-				$output = '<h3>' . __( 'Error Downloading PDF', 'leaky-paywall' ) . '</h3>';
-
-				/* Translators: %s - error message */
-				$output .= '<p>' . sprintf( __( 'Download Error: %s', 'leaky-paywall' ), $response->get_error_message() ) . '</p>';
-				$output .= '<a href="' . get_home_url() . '">' . __( 'Home', 'leaky-paywall' ) . '</a>';
-
-				wp_die( wp_kses_post( $output ) );
-			}
-		}
 	}
 }
 
@@ -1490,10 +1419,10 @@ function build_leaky_paywall_subscription_levels_row_summary( $level, $row_key )
 	
 	?>
 	<tr>
-		<td><?php echo $row_key; ?></td>
-		<td><?php echo $level['label']; ?><br><div class="row-actions"><a href="<?php echo admin_url(); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions&level_id=<?php echo $row_key; ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo $row_key; ?>" href="<?php echo $delete_link; ?>">Delete</a></span></div></td>
-		<td><?php echo $level['price']; ?></td>
-		<td><?php echo $duration; ?></td>
+		<td><?php echo esc_html( $row_key ); ?></td>
+		<td><?php echo esc_html( $level['label'] ); ?><br><div class="row-actions"><a href="<?php echo esc_url( admin_url() ); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions&level_id=<?php echo esc_url( $row_key ); ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo esc_attr( $row_key ); ?>" href="<?php echo esc_url( $delete_link ); ?>">Delete</a></span></div></td>
+		<td><?php echo esc_html( $level['price'] ); ?></td>
+		<td><?php echo esc_html( $duration ); ?></td>
 		<td><?php echo isset( $level['recurring'] ) ? 'recurring' : 'one time'; ?></td>
 		<td><?php echo esc_url( get_page_link( $settings['page_for_register'] ) ) . '?level_id=' . esc_attr( $row_key ); ?></td>
 	</tr>
@@ -4523,25 +4452,27 @@ function leaky_paywall_get_ip() {
 
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
 	{
-		$ip = $_SERVER['HTTP_CLIENT_IP'];
+		$ip = sanitize_text_field( $_SERVER['HTTP_CLIENT_IP'] );
 
 	} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
 	{
 		
-		$ip_array = array_values(array_filter(explode(',',$_SERVER['HTTP_X_FORWARDED_FOR'])));
+		$ip_array = array_values(array_filter(explode(',', sanitize_text_field( $_SERVER['HTTP_X_FORWARDED_FOR'] ))));
 
 		if ( is_array( $ip_array ) ) {
 			$ip = $ip_array[0];
 		} else {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			$ip = sanitize_text_field( $_SERVER['HTTP_X_FORWARDED_FOR'] );
 		}
 
 	} else {
-		$ip = $_SERVER['REMOTE_ADDR'];
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( $_SERVER['REMOTE_ADDR'] ) : '';
 	}
 
-	$ip = apply_filters( 'leaky_paywall_ip_address', $ip );
+	if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+		$ip = '';
+	}
 
-	return $ip;
+	return apply_filters( 'leaky_paywall_ip_address', $ip );
 
 }
