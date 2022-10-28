@@ -213,10 +213,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$user_type = ! empty( $_GET['user-type'] ) ? sanitize_text_field( wp_unslash( $_GET['user-type'] ) ) : 'lpsubs';
 
 		echo '<div class="alignleft actions">';
-		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_attr__( 'Select User Type' ) . '</label>';
+		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_html__( 'Select User Type' ) . '</label>';
 		echo '<select name="user-type" id="user-type-selector">';
-		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_attr__( 'Leaky Paywall Subscribers' ) . '</option>';
-		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_attr__( 'All WordPress Users' ) . '</option>';
+		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_html__( 'Leaky Paywall Subscribers' ) . '</option>';
+		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_html__( 'All WordPress Users' ) . '</option>';
 		echo '</select>';
 
 		submit_button( __( 'Apply' ), 'primary', false, false );
@@ -248,7 +248,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				<option value="all" <?php selected( $lev, 'all' ); ?>>All Levels</option>
 				<?php
 				foreach ( $levels as $key => $level ) {
-					echo '<option ' . selected( $key, $lev, false ) . ' value="' . esc_attr( $key ) . '">' . esc_attr( $level['label'] ) . '</option>';
+					echo '<option ' . selected( $key, $lev, false ) . ' value="' . esc_attr( $key ) . '">' . esc_html( $level['label'] ) . '</option>';
 				}
 				?>
 			</select>
@@ -271,7 +271,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				<?php
 				foreach ( $status_filter_args as $key => $value ) {
 					?>
-					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $stat, $key ); ?>><?php echo esc_attr( $value ); ?></option>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $stat, $key ); ?>><?php echo esc_html( $value ); ?></option>
 					<?php
 				}
 				?>
@@ -337,7 +337,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 						case 'wp_user_login':
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							?>
-							<strong><?php echo esc_attr( $user->user_login ); ?></strong>
+							<strong><?php echo esc_html( $user->user_login ); ?></strong>
 
 							<?php
 							// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing.
@@ -359,7 +359,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$edit_wp_link = admin_url() . 'user-edit.php?user_id=' . $user->ID;
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							?>
-							<strong><?php echo esc_attr( $user->user_email ); ?></strong>
+							<strong><?php echo esc_html( $user->user_email ); ?></strong>
 							<br><a href="<?php echo esc_url( $edit_link ); ?>" class="edit">Edit LP Sub</a> | <a href="<?php echo esc_url( $edit_wp_link ); ?>">Edit WP user</a>
 							</td>
 							<?php
@@ -445,7 +445,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 							if ( is_numeric( $created ) && (int)$created == $created ) {
 								// its a timestamp
-								$formatted_created = date( $date_format, $created );
+								$formatted_created = gmdate( $date_format, $created );
 							} else {
 								// its a date format
 								$formatted_created     = mysql2date( $date_format, $created );
