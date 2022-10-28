@@ -76,7 +76,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 	?>
 
 	<h3><strong>Revenue Last 30 Days</strong></h3>
-	<p style="font-size: 24px; margin-top: 5px;"><a style="text-decoration: none;" href="<?php echo esc_url( admin_url() ); ?>edit.php?post_type=lp_transaction"><?php echo esc_attr( leaky_paywall_get_current_currency_symbol() ) . number_format( $revenue, 2 ); ?></a></p>
+	<p style="font-size: 24px; margin-top: 5px;"><a style="text-decoration: none;" href="<?php echo esc_url( admin_url() ); ?>edit.php?post_type=lp_transaction"><?php echo esc_html( leaky_paywall_get_current_currency_symbol() ) . number_format( $revenue, 2 ); ?></a></p>
 
 	<h3><strong>Recent Subscribers</strong></h3>
 
@@ -108,12 +108,12 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 			
 			$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
 
-			echo '<tr><td>' . esc_attr( gmdate( 'M d, Y', strtotime( $date ) ) ) . '</td><td> <a href="' . esc_url( admin_url() ) . '/user-edit.php?user_id=' . absint( $user->ID ) . '">' . esc_attr( $name ) . '</a></td><td>' . esc_attr( $level_name ) . '</td>';
+			echo '<tr><td>' . esc_html( gmdate( 'M d, Y', strtotime( $date ) ) ) . '</td><td> <a href="' . esc_url( admin_url() ) . '/user-edit.php?user_id=' . absint( $user->ID ) . '">' . esc_html( $name ) . '</a></td><td>' . esc_html( $level_name ) . '</td>';
 		}
 
 		echo '</table>';
 	} else {
-		echo '<p>No subscribers found for <strong>' . esc_attr( $mode ) . '</strong> mode.</p>';
+		echo '<p>No subscribers found for <strong>' . esc_html( $mode ) . '</strong> mode.</p>';
 	}
 
 	echo '<p><a href="' . esc_url( admin_url() ) . '/admin.php?page=leaky-paywall-subscribers">See all Leaky Paywall Subscribers »</a></p>';

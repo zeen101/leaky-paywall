@@ -87,9 +87,13 @@ class LP_Incomplete_User {
 					<td>
 
 						<?php
-						foreach ( $user_data as $key => $value ) {
-							echo '<p><strong>' . esc_attr( $key ) . '</strong>: ' . esc_attr( $value ) . '</p>';
+
+						if ( !empty( $user_data ) ) {
+							foreach ( $user_data as $key => $value ) {
+								echo '<p><strong>' . esc_html( $key ) . '</strong>: ' . esc_html( $value ) . '</p>';
+							}
 						}
+						
 						?>
 
 					</td>

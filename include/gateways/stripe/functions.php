@@ -566,7 +566,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		'last_name'	=> $user_data['last_name'],
 		'level_id'	=> $user_data['level_id'],
 		'subscriber_id'	=> $stripe_object->customer,
-		'created'	=> date('Y-m-d H:i:s'),
+		'created'	=> gmdate('Y-m-d H:i:s'),
 		'price'	=> $stripe_object->amount_total / 100,
 		'plan'	=> $plan_id,
 		'interval_count' => $level['interval_count'],

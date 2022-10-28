@@ -149,6 +149,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			return;
 		}
 
+		// phpcs:ignore
 		$body         = @file_get_contents( 'php://input' );
 		$stripe_event = json_decode( $body );
 		$settings     = get_leaky_paywall_settings();
@@ -169,7 +170,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		if ( $endpoint_secret ) {
 
 			$stripe = leaky_paywall_initialize_stripe_api();
-			$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+			$sig_header = isset( $_SERVER['HTTP_STRIPE_SIGNATURE'] ) ? sanitize_text_field( $_SERVER['HTTP_STRIPE_SIGNATURE'] ) : '';
 
 			try {
 				$event = \Stripe\Webhook::constructEvent(

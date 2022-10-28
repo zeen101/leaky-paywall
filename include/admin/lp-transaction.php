@@ -178,7 +178,7 @@ class LP_Transaction_Post_Type {
 							<label for="apc_box1_description">Nag Location</label>
 						</th>
 						<td>
-							<?php echo get_the_permalink( $nag_location ); ?>
+							<?php echo esc_url( get_the_permalink( $nag_location ) ); ?>
 						</td>
 					</tr>
 					<?php 
@@ -236,7 +236,7 @@ class LP_Transaction_Post_Type {
 		switch ( $column ) {
 
 			case 'email':
-				echo '<a href="' . esc_url( admin_url() ) . '/post.php?post=' . absint( $post_id ) . '&action=edit">' . esc_attr( get_post_meta( $post_id, '_email', true ) ) . '</a>';
+				echo '<a href="' . esc_url( admin_url() ) . '/post.php?post=' . absint( $post_id ) . '&action=edit">' . esc_html( get_post_meta( $post_id, '_email', true ) ) . '</a>';
 				break;
 
 			case 'level':

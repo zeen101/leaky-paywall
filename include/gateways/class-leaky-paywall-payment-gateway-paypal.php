@@ -251,6 +251,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function process_webhooks() {
+		
 		if ( ! isset( $_POST['txn_type'] ) ) {
 			return;
 		}
