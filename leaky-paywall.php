@@ -11,7 +11,7 @@ Plugin Name: Leaky Paywall
 Plugin URI: https://leakypaywall.com/
 Description: The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
 Author: Leaky Paywall
-Version: 4.18.7
+Version: 4.18.8
 Author URI: https://leakypaywall.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: leaky-paywall
@@ -27,7 +27,7 @@ if ( ! defined( 'ZEEN101_STORE_URL' ) ) {
 
 define( 'LEAKY_PAYWALL_NAME', 'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION', '4.18.7' );
+define( 'LEAKY_PAYWALL_VERSION', '4.18.8' );
 define( 'LEAKY_PAYWALL_DB_VERSION', '1.0.5' );
 define( 'LEAKY_PAYWALL_URL', plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', plugin_dir_path( __FILE__ ) );
@@ -115,6 +115,8 @@ function leaky_paywall_plugins_loaded() {
 
 		// Internationalization.
 		load_plugin_textdomain( 'leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
+
+		do_action( 'leaky_paywall_plugins_loaded' );
 	}
 }
 add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); // wait for the plugins to be loaded before init.
