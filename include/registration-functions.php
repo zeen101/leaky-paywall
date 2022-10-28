@@ -1236,7 +1236,7 @@ add_action( 'wp_ajax_leaky_paywall_store_nag_location', 'leaky_paywall_store_nag
 
 function leaky_paywall_store_nag_location() {
 
-	$post_id = absint( $_REQUEST['post_id'] );
+	$post_id = isset( $_REQUEST['post_id'] ) ? absint( $_REQUEST['post_id'] ) : '';
 
 	if ( $post_id ) {
 		setcookie( 'lp_nag_loc', $post_id, 0, '/' );

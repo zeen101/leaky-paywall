@@ -171,8 +171,10 @@ class Leaky_Paywall {
 
 			if ( ! empty( $settings['page_for_profile'] ) ) {
 				wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+				exit;
 			} elseif ( ! empty( $settings['page_for_subscription'] ) ) {
 				wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+				exit;
 			}
 		}
 	}
@@ -198,8 +200,10 @@ class Leaky_Paywall {
 				leaky_paywall_attempt_login( $login_hash );
 				if ( ! empty( $settings['page_for_profile'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_profile'] ) );
+					exit;
 				} elseif ( ! empty( $settings['page_for_subscription'] ) ) {
 					wp_safe_redirect( get_page_link( $settings['page_for_subscription'] ) );
+					exit;
 				}
 			} else {
 
@@ -418,12 +422,12 @@ class Leaky_Paywall {
 			<div class="wrap">
 
 				<div id="icon-users" class="icon32"><br /></div>
-				<h2><?php esc_attr_e( 'Leaky Paywall Subscribers', 'issuem-leaky-paywall' ); ?></h2>
+				<h2><?php esc_html_e( 'Leaky Paywall Subscribers', 'issuem-leaky-paywall' ); ?></h2>
 
 			<?php
 			if ( ! empty( $_POST['leaky_paywall_add_subscriber'] ) ) {
 				if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_add_subscriber'] ), 'add_new_subscriber' ) ) {
-					echo '<div class="error settings-error" id="setting-error-invalid_nonce"><p><strong>' . esc_attr__( 'Unable to verify security token. Subscriber not added. Please try again.', 'leaky-paywall' ) . '</strong></p></div>';
+					echo '<div class="error settings-error" id="setting-error-invalid_nonce"><p><strong>' . esc_html__( 'Unable to verify security token. Subscriber not added. Please try again.', 'leaky-paywall' ) . '</strong></p></div>';
 				} else {
 					// process form data.
 					if (
@@ -458,15 +462,15 @@ class Leaky_Paywall {
 
 						do_action( 'add_leaky_paywall_subscriber', $user_id );
 
-						echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . esc_attr__( 'Subscriber added.', 'leaky-paywall' ) . '</strong></p></div>';
+						echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . esc_html__( 'Subscriber added.', 'leaky-paywall' ) . '</strong></p></div>';
 					} else {
 
-						echo '<div class="error settings-error" id="setting-error-missing_email"><p><strong>' . esc_attr__( 'You must include a valid email address.', 'leaky-paywall' ) . '</strong></p></div>';
+						echo '<div class="error settings-error" id="setting-error-missing_email"><p><strong>' . esc_html__( 'You must include a valid email address.', 'leaky-paywall' ) . '</strong></p></div>';
 					}
 				}
 			} elseif ( ! empty( $_POST['leaky_paywall_edit_subscriber'] ) ) {
 				if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_edit_subscriber'] ), 'edit_subscriber' ) ) {
-					echo '<div class="error settings-error" id="setting-error-invalid_nonce"><p><strong>' . esc_attr__( 'Unable to verify security token. Subscriber not added. Please try again.', 'leaky-paywall' ) . '</strong></p></div>';
+					echo '<div class="error settings-error" id="setting-error-invalid_nonce"><p><strong>' . esc_html__( 'Unable to verify security token. Subscriber not added. Please try again.', 'leaky-paywall' ) . '</strong></p></div>';
 				} else {
 					// process form data.
 					if (
@@ -542,11 +546,11 @@ class Leaky_Paywall {
 
 							do_action( 'update_leaky_paywall_subscriber', $user->ID );
 
-							echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . esc_attr__( 'Subscriber updated.', 'leaky-paywall' ) . '</strong></p></div>';
+							echo '<div class="updated notice is-dismissible" id="message"><p><strong>' . esc_html__( 'Subscriber updated.', 'leaky-paywall' ) . '</strong></p></div>';
 						}
 					} else {
 
-						echo '<div class="error settings-error" id="setting-error-missing_email"><p><strong>' . esc_attr__( 'You must include a valid email address.', 'leaky-paywall' ) . '</strong></p></div>';
+						echo '<div class="error settings-error" id="setting-error-missing_email"><p><strong>' . esc_html__( 'You must include a valid email address.', 'leaky-paywall' ) . '</strong></p></div>';
 					}
 				}
 			}
@@ -597,23 +601,23 @@ class Leaky_Paywall {
 					?>
 						<form id="leaky-paywall-susbcriber-edit" name="leaky-paywall-subscriber-edit" method="post">
 							<div style="display: table">
-								<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php esc_attr_e( 'Username (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo esc_attr( $login ); ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo esc_attr( $login ); ?>" name="leaky-paywall-subscriber-original-login" /></p>
-								<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php esc_attr_e( 'Email Address (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo esc_attr( $email ); ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo esc_attr( $email ); ?>" name="leaky-paywall-subscriber-original-email" /></p>
-								<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php esc_attr_e( 'Price Paid', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo esc_attr( $price ); ?>" placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+								<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php esc_html_e( 'Username (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="<?php echo esc_attr( $login ); ?>" name="leaky-paywall-subscriber-login" /></p><input id="leaky-paywall-subscriber-original-login" type="hidden" value="<?php echo esc_attr( $login ); ?>" name="leaky-paywall-subscriber-original-login" /></p>
+								<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php esc_html_e( 'Email Address (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="<?php echo esc_attr( $email ); ?>" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p><input id="leaky-paywall-subscriber-original-email" type="hidden" value="<?php echo esc_attr( $email ); ?>" name="leaky-paywall-subscriber-original-email" /></p>
+								<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php esc_html_e( 'Price Paid', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="<?php echo esc_attr( $price ); ?>" placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 								<p>
-									<label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php esc_attr_e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr( $expires ); ?>" placeholder="<?php echo esc_attr( gmdate( $date_format, time() ) ); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
+									<label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php esc_html_e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr( $expires ); ?>" placeholder="<?php echo esc_attr( gmdate( $date_format, time() ) ); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
 									<input type="hidden" name="date_format" value="<?php echo esc_attr( $jquery_date_format ); ?>" />
-									<br><span style="color: #999;"><?php esc_attr_e( 'Enter 0 for never expires', 'leaky-paywall' ); ?></span>
+									<br><span style="color: #999;"><?php esc_html_e( 'Enter 0 for never expires', 'leaky-paywall' ); ?></span>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php esc_attr_e( 'Subscription Level', 'leaky-paywall' ); ?></label>
+									<label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php esc_html_e( 'Subscription Level', 'leaky-paywall' ); ?></label>
 									<select name="leaky-paywall-subscriber-level-id">
 									<?php
 									foreach ( $settings['levels'] as $key => $level ) {
 										if ( ! $level['label'] ) {
 											continue;
 										}
-										echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $subscriber_level_id, true ) . '>' . esc_attr( stripslashes( $level['label'] ) );
+										echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $subscriber_level_id, true ) . '>' . esc_html( stripslashes( $level['label'] ) );
 										echo $level['deleted'] ? '(deleted)' : '';
 										echo '</option>';
 									}
@@ -621,63 +625,63 @@ class Leaky_Paywall {
 									</select>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php esc_attr_e( 'Payment Status', 'leaky-paywall' ); ?></label>
+									<label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php esc_html_e( 'Payment Status', 'leaky-paywall' ); ?></label>
 									<select name="leaky-paywall-subscriber-status">
-										<option value="active" <?php selected( 'active', $payment_status ); ?>><?php esc_attr_e( 'Active', 'leaky-paywall' ); ?></option>
-										<option value="canceled" <?php selected( 'canceled', $payment_status ); ?>><?php esc_attr_e( 'Canceled', 'leaky-paywall' ); ?></option>
-										<option value="deactivated" <?php selected( 'deactivated', $payment_status ); ?>><?php esc_attr_e( 'Deactivated', 'leaky-paywall' ); ?></option>
+										<option value="active" <?php selected( 'active', $payment_status ); ?>><?php esc_html_e( 'Active', 'leaky-paywall' ); ?></option>
+										<option value="canceled" <?php selected( 'canceled', $payment_status ); ?>><?php esc_html_e( 'Canceled', 'leaky-paywall' ); ?></option>
+										<option value="deactivated" <?php selected( 'deactivated', $payment_status ); ?>><?php esc_html_e( 'Deactivated', 'leaky-paywall' ); ?></option>
 									</select>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php esc_attr_e( 'Payment Method', 'leaky-paywall' ); ?></label>
+									<label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php esc_html_e( 'Payment Method', 'leaky-paywall' ); ?></label>
 									<?php $payment_gateways = leaky_paywall_payment_gateways(); ?>
 									<select name="leaky-paywall-subscriber-payment-gateway">
 										<?php
 										foreach ( $payment_gateways as $key => $gateway ) {
-											echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $payment_gateway, false ) . '>' . esc_attr( $gateway ) . '</option>';
+											echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $payment_gateway, false ) . '>' . esc_html( $gateway ) . '</option>';
 										}
 										?>
 									</select>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php esc_attr_e( 'Subscriber ID', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo esc_attr( $subscriber_id ); ?>" name="leaky-paywall-subscriber-id" />
+									<label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php esc_html_e( 'Subscriber ID', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="<?php echo esc_attr( $subscriber_id ); ?>" name="leaky-paywall-subscriber-id" />
 								</p>
 								<p>
-									<label for="leaky-paywall-plan" style="display:table-cell"><?php esc_attr_e( 'Plan', 'leaky-paywall' ); ?></label><input id="leaky-paywall-plan" class="regular-text" type="text" value="<?php echo esc_attr( $plan ); ?>" name="leaky-paywall-plan" />
-									<br><span style="color: #999;"><?php esc_attr_e( 'Leave empty for Non-Recurring', 'leaky-paywall' ); ?></span>
+									<label for="leaky-paywall-plan" style="display:table-cell"><?php esc_html_e( 'Plan', 'leaky-paywall' ); ?></label><input id="leaky-paywall-plan" class="regular-text" type="text" value="<?php echo esc_attr( $plan ); ?>" name="leaky-paywall-plan" />
+									<br><span style="color: #999;"><?php esc_html_e( 'Leave empty for Non-Recurring', 'leaky-paywall' ); ?></span>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-notes" style="display:table-cell"><?php esc_attr_e( 'Subscriber Notes', 'leaky-paywall' ); ?></label>
-									<textarea id="leaky-paywall-subscriber-notes" class="regular-text" name="leaky-paywall-subscriber-notes"><?php echo esc_attr( $subscriber_notes ); ?></textarea>
+									<label for="leaky-paywall-subscriber-notes" style="display:table-cell"><?php esc_html_e( 'Subscriber Notes', 'leaky-paywall' ); ?></label>
+									<textarea id="leaky-paywall-subscriber-notes" class="regular-text" name="leaky-paywall-subscriber-notes"><?php echo esc_html( $subscriber_notes ); ?></textarea>
 								</p>
 								<?php do_action( 'update_leaky_paywall_subscriber_form', $user->ID ); ?>
 							</div>
 							<?php submit_button( 'Update Subscriber' ); ?>
 							<p>
-								<a href="<?php echo esc_url( remove_query_arg( 'edit' ) ); ?>"><?php esc_attr_e( 'Cancel', 'leaky-paywall' ); ?></a>
+								<a href="<?php echo esc_url( remove_query_arg( 'edit' ) ); ?>"><?php esc_html_e( 'Cancel', 'leaky-paywall' ); ?></a>
 							</p>
 							<?php wp_nonce_field( 'edit_subscriber', 'leaky_paywall_edit_subscriber' ); ?>
 						</form>
 					<?php } else { ?>
 						<form id="leaky-paywall-susbcriber-add" name="leaky-paywall-subscriber-add" method="post">
 							<div style="display: table">
-								<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php esc_attr_e( 'Username (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="" name="leaky-paywall-subscriber-login" /></p>
-								<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php esc_attr_e( 'Email Address (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p>
-								<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php esc_attr_e( 'Price Paid', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="" placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
+								<p><label for="leaky-paywall-subscriber-login" style="display:table-cell"><?php esc_html_e( 'Username (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-login" class="regular-text" type="text" value="" name="leaky-paywall-subscriber-login" /></p>
+								<p><label for="leaky-paywall-subscriber-email" style="display:table-cell"><?php esc_html_e( 'Email Address (required)', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-email" class="regular-text" type="text" value="" placeholder="support@zeen101.com" name="leaky-paywall-subscriber-email" /></p>
+								<p><label for="leaky-paywall-subscriber-price" style="display:table-cell"><?php esc_html_e( 'Price Paid', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-price" class="regular-text" type="text" value="" placeholder="0.00" name="leaky-paywall-subscriber-price" /></p>
 								<p>
-									<label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php esc_attr_e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo esc_attr( gmdate( $date_format, time() ) ); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
+									<label for="leaky-paywall-subscriber-expires" style="display:table-cell"><?php esc_html_e( 'Expires', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="" placeholder="<?php echo esc_attr( gmdate( $date_format, time() ) ); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
 									<input type="hidden" name="date_format" value="<?php echo esc_attr( $jquery_date_format ); ?>" />
-									<br><span style="color: #999;"><?php esc_attr_e( 'Enter 0 for never expires', 'leaky-paywall' ); ?></span>
+									<br><span style="color: #999;"><?php esc_html_e( 'Enter 0 for never expires', 'leaky-paywall' ); ?></span>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php esc_attr_e( 'Subscription Level', 'leaky-paywall' ); ?></label>
+									<label for="leaky-paywall-subscriber-level-id" style="display:table-cell"><?php esc_html_e( 'Subscription Level', 'leaky-paywall' ); ?></label>
 									<select name="leaky-paywall-subscriber-level-id">
 										<?php
 										foreach ( $settings['levels'] as $key => $level ) {
 											if ( ! $level['label'] ) {
 												continue;
 											}
-											echo '<option value="' . esc_attr( $key ) . '">' . esc_attr( stripslashes( $level['label'] ) );
+											echo '<option value="' . esc_attr( $key ) . '">' . esc_html( stripslashes( $level['label'] ) );
 											echo isset( $level['deleted'] ) && $level['deleted'] == 1 ? '(deleted)' : '';
 											echo '</option>';
 										}
@@ -685,26 +689,26 @@ class Leaky_Paywall {
 									</select>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php esc_attr_e( 'Payment Status', 'leaky-paywall' ); ?></label>
+									<label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php esc_html_e( 'Payment Status', 'leaky-paywall' ); ?></label>
 									<select name="leaky-paywall-subscriber-status">
-										<option value="active"><?php esc_attr_e( 'Active', 'leaky-paywall' ); ?></option>
-										<option value="canceled"><?php esc_attr_e( 'Canceled', 'leaky-paywall' ); ?></option>
-										<option value="deactivated"><?php esc_attr_e( 'Deactivated', 'leaky-paywall' ); ?></option>
+										<option value="active"><?php esc_html_e( 'Active', 'leaky-paywall' ); ?></option>
+										<option value="canceled"><?php esc_html_e( 'Canceled', 'leaky-paywall' ); ?></option>
+										<option value="deactivated"><?php esc_html_e( 'Deactivated', 'leaky-paywall' ); ?></option>
 									</select>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php esc_attr_e( 'Payment Method', 'leaky-paywall' ); ?></label>
+									<label for="leaky-paywall-subscriber-payment-gateway" style="display:table-cell"><?php esc_html_e( 'Payment Method', 'leaky-paywall' ); ?></label>
 									<?php $payment_gateways = leaky_paywall_payment_gateways(); ?>
 									<select name="leaky-paywall-subscriber-payment-gateway">
 										<?php
 										foreach ( $payment_gateways as $key => $gateway ) {
-											echo '<option value="' . esc_attr( $key ) . '">' . esc_attr( $gateway ) . '</option>';
+											echo '<option value="' . esc_attr( $key ) . '">' . esc_html( $gateway ) . '</option>';
 										}
 										?>
 									</select>
 								</p>
 								<p>
-									<label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php esc_attr_e( 'Subscriber ID', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="" name="leaky-paywall-subscriber-id" />
+									<label for="leaky-paywall-subscriber-id" style="display:table-cell"><?php esc_html_e( 'Subscriber ID', 'leaky-paywall' ); ?></label><input id="leaky-paywall-subscriber-id" class="regular-text" type="text" value="" name="leaky-paywall-subscriber-id" />
 								</p>
 								<?php do_action( 'add_leaky_paywall_subscriber_form' ); ?>
 							</div>
