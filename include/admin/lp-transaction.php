@@ -143,7 +143,7 @@ class LP_Transaction_Post_Type {
 						<label for="apc_box1_description">Level ID </label>
 					</th>
 					<td>
-						<?php echo esc_attr( $level_id ) . ' - ' . esc_attr( $level['label'] ); ?>
+						<?php echo absint( $level_id ) . ' - ' . isset( $level['label'] ) ? esc_html( $level['label'] ) : ''; ?>
 					</td>
 				</tr>
 				<tr valign="top">
@@ -240,7 +240,7 @@ class LP_Transaction_Post_Type {
 				break;
 
 			case 'level':
-				echo esc_attr( $level['label'] );
+				echo isset( $level['label'] ) ? esc_html( $level['label'] ) : '';
 				break;
 
 			case 'price':
