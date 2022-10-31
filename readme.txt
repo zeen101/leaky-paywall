@@ -1,7 +1,7 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 6.0.2
+Tested up to: 6.0.3
 Requires PHP: 7.0
 Stable tag: 4.18.8
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content

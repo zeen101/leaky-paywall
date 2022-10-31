@@ -1420,7 +1420,7 @@ function build_leaky_paywall_subscription_levels_row_summary( $level, $row_key )
 	?>
 	<tr>
 		<td><?php echo esc_html( $row_key ); ?></td>
-		<td><?php echo esc_html( $level['label'] ); ?><br><div class="row-actions"><a href="<?php echo esc_url( admin_url() ); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions&level_id=<?php echo esc_url( $row_key ); ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo esc_attr( $row_key ); ?>" href="<?php echo esc_url( $delete_link ); ?>">Delete</a></span></div></td>
+		<td><?php echo esc_html( $level['label'] ); ?><br><div class="row-actions"><a href="<?php echo esc_url( admin_url() ); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions&level_id=<?php echo absint( $row_key ); ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo esc_attr( $row_key ); ?>" href="<?php echo esc_url( $delete_link ); ?>">Delete</a></span></div></td>
 		<td><?php echo esc_html( $level['price'] ); ?></td>
 		<td><?php echo esc_html( $duration ); ?></td>
 		<td><?php echo isset( $level['recurring'] ) ? 'recurring' : 'one time'; ?></td>
