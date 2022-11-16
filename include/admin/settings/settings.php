@@ -872,7 +872,7 @@ class Leaky_Paywall_Settings {
 					<th><?php esc_html_e( 'Stripe Webhooks Enabled', 'leaky-paywall' ); ?></th>
 					<td>
 						<p><input type="checkbox" id="stripe_webhooks_enabled" name="stripe_webhooks_enabled" <?php checked( 'on', $settings['stripe_webhooks_enabled'] ); ?> />
-							<?php esc_html_e( 'I have enabled the Leaky Paywall webhook URL in my Stripe account.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://zeen101.helpscoutdocs.com/article/120-leaky-paywall-recurring-payments"><?php esc_html_e( 'View Instructions', 'leaky-paywall' ); ?></a></p>
+							<?php esc_html_e( 'I have enabled the Leaky Paywall webhook URL in my Stripe account.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://docs.leakypaywall.com/article/120-leaky-paywall-recurring-payments"><?php esc_html_e( 'View Instructions', 'leaky-paywall' ); ?></a></p>
 					</td>
 				</tr>
 
