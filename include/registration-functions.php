@@ -375,7 +375,9 @@ function leaky_paywall_process_user_registration_validation() {
 				}
 
 				try {
-					$checkout_session = $stripe->checkout->sessions->create( $stripe_session_args );
+					$checkout_session = $stripe->checkout->sessions->create( 
+						apply_filters( 'leaky_paywall_stripe_session_recurring_args', $stripe_session_args, $level )
+					);
 				} catch ( \Throwable $th ) {
 					$errors['checkout_session'] = array(
 						'message' => $th->getMessage(),
@@ -429,7 +431,9 @@ function leaky_paywall_process_user_registration_validation() {
 					);
 				}
 
-				$checkout_session = $stripe->checkout->sessions->create( $stripe_session_args );
+				$checkout_session = $stripe->checkout->sessions->create( 
+					apply_filters( 'leaky_paywall_stripe_session_nonrecurring_args', $stripe_session_args, $level )
+				);
 			} catch ( \Throwable $th ) {
 				$errors['checkout_session'] = array(
 					'message' => $th->getMessage(),
