@@ -3820,6 +3820,14 @@ add_action( 'init', 'leaky_paywall_maybe_delete_user' );
  */
 function leaky_paywall_get_level_display_price( $level ) {
 
+	$price = $level['price'];
+	$display_price = leaky_paywall_format_display_price( $price );
+
+	return apply_filters( 'leaky_paywall_display_price', $display_price, $level );
+}
+
+function leaky_paywall_format_display_price( $price ) {
+
 	$settings = get_leaky_paywall_settings();
 
 	$currency_position  = $settings['leaky_paywall_currency_position'];
@@ -3828,7 +3836,6 @@ function leaky_paywall_get_level_display_price( $level ) {
 	$decimal_number     = empty( $settings['leaky_paywall_decimal_number'] ) ? '0' : $settings['leaky_paywall_decimal_number'];
 	$currency_symbol    = leaky_paywall_get_current_currency_symbol();
 
-	$price        = $level['price'];
 	$broken_price = explode( '.', $price );
 
 	$before_decimal = $broken_price[0];
@@ -3864,7 +3871,8 @@ function leaky_paywall_get_level_display_price( $level ) {
 		$display_price = __( 'Free', 'leaky-paywall' );
 	}
 
-	return apply_filters( 'leaky_paywall_display_price', $display_price, $level );
+	return $display_price;
+
 }
 
 
