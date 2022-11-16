@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 6.0.3
 Requires PHP: 7.0
-Stable tag: 4.18.9
+Stable tag: 4.19.0
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -114,6 +114,13 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.19.0 =
+* Fix rounding off error for apple pay
+* Add filters for stripe checkout session args
+* Fix help link for webhooks
+* Add function to format display price
+* Update readme
 
 = 4.18.9 =
 * Fix edit link for subscription levels
