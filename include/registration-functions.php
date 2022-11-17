@@ -350,18 +350,19 @@ function leaky_paywall_process_user_registration_validation() {
 
 				$stripe_session_args = array(
 					'customer'             => $cu->id,
+					'currency'    			=> $stripe_currency,
 					'mode'                 => 'subscription',
 					'success_url'          => leaky_paywall_get_stripe_checkout_success_url() . '?lp_stripe_checkout_success=true',
 					'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 				);
 
 				if ( $settings['stripe_automatic_tax'] == 'on' ) {
-					$stripe_session_args['automatic_tax'] = [ 'enabled' => true ];
+					// $stripe_session_args['automatic_tax'] = [ 'enabled' => true ];
 					$stripe_session_args['line_items'] = array(
 						array(
 							'price'    => $stripe_plan->id,
 							'quantity' => 1,
-							'tax_behavior' => $settings['stripe_tax_behavior'],
+							// 'tax_behavior' => $settings['stripe_tax_behavior'],
 						),
 					);
 					
@@ -393,6 +394,7 @@ function leaky_paywall_process_user_registration_validation() {
 
 				$stripe_session_args = array(
 					'customer'             => $cu->id,
+					'currency'     => $stripe_currency,
 					'customer_update'		=> array(
 						'address'	=> 'auto'
 					),

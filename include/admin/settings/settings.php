@@ -261,7 +261,7 @@ class Leaky_Paywall_Settings {
 						</td>
 					</tr>
 				</table>
-	
+
 			<?php } ?>
 
 			<h2><?php esc_html_e( 'General Settings', 'leaky-paywall' ); ?></h2>
@@ -903,7 +903,7 @@ class Leaky_Paywall_Settings {
 						<th><?php esc_html_e( 'Automatic Tax', 'leaky-paywall' ); ?></th>
 						<td>
 							<p><input type="checkbox" id="stripe_automatic_tax" name="stripe_automatic_tax" <?php checked( 'on', $settings['stripe_automatic_tax'] ); ?> />
-								<?php esc_html_e( 'Automatically calculate tax for Stripe Checkout transactions.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate">Requires Stripe Tax activation</a></p>
+								<?php esc_html_e( 'Automatically calculate tax for Stripe Checkout transactions, only for one time payments.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate">Requires Stripe Tax activation</a></p>
 						</td>
 					</tr>
 

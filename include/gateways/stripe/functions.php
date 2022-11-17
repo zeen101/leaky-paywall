@@ -618,3 +618,51 @@ function leaky_paywall_get_stripe_checkout_success_url() {
 	return apply_filters( 'leaky_paywall_stripe_checkout_success_url', $redirect_url );
 
 }
+
+
+add_action( 'init', 'leaky_paywall_maybe_generate_stripe_customer_portal' );
+
+function leaky_paywall_maybe_generate_stripe_customer_portal() {
+
+	if (
+
+		! isset( $_POST['stripe_customer_portal_field'] )
+
+		|| ! wp_verify_nonce( sanitize_text_field( $_POST['stripe_customer_portal_field'] ), 'stripe_customer_portal_submit' )
+
+	) {
+
+		return;
+
+	}
+
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
+	$settings = get_leaky_paywall_settings();
+	$subscriber_id    = get_user_meta( get_current_user_id(), '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+	if ( !$subscriber_id ) {
+		return;
+	}
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$session = \Stripe\BillingPortal\Session::create([
+			'customer' => $subscriber_id,
+			'return_url' => get_page_link( $settings['page_for_profile'] ),
+		]);
+	} catch (\Throwable $th) {
+
+		echo '<pre>';
+		print_r( $th->getMessage() );
+		echo '</pre>';
+		die();
+		
+	}
+
+	// Redirect to the customer portal.
+	header("Location: " . $session->url);
+	exit();
+
+}
