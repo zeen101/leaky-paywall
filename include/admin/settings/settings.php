@@ -271,17 +271,17 @@ class Leaky_Paywall_Settings {
 				<tr>
 					<th><?php esc_html_e( 'Subscribe or Login Message', 'leaky-paywall' ); ?></th>
 					<td>
-						<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="5"><?php echo wp_kses_post( stripslashes( $settings['subscribe_login_message'] ) ); ?></textarea>
+						<textarea id="subscribe_login_message" class="large-text" name="subscribe_login_message" cols="50" rows="10"><?php echo wp_kses( stripslashes( $settings['subscribe_login_message'] ), $this->allowed_html() ); ?></textarea>
 						<p class="description">
 							<?php esc_html_e( 'Available replacement variables: {{SUBSCRIBE_URL}}  {{LOGIN_URL}}', 'leaky-paywall' ); ?>
 						</p>
 					</td>
 				</tr>
-
+				
 				<tr>
 					<th><?php esc_html_e( 'Upgrade Message', 'leaky-paywall' ); ?></th>
 					<td>
-						<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="5"><?php echo wp_kses_post( stripslashes( $settings['subscribe_upgrade_message'] ) ); ?></textarea>
+						<textarea id="subscribe_upgrade_message" class="large-text" name="subscribe_upgrade_message" cols="50" rows="10"><?php echo wp_kses( stripslashes( $settings['subscribe_upgrade_message'] ), $this->allowed_html() ); ?></textarea>
 						<p class="description">
 							<?php esc_html_e( 'Available replacement variables: {{SUBSCRIBE_URL}}', 'leaky-paywall' ); ?>
 						</p>
@@ -1493,11 +1493,11 @@ class Leaky_Paywall_Settings {
 			}
 
 			if ( ! empty( $_POST['subscribe_login_message'] ) ) {
-				$settings['subscribe_login_message'] = wp_kses_post( wp_unslash( $_POST['subscribe_login_message'] ) );
+				$settings['subscribe_login_message'] = wp_kses( wp_unslash( $_POST['subscribe_login_message'] ), $this->allowed_html() );
 			}
 
 			if ( ! empty( $_POST['subscribe_upgrade_message'] ) ) {
-				$settings['subscribe_upgrade_message'] = wp_kses_post( wp_unslash( $_POST['subscribe_upgrade_message'] ) );
+				$settings['subscribe_upgrade_message'] = wp_kses( wp_unslash( $_POST['subscribe_upgrade_message'] ), $this->allowed_html() );
 			}
 
 			if ( ! empty( $_POST['css_style'] ) ) {
@@ -1982,7 +1982,7 @@ class Leaky_Paywall_Settings {
 		return ( is_multisite() ) ? get_site_option( 'issuem-leaky-paywall-site-wide' ) : false;
 	}
 
-		/**
+	/**
 	 * Check if the current site has a caching plugin or known managed hosting setup
 	 *
 	 * @since 4.14.0
@@ -2011,6 +2011,20 @@ class Leaky_Paywall_Settings {
 		}
 
 		return $found;
+	}
+
+	/**
+	 * Allow for script tags in the subscribe and upgrade nags
+	 *
+	 * @since 4.19.1
+	 */
+	public function allowed_html()
+	{
+		$html_allowed = wp_kses_allowed_html( 'post' );
+		$html_allowed['script'] = array(); 
+		$html_allowed['a']['onclick'] = 1;
+
+		return $html_allowed;
 	}
 
 }
