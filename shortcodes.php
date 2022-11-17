@@ -431,7 +431,16 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 				if ( $payment_form ) {
 					$results .= '<hr>';
 					$results .= '<h2 class="leaky-paywall-your-payment-information-header">' . __( 'Your Payment Information', 'leaky-paywall' ) . '</h2>';
-					$results .= $payment_form;
+
+					if ( 'on' == $settings['stripe_customer_portal'] ) {
+						$results .= '<form method="POST" action="">
+						<button type="submit">Manage billing</button>';
+						$results .= wp_nonce_field( 'stripe_customer_portal_submit', 'stripe_customer_portal_field' );
+						$results .= '</form>';
+					} else {
+						$results .= $payment_form;
+					}
+
 				}
 			} elseif ( ! empty( $plan ) && 'Canceled' === $plan ) {
 				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Subscription Has Been Canceled', 'leaky-paywall' ) . '</h2>';

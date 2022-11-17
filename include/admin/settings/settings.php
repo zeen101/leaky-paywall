@@ -920,6 +920,14 @@ class Leaky_Paywall_Settings {
 					<?php 
 				} ?>
 
+				<tr>
+					<th><?php esc_html_e( 'Customer Portal', 'leaky-paywall' ); ?></th>
+					<td>
+						<p><input type="checkbox" id="stripe_customer_portal" name="stripe_customer_portal" <?php checked( 'on', $settings['stripe_customer_portal'] ); ?> />
+							<?php esc_html_e( 'Enable Stripe Customer Portal access on the My Account page for managing recurring payment information.', 'leaky-paywall' ); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/billing/portal">Requires Stripe Portal configuration</a></p>
+					</td>
+				</tr>
+
 			</table>
 			<?php do_action( 'leaky_paywall_settings_page_stripe_payment_gateway_options' ); ?>
 		<?php } ?>
@@ -1358,6 +1366,7 @@ class Leaky_Paywall_Settings {
 			'enable_stripe_elements'                => 'no',
 			'enable_apple_pay'                      => 'no',
 			'stripe_automatic_tax'                  => 'no',
+			'stripe_customer_portal'				=> 'no',
 			'stripe_tax_behavior'                   => 'exclusive',
 			'enable_paypal_on_registration'         => 'on',
 			'paypal_live_email'                     => '',
@@ -1787,6 +1796,12 @@ class Leaky_Paywall_Settings {
 				$settings['stripe_automatic_tax'] = 'on';
 			} else {
 				$settings['stripe_automatic_tax'] = 'off';
+			}
+
+			if ( ! empty( $_POST['stripe_customer_portal'] ) ) {
+				$settings['stripe_customer_portal'] = 'on';
+			} else {
+				$settings['stripe_customer_portal'] = 'off';
 			}
 
 			if ( isset( $_POST['stripe_tax_behavior'] ) ) {
