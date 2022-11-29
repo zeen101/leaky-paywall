@@ -928,6 +928,14 @@ class Leaky_Paywall_Settings {
 					</td>
 				</tr>
 
+				<tr>
+					<th><?php esc_html_e( 'Restrict Stripe Assets', 'leaky-paywall' ); ?></th>
+					<td>
+						<p><input type="checkbox" id="stripe_restrict_assets" name="stripe_restrict_assets" <?php checked( 'on', $settings['stripe_restrict_assets'] ); ?> />
+							<?php esc_html_e( 'Only load Stripe.com hosted assets on pages that specifically utilize Stripe functionality.', 'leaky-paywall' ); ?><br><span class="description">Enabling this will disable Stripe's advanced fraud detection. <a target="_blank" href="https://stripe.com/docs/disputes/prevention/advanced-fraud-detection">Learn More</a></span></p>
+					</td>
+				</tr>
+
 			</table>
 			<?php do_action( 'leaky_paywall_settings_page_stripe_payment_gateway_options' ); ?>
 		<?php } ?>
@@ -1367,6 +1375,7 @@ class Leaky_Paywall_Settings {
 			'enable_apple_pay'                      => 'no',
 			'stripe_automatic_tax'                  => 'no',
 			'stripe_customer_portal'				=> 'no',
+			'stripe_restrict_assets'				=> 'no',
 			'stripe_tax_behavior'                   => 'exclusive',
 			'enable_paypal_on_registration'         => 'on',
 			'paypal_live_email'                     => '',
@@ -1802,6 +1811,12 @@ class Leaky_Paywall_Settings {
 				$settings['stripe_customer_portal'] = 'on';
 			} else {
 				$settings['stripe_customer_portal'] = 'off';
+			}
+
+			if ( ! empty( $_POST['stripe_restrict_assets'] ) ) {
+				$settings['stripe_restrict_assets'] = 'on';
+			} else {
+				$settings['stripe_restrict_assets'] = 'off';
 			}
 
 			if ( isset( $_POST['stripe_tax_behavior'] ) ) {
