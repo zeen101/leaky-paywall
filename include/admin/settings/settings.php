@@ -164,6 +164,12 @@ class Leaky_Paywall_Settings {
 
 			<?php 
 				if ( !empty( $sections ) ) {
+
+					// alphabetize sections, except for first item
+					$first_item = array_shift( $sections );
+					sort( $sections );
+					array_unshift( $sections, $first_item );
+
 					$i = 1;
 					foreach( $sections as $section ) {
 
