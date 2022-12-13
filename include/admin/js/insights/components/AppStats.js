@@ -130,6 +130,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -148,6 +149,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -165,6 +167,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -182,6 +185,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -199,6 +203,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -216,6 +221,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
              data.append( 'period', this.period );
+             data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -238,6 +244,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
     
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",
@@ -262,6 +269,7 @@ export default {
             const data = new FormData();
             data.append( 'action', 'lp_reports_get_data' );
             data.append( 'period', this.period );
+            data.append( '_ajax_nonce', lp_wit_ajax._ajax_nonce );
 
             fetch(lp_wit_ajax.ajax_url, {
                 method: "POST",

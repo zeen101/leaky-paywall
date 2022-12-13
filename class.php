@@ -328,7 +328,7 @@ class Leaky_Paywall {
 
 			wp_localize_script( 'leaky_paywall_insights', 'lp_wit_ajax', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce' => wp_create_nonce( 'wp-lp-wit-nonce' ),
+				'_ajax_nonce' => wp_create_nonce( 'process_lp_insights' ),
 			) );
 		}
 

@@ -4,7 +4,11 @@ add_action( 'wp_ajax_lp_reports_get_data', 'lp_reports_get_data' );
 
 function lp_reports_get_data() {
 
-    $period = $_POST['period'];
+    if ( ! check_ajax_referer( 'process_lp_insights' ) ) {
+        wp_send_json( array( 'error' => 'There was an error.' ) );
+    }
+
+    $period = isset( $_POST['period'] ) ? sanitize_text_field( $_POST['period'] ) : '';
 
     // get total revenue data
     $revenue = leaky_paywall_reports_get_total_revenue( $period );
@@ -333,28 +337,34 @@ function leaky_paywall_reports_get_paid_content( $period ) {
 			
 		}
 
-        foreach( $paid_content as $item ) {
-            $sorted_paid_content[$item['url']] = $item['count'];
-          
-        }   
+        if ( !empty( $paid_content ) ) {
 
-        arsort( $sorted_paid_content );
-       
-        $i = 1;
-
-        foreach( $sorted_paid_content as $perm => $num ) {
-
-            if ( $i > 10 ) {
-                break;
+            foreach( $paid_content as $item ) {
+                $sorted_paid_content[$item['url']] = $item['count'];
+              
+            }   
+    
+            arsort( $sorted_paid_content );
+           
+            $i = 1;
+    
+            foreach( $sorted_paid_content as $perm => $num ) {
+    
+                if ( $i > 10 ) {
+                    break;
+                }
+                $new_paid_content[] = $perm . ' - (' . $num . ')';
+    
+                $i++;
             }
-            $new_paid_content[] = $perm . ' - (' . $num . ')';
+    
+    
+    
+            return $new_paid_content;
 
-            $i++;
         }
 
-
-
-        return $new_paid_content;
+       
 
 
 
@@ -419,27 +429,29 @@ function leaky_paywall_reports_get_free_content( $period ) {
 			
 		}
 
-        foreach( $free_content as $item ) {
-            $sorted_free_content[$item['url']] = $item['count'];
-          
-        }   
-
-        arsort( $sorted_free_content );
-
-
-        $j = 1;
-
-        foreach( $sorted_free_content as $perm => $num ) {
-
-            if ( $j > 10 ) {
-                break;
+        if ( !empty( $free_content ) ) {
+            foreach( $free_content as $item ) {
+                $sorted_free_content[$item['url']] = $item['count'];
+              
+            }   
+    
+            arsort( $sorted_free_content );
+    
+    
+            $j = 1;
+    
+            foreach( $sorted_free_content as $perm => $num ) {
+    
+                if ( $j > 10 ) {
+                    break;
+                }
+                $new_free_content[] = $perm . ' - (' . $num . ')';
+    
+                $j++;
             }
-            $new_free_content[] = $perm . ' - (' . $num . ')';
-
-            $j++;
+            
+            return $new_free_content;
         }
-        
-        return $new_free_content;
 
 	} else {
         $free_content[] = 'No data found for selected time period.';
