@@ -42,6 +42,8 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		'post_type'      => 'lp_transaction',
 		'order'          => 'DESC',
 		'posts_per_page' => 499,
+		'meta_key' 		 => '_transaction_status',
+		'meta_value'	 => 'complete',
 		'date_query'     => array(
 			array(
 				'after'  => '-30 days',
@@ -55,7 +57,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 	if ( ! empty( $transactions ) ) {
 		foreach ( $transactions as $transaction ) {
 			$price   = get_post_meta( $transaction->ID, '_price', true );
-			$revenue = $revenue + $price;
+			$revenue = $revenue + (float)$price;
 		}
 	}
 

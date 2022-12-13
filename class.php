@@ -44,6 +44,7 @@ class Leaky_Paywall {
 		add_action( 'http_api_curl', array( $this, 'force_ssl_version' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_wp_enqueue_scripts' ) );
+		add_filter('script_loader_tag', array( $this, 'add_type_attribute' ) , 10, 3);
 		add_action( 'admin_print_styles', array( $this, 'admin_wp_print_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 
@@ -260,6 +261,8 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
 
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-insights', array( $this, 'insights_page' ) );
+
 		if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 		}
@@ -285,9 +288,14 @@ class Leaky_Paywall {
 			wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
+		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix ) {
+			wp_enqueue_style( 'leaky_paywall_admin_insights_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-admin-insights.css', '', LEAKY_PAYWALL_VERSION );
+		}
+
 		if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix ) {
 			wp_enqueue_style( 'leaky_paywall_post_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', LEAKY_PAYWALL_VERSION );
 		}
+
 	}
 
 	/**
@@ -311,6 +319,19 @@ class Leaky_Paywall {
 			wp_enqueue_style( 'leaky_paywall_admin_subscribers_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-subscribers.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
+
+		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix ) {
+
+			// wp_enqueue_script( 'vue', 'https://unpkg.com/vue@3', null, null, true);
+			wp_enqueue_script( 'vue', 'https://unpkg.com/vue@3/dist/vue.global.prod.js', null, null, true);
+			wp_enqueue_script( 'leaky_paywall_insights', LEAKY_PAYWALL_URL . 'include/admin/js/insights/components/App.js', 'vue', null, true);
+
+			wp_localize_script( 'leaky_paywall_insights', 'lp_wit_ajax', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce' => wp_create_nonce( 'wp-lp-wit-nonce' ),
+			) );
+		}
+
 		wp_localize_script(
 			'leaky_paywall_subscribers_js',
 			'leaky_paywall_notice_ajax',
@@ -324,6 +345,19 @@ class Leaky_Paywall {
 			wp_enqueue_script( 'leaky_paywall_post_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-post.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
 		}
 	}
+
+	public function add_type_attribute( $tag, $handle, $src )
+	{
+
+		// if not your script, do nothing and return original $tag
+		if ( 'leaky_paywall_insights' !== $handle ) {
+			return $tag;
+		}
+		// change the script tag by adding type="module" and return it.
+		$tag = '<script type="module" src="' . esc_url( $src ) . '"></script>';
+		return $tag;
+	}
+
 
 	/**
 	 * Enqueues frontend scripts and styles
@@ -736,6 +770,26 @@ class Leaky_Paywall {
 
 			</div>
 			<?php
+
+	}
+
+	/**
+	 * Outputs the Leaky Paywall Add Ons page
+	 *
+	 * @since 3.1.3
+	 */
+	public function insights_page() {
+		?>
+			<div id="lp-wit-app">
+
+				<div class="wrap">
+
+					<app-stats></app-stats>
+
+				</div>
+
+			</div>
+		<?php 	
 
 	}
 

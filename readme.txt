@@ -5,8 +5,8 @@ Tested up to: 6.1.1
 Requires PHP: 7.0
 Stable tag: 4.19.1
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 The most flexible paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
 
@@ -22,7 +22,7 @@ Sell individual subscriptions, corporate and bulk access, individual articles, n
 
 https://www.youtube.com/watch?v=v2nJWiekJw0&t=12s
 
-Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/features/), and is [SCA](https://docs.zeen101.com/article/180-sca-compliance) and [GDPR compliant](https://docs.zeen101.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Premium plans](https://leakypaywall.com/pricing/) offer additional features.
+Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/features/), and is [SCA](https://docs.leakypaywall.com/article/180-sca-compliance) and [GDPR compliant](https://docs.leakypaywall.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Premium plans](https://leakypaywall.com/pricing/) offer additional features.
 
 **Features**
 

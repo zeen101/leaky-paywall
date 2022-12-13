@@ -103,11 +103,11 @@ class Leaky_Paywall_Settings {
 								<h3>Documentation</h3>
 								
 								<ul>
-									<li><a target="_blank" href="https://docs.zeen101.com/category/40-getting-started">Getting Started</a></li>
-									<li><a target="_blank" href="https://docs.zeen101.com/category/248-revenue">Revenue</a></li>
-									<li><a target="_blank" href="https://docs.zeen101.com/category/64-how-to-faqs">FAQ</a></li>
-									<li><a target="_blank" href="https://docs.zeen101.com/category/250-troubleshooting">Troubleshooting</a></li>
-									<li><a target="_blank" href="https://docs.zeen101.com/category/249-developers">Developers</a></li>
+									<li><a target="_blank" href="https://docs.leakypaywall.com/category/40-getting-started">Getting Started</a></li>
+									<li><a target="_blank" href="https://docs.leakypaywall.com/category/248-revenue">Revenue</a></li>
+									<li><a target="_blank" href="https://docs.leakypaywall.com/category/64-how-to-faqs">FAQ</a></li>
+									<li><a target="_blank" href="https://docs.leakypaywall.com/category/250-troubleshooting">Troubleshooting</a></li>
+									<li><a target="_blank" href="https://docs.leakypaywall.com/category/249-developers">Developers</a></li>
 									
 								</ul>
 

@@ -86,6 +86,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-incomplete-user.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/functions.php';
 
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/settings/settings.php';
 

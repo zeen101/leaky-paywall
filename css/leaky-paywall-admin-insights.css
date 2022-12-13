@@ -1,0 +1,136 @@
+#lp-wit-app h1 {
+    margin-bottom: 20px;
+}
+
+#lp-wit-app .card-stats {
+    display: flex;
+    gap: 2em;
+    margin-bottom: 4em;
+}
+#lp-wit-app .card {
+    padding: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    border: 1px solid #eee;
+}
+
+#lp-wit-app .card-content {
+    margin-left: 20px;
+}
+
+#lp-wit-app .insights-tabs {
+    margin-bottom: 20px;
+    display: none;
+}
+
+#lp-wit-app .insights-tabs a {
+    text-decoration: none;
+    color: #999;
+    font-size: 1.25em;
+    display: inline-block;
+    margin-right: 20px;
+    padding-bottom: 5px;
+}
+
+#lp-wit-app .insights-tabs a.active {
+    font-weight: bold;
+    border-bottom: 3px solid #D84F37;
+    color: #000;
+
+}
+
+#lp-wit-app .dashicons {
+    font-size: 2em;
+    border-radius: 5px;
+    text-align: center;
+    line-height: .8;
+    padding: 10px 13px 10px 8px;
+}
+#lp-wit-app .dashicons-chart-bar {
+    color: #E26B2C;
+    background: #FFF8EA;
+}
+
+#lp-wit-app .dashicons-money-alt {
+    color: #38A65B;
+    background: #EBFFEF;
+}
+
+#lp-wit-app .dashicons-admin-users {
+    color: #3178D1;
+    background: #E3F5FF;
+   
+    
+}
+
+#lp-wit-app .dashicons-heart {
+    color: #B92F30;
+    background: #F5C2C1; 
+}
+
+#lp-wit-app .card-title {
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 10px;
+}
+#lp-wit-app .card-amount {
+    font-size: 22px;
+}
+
+#lp-wit-app .content-coversions {
+    display: flex;
+    gap: 2em;
+}
+
+#lp-wit-app .content-conversion-list {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 320px;
+    border: 1px solid #eee;
+}
+
+#lp-wit-app .content-conversion-list ol {
+    margin-left: 1em;
+}
+
+#lp-wit-app .content-conversion-list li {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+#lp-wit-app .content-conversion-list li:last-child {
+    border-bottom: none;
+}
+
+
+@keyframes spinner {
+    to {transform: rotate(360deg);}
+}
+
+#lp-wit-app .is-loading {
+    position: relative;
+    color: transparent;
+}
+
+#lp-wit-app .is-loading h3 {
+    display: none;
+}
+
+#lp-wit-app .is-loading:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 1%;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    margin-left: -10px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    border-top-color: #000;
+    animation: spinner .6s linear infinite;
+}

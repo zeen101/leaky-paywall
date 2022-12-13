@@ -1536,7 +1536,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 					</th>
 					<td>
 						<input id="level-recurring-<?php echo esc_attr( $row_key ); ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo esc_attr( $row_key ); ?>][recurring]" value="on" <?php echo checked( 'on', $level['recurring'], false ); ?> /> Enable recurring payments<br>
-						<span style="color: #999; font-size: 11px;" class="recurring-help <?php echo checked( 'on', $level['recurring'], false ) ? '' : 'hidden'; ?>">Webhooks must be setup in your Stripe account for recurring payments to work properly. <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/120-leaky-paywall-recurring-payments">See documentation here.</a></span>
+						<span style="color: #999; font-size: 11px;" class="recurring-help <?php echo checked( 'on', $level['recurring'], false ) ? '' : 'hidden'; ?>">Webhooks must be setup in your Stripe account for recurring payments to work properly. <a target="_blank" href="https://docs.leakypaywall.com/article/120-leaky-paywall-recurring-payments">See documentation here.</a></span>
 
 						<?php
 
