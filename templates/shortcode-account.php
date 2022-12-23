@@ -340,22 +340,32 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 				?>
 
 				<?php
+				
 				if ( $payment_form ) {
-					?>
-					<form action="" method="POST">
-						  <script
-						  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-						  data-key="<?php echo esc_attr( $publishable_key ); ?>"
-						  data-name="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
-						  data-panel-label="<?php echo esc_attr( $data_label ); ?>"
-						  data-label="<?php echo esc_attr( $data_label ); ?>"
-						  data-allow-remember-me=false
-						  data-email="<?php echo esc_attr( $user->user_email ); ?>"
-						  data-locale="auto">	
-						  </script>	
-						  <?php wp_nonce_field( 'lp_update_card_form', 'lp_update_card_form_field' ); ?>
-					</form>
-					<?php 
+
+					if ( 'on' == $settings['stripe_customer_portal'] ) {
+						echo '<form method="POST" action="">';
+						echo '<button type="submit">Manage billing</button>';
+						wp_nonce_field( 'stripe_customer_portal_submit', 'stripe_customer_portal_field' );
+						echo '</form>';
+					} else {
+						?>
+						<form action="" method="POST">
+							  <script
+							  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+							  data-key="<?php echo esc_attr( $publishable_key ); ?>"
+							  data-name="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"
+							  data-panel-label="<?php echo esc_attr( $data_label ); ?>"
+							  data-label="<?php echo esc_attr( $data_label ); ?>"
+							  data-allow-remember-me=false
+							  data-email="<?php echo esc_attr( $user->user_email ); ?>"
+							  data-locale="auto">	
+							  </script>	
+							  <?php wp_nonce_field( 'lp_update_card_form', 'lp_update_card_form_field' ); ?>
+						</form>
+						<?php 
+					}
+
 				}
 				
 				if ( $cancel_text ) {
