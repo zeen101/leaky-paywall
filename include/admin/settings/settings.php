@@ -571,7 +571,7 @@ class Leaky_Paywall_Settings {
 							?>
 							<div class="notice-info notice">
 								<p><strong><?php esc_html_e( 'We noticed your site might use caching.', 'leaky-paywall' ); ?></strong></p>
-								<p><?php esc_html_e( 'We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall' ); ?><br> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+								<p><?php esc_html_e( 'We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall' ); ?><br> <a target="_blank" href="https://docs.leakypaywall.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
 							</div>
 							<?php
 						}
@@ -962,7 +962,7 @@ class Leaky_Paywall_Settings {
 					<th><?php esc_html_e( 'Merchant ID', 'leaky-paywall' ); ?></th>
 					<td>
 						<input type="text" id="paypal_live_email" class="regular-text" name="paypal_live_email" value="<?php echo esc_attr( $settings['paypal_live_email'] ); ?>" />
-						<p class="description"><?php esc_html_e( 'Need help setting up PayPal?', 'leaky-paywall' ); ?> <a target="_blank" href="https://zeen101.helpscoutdocs.com/article/213-how-to-set-up-paypal-as-a-payment-gateway"><?php esc_html_e( 'See our guide.', 'leaky-paywall' ); ?></a></p>
+						<p class="description"><?php esc_html_e( 'Need help setting up PayPal?', 'leaky-paywall' ); ?> <a target="_blank" href="https://docs.leakypaywall.com/article/213-how-to-set-up-paypal-as-a-payment-gateway"><?php esc_html_e( 'See our guide.', 'leaky-paywall' ); ?></a></p>
 					</td>
 				</tr>
 
