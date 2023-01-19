@@ -94,7 +94,7 @@ if ( ! function_exists( 'get_leaky_paywall_subscribers_site_id_by_subscriber_id'
 					"
 					SELECT      $wpdb->usermeta.meta_key
 					FROM        $wpdb->usermeta
-					WHERE       $wpdb->usermeta.meta_key LIKE %s 
+					WHERE       $wpdb->usermeta.meta_key LIKE %s
 					            AND $wpdb->usermeta.meta_value = %s
 					",
 					'_issuem_leaky_paywall_' . $mode . '_subscriber_id%',
@@ -136,7 +136,7 @@ if ( ! function_exists( 'get_leaky_paywall_subscribers_site_id_by_subscriber_ema
 					"
 					SELECT      $wpdb->usermeta.meta_key
 					FROM        $wpdb->usermeta
-					WHERE       $wpdb->usermeta.meta_key LIKE %s 
+					WHERE       $wpdb->usermeta.meta_key LIKE %s
 					            AND $wpdb->usermeta.meta_value = %s
 					",
 					'_issuem_leaky_paywall_' . $mode . '_subscriber_email%',
@@ -760,11 +760,11 @@ if ( ! function_exists( 'leaky_paywall_new_subscriber' ) ) {
 			return false;
 		} else {
 			$logged_userdata = $userdata;
-			
+
 			if ( is_array( $logged_userdata ) ) {
 				unset( $logged_userdata['user_pass']);
 			}
-			
+
 			leaky_paywall_log( $logged_userdata, 'leaky paywall - new subscriber created' );
 		}
 
@@ -1016,16 +1016,16 @@ if ( ! function_exists( 'leaky_paywall_cancellation_confirmation' ) ) {
 								throw new Exception( __( 'Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'leaky-paywall' ) );
 							}
 						}
-					
+
 						if ( null == $cu ) {
 							throw new Exception( __( 'No subscriptions found for customer ID. Please contact support', 'leaky-paywall' ) );
 						}
 
 						// $subscriptions = $cu->subscriptions->all( array( 'limit' => '1' ) );
 
-						$subscriptions = $stripe->subscriptions->all( array( 
+						$subscriptions = $stripe->subscriptions->all( array(
 							'customer' => $cu->id,
-							'limit' => '1' 
+							'limit' => '1'
 						) );
 
 						if ( ! empty( $subscriptions->data ) ) {
@@ -1416,7 +1416,7 @@ function build_leaky_paywall_subscription_levels_row_summary( $level, $row_key )
 	$settings = get_leaky_paywall_settings();
 	$duration = $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'];
 	$delete_link = admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=subscriptions&delete_level_id=' . $row_key;
-	
+
 	?>
 	<tr>
 		<td><?php echo esc_html( $row_key ); ?></td>
@@ -1427,7 +1427,7 @@ function build_leaky_paywall_subscription_levels_row_summary( $level, $row_key )
 		<td><?php echo esc_url( get_page_link( $settings['page_for_register'] ) ) . '?level_id=' . esc_attr( $row_key ); ?></td>
 	</tr>
 
-	<?php 
+	<?php
 }
 
 if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
@@ -1483,7 +1483,7 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 		?>
 
 		<table class="issuem-leaky-paywall-subscription-level-row-table leaky-paywall-table <?php echo esc_attr( $deleted ); ?>">
-			<?php 
+			<?php
 			if ( isset( $settings['page_for_register'] ) && $settings['page_for_register'] ) {
 				?>
 					<tr>
@@ -1493,11 +1493,11 @@ if ( ! function_exists( 'build_leaky_paywall_subscription_levels_row' ) ) {
 						<td>
 							<p><?php echo esc_url( get_page_link( $settings['page_for_register'] ) ) . '?level_id=' . esc_attr( $row_key ); ?></p>
 						</td>
-					</tr>	
-				<?php 
+					</tr>
+				<?php
 			} ?>
-		
-		
+
+
 			<tr>
 				<th>
 					<label for="level-name-<?php echo esc_attr( $row_key ); ?>"><?php esc_html_e( 'Subscription Level Name', 'leaky-paywall' ); ?></label>
@@ -2466,7 +2466,7 @@ function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $ar
 				if ( apply_filters( 'leaky_paywall_send_' . $status . '_email', true, $user_id ) ) {
 					wp_mail( $user_info->user_email, $filtered_subject, $filtered_message, $headers, $attachments );
 				}
-				
+
 			}
 
 			if ( 'off' === $settings['new_subscriber_admin_email'] ) {
@@ -2524,9 +2524,8 @@ function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $ar
  * Register cron job on plugin activation.
  */
 function leaky_paywall_process_renewal_reminder_schedule() {
-	$timestamp = wp_next_scheduled( 'leaky_paywall_process_renewal_reminder' );
 
-	if ( false === $timestamp ) {
+	if ( ! wp_next_scheduled('leaky_paywall_process_renewal_reminder') ) {
 		wp_schedule_event( time(), 'daily', 'leaky_paywall_process_renewal_reminder' );
 	}
 }
@@ -2616,7 +2615,11 @@ function leaky_paywall_maybe_send_renewal_reminder() {
 		$date_differ     = leaky_paywall_date_difference( $expiration, gmdate( 'Y-m-d H:i:s' ) );
 		$already_emailed = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true );
 
-		if ( !$already_emailed && ( $date_differ <= $days_before ) ) {
+		if ( $already_emailed ) {
+			continue;
+		}
+
+		if ( $date_differ <= $days_before ) {
 			leaky_paywall_email_subscription_status( $user_id, 'renewal_reminder' );
 			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, current_time( 'timestamp' ) );
 		}
@@ -4464,7 +4467,7 @@ function leaky_paywall_get_ip() {
 
 	} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
 	{
-		
+
 		$ip_array = array_values(array_filter(explode(',', sanitize_text_field( $_SERVER['HTTP_X_FORWARDED_FOR'] ))));
 
 		if ( is_array( $ip_array ) ) {
