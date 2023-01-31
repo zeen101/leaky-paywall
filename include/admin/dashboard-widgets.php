@@ -41,13 +41,24 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 	$args = array(
 		'post_type'      => 'lp_transaction',
 		'order'          => 'DESC',
-		'posts_per_page' => 499,
-		'meta_key' 		 => '_transaction_status',
-		'meta_value'	 => 'complete',
+		'posts_per_page' => 9999,
 		'date_query'     => array(
 			array(
 				'after'  => '-30 days',
 				'column' => 'post_date',
+			),
+		),
+		'meta_query' => array(
+			'relation' => 'AND',
+			array(
+				'key'     => '_status',
+				'value'   => 'incomplete',
+				'compare' => 'NOT LIKE',
+			),
+			array(
+				'key'     => '_price',
+				'value'   => '0',
+				'compare' => '>',
 			),
 		),
 	);
@@ -107,7 +118,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 			if ( !is_numeric( $level_id ) ) {
 				continue;
 			}
-			
+
 			$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
 
 			echo '<tr><td>' . esc_html( gmdate( 'M d, Y', strtotime( $date ) ) ) . '</td><td> <a href="' . esc_url( admin_url() ) . '/user-edit.php?user_id=' . absint( $user->ID ) . '">' . esc_html( $name ) . '</a></td><td>' . esc_html( $level_name ) . '</td>';

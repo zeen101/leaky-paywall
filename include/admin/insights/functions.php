@@ -86,14 +86,14 @@ function leaky_paywall_reports_get_total_revenue( $period ) {
 			$price   = get_post_meta( $transaction->ID, '_price', true );
 
             $revenue = $revenue + $price;
-            
-			
+
+
 		}
 	}
 
     $formatted_revenue = leaky_paywall_get_current_currency_symbol() . number_format( $revenue, 2 );
 
-    return $formatted_revenue;
+    return html_entity_decode( $formatted_revenue );
 
 }
 
@@ -155,7 +155,7 @@ function leaky_paywall_reports_get_new_paid_subs( $period ) {
 	);
 
 	$transactions = get_posts( $args );
-    
+
 	if ( ! empty( $transactions ) ) {
         $new_paid_subs = count( $transactions );
 	}
@@ -334,37 +334,37 @@ function leaky_paywall_reports_get_paid_content( $period ) {
                 $paid_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
                 $paid_content[$nag_loc]['count'] = $paid_content[$nag_loc]['count'] + 1;
             }
-			
+
 		}
 
         if ( !empty( $paid_content ) ) {
 
             foreach( $paid_content as $item ) {
                 $sorted_paid_content[$item['url']] = $item['count'];
-              
-            }   
-    
+
+            }
+
             arsort( $sorted_paid_content );
-           
+
             $i = 1;
-    
+
             foreach( $sorted_paid_content as $perm => $num ) {
-    
+
                 if ( $i > 10 ) {
                     break;
                 }
                 $new_paid_content[] = $perm . ' - (' . $num . ')';
-    
+
                 $i++;
             }
-    
-    
-    
+
+
+
             return $new_paid_content;
 
         }
 
-       
+
 
 
 
@@ -426,30 +426,30 @@ function leaky_paywall_reports_get_free_content( $period ) {
                 $free_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
                 $free_content[$nag_loc]['count'] = $free_content[$nag_loc]['count'] + 1;
             }
-			
+
 		}
 
         if ( !empty( $free_content ) ) {
             foreach( $free_content as $item ) {
                 $sorted_free_content[$item['url']] = $item['count'];
-              
-            }   
-    
+
+            }
+
             arsort( $sorted_free_content );
-    
-    
+
+
             $j = 1;
-    
+
             foreach( $sorted_free_content as $perm => $num ) {
-    
+
                 if ( $j > 10 ) {
                     break;
                 }
                 $new_free_content[] = $perm . ' - (' . $num . ')';
-    
+
                 $j++;
             }
-            
+
             return $new_free_content;
         }
 
@@ -484,7 +484,7 @@ function leaky_paywall_reports_get_active_subs_for_level( $level_id ) {
     $mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
 
-    $users = get_users( 
+    $users = get_users(
         array(
             // 'number' => 2999,
             'meta_query' => array(
@@ -501,7 +501,7 @@ function leaky_paywall_reports_get_active_subs_for_level( $level_id ) {
                 ),
             )
         )
-        
+
     );
 
     if ( empty( $users ) ) {

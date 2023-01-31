@@ -3,18 +3,18 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 6.1.1
 Requires PHP: 7.4
-Stable tag: 4.19.2
+Stable tag: 4.19.3
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-The most flexible paywall for WordPress. Sell subscriptions without sacrificing search and social visibility. 
+The most flexible paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
 
 == Description ==
 
 [Leaky Paywall](https://leakypaywall.com/) is built specifically to help news and magazine publishers enagage readers and deliver a seamless subscription experience, to convert paid subscribers. Leaky Paywall builds email lists and easilty creates new content products.
 
-Leaky Paywall lets you customize the paywall experience to precisely match your content. 
+Leaky Paywall lets you customize the paywall experience to precisely match your content.
 
 Restrict and sell access to: articles, categories/tags, custom post types, in-content PDFs/video/audio, premium newsletters, and time based archive content. Block incognito browsing for more conversions.
 
@@ -63,7 +63,7 @@ Leaky Paywall core is free, open source, integrates with the most [3rd party pl
 
 
 **40+ Add-ons available to power up your publication**
-Some of our [add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include: 
+Some of our [add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include:
 
 * [Recurring Payments](https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
 * [Trials](https://leakypaywall.com/downloads/leaky-paywall-trials/?utm_source=addons&utm_medium=description_tab&utm_content=trials&utm_campaign=readme) allow subscribers to sign up for a trial to any recurring level
@@ -103,7 +103,7 @@ The Leaky Paywall meter restricts by X number of free articles over a Y time per
 
 = What payment gateways do you support? =
 
-We support Stripe and PayPal by default. CyberSource and ESP requires some setup, and other gateways can be integrated with our API. We highly recommend Stripe to give both you and your subscribers a state-of-the-art experience. 
+We support Stripe and PayPal by default. CyberSource and ESP requires some setup, and other gateways can be integrated with our API. We highly recommend Stripe to give both you and your subscribers a state-of-the-art experience.
 
 = What kind of subscriptions can I create with Leaky Paywall? =
 
@@ -142,7 +142,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 * Code cleanup
 
 = 4.18.7 =
-* Add new settings tabs and sections 
+* Add new settings tabs and sections
 * Add filters to Stripe Checkout price and currency
 * Update settings for subscription levels to improve performance
 
@@ -263,7 +263,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 = 4.16.3 =
 * Update subscriptions tab to restrictions and levels tab
 * Clear the content the user has viewed after they register
-* Add post_id to leaky_paywall_subscriber_or_login_message filter, 
+* Add post_id to leaky_paywall_subscriber_or_login_message filter,
 * Add leaky_paywall_subscriber_current_level_ids filter
 * Add settings for restriction exceptions for post categories and tags
 * Add ability to enter multiple post containers for alternate restriction handling
@@ -747,7 +747,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 = 4.1.3 =
 * Fixing bug in PayPal processing
 
-= 4.1.2 = 
+= 4.1.2 =
 * Fixing India Rupee sign
 * Updating some verbage on the Profile Page for passwords
 
