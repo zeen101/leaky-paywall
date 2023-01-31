@@ -4277,6 +4277,20 @@ function leaky_paywall_add_toolbar_items( $admin_bar ) {
 		)
 	);
 
+	$admin_bar->add_menu(
+		array(
+			'id'     => 'leaky-paywall-toolbar-insights',
+			'parent' => 'leaky-paywall-toolbar',
+			'title'  => 'Insights',
+			'href'   => admin_url() . 'admin.php?page=leaky-paywall-insights',
+			'meta'   => array(
+				'title'  => __('Insights'),
+				'target' => '',
+				'class'  => 'my_menu_item_class',
+			),
+		)
+	);
+
 }
 add_action( 'admin_bar_menu', 'leaky_paywall_add_toolbar_items', 100 );
 

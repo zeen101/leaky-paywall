@@ -115,6 +115,15 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 
 == Changelog ==
 
+= 4.19.3 =
+* Display manual payment as an option on the registration form if multiple payment gateways are enabled
+* Update calculation and display of currency symbol in Insights
+* Display stripe custuomer portal on template shortcode
+* Update help doc urls
+* Update logic for renewal reminders
+* Fix deprecation notices for php8
+* Add Insights link to admin bar menu
+
 = 4.19.2 =
 * Add new Insights dashboard
 * Add setting for restricting Stripe assets
