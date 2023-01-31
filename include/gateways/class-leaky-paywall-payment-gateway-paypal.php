@@ -103,9 +103,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 					if (method == 'paypal_standard') {
 						$('.leaky-paywall-card-details').slideUp();
 						button.text('<?php echo esc_js( $paypal_button_text ); ?>');
-					} else {
-						$('.leaky-paywall-card-details').slideDown();
-						button.text('<?php echo esc_js( $default_button_text ); ?>');
 					}
 
 				});
@@ -145,7 +142,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		if ( ! isset( $_POST['leaky_paywall_register_nonce'] ) ) {
 			return;
 		}
-	
+
 		if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' ) ) {
 			return;
 		}
@@ -251,7 +248,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function process_webhooks() {
-		
+
 		if ( ! isset( $_POST['txn_type'] ) ) {
 			return;
 		}

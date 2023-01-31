@@ -22,7 +22,7 @@ class Leaky_Paywall_Settings {
 		}
 
 		$settings = $this->get_settings();
-		$settings_tabs = $this->get_settings_tabs(); 
+		$settings_tabs = $this->get_settings_tabs();
 		$current_tab = apply_filters( 'leaky_paywall_current_tab', $tab, $settings_tabs );
 		$sections = $this->get_settings_tab_sections( $current_tab );
 		$current_section = ! empty( $_GET['section'] ) && ! empty( $sections ) ? sanitize_text_field( $_GET['section'] ) : 'general';
@@ -52,7 +52,7 @@ class Leaky_Paywall_Settings {
 								</div>
 							<?php
 						}
-	
+
 						// output tabs
 						$this->output_tabs( $current_tab );
 
@@ -64,7 +64,7 @@ class Leaky_Paywall_Settings {
 						?>
 
 						<form id="leaky-paywall-settings-form" method="post" action="">
-						
+
 							<?php $this->output_settings_fields( $current_tab, $current_section ); ?>
 
 						</form>
@@ -96,29 +96,29 @@ class Leaky_Paywall_Settings {
 									<a class="button" target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Upgrade Now</a>
 								</p>
 							</div>
-						<?php 
+						<?php
 					} else {
 						?>
 							<div class="leaky-paywall-sidebar-widget">
 								<h3>Documentation</h3>
-								
+
 								<ul>
 									<li><a target="_blank" href="https://docs.leakypaywall.com/category/40-getting-started">Getting Started</a></li>
 									<li><a target="_blank" href="https://docs.leakypaywall.com/category/248-revenue">Revenue</a></li>
 									<li><a target="_blank" href="https://docs.leakypaywall.com/category/64-how-to-faqs">FAQ</a></li>
 									<li><a target="_blank" href="https://docs.leakypaywall.com/category/250-troubleshooting">Troubleshooting</a></li>
 									<li><a target="_blank" href="https://docs.leakypaywall.com/category/249-developers">Developers</a></li>
-									
+
 								</ul>
 
 							</div>
-						<?php 	
+						<?php
 					} ?>
 
 				</div> <!-- sidebar -->
 			</div> <!-- wrap -->
 
-		<?php 
+		<?php
 	}
 
 	public function output_tabs( $current_tab )
@@ -129,7 +129,7 @@ class Leaky_Paywall_Settings {
 		}
 
 		$all_tabs = $this->get_settings_tabs();
-		
+
 		?>
 			<h2 class="nav-tab-wrapper" style="margin-bottom: 10px;">
 
@@ -140,11 +140,11 @@ class Leaky_Paywall_Settings {
 
 				?>
 				<a href="<?php echo esc_url( $admin_url ); ?>" class="nav-tab <?php echo esc_attr( $class ); ?>"><?php echo esc_html( ucfirst( $tab ) ); ?></a>
-				<?php 
+				<?php
 			} ?>
 
 			</h2>
-		<?php 
+		<?php
 
 	}
 
@@ -162,7 +162,7 @@ class Leaky_Paywall_Settings {
 		<div class="wp-clearfix">
 			<ul class="subsubsub leaky-paywall-settings-sub-nav">
 
-			<?php 
+			<?php
 				if ( !empty( $sections ) ) {
 
 					// alphabetize sections, except for first item
@@ -174,30 +174,30 @@ class Leaky_Paywall_Settings {
 					foreach( $sections as $section ) {
 
 						$class = $section == $current_section ? 'current' : '';
-	
+
 						?>
 						<li>
-							<a class="<?php echo esc_attr( $class ); ?>" href="<?php echo esc_url( $admin_url ); ?>&section=<?php echo esc_attr( $section ); ?>"><?php echo esc_html( ucwords( str_replace('_', ' ', $section ) ) ); ?></a> 
-							
+							<a class="<?php echo esc_attr( $class ); ?>" href="<?php echo esc_url( $admin_url ); ?>&section=<?php echo esc_attr( $section ); ?>"><?php echo esc_html( ucwords( str_replace('_', ' ', $section ) ) ); ?></a>
+
 							<?php if ( count( $sections ) != $i ) {
 								echo '|';
 							}
 							?>
 						</li>
-						<?php 
+						<?php
 						$i++;
 					}
 				}
-				
+
 			?>
-				
+
 			</ul>
-			
+
 		</div>
 
-	
 
-	<?php 
+
+	<?php
 	}
 
 	public function output_settings_fields( $current_tab, $current_section )
@@ -233,7 +233,7 @@ class Leaky_Paywall_Settings {
 		// allow other extensions to hook in here
 		do_action( 'leaky_paywall_output_settings_fields', $current_tab, $current_section );
 
-		wp_nonce_field( 'leaky_paywall_update_settings_nonce', 'leaky_paywall_update_settings_nonce_field' ); 
+		wp_nonce_field( 'leaky_paywall_update_settings_nonce', 'leaky_paywall_update_settings_nonce_field' );
 
 		$hide_submit_tabs = apply_filters( 'leaky_paywall_hide_submit_tabs', array( 'licenses', 'help') );
 
@@ -242,15 +242,15 @@ class Leaky_Paywall_Settings {
 			<p class="submit">
 				<input class="button-primary" type="submit" name="update_leaky_paywall_settings" value="<?php esc_attr_e( 'Save Settings', 'leaky-paywall' ); ?>" />
 			</p>
-			<?php 
-		} 
+			<?php
+		}
 	}
 
 	public function output_general_settings( $current_section )
 	{
 
 		$settings = $this->get_settings();
-		
+
 		if ( $current_section == 'general' ) :
 
 			do_action( 'leaky_paywall_before_general_settings' );
@@ -258,7 +258,7 @@ class Leaky_Paywall_Settings {
 			if ( is_multisite_premium() && is_super_admin() ) { ?>
 
 				<h2><?php esc_html_e( 'Site Wide Options', 'leaky-paywall' ); ?></h2>
-	
+
 				<table id="leaky_paywalll_multisite_settings" class="leaky-paywall-table">
 					<tr>
 						<th rowspan="1"> <?php esc_html_e( 'Enable Settings Site Wide?', 'leaky-paywall' ); ?></th>
@@ -283,7 +283,7 @@ class Leaky_Paywall_Settings {
 						</p>
 					</td>
 				</tr>
-				
+
 				<tr>
 					<th><?php esc_html_e( 'Upgrade Message', 'leaky-paywall' ); ?></th>
 					<td>
@@ -334,7 +334,7 @@ class Leaky_Paywall_Settings {
 
 
 		if ( $current_section == 'pages' ) :
-		
+
 		?>
 			<table id="leaky_paywall_administrator_options" class="form-table leaky-paywall-settings-table">
 
@@ -452,8 +452,8 @@ class Leaky_Paywall_Settings {
 
 		<?php endif; ?>
 
-		
-		<?php 
+
+		<?php
 
 	}
 
@@ -463,7 +463,7 @@ class Leaky_Paywall_Settings {
 		$settings = $this->get_settings();
 
 		?>
-	
+
 		<h2><?php esc_html_e( 'Content Restrictions', 'leaky-paywall' ); ?></h2>
 
 		<p>Use the settings below to set your content restrictions.  You can also set individual post restrictions with the <a target="_blank" href="https://docs.leakypaywall.com/article/43-how-to-restrict-individual-articles-visibility-setting">visibility settings</a>.</p>
@@ -655,7 +655,7 @@ class Leaky_Paywall_Settings {
 
 			</table>
 
-		<?php 
+		<?php
 
 	}
 
@@ -670,7 +670,7 @@ class Leaky_Paywall_Settings {
 
 		do_action( 'leaky_paywall_before_subscriptions_settings' ); ?>
 
-		<?php 
+		<?php
 
 			if ( isset( $_GET['level_id'] ) ) {
 
@@ -678,14 +678,14 @@ class Leaky_Paywall_Settings {
 
 				?>
 					<h2><?php echo esc_html( $current_level['label'] ); ?> <a href="<?php echo esc_url( admin_url() ); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions">⤴</a><br><span style="color: #aaa; font-size: 14px; font-weight: normal;">ID: <?php echo absint( $_GET['level_id'] ); ?></span></h2>
-				<?php 
+				<?php
 			} else {
 				?>
 				<h2><?php esc_html_e( 'Subscription Levels', 'leaky-paywall' ); ?></h2>
-				<?php 
+				<?php
 			}
 		?>
-		
+
 		<div id="leaky_paywall_subscription_level_options">
 
 			<table id="leaky_paywall_subscription_level_options_table" class="leaky-paywall-table subscription-options form-table">
@@ -702,7 +702,7 @@ class Leaky_Paywall_Settings {
 							if ( !isset( $_GET['level_id'] ) ) {
 								echo '<table class="wp-list-table widefat striped" style="margin-bottom: 20px"><thead><tr><td>ID</td><td>Name</td><td>Price</td><td>Duration</td><td>Payment Type</td><td>Direct Link</td></tr></thead>';
 							}
-							
+
 							foreach ( $settings['levels'] as $key => $level ) {
 
 								if ( ! is_numeric( $key ) ) {
@@ -710,7 +710,7 @@ class Leaky_Paywall_Settings {
 								}
 
 								if ( isset( $level['deleted'] ) && 1 == $level['deleted'] ) {
-									
+
 									continue;
 								}
 
@@ -721,7 +721,7 @@ class Leaky_Paywall_Settings {
 										continue;
 									}
 
-									
+
 									// phpcs:ignore
 									echo build_leaky_paywall_subscription_levels_row( $level, $key );
 
@@ -740,7 +740,7 @@ class Leaky_Paywall_Settings {
 							if ( !isset( $_GET['level_id'] ) ) {
 								echo '</table>';
 							}
-							
+
 
 							// if we have levels but they have all been deleted, add one level.
 							if ( count( $deleted ) === count( $settings['levels'] ) ) {
@@ -764,7 +764,7 @@ class Leaky_Paywall_Settings {
 			if ( ! is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
 				echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> extension.</h4>';
 			}
-			
+
 			if ( ! is_plugin_active( 'leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php' ) ) {
 				echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> extension.</h4>';
 			}
@@ -775,13 +775,13 @@ class Leaky_Paywall_Settings {
 
 		<?php do_action( 'leaky_paywall_after_subscriptions_settings' ); ?>
 
-		<?php 
+		<?php
 	}
 
 	public function output_payments_settings( $current_section )
 	{
 		$settings = $this->get_settings();
-		
+
 		do_action( 'leaky_paywall_before_payments_settings' ); ?>
 
 		<h2><?php esc_html_e( 'Payment Gateway Settings', 'leaky-paywall' ); ?></h2>
@@ -816,7 +816,7 @@ class Leaky_Paywall_Settings {
 							<p>
 								<input id="enable-<?php echo esc_attr( $key ); ?>" type="checkbox" name="payment_gateway[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $settings['payment_gateway'], true ) ); ?> /> <label for="enable-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $value['admin_label'] ); ?></label>
 							</p>
-						<?php 	
+						<?php
 					}
 					?>
 					<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://leakypaywall.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Pipedrive, fulfillment services and other providers.</p>
@@ -824,6 +824,29 @@ class Leaky_Paywall_Settings {
 			</tr>
 
 		</table>
+
+		<?php
+
+		if ( in_array( 'manual', $settings['payment_gateway'], true ) || in_array( 'manual', $settings['payment_gateway'], true ) ) {
+			?>
+
+			<table id="leaky_paywall_manual_payment_options" class="gateway-options form-table">
+
+				<tr>
+					<th colspan="2">
+						<h3><?php esc_html_e( 'Manual Payment Settings', 'leaky-paywall' ); ?></h3>
+					</th>
+				</tr>
+
+				<tr>
+					<th><?php esc_html_e( 'Title', 'leaky-paywall' ); ?></th>
+					<td>
+						<input type="text" id="manual_payment_title" class="regular-text" name="manual_payment_title" value="<?php echo esc_attr( $settings['manual_payment_title'] ); ?>" />
+						<p class="description"><?php esc_html_e( 'The title the user sees during registration.', 'leaky-paywall' ); ?></p>
+					</td>
+				</tr>
+			<?php
+		} ?>
 
 		<?php
 		if ( in_array( 'stripe', $settings['payment_gateway'], true ) || in_array( 'stripe_checkout', $settings['payment_gateway'], true ) ) {
@@ -923,7 +946,7 @@ class Leaky_Paywall_Settings {
 							<p class="description">When set to exclusive, it adds tax to the subtotal. If set to inclusive, the amount your buyer pays never changes (even if the tax rate varies).</p>
 						</td>
 					</tr>
-					<?php 
+					<?php
 				} ?>
 
 				<tr>
@@ -1109,7 +1132,7 @@ class Leaky_Paywall_Settings {
 	{
 
 		$settings = $this->get_settings();
-		
+
 		do_action( 'leaky_paywall_before_email_settings' ); ?>
 
 		<h2><?php esc_html_e( 'Email Settings', 'leaky-paywall' ); ?></h2>
@@ -1224,12 +1247,12 @@ class Leaky_Paywall_Settings {
 
 		<?php do_action( 'leaky_paywall_after_email_settings' ); ?>
 
-		<?php 
+		<?php
 	}
 
 	public function output_licenses_settings( $current_section )
 	{
-	
+
 		do_action( 'leaky_paywall_before_licenses_settings' ); ?>
 
 		<p>Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, please renew your license.</p>
@@ -1267,14 +1290,14 @@ class Leaky_Paywall_Settings {
 	}
 
 	public function get_settings_tabs()
-	{	
-		$tabs = array( 
-			'general', 
-			'restrictions', 
-			'subscriptions', 
-			'payments', 
-			'emails', 
-			'licenses', 
+	{
+		$tabs = array(
+			'general',
+			'restrictions',
+			'subscriptions',
+			'payments',
+			'emails',
+			'licenses',
 			'help'
 		);
 
@@ -1283,7 +1306,7 @@ class Leaky_Paywall_Settings {
 
 	public function get_settings_tab_sections( $current_tab )
 	{
-	
+
 		$sections = apply_filters( 'leaky_paywall_settings_tab_sections', array(
 			'general' => array(
 				'general',
@@ -1324,7 +1347,7 @@ class Leaky_Paywall_Settings {
 			Username: %username%
 			Password: %password%
 
-			Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication 
+			Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication
 
 			TWEET: I just subscribed to Our Publication. Join up and be awesome! www.ourpublication.com
 
@@ -1393,6 +1416,7 @@ class Leaky_Paywall_Settings {
 			'paypal_sand_api_username'              => '',
 			'paypal_sand_api_password'              => '',
 			'paypal_sand_api_secret'                => '',
+			'manual_payment_title'					=> 'Manual Payment',
 			'leaky_paywall_currency'                => 'USD',
 			'leaky_paywall_currency_position'       => 'left',
 			'leaky_paywall_thousand_separator'      => ',',
@@ -1505,7 +1529,7 @@ class Leaky_Paywall_Settings {
 		$settings = $this->get_settings();
 
 		if ( 'general' === $current_tab && 'general' == $current_section ) {
-			
+
 			if ( ! empty( $_REQUEST['site_wide_enabled'] ) ) {
 				update_site_option( 'issuem-leaky-paywall-site-wide', true );
 			} else {
@@ -1736,17 +1760,17 @@ class Leaky_Paywall_Settings {
 					if ( isset( $_GET['level_id'] ) ) {
 
 						if ( $key ==  $_GET['level_id'] ) {
-							
+
 							$settings['levels'][$key] = $this->sanitize_level( $key, $level );
 						}
-						
+
 					} else {
-						
+
 						$settings['levels'][$key] = $this->sanitize_level( $key, $level );
 					}
 				}
-				
-				
+
+
 			}
 		}
 
@@ -1767,6 +1791,10 @@ class Leaky_Paywall_Settings {
 				}
 			} else {
 				$settings['payment_gateway'] = array( 'manual' );
+			}
+
+			if ( isset( $_POST['manual_payment_title'] ) ) {
+				$settings['manual_payment_title'] = sanitize_text_field(wp_unslash($_POST['manual_payment_title']));
 			}
 
 			if ( isset( $_POST['live_secret_key'] ) ) {
@@ -1899,7 +1927,7 @@ class Leaky_Paywall_Settings {
 		do_action( 'leaky_paywall_update_settings', $settings, $current_tab, $current_section );
 
 		return true;
-		
+
 	}
 
 	/**
@@ -1957,7 +1985,7 @@ class Leaky_Paywall_Settings {
 				$levels[ $level_id ][ $key ] = $this->sanitize_level_post_types( $value );
 			}
 		}
-		
+
 		return $level;
 	}
 
@@ -2057,7 +2085,7 @@ class Leaky_Paywall_Settings {
 	public function allowed_html()
 	{
 		$html_allowed = wp_kses_allowed_html( 'post' );
-		$html_allowed['script'] = array(); 
+		$html_allowed['script'] = array();
 		$html_allowed['a']['onclick'] = 1;
 
 		return $html_allowed;
