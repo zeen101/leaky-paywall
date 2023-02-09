@@ -300,7 +300,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 				if ( $subscriber_id && 'stripe' == $payment_gateway ) {
 
 					$payment_form = true;
-					
+
 					try {
 						$cu = $stripe->customers->retrieve(
 							$subscriber_id,
@@ -321,7 +321,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 					} elseif ( isset( $update_card_success ) ) {
 						echo '<div class="leaky_paywall_message success"><p>' . esc_html( $update_card_success ) . '</p></div>';
 					}
-					
+
 					if ( strcasecmp( 'deactivated', $payment_status ) == 0 ) {
 						$data_label = 'Update Credit Card Details & Restart Subscription';
 					} else {
@@ -333,14 +333,14 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 				?>
 				<h2 class="leaky-paywall-account-page-title"><?php esc_html_e( 'Your payment information', 'leaky-paywall' ); ?></h2>
 
-				<?php 
+				<?php
 					if ( $def_payment_method ) {
 						echo '<h3 class="leaky-paywall-account-section-title">' . esc_html__( 'Payment Method', 'leaky-paywall' ) . '</h3><p>' . esc_html( strtoupper( $def_payment_method->card->brand ) ) . ' ending in ' . esc_html( $def_payment_method->card->last4 ) . ' that expires ' . esc_html( $def_payment_method->card->exp_month ) . '/' . esc_html( $def_payment_method->card->exp_year ) . '</p>';
 					}
 				?>
 
 				<?php
-				
+
 				if ( $payment_form ) {
 
 					if ( 'on' == $settings['stripe_customer_portal'] ) {
@@ -359,15 +359,15 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 							  data-label="<?php echo esc_attr( $data_label ); ?>"
 							  data-allow-remember-me=false
 							  data-email="<?php echo esc_attr( $user->user_email ); ?>"
-							  data-locale="auto">	
-							  </script>	
+							  data-locale="auto">
+							  </script>
 							  <?php wp_nonce_field( 'lp_update_card_form', 'lp_update_card_form_field' ); ?>
 						</form>
-						<?php 
+						<?php
 					}
 
 				}
-				
+
 				if ( $cancel_text ) {
 					echo '<h3 class="leaky-paywall-account-section-title">' . esc_html__( 'Manage', 'leaky-paywall' ) . '</h3>';
 					if ( $cancel_url ) {
@@ -375,9 +375,9 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 					} else {
 						echo '<p class="leaky-paywall-cancel-link">' . esc_html( $cancel_text ) . '</p>';
 					}
-					
+
 				}
-				
+
 			default:
 				break;
 		}

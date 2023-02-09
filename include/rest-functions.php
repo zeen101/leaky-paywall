@@ -25,22 +25,24 @@ function meta_rest_api() {
 			'get_callback'      => 'lp_rest_get_post_meta',
 		) );
 	}
-    
+
 }
 add_action( 'rest_api_init', 'meta_rest_api' );
 
 
 function lp_rest_get_post_meta( $user, $field_name, $request ) {
 
+    $user_obj = get_user_by( 'id', $user['id'] );
+
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
-    $level_id = get_user_meta(  $user['id'], '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-    $subscriber_id = get_user_meta(  $user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-    $price = get_user_meta(  $user['id'], '_issuem_leaky_paywall_' . $mode . '_price' . $site, true );
-    $plan = get_user_meta(  $user['id'], '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-    $created = get_user_meta(  $user['id'], '_issuem_leaky_paywall_' . $mode . '_created' . $site, true );
-    $expires = get_user_meta(  $user['id'], '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-    $has_access = true;
+    $level_id = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+    $subscriber_id = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+    $price = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_price' . $site, true );
+    $plan = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+    $created = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_created' . $site, true );
+    $expires = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+    $has_access = leaky_paywall_user_has_access( $user_obj );
     $payment_gateway = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
     $payment_status = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 
