@@ -87,9 +87,9 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 								  data-key="' . esc_js( $publishable_key ) . '"
 								  data-locale="auto"
-								  data-label="' . apply_filters( 'leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '" 
-								  data-plan="' . esc_js( $stripe_plan->id ) . '" 
-								  data-currency="' . esc_js( $currency ) . '" 
+								  data-label="' . apply_filters( 'leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '"
+								  data-plan="' . esc_js( $stripe_plan->id ) . '"
+								  data-currency="' . esc_js( $currency ) . '"
 								  data-description="' . esc_js( $level['label'] ) . '">
 						  </script>
 						  ' . apply_filters( 'leaky_paywall_pay_with_stripe_recurring_payment_form_after_script', '' ) . '
@@ -106,9 +106,9 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 					  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
 							  data-key="' . esc_js( $publishable_key ) . '"
 							  data-locale="auto"
-							  data-label="' . apply_filters( 'leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '" 
-							  data-amount="' . esc_js( $stripe_price ) . '" 
-							  data-currency="' . esc_js( $currency ) . '" 
+							  data-label="' . apply_filters( 'leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '"
+							  data-amount="' . esc_js( $stripe_price ) . '"
+							  data-currency="' . esc_js( $currency ) . '"
 							  data-description="' . esc_js( $level['label'] ) . '">
 					  </script>
 						  ' . apply_filters( 'leaky_paywall_pay_with_stripe_non_recurring_payment_form_after_script', '' ) . '
@@ -170,7 +170,7 @@ function leaky_paywall_create_stripe_payment_intent() {
 				'error' => __( 'There was an error. Please try again.', 'leaky-paywall' )
 			)
 		);
-	} 
+	}
 
 	$level_id = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
 	$level    = get_leaky_paywall_subscription_level( $level_id );
@@ -223,7 +223,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 				'error' => __( 'There was an error. Please try again.', 'leaky-paywall' )
 			)
 		);
-	} 
+	}
 
 	$stripe = leaky_paywall_initialize_stripe_api();
 
@@ -240,7 +240,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 
 		wp_send_json(
 			array(
-				'error' => $th->jsonBody,
+				'error' => $th->getMessage(),
 			)
 		);
 	}
@@ -260,7 +260,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	try {
 		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
 		leaky_paywall_log( $customer, 'stripe checkout subscription for ' . $customer_id );
-		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ) ); 
+		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ) );
 		leaky_paywall_log( 'after get subs', 'stripe checkout subscription for ' . $customer_id );
 
 		if ( empty( $subscriptions->data ) ) {
@@ -270,10 +270,10 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 
 			foreach ( $subscriptions->data as $subscription ) {
 
-				$sub = $stripe->subscriptions->update( $subscription->id, array( 
+				$sub = $stripe->subscriptions->update( $subscription->id, array(
 					'plan' => $plan_id
 				) );
-		
+
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level );
 			}
 		}
@@ -434,7 +434,7 @@ function leaky_paywall_initialize_stripe_api() {
 	}
 
 	$stripe = new \Stripe\StripeClient(leaky_paywall_get_stripe_secret_key());
-	
+
 	\Stripe\Stripe::setApiKey( leaky_paywall_get_stripe_secret_key() );
 	\Stripe\Stripe::setApiVersion( LEAKY_PAYWALL_STRIPE_API_VERSION );
 	\Stripe\Stripe::setAppInfo(
@@ -443,7 +443,7 @@ function leaky_paywall_initialize_stripe_api() {
 		esc_url( site_url() ),
 		LEAKY_PAYWALL_STRIPE_PARTNER_ID
 	);
-	
+
 	return $stripe;
 }
 
@@ -484,7 +484,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			return;
 		}
 
-		$subscriptions = $cus->subscriptions['data']; 
+		$subscriptions = $cus->subscriptions['data'];
 
 		if (empty( $subscriptions ) ) {
 			return;
@@ -518,7 +518,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 	if ($stripe_event->type != 'checkout.session.completed') {
 		return;
 	}
-	
+
 	$stripe_object = $stripe_event->data->object;
 
 	leaky_paywall_log( $stripe_object->customer, 'stripe checkout event customer' );
@@ -658,7 +658,7 @@ function leaky_paywall_maybe_generate_stripe_customer_portal() {
 		print_r( $th->getMessage() );
 		echo '</pre>';
 		die();
-		
+
 	}
 
 	// Redirect to the customer portal.
