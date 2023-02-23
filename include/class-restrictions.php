@@ -89,16 +89,16 @@ class Leaky_Paywall_Restrictions {
 
 		do_action( 'leaky_paywall_is_restricted_content', $this->post_id );
 	}
-	
+
 	/**
 	 * Process WP REST API content restrictions
 	 */
 	public function process_rest_content_restrictions( $content ) {
-		
+
 		global $post;
 		$this->post_id = $post->ID;
 		$this->is_rest = true;
-		
+
 		if ( ! $this->is_content_restricted() ) {
 			return $content;
 		}
@@ -329,19 +329,19 @@ class Leaky_Paywall_Restrictions {
 					if ( 'unlimited' == $access_rule['allowed'] && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 
 						if ( $this->allowed_value_exceeded() ) {
-							
+
 							// if it has already been set to true by a previous rule, do not unset it
 							if ( !$allows_access ) {
 								$allows_access = false;
 							}
-							
+
 						} else {
 							$allows_access = true;
 						}
 					}
 
 					if ( 'unlimited' == $access_rule['allowed'] && 'all' == $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
-						$allows_access = true;
+						return true; // the subscriber should have access to this content
 					}
 
 					if ( 'unlimited' == $access_rule['allowed'] && 'all' == $restriction['taxonomy'] && $content_post_type == $restriction['post_type'] && ! $this->content_taxonomy_matches( $access_rule['taxonomy'] ) ) {
@@ -742,7 +742,7 @@ class Leaky_Paywall_Restrictions {
 		$level_ids  = leaky_paywall_subscriber_current_level_ids();
 
 		if ( false !== $visibility && ! empty( $visibility['visibility_type'] ) && 'default' !== $visibility['visibility_type'] ) {
-			
+
 			switch ( $visibility['visibility_type'] ) {
 
 				case 'only':
@@ -882,7 +882,7 @@ class Leaky_Paywall_Restrictions {
 	 * @param integer $post_id The post id.
 	 */
 	public function content_taxonomy_matches( $restricted_term_id, $post_id = '' ) {
-		
+
 		if ( ! $post_id ) {
 			$post_id = $this->post_id;
 		}
