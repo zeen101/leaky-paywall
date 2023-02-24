@@ -710,7 +710,7 @@ class Leaky_Paywall_Settings {
 								}
 
 								if ( isset( $level['deleted'] ) && 1 == $level['deleted'] ) {
-
+									$deleted[] = true;
 									continue;
 								}
 
@@ -732,15 +732,11 @@ class Leaky_Paywall_Settings {
 
 								$last_key = $key;
 
-								if ( isset( $level['deleted'] ) && 1 === $level['deleted'] ) {
-									$deleted[] = true;
-								}
 							}
 
 							if ( !isset( $_GET['level_id'] ) ) {
 								echo '</table>';
 							}
-
 
 							// if we have levels but they have all been deleted, add one level.
 							if ( count( $deleted ) === count( $settings['levels'] ) ) {
