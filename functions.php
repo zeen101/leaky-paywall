@@ -1242,8 +1242,8 @@ if (!function_exists('leaky_paywall_subscriber_current_level_id')) {
 	 */
 	function leaky_paywall_subscriber_current_level_id()
 	{
-		if (leaky_paywall_has_user_paid()) {
-			$settings = get_leaky_paywall_settings();
+
+		if (leaky_paywall_user_has_access()) {
 
 			$sites = array('');
 			if (is_multisite_premium()) {
