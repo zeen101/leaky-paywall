@@ -577,27 +577,41 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		'payment_gateway'	=> 'stripe',
 		'payment_status'	=> 'active',
 		'site'	=> leaky_paywall_get_current_site(),
-		'mode' => leaky_paywall_get_current_mode()
+		'mode' => leaky_paywall_get_current_mode(),
 	);
 
-	if ($existing_customer) {
-		$user_id = leaky_paywall_update_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+	if ( $existing_customer ) {
+		$subscriber_data['need_new'] = false;
 	} else {
-		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+		$subscriber_data['need_new'] = true;
 	}
 
-	$subscriber_data['user_id'] = $user_id;
+	if (apply_filters('leaky_paywall_use_alternative_subscriber_registration', false, $subscriber_data, $level)) {
+		do_action('leaky_paywall_alternative_subscriber_registration', $subscriber_data, $level);
+	} else {
 
-	$transaction = new LP_Transaction($subscriber_data);
-	$transaction_id = $transaction->create();
-	$subscriber_data['transaction_id'] = $transaction_id;
+		if ($existing_customer) {
+			$user_id = leaky_paywall_update_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+		} else {
+			$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+		}
 
-	do_action( 'leaky_paywall_after_stripe_checkout_completed', $subscriber_data );
+		$subscriber_data['user_id'] = $user_id;
 
-	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+		$transaction = new LP_Transaction($subscriber_data);
+		$transaction_id = $transaction->create();
+		$subscriber_data['transaction_id'] = $transaction_id;
 
-	// Send email notifications
-	leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
+		do_action('leaky_paywall_after_stripe_checkout_completed', $subscriber_data);
+
+		leaky_paywall_cleanup_incomplete_user($user_data['email']);
+
+		// Send email notifications
+		leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
+
+	}
+
+
 
 }
 

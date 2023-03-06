@@ -1243,7 +1243,9 @@ if (!function_exists('leaky_paywall_subscriber_current_level_id')) {
 	function leaky_paywall_subscriber_current_level_id()
 	{
 
-		if (leaky_paywall_user_has_access()) {
+		$user = wp_get_current_user();
+
+		if (leaky_paywall_user_has_access( $user )) {
 
 			$sites = array('');
 			if (is_multisite_premium()) {
@@ -1254,8 +1256,6 @@ if (!function_exists('leaky_paywall_subscriber_current_level_id')) {
 					$sites = array('_all', '_' . $blog_id, '');
 				}
 			}
-
-			$user = wp_get_current_user();
 
 			$mode = leaky_paywall_get_current_mode();
 

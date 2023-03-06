@@ -535,7 +535,7 @@ class Leaky_Paywall_Restrictions {
 	 * Display he paywall subscribe nag
 	 */
 	public function display_subscribe_nag() {
-		add_filter( 'the_content', array( $this, 'get_subscribe_nag' ), 999 );
+		add_filter('the_content', array($this, 'get_subscribe_nag'), 999);
 	}
 
 	/**
