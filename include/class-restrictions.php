@@ -353,9 +353,21 @@ class Leaky_Paywall_Restrictions {
 						}
 					}
 
-					if ( 'limited' == $access_rule['allowed'] && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
-						continue;
+
+					if ('limited' == $access_rule['allowed'] && 'all' != $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type']&& $this->content_taxonomy_matches($access_rule['taxonomy']) ) {
+
+						$number_already_viewed = isset($viewed_content[$content_post_type]) ? $this->get_number_viewed_by_term($access_rule['taxonomy']) : 0;
+
+						// max views reached so block the content.
+						if (!empty($viewed_content) && $number_already_viewed >= $access_rule['allowed_value']) {
+							$allows_access = false;
+						} else {
+							$this->update_content_viewed_by_user();
+							$allows_access = true;
+						}
 					}
+
+
 
 					if ( 'limited' == $access_rule['allowed'] && 'all' == $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 
@@ -382,6 +394,10 @@ class Leaky_Paywall_Restrictions {
 							$this->update_content_viewed_by_user();
 							$allows_access = true;
 						}
+					}
+
+					if ('limited' == $access_rule['allowed'] && $access_rule['taxonomy'] != $restriction['taxonomy'] && $content_post_type == $access_rule['post_type']) {
+						continue;
 					}
 				}
 			}
