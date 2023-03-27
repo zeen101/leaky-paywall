@@ -158,7 +158,7 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 		$mode     = leaky_paywall_get_current_mode();
 		$site     = leaky_paywall_get_current_site();
 		$results  = '';
-		
+
 		if ( is_user_logged_in() ) {
 
 			$user = wp_get_current_user();
@@ -391,7 +391,7 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 						try {
 							$cu = $stripe->customers->retrieve( $subscriber_id );
 						} catch (\Throwable $th) {
-							// 
+							//
 						}
 
 						if ( isset( $cu->default_source->brand ) ) {
@@ -413,10 +413,10 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 									data-label="' . $data_label . '"
 									data-allow-remember-me=false
 									data-email="' . $user->user_email . '"
-									data-locale="auto">	
-									</script>	
+									data-locale="auto">
+									</script>
 									</form>';
-					
+
 						break;
 
 					case 'paypal-standard':
@@ -442,17 +442,17 @@ if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 					}
 
 				}
-			} elseif ( ! empty( $plan ) && 'Canceled' === $plan ) {
+			} else if ( ! empty( $plan ) && 'Canceled' === $plan ) {
 				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Subscription Has Been Canceled', 'leaky-paywall' ) . '</h2>';
+			} else if (leaky_paywall_user_can_bypass_paywall_by_role($user) ) {
+				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __('Your user role can see all content.', 'leaky-paywall') . '</h2>';
+			} else if ( 'trial' === $status ) {
+				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __('You are currently in a trial.', 'leaky-paywall') . '</h2>';
 			} else {
+				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Account is Not Currently Active', 'leaky-paywall' ) . '</h2>';
+				/* Translators: %s - page for subscription */
+				$results .= '<p>' . sprintf( __( 'To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
 
-				if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
-					$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your user role can see all content.', 'leaky-paywall' ) . '</h2>';
-				} else {
-					$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Account is Not Currently Active', 'leaky-paywall' ) . '</h2>';
-					/* Translators: %s - page for subscription */
-					$results .= '<p>' . sprintf( __( 'To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
-				}
 			}
 
 			$results .= '</div>';
