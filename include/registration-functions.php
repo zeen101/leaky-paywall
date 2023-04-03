@@ -135,7 +135,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_register_nonce'] ) ), 'leaky-paywall-register-nonce' )
 	) {
 	   return;
-	} 
+	}
 
 	$settings = get_leaky_paywall_settings();
 	$mode     = leaky_paywall_get_current_mode();
@@ -365,7 +365,7 @@ function leaky_paywall_process_user_registration_validation() {
 							// 'tax_behavior' => $settings['stripe_tax_behavior'],
 						),
 					);
-					
+
 				} else {
 					$stripe_session_args['line_items'] = array(
 						array(
@@ -376,7 +376,7 @@ function leaky_paywall_process_user_registration_validation() {
 				}
 
 				try {
-					$checkout_session = $stripe->checkout->sessions->create( 
+					$checkout_session = $stripe->checkout->sessions->create(
 						apply_filters( 'leaky_paywall_stripe_session_recurring_args', $stripe_session_args, $level )
 					);
 				} catch ( \Throwable $th ) {
@@ -433,7 +433,7 @@ function leaky_paywall_process_user_registration_validation() {
 					);
 				}
 
-				$checkout_session = $stripe->checkout->sessions->create( 
+				$checkout_session = $stripe->checkout->sessions->create(
 					apply_filters( 'leaky_paywall_stripe_session_nonrecurring_args', $stripe_session_args, $level )
 				);
 			} catch ( \Throwable $th ) {
@@ -450,7 +450,7 @@ function leaky_paywall_process_user_registration_validation() {
 			wp_send_json( $return );
 		}
 
-		leaky_paywall_create_incomplete_user( $user, $cu );
+		leaky_paywall_create_incomplete_user( $user, $cu, $fields );
 
 		$return = array(
 			'success'    => 1,
@@ -511,7 +511,7 @@ function leaky_paywall_process_user_registration_validation() {
 	}
 
 	// temporary place to store the data.
-	leaky_paywall_create_incomplete_user( $user, $cu );
+	leaky_paywall_create_incomplete_user( $user, $cu, $fields );
 
 	// create a paymentIntent (if not recurring).
 	if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
@@ -580,7 +580,7 @@ function leaky_paywall_validate_user_data() {
 	) {
 		leaky_paywall_errors()->add( 'not_verified', __( 'Your submission could not be processed.', 'leaky-paywall' ), 'register' );
 	   return;
-	} 
+	}
 
 	$user     = array();
 	$settings = get_leaky_paywall_settings();
@@ -729,7 +729,7 @@ function leaky_paywall_card_form_full() {
 	?>
 
 	<div class="leaky-paywall-card-details leaky-paywall-card-form-full">
-		
+
 		<h3>Billing Name</h3>
 
 		<p class="form-row card-first-name">
@@ -1015,7 +1015,7 @@ function leaky_paywall_card_form_full() {
 		</p>
 
 		<h3>Payment Method</h3>
-		
+
 		<p class="form-row">
 			<label><?php esc_html_e( 'Card Number', 'leaky-paywall' ); ?></label>
 			<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
@@ -1164,7 +1164,7 @@ add_action( 'wp_ajax_leaky_paywall_validate_registration', 'leaky_paywall_valida
  * @param array $user_data The user.
  * @param array $customer_data The customer data.
  */
-function leaky_paywall_create_incomplete_user( $user_data, $customer_data ) {
+function leaky_paywall_create_incomplete_user( $user_data, $customer_data, $fields ) {
 
 	$data = array(
 		'post_title'   => wp_strip_all_tags( $user_data['email'] ),
@@ -1178,6 +1178,7 @@ function leaky_paywall_create_incomplete_user( $user_data, $customer_data ) {
 
 	update_post_meta( $incomplete_user, '_user_data', $user_data );
 	update_post_meta( $incomplete_user, '_customer_data', $customer_data );
+	update_post_meta( $incomplete_user, '_field_data', $fields );
 	update_post_meta( $incomplete_user, '_email', $user_data['email'] );
 }
 
@@ -1247,5 +1248,5 @@ function leaky_paywall_store_nag_location() {
 	if ( $post_id ) {
 		setcookie( 'lp_nag_loc', $post_id, 0, '/' );
 	}
-	
+
 }

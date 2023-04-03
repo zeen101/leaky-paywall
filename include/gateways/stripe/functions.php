@@ -531,6 +531,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 	}
 
 	$user_data = get_post_meta($incomplete_id, '_user_data', true);
+	$field_data = get_post_meta($incomplete_id, '_field_data', true);
 	$user = get_user_by('email', $user_data['email']);
 	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
 
@@ -601,6 +602,8 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		$transaction = new LP_Transaction($subscriber_data);
 		$transaction_id = $transaction->create();
 		$subscriber_data['transaction_id'] = $transaction_id;
+
+		update_post_meta( $transaction_id, '_field_data', $field_data );
 
 		do_action('leaky_paywall_after_stripe_checkout_completed', $subscriber_data);
 
