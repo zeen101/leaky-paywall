@@ -60,13 +60,13 @@
 	text-transform: uppercase;
 }
 
-@media (max-width: 990px) { 
+@media (max-width: 990px) {
 	.leaky_paywall_subscription_option {
 		width: 48%;
 	}
 }
 
-@media (max-width: 600px) { 
+@media (max-width: 600px) {
 	.leaky_paywall_subscription_option {
 		width: 95%;
 	}
@@ -401,9 +401,9 @@
 }
 
 .leaky-paywall-form-steps .leaky-paywall-form-step.active {
-	
+
 	font-weight: bold;
-		
+
 }
 
 .leaky-paywall-form-steps .leaky-paywall-form-step .step-number {
@@ -499,7 +499,7 @@
 	z-index: 99999;
    display: block;
 }
-   
+
 
 .zeen101-modal .modal__overlay {
   position: fixed;
@@ -590,9 +590,32 @@
   transform: scale(1.05);
 }
 
-.zeen101-modal .modal__btn-primary {
-  background-color: #00449e;
+.zeen101-modal .modal__btn-primary, .zeen101-modal .modal__btn-primary:visited {
+  background: #32A3E4;
   color: #fff;
+	padding: 10px;
+	text-decoration: none;
+	border-radius: 3px;
+	box-shadow: none;
+	font-size: 14px;
+	line-height: 1;
+}
+
+.zeen101-modal .modal__btn-secondary, .zeen101-modal .modal__btn-secondary:visited {
+	background: #ddd;
+	color: #000;
+	padding: 10px;
+	text-decoration: none;
+	border-radius: 3px;
+	border: 0;
+	box-shadow: none;
+	font-size: 14px;
+	line-height: 1;
+}
+
+.zeen101-modal .modal__btn-secondary:hover {
+	background: #ccc;
+	color: #000;
 }
 
 
