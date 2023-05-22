@@ -1021,7 +1021,7 @@ if (!function_exists('leaky_paywall_cancellation_confirmation')) {
 
 				$form .= apply_filters('leaky_paywall_cancel_subscription_description', $cancel_description);
 
-				$form .= '<a href="' . esc_url(add_query_arg(array('cancel' => 'confirm'))) . '">' . __('Yes, cancel my subscription!', 'leaky-paywall') . '</a> | <a href="' . get_page_link($settings['page_for_profile']) . '">' . __('No, get me outta here!', 'leaky-paywall') . '</a>';
+				$form .= '<p><a href="' . esc_url(add_query_arg(array('cancel' => 'confirm'))) . '">' . __('Yes, please cancel my subscription.', 'leaky-paywall') . '</a></p><p><a href="' . get_page_link($settings['page_for_profile']) . '">' . __('No thanks, I would like to continue my subscription.', 'leaky-paywall') . '</a></p>';
 			} elseif (!empty($_REQUEST['cancel']) && 'confirm' === $_REQUEST['cancel']) {
 
 				$user = wp_get_current_user();
@@ -3769,6 +3769,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			}
 			?>
 
+			<?php do_action( 'leaky_paywall_after_wp_user_profile_fields', $user ); ?>
 
 		</table>
 	<?php
