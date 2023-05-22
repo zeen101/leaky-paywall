@@ -543,7 +543,10 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		$status = 'new';
 	}
 
-	if (isset($level['recurring']) && 'on' == $level['recurring']) {
+	// if level is pay per post, don't process a stripe plan
+	if (isset($level['pay_per_post'])) {
+		$plan_id = '';
+	} else if (isset($level['recurring']) && 'on' == $level['recurring']) {
 
 		$plan_args = array(
 			'stripe_price'	=> $stripe_object->amount_total,
@@ -558,6 +561,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		} else {
 			$plan_id = '';
 		}
+
 	}
 
 	$subscriber_data = array(

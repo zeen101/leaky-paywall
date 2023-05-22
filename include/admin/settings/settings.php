@@ -776,6 +776,11 @@ class Leaky_Paywall_Settings {
 
 	public function output_payments_settings( $current_section )
 	{
+
+		if ($current_section != 'general') {
+			return;
+		}
+
 		$settings = $this->get_settings();
 
 		do_action( 'leaky_paywall_before_payments_settings' ); ?>
@@ -1312,7 +1317,9 @@ class Leaky_Paywall_Settings {
 			'subscriptions' => array(
 				'general'
 			),
-			'payments' => array(),
+			'payments' => array(
+				'general'
+			),
 			'emails' => array(),
 			'licenses' => array(),
 			'help' => array()
@@ -1770,7 +1777,7 @@ class Leaky_Paywall_Settings {
 			}
 		}
 
-		if ( 'payments' === $current_tab ) {
+		if ( 'payments' === $current_tab && 'general' == $current_section ) {
 
 			if ( ! empty( $_POST['test_mode'] ) ) {
 				$settings['test_mode'] = sanitize_text_field( wp_unslash( $_POST['test_mode'] ) );
