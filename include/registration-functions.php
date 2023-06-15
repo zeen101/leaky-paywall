@@ -523,7 +523,7 @@ function leaky_paywall_process_user_registration_validation() {
 		wp_send_json( $return );
 	}
 
-	$stripe_price = number_format( $level['price'], 2, '', '' );
+	$stripe_price = number_format( floatval( $level['price'] ), 2, '', '' );
 
 	$intent_args = apply_filters(
 		'leaky_paywall_payment_intent_args',
