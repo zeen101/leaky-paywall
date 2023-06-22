@@ -65,10 +65,10 @@ class Leaky_Paywall {
 	 * Process restrictions with WP REST API
 	 */
 	public function process_rest_content_restrictions() {
-		
+
 		$restrictions = new Leaky_Paywall_Restrictions();
-		add_filter( 'the_content', array( $restrictions, 'process_rest_content_restrictions' ) );		
-		
+		add_filter( 'the_content', array( $restrictions, 'process_rest_content_restrictions' ) );
+
 	}
 
 	/**
@@ -231,10 +231,10 @@ class Leaky_Paywall {
 	public function restrict_pdf_attachment_url( $attachment_url, $attachment_id ) {
 
 		$settings = get_leaky_paywall_settings();
-		
+
 		if ( 'on' === $settings['restrict_pdf_downloads'] ) {
 			return esc_url( add_query_arg( 'issuem-pdf-download', $attachment_id ) );
-		} 
+		}
 
 		return $attachment_url;
 
@@ -266,7 +266,7 @@ class Leaky_Paywall {
 		if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 		}
-		
+
 	}
 
 
@@ -789,7 +789,7 @@ class Leaky_Paywall {
 				</div>
 
 			</div>
-		<?php 	
+		<?php
 
 	}
 
@@ -802,10 +802,10 @@ class Leaky_Paywall {
 		?>
 			<div id="leaky-paywall-upgrade-page-wrapper">
 				<div class="header">
-					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
+					<a href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
 				</div>
 				<div class="content">
-					
+
 					<h2>Upgrade to Leaky Paywall Pro</h2>
 					<p class="description">
 						Gain access to our proven subscription building system and 40+ Leaky Paywall extensions when you upgrade
@@ -822,11 +822,11 @@ class Leaky_Paywall {
 					</ul>
 
 					<p>
-						<a class="button" target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings">Upgrade Now</a>
+						<a class="button" target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings">Upgrade Now</a>
 					</p>
 				</div>
 				<div class="logo">
-					<a href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
+					<a href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
 				</div>
 			</div>
 

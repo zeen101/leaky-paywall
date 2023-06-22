@@ -3786,7 +3786,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 */
 	function leaky_paywall_plugin_add_settings_link($links)
 	{
-		$settings_link  = '<a target="_blank" href="https://leakypaywall.com/pricing/">' . __('Premium Support') . '</a>  | ';
+		$settings_link  = '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
 		$settings_link .= '<a href="admin.php?page=issuem-leaky-paywall">' . __('Settings') . '</a>';
 		array_unshift($links, $settings_link);
 		return $links;
@@ -4572,3 +4572,14 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		return apply_filters('leaky_paywall_ip_address', $ip);
 	}
+
+
+
+/**
+ * Load any CSS we need for the plugins list table.
+ */
+function leaky_paywall_plugin_list_styles()
+{
+	echo '<style>span.lp-pro-upgrade a, span.lp-pro-upgrade a:hover{color: #759542; font-weight: 600;}</style>';
+}
+add_action('admin_print_styles-plugins.php', 'leaky_paywall_plugin_list_styles');

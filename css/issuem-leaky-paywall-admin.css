@@ -11,7 +11,7 @@ body.leaky-paywall_page_leaky-paywall-subscribers table input.small-text {
 }
 
 table.issuem-leaky-paywall-subscription-level-row-table {
- 
+
 }
 
 table.issuem-leaky-paywall-subscription-level-row-table.toggled {
@@ -378,4 +378,8 @@ input[type="submit"].lp-inline-button {
 .admin_page_lp-onboarding-4 .notice,
 .admin_page_lp-onboarding-5 .notice {
   display: none;
+}
+
+.lp-pro-upgrade a {
+  font-weight: bold;
 }

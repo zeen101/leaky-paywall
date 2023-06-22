@@ -22,7 +22,7 @@ Sell individual subscriptions, corporate and bulk access, individual articles, n
 
 https://www.youtube.com/watch?v=v2nJWiekJw0&t=12s
 
-Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/features/), and is [SCA](https://docs.leakypaywall.com/article/180-sca-compliance) and [GDPR compliant](https://docs.leakypaywall.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Premium plans](https://leakypaywall.com/pricing/) offer additional features.
+Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/features/), and is [SCA](https://docs.leakypaywall.com/article/180-sca-compliance) and [GDPR compliant](https://docs.leakypaywall.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Premium plans](https://leakypaywall.com/upgrade-to-leaky-paywall-pro/) offer additional features.
 
 **Features**
 

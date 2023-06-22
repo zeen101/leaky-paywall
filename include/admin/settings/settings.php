@@ -41,7 +41,7 @@ class Leaky_Paywall_Settings {
 					<?php
 						if ( ! isset( $settings['page_for_subscription'] ) || ! $settings['page_for_subscription'] ) {
 							?>
-							<p>Need help getting started? <a target="_blank" href="https://docs.leakypaywall.com/article/39-setting-up-leaky-paywall">See our guide</a> or get setup and support with <a target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">Leaky Paywall Pro.</a></p>
+							<p>Need help getting started? <a target="_blank" href="https://docs.leakypaywall.com/article/39-setting-up-leaky-paywall">See our guide</a> or get setup and support with <a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">Leaky Paywall Pro.</a></p>
 							<?php
 						}
 
@@ -93,7 +93,7 @@ class Leaky_Paywall_Settings {
 								</ul>
 
 								<p>
-									<a class="button" target="_blank" href="https://leakypaywall.com/pricing/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Upgrade Now</a>
+									<a class="button" target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=sidebar&utm_campaign=settings">Upgrade Now</a>
 								</p>
 							</div>
 						<?php
