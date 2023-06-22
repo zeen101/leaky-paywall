@@ -29,6 +29,7 @@ class Leaky_Paywall_Payment_Gateway {
 	public $site;
 	public $recurring;
 	public $return_url;
+	public $test_mode;
 
 	public function __construct( $subscription_data = array() ) {
 
