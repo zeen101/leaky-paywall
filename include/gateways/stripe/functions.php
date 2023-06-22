@@ -173,6 +173,7 @@ function leaky_paywall_create_stripe_payment_intent() {
 	}
 
 	$level_id = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
+	$email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
 	$level    = get_leaky_paywall_subscription_level( $level_id );
 
 	$stripe = leaky_paywall_initialize_stripe_api();
@@ -182,6 +183,7 @@ function leaky_paywall_create_stripe_payment_intent() {
 			array(
 				'amount'   => leaky_paywall_get_stripe_amount( $level['price'] ),
 				'currency' => strtolower( leaky_paywall_get_currency() ),
+				'receipt_email' => $email
 			)
 		);
 	} catch ( \Throwable $th ) {

@@ -43,10 +43,10 @@
           if ( resp.session_id ) {
 
             let stripe = Stripe(leaky_paywall_script_ajax.stripe_pk);
-            
+
             $('#checkout').click(function(e) {
               e.preventDefault();
-  
+
               stripe.redirectToCheckout({
                 sessionId: resp.session_id
               });
@@ -104,7 +104,7 @@
         console.log(paymentRequest);
 
       }
-     
+
       let elements = stripe.elements();
 
       if ( 'yes' == leaky_paywall_script_ajax.apple_pay) {
@@ -113,7 +113,7 @@
         });
       }
 
-      
+
 
       let style = {
         base: {
@@ -153,17 +153,19 @@
 
           let data = new FormData();
           let level_id = $('#level-id').val();
+          let email = $('#email_address').val();
 
           data.append('action', 'leaky_paywall_create_stripe_payment_intent');
           data.append('level_id', level_id);
+          data.append('email', email);
           data.append('paymentMethodType', 'card');
           data.append('register_nonce', leaky_paywall_validate_ajax.register_nonce);
-          
+
           // create paymentIntent
           const {clientSecret} = await fetch(leaky_paywall_script_ajax.ajaxurl, {
             method: 'post',
             credentials: 'same-origin',
-            body: data 
+            body: data
           }).then(r => r.json());
           console.log('client secret returned');
 
@@ -234,7 +236,7 @@
         let lastName = $('input[name="last_name"]').val();
         let clientSecret = $('#payment-intent-client').val();
         let isRecurring = $('input[name="recurring"]').val();
-       
+
 
 				subButton.disabled = true;
 				subButton.innerHTML = 'Processing... Please Wait';
@@ -263,7 +265,7 @@
               subButton.innerHTML = 'Subscribe';
 
             } else {
-              
+
               // The payment has been processed!
               if (result.paymentIntent.status === 'succeeded') {
                 console.log('lp form submit one time success');
@@ -362,7 +364,7 @@
             data.append('planId', planId);
             data.append('invoiceId', invoiceId);
             data.append('formData', form_data);
-            
+
             return (
               fetch(leaky_paywall_script_ajax.ajaxurl, {
                 method: 'post',
@@ -649,7 +651,7 @@
 
     }
 
-    
+
     $(document).on('click', '.leaky_paywall_message_wrap a', function(e) {
 			e.preventDefault();
 
@@ -661,7 +663,7 @@
 			$.each(bodyClasses, function(i, value) {
 
 				if ( !value.search('postid' ) ) {
-					
+
 					var classArray = value.split('-');
 
 					var post_id = parseInt( classArray[1] );
@@ -676,7 +678,7 @@
 
 				// for pages
 				if ( !value.search('page-id' ) ) {
-					
+
 					var classArray = value.split('-');
 					var post_id = parseInt( classArray[2] );
 

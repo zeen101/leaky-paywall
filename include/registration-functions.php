@@ -533,13 +533,10 @@ function leaky_paywall_process_user_registration_validation() {
 			'setup_future_usage' => 'off_session',
 			'customer'           => $cu->id,
 			'description'        => $level['label'],
+			'receipt_email'		 => $user['email']
 		),
 		$level
 	);
-
-	// $intent_options = array(
-	// 	'idempotency_key' => $fields['idem_key'],
-	// );
 
 	try {
 		$intent = $stripe->paymentIntents->create( $intent_args );
