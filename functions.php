@@ -3786,7 +3786,12 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 */
 	function leaky_paywall_plugin_add_settings_link($links)
 	{
-		$settings_link  = '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
+		$settings_link = '';
+
+		if (!is_plugin_active('leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php')) {
+			$settings_link  .= '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
+		}
+
 		$settings_link .= '<a href="admin.php?page=issuem-leaky-paywall">' . __('Settings') . '</a>';
 		array_unshift($links, $settings_link);
 		return $links;
