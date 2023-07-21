@@ -153,13 +153,13 @@ function leaky_paywall_get_stripe_secret_key() {
 }
 
 
-add_action( 'wp_ajax_nopriv_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall_create_stripe_payment_intent' );
-add_action( 'wp_ajax_leaky_paywall_create_stripe_payment_intent', 'leaky_paywall_create_stripe_payment_intent' );
+add_action( 'wp_ajax_nopriv_leaky_paywall_process_apple_pay', 'leaky_paywall_process_apple_pay' );
+add_action( 'wp_ajax_leaky_paywall_process_apple_pay', 'leaky_paywall_process_apple_pay' );
 
 /**
- * Create a stripe payment intent
+ * Create a stripe payment intent (used with Apple Pay)
  */
-function leaky_paywall_create_stripe_payment_intent() {
+function leaky_paywall_process_apple_pay() {
 
 	if (
 		! isset( $_POST['register_nonce'] )
@@ -174,24 +174,34 @@ function leaky_paywall_create_stripe_payment_intent() {
 
 	$level_id = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
 	$email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+	$cus_id = isset($_POST['cusId']) ? sanitize_text_field(wp_unslash($_POST['cusId'])) : '';
 	$level    = get_leaky_paywall_subscription_level( $level_id );
 
 	$stripe = leaky_paywall_initialize_stripe_api();
 
+	// one time
+	$data = apply_filters('leaky_paywall_stripe_payment_intent_args', array(
+		'amount'   => leaky_paywall_get_stripe_amount($level['price']),
+		'currency' => strtolower(leaky_paywall_get_currency()),
+		'receipt_email' => $email,
+		'setup_future_usage' => 'off_session',
+	));
+
+	if ( $cus_id ) {
+		$data['customer'] = $cus_id;
+	}
+
 	try {
 		$payment_intent = $stripe->paymentIntents->create(
-			array(
-				'amount'   => leaky_paywall_get_stripe_amount( $level['price'] ),
-				'currency' => strtolower( leaky_paywall_get_currency() ),
-				'receipt_email' => $email
-			)
+			$data
 		);
-	} catch ( \Throwable $th ) {
-		leaky_paywall_log( 'error', 'stripe payment intent' );
+
+	} catch (\Throwable $th) {
+		leaky_paywall_log('error', 'stripe payment intent');
 
 		wp_send_json(
 			array(
-				'error' => $th->jsonBody,
+				'error' => $th->getMessage(),
 			)
 		);
 	}

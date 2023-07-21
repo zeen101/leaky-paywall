@@ -101,7 +101,7 @@
           requestPayerEmail: true,
         });
 
-        console.log(paymentRequest);
+     //   console.log(JSON.stringify(paymentRequest));
 
       }
 
@@ -154,51 +154,77 @@
           let data = new FormData();
           let level_id = $('#level-id').val();
           let email = $('#email_address').val();
+          let cusId = $('#stripe-customer-id').val();
+          let isRecurring = $('input[name="recurring"]').val();
 
-          data.append('action', 'leaky_paywall_create_stripe_payment_intent');
+          // data.append('action', 'leaky_paywall_create_stripe_payment_intent');
+          data.append('action', 'leaky_paywall_process_apple_pay');
           data.append('level_id', level_id);
           data.append('email', email);
           data.append('paymentMethodType', 'card');
+          data.append('cusId', cusId);
           data.append('register_nonce', leaky_paywall_validate_ajax.register_nonce);
 
-          // create paymentIntent
+          // create payment method using Apple Pay
           const {clientSecret} = await fetch(leaky_paywall_script_ajax.ajaxurl, {
             method: 'post',
             credentials: 'same-origin',
             body: data
           }).then(r => r.json());
-          console.log('client secret returned');
 
-          const{error, paymentIntent} = await stripe.confirmCardPayment(
-            clientSecret, {
-              payment_method: ev.paymentMethod.id,
-            },  {
-              handleActions: false
-            }
-          )
-          if(error) {
-            ev.complete('fail');
-            console.log('payment failed');
-            return;
-          }
-          ev.complete('success');
-          console.log(`Success: ${paymentIntent.id}`);
-          if(paymentIntent.status === 'requires_action') {
-            stripe.confirmCardPayment(clientSecret).then(function(result) {
-              if (result.error) {
-                console.log('payment failed again');
-                // The payment failed -- ask your customer for a new payment method.
-              } else {
-                // The payment has succeeded.
-                console.log('lp form submit apple pay success');
-                let form$ = jQuery('#leaky-paywall-payment-form');
-                form$.get(0).submit();
-              }
+          console.log('client secret returned');
+          console.log('method id: ' + ev.paymentMethod.id);
+
+          if ( isRecurring == 'on' ) {
+
+            let planId = $('#plan-id').val();
+
+            applePayCreateSubscription({
+              customerId: cusId,
+              paymentMethodId: ev.paymentMethod.id,
+              planId: planId,
             });
+
+              ev.complete('success');
+
+              console.log('lp form submit apple pay success');
+              let form$ = jQuery('#leaky-paywall-payment-form');
+              form$.get(0).submit();
+
+
           } else {
-            console.log('lp form submit apple pay success');
-            let form$ = jQuery('#leaky-paywall-payment-form');
-            form$.get(0).submit();
+
+              // one time payment
+              const{error, paymentIntent} = await stripe.confirmCardPayment(
+                clientSecret, {
+                  payment_method: ev.paymentMethod.id,
+                },  {
+                  handleActions: false
+                }
+              )
+
+              if(error) {
+                ev.complete('fail');
+                console.log('payment failed');
+                return;
+              }
+
+             if(paymentIntent.status === 'requires_action') {
+              stripe.confirmCardPayment(clientSecret).then(function(result) {
+                if (result.error) {
+                  console.log('payment failed again');
+                  // The payment failed -- ask your customer for a new payment method.
+                } else {
+                  // The payment has succeeded.
+                  console.log('lp form submit apple pay success');
+                  let form$ = jQuery('#leaky-paywall-payment-form');
+                  form$.get(0).submit();
+                }
+              });
+             } else {
+              let form$ = jQuery('#leaky-paywall-payment-form');
+              form$.get(0).submit();
+             }
           }
 
         });
@@ -651,6 +677,115 @@
 
     }
 
+     function applePayCreateSubscription({
+            customerId,
+            paymentMethodId,
+            planId
+          }) {
+
+            let level_id = $('#level-id').val();
+            let data = new FormData();
+            const form_data = $("#leaky-paywall-payment-form").serialize();
+
+            data.append('action', 'leaky_paywall_create_stripe_checkout_subscription');
+            data.append('level_id', level_id);
+            data.append('customerId', customerId);
+            data.append('paymentMethodId', paymentMethodId);
+            data.append('planId', planId);
+            data.append('formData', form_data);
+
+            return (
+              fetch(leaky_paywall_script_ajax.ajaxurl, {
+                method: 'post',
+                credentials: 'same-origin',
+                // headers: {
+                // 	'Content-type': 'application/json',
+                // },
+                body: data
+              })
+              .then((response) => {
+                return response.json();
+              })
+              // If the card is declined, display an error to the user.
+              .then((result) => {
+                if (result.error) {
+                  // The card had an error when trying to attach it to a customer.
+                  throw result;
+                }
+                console.log('result');
+                console.log(result);
+                return result;
+              })
+              // Normalize the result to contain the object returned by Stripe.
+              // Add the additional details we need.
+              .then((result) => {
+                return {
+                  paymentMethodId: paymentMethodId,
+                  planId: planId,
+                  subscription: result.subscription,
+                };
+              })
+              // Some payment methods require a customer to be on session
+              // to complete the payment process. Check the status of the
+              // payment intent to handle these actions.
+            //  .then(handlePaymentThatRequiresCustomerAction)
+              // If attaching this card to a Customer object succeeds,
+              // but attempts to charge the customer fail, you
+              // get a requires_payment_method error.
+            //  .then(handleRequiresPaymentMethod)
+              // No more actions required. Provision your service for the user.
+              .then(applePayOnSubscriptionComplete)
+              .catch((error) => {
+
+                console.log('caught error');
+                console.log(error);
+                // An error has happened. Display the failure to the user here.
+                // We utilize the HTML element we created.
+                applePayshowCardError(error);
+              })
+            ) // end return
+          } // end createSubscription
+
+        function applePayOnSubscriptionComplete(result) {
+          console.log('sub complete');
+          console.log(result);
+          // Payment was successful.
+          if (result.subscription.status === 'active' || result.subscription.status === 'trialing') {
+            console.log('subscription complete!');
+            var form$ = jQuery('#leaky-paywall-payment-form');
+
+            form$.get(0).submit();
+            // Change your UI to show a success message to your customer.
+            // Call your backend to grant access to your service based on
+            // `result.subscription.items.data[0].price.product` the customer subscribed to.
+          } else {
+            // var form$ = jQuery('#leaky-paywall-payment-form');
+            // form$.get(0).submit();
+          }
+        } // end onSubscriptionComplete
+
+
+        function applePayshowCardError(event) {
+            console.log('show card error - event');
+            console.log(event);
+            console.log('show card error - event error message');
+
+            let subButton = document.getElementById('leaky-paywall-submit');
+            subButton.disabled = false;
+            subButton.innerHTML = 'Subscribe';
+
+            let displayError = document.getElementById('card-errors');
+            if (event.error) {
+              if (event.error.message) {
+                displayError.textContent = event.error.message;
+              } else {
+                displayError.textContent = event.error;
+              }
+
+            } else {
+              displayError.textContent = 'There was an error with your payment. Please try again.';
+            }
+          } // end showCardError
 
     $(document).on('click', '.leaky_paywall_message_wrap a', function(e) {
 			e.preventDefault();
