@@ -59,9 +59,9 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 	if ( in_array( strtoupper( $currency ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
 		// Zero-Decimal Currencies.
 		// https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support  .
-		$stripe_price = number_format( $level['price'], '0', '', '' );
+		$stripe_price = number_format( floatval( $level['price'] ), '0', '', '' );
 	} else {
-		$stripe_price = number_format( $level['price'], '2', '', '' ); // no decimals.
+		$stripe_price = number_format( floatval( $level['price'] ), '2', '', '' ); // no decimals.
 	}
 	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
 	$secret_key      = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
