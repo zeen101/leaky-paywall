@@ -252,8 +252,9 @@ class Leaky_Paywall {
 	public function admin_menu() {
 
 		$settings = new Leaky_Paywall_Settings();
+		$admin_icon = $this->get_svg();
 
-		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ), LEAKY_PAYWALL_URL . '/images/lock-icon.png' );
+		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ), $admin_icon );
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ) );
 
@@ -296,6 +297,15 @@ class Leaky_Paywall {
 			wp_enqueue_style( 'leaky_paywall_post_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
+	}
+
+	public function get_svg() {
+
+		$svg_b64 = 'PHN2ZyB3aWR0aD0iNDIzIiBoZWlnaHQ9IjQyMyIgdmlld0JveD0iMCAwIDQyMyA0MjMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0zNjEuNDAzIDAuNzY0MTZWNjMuMDA5M0g2MS40MDgyQzkxLjQ1NTggMjMuNzc3MiAxMzguMDY3IDAuNzY0MTYgMTg3LjQ4MSAwLjc2NDE2SDM2MS40MDNaIiBmaWxsPSIjRTQ1NjM3Ii8+CjxwYXRoIGQ9Ik02MS40MDgyIDQyMi41MTVWMzYwLjI3SDM2MS40MDNDMzMxLjM1NSAzOTkuNTAyIDI4NC43NjIgNDIyLjUxNSAyMzUuMzMgNDIyLjUxNUg2MS40MDgyWiIgZmlsbD0iI0U0NTYzNyIvPgo8cGF0aCBkPSJNMjQuMDg5NCA2Mi40MDg3SDYxLjQyOTZWMzYwLjg3MkgyNC4wODk0QzExLjE4OTcgMzYwLjg3MiAwLjczMjQyMiAzNTAuNDE1IDAuNzMyNDIyIDMzNy41MTVWODUuNzY1N0MwLjczMjQyMiA3Mi44ODMyIDExLjE4OTcgNjIuNDA4NyAyNC4wODk0IDYyLjQwODdaIiBmaWxsPSIjRTQ1NjM3Ii8+CjxwYXRoIGQ9Ik0zOTguNzQ3IDM2MC44NzJIMzYxLjQwNkwzNjEuNDA2IDYyLjQwODNIMzk4Ljc0N0M0MTEuNjI5IDYyLjQwODMgNDIyLjEwNCA3Mi44NjU3IDQyMi4xMDQgODUuNzY1M0w0MjIuMTA0IDMzNy41MTVDNDIyLjEwNCAzNTAuMzk4IDQxMS42NDYgMzYwLjg3MiAzOTguNzQ3IDM2MC44NzJaIiBmaWxsPSIjRTQ1NjM3Ii8+CjxwYXRoIGQ9Ik0yOTkuOTE4IDEyMy4xNDFIMTIyLjkxOFYzMDAuMTQxSDI5OS45MThWMTIzLjE0MVoiIGZpbGw9IiNFNDU2MzciLz4KPC9zdmc+Cg==';
+
+		$icon = 'data:image/svg+xml;base64,' . $svg_b64;
+
+		return $icon;
 	}
 
 	/**
