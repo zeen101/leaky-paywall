@@ -32,11 +32,21 @@ class Leaky_Paywall_Settings {
 
 		?>
 
+			<div id="lp-header" class="lp-header">
+				<div id="lp-header-wrapper">
+					<span id="lp-header-branding">
+						<img class="lp-header-logo" width="200" src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo.png'; ?>">
+					</span>
+					<span class="lp-header-page-title-wrap">
+						<span class="lp-header-separator">/</span>
+						<h1 class="lp-header-page-title">Settings</h1>
+					</span>
+				</div>
+			</div>
+
 			<div class="wrap">
 
 				<div style="width:75%;" class="postbox-container">
-
-					<h1 style="margin-bottom: 2px;"><?php esc_html_e( 'Leaky Paywall', 'leaky-paywall' ); ?></h1>
 
 					<?php
 						if ( ! isset( $settings['page_for_subscription'] ) || ! $settings['page_for_subscription'] ) {

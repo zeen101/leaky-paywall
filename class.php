@@ -453,10 +453,21 @@ class Leaky_Paywall {
 		$this->display_zeen101_dot_com_leaky_rss_item();
 
 		?>
-			<div class="wrap">
 
-				<div id="icon-users" class="icon32"><br /></div>
-				<h2><?php esc_html_e( 'Leaky Paywall Subscribers', 'issuem-leaky-paywall' ); ?></h2>
+		<div id="lp-header" class="lp-header">
+			<div id="lp-header-wrapper">
+				<span id="lp-header-branding">
+					<img class="lp-header-logo" width="200" src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo.png'; ?>">
+				</span>
+				<span class="lp-header-page-title-wrap">
+					<span class="lp-header-separator">/</span>
+					<h1 class="lp-header-page-title">Subscribers</h1>
+				</span>
+			</div>
+		</div>
+
+
+			<div class="wrap">
 
 			<?php
 			if ( ! empty( $_POST['leaky_paywall_add_subscriber'] ) ) {

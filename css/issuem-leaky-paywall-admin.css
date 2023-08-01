@@ -383,3 +383,48 @@ input[type="submit"].lp-inline-button {
 .lp-pro-upgrade a {
   font-weight: bold;
 }
+
+
+#lp-header {
+  padding: 20px 0;
+  margin-left: -20px;
+  background: #E45637;
+}
+
+#lp-header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  align-items: center
+}
+
+#lp-header img {
+  display: block;
+  max-width: 300px;
+  margin: 0
+}
+
+.lp-header-page-title-wrap {
+  font-size: 1.75em;
+  margin-top: -5px;
+  margin-right: auto;
+  padding-left: 7px
+}
+
+.lp-header-separator {
+  margin-top: -2px;
+  opacity: .25;
+  color: #fff;
+}
+
+.lp-header-page-title {
+  font-weight: 400;
+  font-size: 1em;
+  line-height: 1.3em;
+  display: inline;
+  color: #fff;
+}
+
+.lp-header-page-title-wrap .button {
+  margin-left: 5px
+}
