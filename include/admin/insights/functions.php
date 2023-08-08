@@ -43,6 +43,9 @@ function leaky_paywall_reports_get_total_revenue( $period ) {
         case '7 days':
             $args_period = '-7 days';
             break;
+        case '30 days':
+            $args_period = '-30 days';
+            break;
         case 'today':
             $args_period = '24 hours ago';
             break;
@@ -299,6 +302,9 @@ function leaky_paywall_reports_get_paid_content( $period ) {
         case '7 days':
             $args_period = '-7 days';
             break;
+        case '30 days':
+            $args_period = '-30 days';
+            break;
         case 'today':
             $args_period = '24 hours ago';
             break;
@@ -332,7 +338,7 @@ function leaky_paywall_reports_get_paid_content( $period ) {
 
             if ( $status != 'incomplete' && $price > 0 && $nag_loc ) {
                 $paid_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
-                $paid_content[$nag_loc]['count'] = $paid_content[$nag_loc]['count'] + 1;
+                $paid_content[$nag_loc]['count'] = isset( $paid_content[$nag_loc]['count'] ) ? $paid_content[$nag_loc]['count'] + 1 : 1;
             }
 
 		}
@@ -387,6 +393,9 @@ function leaky_paywall_reports_get_free_content( $period ) {
         case '7 days':
             $args_period = '-7 days';
             break;
+        case '30 days':
+            $args_period = '-30 days';
+            break;
         case 'today':
             $args_period = '24 hours ago';
             break;
@@ -424,7 +433,7 @@ function leaky_paywall_reports_get_free_content( $period ) {
 
             if ( $status != 'incomplete' && $nag_loc ) {
                 $free_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
-                $free_content[$nag_loc]['count'] = $free_content[$nag_loc]['count'] + 1;
+                $free_content[$nag_loc]['count'] = isset( $free_content[$nag_loc]['count'] ) ? $free_content[$nag_loc]['count'] + 1 : 1;
             }
 
 		}

@@ -248,7 +248,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 				<option value="all" <?php selected( $lev, 'all' ); ?>>All Levels</option>
 				<?php
 				foreach ( $levels as $key => $level ) {
-					echo '<option ' . selected( $key, $lev, false ) . ' value="' . esc_attr( $key ) . '">' . esc_html( $level['label'] ) . '</option>';
+					echo '<option ' . selected( $key, $lev, false ) . ' value="' . esc_attr( $key ) . '">' . esc_html(stripslashes( $level['label'] ) ) . '</option>';
 				}
 				?>
 			</select>
@@ -450,7 +450,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 								// its a date format
 								$formatted_created     = mysql2date( $date_format, $created );
 							}
-							
+
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							echo esc_attr( $formatted_created );
 							echo '</td>';

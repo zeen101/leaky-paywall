@@ -252,6 +252,7 @@ class Leaky_Paywall {
 	public function admin_menu() {
 
 		$settings = new Leaky_Paywall_Settings();
+		$insights = new Leaky_Paywall_Insights();
 		$admin_icon = $this->get_svg();
 
 		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ), $admin_icon );
@@ -262,7 +263,7 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-insights', array( $this, 'insights_page' ) );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-insights', array( $insights, 'insights_page' ) );
 
 		if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
@@ -284,7 +285,9 @@ class Leaky_Paywall {
 			'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix
 			|| 'index.php' === $hook_suffix
-			|| 'leaky-paywall_page_leaky-paywall-upgrade' === $hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-upgrade' ===
+			$hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
 		) {
 			wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 		}
