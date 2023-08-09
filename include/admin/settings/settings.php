@@ -35,7 +35,7 @@ class Leaky_Paywall_Settings {
 			<div id="lp-header" class="lp-header">
 				<div id="lp-header-wrapper">
 					<span id="lp-header-branding">
-						<img class="lp-header-logo" width="200" src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo.png'; ?>">
+						<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>">
 					</span>
 					<span class="lp-header-page-title-wrap">
 						<span class="lp-header-separator">/</span>

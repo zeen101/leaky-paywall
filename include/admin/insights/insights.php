@@ -19,7 +19,7 @@ class Leaky_Paywall_Insights
 		<div id="lp-header" class="lp-header">
 			<div id="lp-header-wrapper">
 				<span id="lp-header-branding">
-					<img class="lp-header-logo" width="200" src="<?php echo LEAKY_PAYWALL_URL . '/images/leaky-paywall-logo.png'; ?>">
+					<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>">
 				</span>
 				<span class="lp-header-page-title-wrap">
 					<span class="lp-header-separator">/</span>
@@ -76,7 +76,7 @@ class Leaky_Paywall_Insights
 	{
 
 		if ( isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce( sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
-			$period = sanitize_text_field($_POST['filter-date-range']);
+			$period = isset($_POST['filter-date-range']) ? sanitize_text_field($_POST['filter-date-range']) : '30 days';
 		} else {
 			$period = '30 days';
 		}
@@ -108,19 +108,19 @@ class Leaky_Paywall_Insights
 			<div class="card"><span class="dashicons dashicons-chart-bar"></span>
 				<div class="card-content">
 					<div class="card-title">Total Revenue</div>
-					<div class="card-amount"><?php echo $revenue; ?></div>
+					<div class="card-amount"><?php echo esc_html( $revenue ); ?></div>
 				</div>
 			</div>
 			<div class="card"><span class="dashicons dashicons-money-alt"></span>
 				<div class="card-content">
 					<div class="card-title">New Paid Subscribers</div>
-					<div class="card-amount"><?php echo $new_paid_subs; ?></div>
+					<div class="card-amount"><?php echo esc_html( $new_paid_subs ); ?></div>
 				</div>
 			</div>
 			<div class="card"><span class="dashicons dashicons-admin-users"></span>
 				<div class="card-content">
 					<div class="card-title">New Free Subscribers</div>
-					<div class="card-amount"><?php echo $new_free_subs; ?></div>
+					<div class="card-amount"><?php echo esc_html( $new_free_subs ); ?></div>
 				</div>
 			</div>
 
@@ -226,7 +226,7 @@ class Leaky_Paywall_Insights
 				<h3>Paid</h3>
 				<ol class="">
 					<?php foreach ($paid_content as $item) {
-						echo '<li>' . $item . '</li>';
+						echo '<li>' . esc_html( $item ) . '</li>';
 					} ?>
 				</ol>
 			</div>
@@ -235,7 +235,7 @@ class Leaky_Paywall_Insights
 				<ol class="">
 					<?php
 					foreach ($free_content as $item) {
-						echo '<li>' . $item . '</li>';
+						echo '<li>' . esc_html( $item ) . '</li>';
 					} ?>
 				</ol>
 			</div>
