@@ -75,12 +75,34 @@ class Leaky_Paywall_Insights
 	public function general_insights()
 	{
 
-		$revenue = leaky_paywall_reports_get_total_revenue('30 days');
-		$new_paid_subs = leaky_paywall_reports_get_new_paid_subs('30 days');
-		$new_free_subs = leaky_paywall_reports_get_new_free_subs('30 days');
+		if ( isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce( sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
+			$period = sanitize_text_field($_POST['filter-date-range']);
+		} else {
+			$period = '30 days';
+		}
+
+		$revenue = leaky_paywall_reports_get_total_revenue($period);
+		$new_paid_subs = leaky_paywall_reports_get_new_paid_subs($period);
+		$new_free_subs = leaky_paywall_reports_get_new_free_subs($period);
 
 		?>
-		<h3>Last 30 Days</h3>
+
+		<p>
+		<form id="leaky_paywall_insights_date_range_filter" method="POST">
+			<label for="filter-by-status" class="screen-reader-text">Filter by date range</label>
+			<select name="filter-date-range" id="filter-by-date-range">
+
+				<option value="today" <?php selected($period, 'today'); ?>>Last 24 hours</option>
+				<option value="7 days" <?php selected($period, '7 days'); ?>>Last 7 days</option>
+				<option value="30 days" <?php selected($period, '30 days'); ?>>Last 30 days</option>
+				<option value="3 months" <?php selected($period, '3 months'); ?>>Last 3 months</option>
+
+			</select>
+
+			<input name="filter_action" id="lp_insights_date_range_filter_submit" class="button" value="Filter" type="submit">
+			<?php wp_nonce_field('lp_insights_filter_date', 'lp_insights_filter_date_field'); ?>
+		</form>
+		</p>
 
 		<div class="card-stats">
 			<div class="card"><span class="dashicons dashicons-chart-bar"></span>
@@ -102,10 +124,10 @@ class Leaky_Paywall_Insights
 				</div>
 			</div>
 
-			<?php do_action( 'leaky_paywall_card_stats' ); ?>
+			<?php do_action('leaky_paywall_card_stats'); ?>
 		</div>
 
-		<?php do_action( 'leaky_paywall_after_card_stats' ); ?>
+		<?php do_action('leaky_paywall_after_card_stats'); ?>
 
 	<?php
 	}
