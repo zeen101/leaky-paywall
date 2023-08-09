@@ -6,6 +6,7 @@
     display: flex;
     gap: 2em;
     margin-bottom: 4em;
+    flex-wrap: wrap;
 }
 #lp-wit-app .card {
     padding: 20px;

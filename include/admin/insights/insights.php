@@ -63,14 +63,13 @@ class Leaky_Paywall_Insights
 			case 'content':
 				$this->content_insights();
 				break;
-			case 'attribution':
-				$this->attribution_insights();
-				break;
-
 			default:
 				// do nothing
 				break;
 		}
+
+		// allow other extensions to hook in here
+		do_action('leaky_paywall_output_insights_data', $current_tab);
 	}
 
 	public function general_insights()
@@ -102,13 +101,12 @@ class Leaky_Paywall_Insights
 					<div class="card-amount"><?php echo $new_free_subs; ?></div>
 				</div>
 			</div>
-			<!-- <div class="card"><span class="dashicons dashicons-heart"></span>
-				<div class="card-content">
-					<div class="card-title">New Gift Subscribers</div>
-					<div class="card-amount">3</div>
-				</div>
-			</div> -->
+
+			<?php do_action( 'leaky_paywall_card_stats' ); ?>
 		</div>
+
+		<?php do_action( 'leaky_paywall_after_card_stats' ); ?>
+
 	<?php
 	}
 
@@ -142,7 +140,7 @@ class Leaky_Paywall_Insights
 		echo '<thead><tr><th>Subscription Level</th><th>Active Subscribers</th></tr></thead>';
 
 		foreach ($data as $key => $value) {
-			echo '<tr><td>' . esc_html( stripslashes( $key ) ) . '</td><td>' . absint( $value ) . '</td></tr>';
+			echo '<tr><td>' . esc_html(stripslashes($key)) . '</td><td>' . absint($value) . '</td></tr>';
 		}
 
 		echo '</table>';
@@ -224,57 +222,6 @@ class Leaky_Paywall_Insights
 	<?php
 	}
 
-	public function attribution_insights()
-	{
-
-		$args = array(
-			'meta_query' => array(
-				array(
-					'key' => '_leaky_paywall_attribution_survey',
-					'compare' => 'EXISTS',
-				),
-			)
-		);
-
-		$subscribers = new WP_User_Query($args);
-
-		$responses = array();
-
-		foreach ($subscribers->get_results() as $user) {
-
-			$response = trim(get_user_meta($user->ID, '_leaky_paywall_attribution_survey', true));
-
-			if ($response && $response != 'other') {
-				$responses[] = $response;
-			}
-		}
-
-		$counted = array_count_values($responses);
-
-		arsort($counted);
-
-	?>
-		<h3>Attribution Survey Results</h3>
-
-		<table class="wp-list-table widefat fixed striped table-view-list">
-
-			<thead>
-				<tr>
-					<th>Attribution</th>
-					<th>Amount</th>
-				</tr>
-			</thead>
-
-			<?php
-			foreach ($counted as $key => $value) {
-				echo '<tr><td>' . $key . '</td><td>' . $value . '</td></tr>';
-			} ?>
-
-		</table>
-
-	<?php
-
-	}
 
 
 	public function output_tabs($current_tab)
@@ -309,7 +256,6 @@ class Leaky_Paywall_Insights
 			'overview',
 			'subscriptions',
 			'content',
-			'attribution'
 		);
 
 		return apply_filters('leaky_paywall_insights_tabs', $tabs);

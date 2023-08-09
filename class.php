@@ -676,7 +676,7 @@ class Leaky_Paywall {
 											continue;
 										}
 										echo '<option value="' . esc_attr( $key ) . '" ' . selected( $key, $subscriber_level_id, true ) . '>' . esc_html( stripslashes( $level['label'] ) );
-										echo $level['deleted'] ? '(deleted)' : '';
+										echo isset($level['deleted']) && $level['deleted'] == 1 ? '(deleted)' : '';
 										echo '</option>';
 									}
 									?>
