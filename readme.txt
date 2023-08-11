@@ -12,7 +12,7 @@ The most flexible paywall for WordPress. Sell subscriptions without sacrificing 
 
 == Description ==
 
-[Leaky Paywall](https://leakypaywall.com/) is built specifically to help news and magazine publishers enagage readers and deliver a seamless subscription experience, to convert paid subscribers. Leaky Paywall builds email lists and easilty creates new content products.
+[Leaky Paywall](https://leakypaywall.com/) is built specifically to help news and magazine publishers enagage readers, deliver a seamless subscription experience, and to convert paid subscribers. Leaky Paywall builds email lists and easily creates new content products.
 
 Leaky Paywall lets you customize the paywall experience to precisely match your content.
 
