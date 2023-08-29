@@ -334,15 +334,7 @@ class Leaky_Paywall {
 
 
 		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix ) {
-
-			// wp_enqueue_script( 'vue', 'https://unpkg.com/vue@3', null, null, true);
-			wp_enqueue_script( 'vue', 'https://unpkg.com/vue@3/dist/vue.global.prod.js', null, null, true);
-			wp_enqueue_script( 'leaky_paywall_insights', LEAKY_PAYWALL_URL . 'include/admin/js/insights/components/App.js', 'vue', null, true);
-
-			wp_localize_script( 'leaky_paywall_insights', 'lp_wit_ajax', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'_ajax_nonce' => wp_create_nonce( 'process_lp_insights' ),
-			) );
+			wp_enqueue_script('leaky_paywall_chart_js', LEAKY_PAYWALL_URL . 'js/chart.min.js', array(), LEAKY_PAYWALL_VERSION, false);
 		}
 
 		wp_localize_script(

@@ -19,11 +19,11 @@ class Leaky_Paywall_Insights
 		<div id="lp-header" class="lp-header">
 			<div id="lp-header-wrapper">
 				<span id="lp-header-branding">
-					<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>">
+					<img class="lp-header-logo" width="200" src="<?php echo esc_url(LEAKY_PAYWALL_URL) . '/images/leaky-paywall-logo.png'; ?>">
 				</span>
 				<span class="lp-header-page-title-wrap">
 					<span class="lp-header-separator">/</span>
-					<h1 class="lp-header-page-title">Insights</h1>
+					<h1 class="lp-header-page-title"><?php esc_html_e('Insights', 'leaky-paywall'); ?></h1>
 				</span>
 			</div>
 		</div>
@@ -75,28 +75,26 @@ class Leaky_Paywall_Insights
 	public function general_insights()
 	{
 
-		if ( isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce( sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
+		if (isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce(sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
 			$period = isset($_POST['filter-date-range']) ? sanitize_text_field($_POST['filter-date-range']) : '30 days';
 		} else {
 			$period = '30 days';
 		}
 
-		$revenue = leaky_paywall_reports_get_total_revenue($period);
-		$new_paid_subs = leaky_paywall_reports_get_new_paid_subs($period);
-		$new_free_subs = leaky_paywall_reports_get_new_free_subs($period);
+		$revenue = leaky_paywall_insights_get_total_revenue($period);
+		$new_paid_subs = leaky_paywall_insights_get_new_paid_subs($period);
+		$new_free_subs = leaky_paywall_insights_get_new_free_subs($period);
 
 		?>
 
 		<p>
 		<form id="leaky_paywall_insights_date_range_filter" method="POST">
-			<label for="filter-by-status" class="screen-reader-text">Filter by date range</label>
+			<label for="filter-by-status" class="screen-reader-text"><?php esc_html_e('Filter by date range', 'leaky-paywall'); ?></label>
 			<select name="filter-date-range" id="filter-by-date-range">
-
-				<option value="today" <?php selected($period, 'today'); ?>>Last 24 hours</option>
-				<option value="7 days" <?php selected($period, '7 days'); ?>>Last 7 days</option>
-				<option value="30 days" <?php selected($period, '30 days'); ?>>Last 30 days</option>
-				<option value="3 months" <?php selected($period, '3 months'); ?>>Last 3 months</option>
-
+				<option value="today" <?php selected($period, 'today'); ?>><?php esc_html_e('Last 24 hours', 'leaky-paywall'); ?></option>
+				<option value="7 days" <?php selected($period, '7 days'); ?>><?php esc_html_e('Last 7 days', 'leaky-paywall'); ?></option>
+				<option value="30 days" <?php selected($period, '30 days'); ?>><?php esc_html_e('Last 30 days', 'leaky-paywall'); ?></option>
+				<option value="3 months" <?php selected($period, '3 months'); ?>><?php esc_html_e('Last 3 months', 'leaky-paywall'); ?></option>
 			</select>
 
 			<input name="filter_action" id="lp_insights_date_range_filter_submit" class="button" value="Filter" type="submit">
@@ -107,20 +105,20 @@ class Leaky_Paywall_Insights
 		<div class="card-stats">
 			<div class="card"><span class="dashicons dashicons-chart-bar"></span>
 				<div class="card-content">
-					<div class="card-title">Total Revenue</div>
-					<div class="card-amount"><?php echo esc_html( $revenue ); ?></div>
+					<div class="card-title"><?php esc_html_e('Total Revenue', 'leaky-paywall'); ?></div>
+					<div class="card-amount"><?php echo esc_html($revenue); ?></div>
 				</div>
 			</div>
 			<div class="card"><span class="dashicons dashicons-money-alt"></span>
 				<div class="card-content">
-					<div class="card-title">New Paid Subscribers</div>
-					<div class="card-amount"><?php echo esc_html( $new_paid_subs ); ?></div>
+					<div class="card-title"><?php esc_html_e('New Paid Subscribers', 'leaky-paywall'); ?></div>
+					<div class="card-amount"><?php echo esc_html($new_paid_subs); ?></div>
 				</div>
 			</div>
 			<div class="card"><span class="dashicons dashicons-admin-users"></span>
 				<div class="card-content">
-					<div class="card-title">New Free Subscribers</div>
-					<div class="card-amount"><?php echo esc_html( $new_free_subs ); ?></div>
+					<div class="card-title"><?php esc_html_e('New Free Subscribers', 'leaky-paywall'); ?></div>
+					<div class="card-amount"><?php echo esc_html($new_free_subs); ?></div>
 				</div>
 			</div>
 
@@ -139,7 +137,7 @@ class Leaky_Paywall_Insights
 		$data = array();
 
 	?>
-		<h3>Top Active Subscriptions</h3>
+		<h3><?php esc_html_e('Top Active Subscriptions', 'leaky-paywall'); ?></h3>
 
 		<?php
 
@@ -211,22 +209,22 @@ class Leaky_Paywall_Insights
 	public function content_insights()
 	{
 
-		$paid_content = leaky_paywall_reports_get_paid_content('30 days');
-		$free_content = leaky_paywall_reports_get_free_content('30 days');
+		$paid_content = leaky_paywall_insights_get_paid_content('30 days');
+		$free_content = leaky_paywall_insights_get_free_content('30 days');
 
 		?>
-		<h3>Top Content Leading to Conversion</h3>
+		<h3><?php esc_html_e('Top Content Leading to Conversion', 'leaky-paywall'); ?></h3>
 
-		<h4>Last 30 Days</h4>
+		<h4><?php esc_html_e('Last 30 Days', 'leaky-paywall'); ?></h4>
 
-		<p>Content the user was viewing when the nag was displayed and they clicked a "subscribe" link</p>
+		<p><?php esc_html_e('Content the user was viewing when the nag was displayed and they clicked a "subscribe" link', 'leaky-paywall'); ?></p>
 
 		<div class="content-coversions">
 			<div class="content-conversion-list">
 				<h3>Paid</h3>
 				<ol class="">
 					<?php foreach ($paid_content as $item) {
-						echo '<li>' . esc_html( $item ) . '</li>';
+						echo '<li>' . esc_html($item) . '</li>';
 					} ?>
 				</ol>
 			</div>
@@ -235,7 +233,7 @@ class Leaky_Paywall_Insights
 				<ol class="">
 					<?php
 					foreach ($free_content as $item) {
-						echo '<li>' . esc_html( $item ) . '</li>';
+						echo '<li>' . esc_html($item) . '</li>';
 					} ?>
 				</ol>
 			</div>
@@ -243,8 +241,6 @@ class Leaky_Paywall_Insights
 
 	<?php
 	}
-
-
 
 	public function output_tabs($current_tab)
 	{

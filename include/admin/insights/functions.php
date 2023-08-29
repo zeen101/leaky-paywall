@@ -11,51 +11,27 @@ function lp_reports_get_data() {
     $period = isset( $_POST['period'] ) ? sanitize_text_field( $_POST['period'] ) : '';
 
     // get total revenue data
-    $revenue = leaky_paywall_reports_get_total_revenue( $period );
-    $new_paid_subs = leaky_paywall_reports_get_new_paid_subs( $period );
-    $new_free_subs = leaky_paywall_reports_get_new_free_subs( $period );
-    $new_gift_subs = leaky_paywall_reports_get_new_gift_subs( $period );
-    $paid_content = leaky_paywall_reports_get_paid_content( $period );
-    $free_content = leaky_paywall_reports_get_free_content( $period );
-    // $active_subs = leaky_paywall_reports_get_active_subs( $period );
+    $revenue = leaky_paywall_insights_get_total_revenue( $period );
+    $new_paid_subs = leaky_paywall_insights_get_new_paid_subs( $period );
+    $new_free_subs = leaky_paywall_insights_get_new_free_subs( $period );
+    $paid_content = leaky_paywall_insights_get_paid_content( $period );
+    $free_content = leaky_paywall_insights_get_free_content( $period );
 
     wp_send_json(
         array(
             'total_revenue' => $revenue,
             'new_paid_subs' => $new_paid_subs,
             'new_free_subs' => $new_free_subs,
-            'new_gift_subs' => $new_gift_subs,
             'paid_content' => $paid_content,
             'free_content' => $free_content,
-            // 'active_subs'   => $active_subs
         )
     );
 }
 
-function leaky_paywall_reports_get_total_revenue( $period ) {
+function leaky_paywall_insights_get_total_revenue( $period ) {
 
     $revenue = 0;
-
-    switch ($period) {
-        case '4 weeks':
-            $args_period = '-4 weeks';
-            break;
-        case '7 days':
-            $args_period = '-7 days';
-            break;
-        case '30 days':
-            $args_period = '-30 days';
-            break;
-        case 'today':
-            $args_period = '24 hours ago';
-            break;
-        case '3 months':
-            $args_period = '-3 months';
-            break;
-        default:
-            $args_period = '-4 weeks';
-            break;
-    }
+    $args_period = leaky_paywall_insights_get_formatted_period( $period );
 
     $args = array(
 		'post_type'      => 'lp_transaction',
@@ -87,10 +63,7 @@ function leaky_paywall_reports_get_total_revenue( $period ) {
 	if ( ! empty( $transactions ) ) {
 		foreach ( $transactions as $transaction ) {
 			$price   = get_post_meta( $transaction->ID, '_price', true );
-
             $revenue = $revenue + $price;
-
-
 		}
 	}
 
@@ -101,27 +74,10 @@ function leaky_paywall_reports_get_total_revenue( $period ) {
 }
 
 
-function leaky_paywall_reports_get_new_paid_subs( $period ) {
+function leaky_paywall_insights_get_new_paid_subs( $period ) {
 
     $new_paid_subs = 0;
-
-    switch ($period) {
-        case '4 weeks':
-            $args_period = '-4 weeks';
-            break;
-        case '7 days':
-            $args_period = '-7 days';
-            break;
-        case 'today':
-            $args_period = '24 hours ago';
-            break;
-        case '3 months':
-            $args_period = '-3 months';
-            break;
-        default:
-            $args_period = '-1 weeks';
-            break;
-    }
+    $args_period = leaky_paywall_insights_get_formatted_period($period);
 
     $args = array(
 		'post_type'      => 'lp_transaction',
@@ -160,7 +116,18 @@ function leaky_paywall_reports_get_new_paid_subs( $period ) {
 	$transactions = get_posts( $args );
 
 	if ( ! empty( $transactions ) ) {
-        $new_paid_subs = count( $transactions );
+
+        foreach( $transactions as $transaction ) {
+
+            $price = get_post_meta($transaction->ID, '_price', true);
+
+            if ( $price == '0.00') {
+                continue;
+            }
+
+            $new_paid_subs = $new_paid_subs + 1;
+        }
+
 	}
 
     return $new_paid_subs;
@@ -168,27 +135,10 @@ function leaky_paywall_reports_get_new_paid_subs( $period ) {
 }
 
 
-function leaky_paywall_reports_get_new_free_subs( $period ) {
+function leaky_paywall_insights_get_new_free_subs( $period ) {
 
     $new_free_subs = 0;
-
-    switch ($period) {
-        case '4 weeks':
-            $args_period = '-4 weeks';
-            break;
-        case '7 days':
-            $args_period = '-7 days';
-            break;
-        case 'today':
-            $args_period = '24 hours ago';
-            break;
-        case '3 months':
-            $args_period = '-3 months';
-            break;
-        default:
-            $args_period = '-4 weeks';
-            break;
-    }
+    $args_period = leaky_paywall_insights_get_formatted_period($period);
 
     $args = array(
 		'post_type'      => 'lp_transaction',
@@ -227,30 +177,10 @@ function leaky_paywall_reports_get_new_free_subs( $period ) {
 
 }
 
-function leaky_paywall_reports_get_paid_content( $period ) {
+function leaky_paywall_insights_get_paid_content( $period ) {
 
     $paid_content = array();
-
-    switch ($period) {
-        case '4 weeks':
-            $args_period = '-4 weeks';
-            break;
-        case '7 days':
-            $args_period = '-7 days';
-            break;
-        case '30 days':
-            $args_period = '-30 days';
-            break;
-        case 'today':
-            $args_period = '24 hours ago';
-            break;
-        case '3 months':
-            $args_period = '-3 months';
-            break;
-        default:
-            $args_period = '-4 weeks';
-            break;
-    }
+    $args_period = leaky_paywall_insights_get_formatted_period($period);
 
     $args = array(
 		'post_type'      => 'lp_transaction',
@@ -318,30 +248,10 @@ function leaky_paywall_reports_get_paid_content( $period ) {
 }
 
 
-function leaky_paywall_reports_get_free_content( $period ) {
+function leaky_paywall_insights_get_free_content( $period ) {
 
     $free_content = array();
-
-    switch ($period) {
-        case '4 weeks':
-            $args_period = '-4 weeks';
-            break;
-        case '7 days':
-            $args_period = '-7 days';
-            break;
-        case '30 days':
-            $args_period = '-30 days';
-            break;
-        case 'today':
-            $args_period = '24 hours ago';
-            break;
-        case '3 months':
-            $args_period = '-3 months';
-            break;
-        default:
-            $args_period = '-4 weeks';
-            break;
-    }
+    $args_period = leaky_paywall_insights_get_formatted_period( $period );
 
     $args = array(
 		'post_type'      => 'lp_transaction',
@@ -406,7 +316,7 @@ function leaky_paywall_reports_get_free_content( $period ) {
 }
 
 
-function leaky_paywall_reports_get_active_subs( $period ) {
+function leaky_paywall_insights_get_active_subs( $period ) {
 
     $active_subs = array();
     $levels = leaky_paywall_get_levels();
@@ -415,7 +325,7 @@ function leaky_paywall_reports_get_active_subs( $period ) {
 
         $active_subs[] = array(
             'name' => $level['label'],
-            'count' => leaky_paywall_reports_get_active_subs_for_level( $level_id )
+            'count' => leaky_paywall_insights_get_active_subs_for_level( $level_id )
         );
 
     }
@@ -424,7 +334,7 @@ function leaky_paywall_reports_get_active_subs( $period ) {
 
 }
 
-function leaky_paywall_reports_get_active_subs_for_level( $level_id ) {
+function leaky_paywall_insights_get_active_subs_for_level( $level_id ) {
 
     $mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
@@ -455,4 +365,31 @@ function leaky_paywall_reports_get_active_subs_for_level( $level_id ) {
 
     return count( $users );
 
+}
+
+function leaky_paywall_insights_get_formatted_period($period)
+{
+
+    switch ($period) {
+        case '4 weeks':
+            $args_period = '-4 weeks';
+            break;
+        case '7 days':
+            $args_period = '-7 days';
+            break;
+        case '30 days':
+            $args_period = '-30 days';
+            break;
+        case 'today':
+            $args_period = '24 hours ago';
+            break;
+        case '3 months':
+            $args_period = '-3 months';
+            break;
+        default:
+            $args_period = '-4 weeks';
+            break;
+    }
+
+    return $args_period;
 }
