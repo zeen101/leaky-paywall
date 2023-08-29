@@ -209,13 +209,32 @@ class Leaky_Paywall_Insights
 	public function content_insights()
 	{
 
-		$paid_content = leaky_paywall_insights_get_paid_content('30 days');
-		$free_content = leaky_paywall_insights_get_free_content('30 days');
+		if (isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce(sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
+			$period = isset($_POST['filter-date-range']) ? sanitize_text_field($_POST['filter-date-range']) : '30 days';
+		} else {
+			$period = '30 days';
+		}
+
+		$paid_content = leaky_paywall_insights_get_paid_content( $period );
+		$free_content = leaky_paywall_insights_get_free_content( $period );
 
 		?>
 		<h3><?php esc_html_e('Top Content Leading to Conversion', 'leaky-paywall'); ?></h3>
 
-		<h4><?php esc_html_e('Last 30 Days', 'leaky-paywall'); ?></h4>
+		<p>
+		<form id="leaky_paywall_insights_date_range_filter" method="POST">
+			<label for="filter-by-status" class="screen-reader-text"><?php esc_html_e('Filter by date range', 'leaky-paywall'); ?></label>
+			<select name="filter-date-range" id="filter-by-date-range">
+				<option value="today" <?php selected($period, 'today'); ?>><?php esc_html_e('Last 24 hours', 'leaky-paywall'); ?></option>
+				<option value="7 days" <?php selected($period, '7 days'); ?>><?php esc_html_e('Last 7 days', 'leaky-paywall'); ?></option>
+				<option value="30 days" <?php selected($period, '30 days'); ?>><?php esc_html_e('Last 30 days', 'leaky-paywall'); ?></option>
+				<option value="3 months" <?php selected($period, '3 months'); ?>><?php esc_html_e('Last 3 months', 'leaky-paywall'); ?></option>
+			</select>
+
+			<input name="filter_action" id="lp_insights_date_range_filter_submit" class="button" value="Filter" type="submit">
+			<?php wp_nonce_field('lp_insights_filter_date', 'lp_insights_filter_date_field'); ?>
+		</form>
+		</p>
 
 		<p><?php esc_html_e('Content the user was viewing when the nag was displayed and they clicked a "subscribe" link', 'leaky-paywall'); ?></p>
 
