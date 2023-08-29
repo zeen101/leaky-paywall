@@ -12,7 +12,7 @@ if ( ! function_exists( 'leaky_paywall_general_metaboxes' ) ) {
 	 */
 	function leaky_paywall_general_metaboxes() {
 
-		$hidden_post_types = apply_filters( 'leaky_paywall_hidden_post_types_metaboxes', array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'lp-coupons', 'ad_dropper', 'lp_group_account', 'lp_ip_exception' ) );
+		$hidden_post_types = apply_filters( 'leaky_paywall_hidden_post_types_metaboxes', array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'lp-coupons', 'ad_dropper', 'lp_group_account', 'lp_ip_exception', 'lp-subscribe-message', 'lp_sub_popup' ) );
 		$post_types        = get_post_types( array(), 'objects' );
 
 		foreach ( $post_types as $post_type ) {
@@ -115,12 +115,12 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		?>
 
 		<hr>
-		
+
 		<p><input type="checkbox" id="show_upgrade_message" name="show_upgrade_message" <?php checked( 'on', $show_upgrade_message ); ?> />
 		<?php esc_attr_e( 'Always show upgrade message if the nag is triggered on this content.', 'leaky-paywall' ); ?></p>
-			
 
-		<?php 
+
+		<?php
 		wp_nonce_field( 'leaky_paywall_content_visibility_meta_box', 'leaky_paywall_content_visibility_meta_box_nonce' );
 
 	}
