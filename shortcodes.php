@@ -145,429 +145,434 @@ if ( ! function_exists( 'do_leaky_paywall_subscription' ) ) {
 	add_shortcode( 'leaky_paywall_subscription', 'do_leaky_paywall_subscription' );
 }
 
-if ( ! function_exists( 'do_leaky_paywall_profile' ) ) {
 
-	/**
-	 * Shortcode for zeen101's Leaky Paywall
-	 * Prints out the zeen101's Leaky Paywall
-	 *
-	 * @throws Exception Stripe error.
-	 */
-	function do_leaky_paywall_profile() {
-		$settings = get_leaky_paywall_settings();
-		$mode     = leaky_paywall_get_current_mode();
-		$site     = leaky_paywall_get_current_site();
-		$results  = '';
+/**
+ * Shortcode for zeen101's Leaky Paywall
+ * Prints out the zeen101's Leaky Paywall
+ *
+ * @throws Exception Stripe error.
+ */
+function do_leaky_paywall_profile() {
+	$settings = get_leaky_paywall_settings();
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
 
-		if ( is_user_logged_in() ) {
+	ob_start();
 
-			$user = wp_get_current_user();
+	if ( !is_user_logged_in() ) {
+		echo do_leaky_paywall_login(array());
+		$content = ob_get_contents();
+		ob_end_clean();
+		return $content;
+	}
 
-			if ( isset( $_POST['stripeToken'] ) ) {
+	$user = wp_get_current_user();
 
-				$secret_key    = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+	if ( isset( $_POST['stripeToken'] ) ) {
+
+		$secret_key    = ( 'test' === $mode ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
+		$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+		$status        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+		$level_id      = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+		$plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+		$level         = get_leaky_paywall_subscription_level( $level_id );
+
+		$stripe = leaky_paywall_initialize_stripe_api();
+
+		try {
+
+			// update source.
+			$cu      = $stripe->customers->update( $subscriber_id, array( 'source' => sanitize_text_field( wp_unslash( $_POST['stripeToken'] ) ) ) );
+			$sources = $stripe->customers->allSources( $subscriber_id );
+			$card_id = isset( $sources->data[0]->id ) ? $sources->data[0]->id : '';
+
+			if ( $card_id ) {
+				// update customer default source with the card ID.
+				$cu                  = $stripe->customers->update(
+					$subscriber_id,
+					array(
+						'invoice_settings' => array(
+							'default_payment_method' => $card_id,
+						),
+					)
+				);
+				$update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
+				leaky_paywall_log( $user->user_email, 'credit card updated to ' . $card_id );
+			}
+
+			if ( strcasecmp( 'deactivated', $status ) === 0 ) {
+
+				$subs = $stripe->subscriptions->all(
+					array(
+						'customer' => $subscriber_id,
+						'status'   => 'all',
+					)
+				);
+
+				if ( ! empty( $subs->data ) ) {
+
+					foreach ( $subs->data as $sub ) {
+
+						// we are only checking against the subscribers current plan.
+						if ( $plan !== $sub->items->data[0]->plan->id ) {
+							continue;
+						}
+
+						if ( 'active' === $sub->status || 'past_due' === $sub->status || 'trialing' === $sub->status ) {
+							leaky_paywall_log( $user->user_email, 'has a subscription, did not create a new subscription after card update' );
+						} else {
+
+							// only create a new subscription if the subscriber does not have a current subscription.
+							// such as expired or canceled.
+							$new_sub = $stripe->subscriptions->create(
+								array(
+									'customer' => $cu->id,
+									'items'    => array( array( 'plan' => $plan ) ),
+								)
+							);
+
+							leaky_paywall_log( $user->user_email, 'created new subscription after card update' );
+						}
+					}
+				}
+
+				/* Translators: %s - site name */
+				$update_card_success .= sprintf( __( 'Your subscription has been restarted! Please <a href="%s">click here</a> to see your updated account status.', 'leaky-paywall' ), get_the_permalink( get_the_ID() ) );
+
+			}
+		} catch ( \Stripe\Exception\ApiErrorException $e ) {
+
+			$body              = $e->getJsonBody();
+			$err               = $body['error'];
+			$update_card_error = $err['message'];
+		} catch ( \Stripe\Exception\ApiErrorException $e ) {
+			$body              = $e->getJsonBody();
+			$err               = $body['error'];
+			$update_card_error = $err['message'];
+		}
+	}
+
+	/* Translators: %1$s - user login, %2$s - logout url */
+	echo '<p class="leaky-paywall-logout-link">' . sprintf( __( 'Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall' ) . '</p>', $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
+
+	echo '<h2 class="leaky-paywall-profile-subscription-title">' . __( 'Your Subscription', 'leaky-paywall' ) . '</h2>';
+
+//	apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
+
+	do_action('leaky_paywall_profile_your_subscription_start');
+
+	echo '<table class="leaky-paywall-profile-subscription-details">';
+	echo '<thead>';
+	echo '<tr>';
+	echo '	<th>' . __( 'Have Access', 'leaky-paywall' ) . '</th>';
+	echo '	<th>' . __( 'Status', 'leaky-paywall' ) . '</th>';
+	echo '	<th>' . __( 'Type', 'leaky-paywall' ) . '</th>';
+	echo '	<th>' . __( 'Payment Method', 'leaky-paywall' ) . '</th>';
+	echo '	<th>' . __( 'Expiration', 'leaky-paywall' ) . '</th>';
+	echo '</tr>';
+	echo '</thead>';
+
+	$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+
+	if ( leaky_paywall_user_has_access() ) {
+		$has_access = __( 'Yes', 'leaky-paywall' );
+	} else {
+		$has_access = __( 'No', 'leaky-paywall' );
+	}
+
+	$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+	$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
+	$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
+	if ( false === $level_id || empty( $settings['levels'][ $level_id ]['label'] ) ) {
+		$level_name = __( 'Undefined', 'leaky-paywall' );
+	} else {
+		$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
+	}
+
+	$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+
+	$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+	$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
+	if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
+		$expires = __( 'Never', 'leaky-paywall' );
+	} else {
+		$date_format = 'F j, Y';
+		$expires     = mysql2date( $date_format, $expires );
+	}
+
+	$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+	if ( ! empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
+
+		if ( 'canceled' === $status ) {
+			/* Translators: %s - expiration date */
+			$expires = sprintf( __( 'Ends on %s', 'leaky-paywall' ), $expires );
+		} else {
+			/* Translators: %s - recurrs on date */
+			$expires = sprintf( __( 'Recurs on %s', 'leaky-paywall' ), $expires );
+		}
+	}
+
+	$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+	$cancel     = '';
+
+	if ( empty( $expires ) || '0000-00-00 00:00:00' === $expiration ) {
+		$cancel = '';
+	} elseif ( strcasecmp( 'active', $status ) === 0 && $plan && 'Canceled' !== $plan ) {
+		$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+		$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+
+		if ( 'free_registration' === $payment_gateway ) {
+			$cancel = '';
+		} else {
+			/* Translators: %s - cancel url */
+			$cancel = sprintf( __( '<a href="%s">Cancel your subscription</a>', 'leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
+		}
+	} elseif ( ! empty( $plan ) && 'Canceled' === $plan ) {
+		/* Translators: %s - subscription url */
+		$cancel .= '<p>' . sprintf( __( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
+	}
+
+	if ( 'stripe' === $payment_gateway ) {
+		$profile_payment = __( 'Credit Card', 'leaky-paywall' );
+	} else {
+		$profile_payment = leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway );
+	}
+
+	if ( strcasecmp( 'active', $status ) === 0 && ! leaky_paywall_user_has_access() ) {
+		$status_name = __( 'Expired', 'leaky-paywall' );
+	} else {
+		$status_name = ucfirst( $status );
+
+		if ( 'Active' === $status_name ) {
+			$status_name = __( 'Active', 'leaky-paywall' );
+		}
+	}
+
+	if ( ! empty( $status ) && ! empty( $level_name ) && ! empty( $payment_gateway ) && ! empty( $expires ) ) {
+		echo '<tbody>';
+		echo ' <td>' . $has_access . '</td>';
+		echo '	<td>' . $status_name . '</td>';
+		echo '	<td>' . $level_name . '</td>';
+		echo '	<td>' . $profile_payment . '</td>';
+		echo '	<td>' . $expires . '</td>';
+		echo '</tbody>';
+	}
+
+	echo '</table>';
+
+	// $results .= apply_filters( 'leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings );
+
+	do_action( 'leaky_paywall_profile_your_subscription_end' );
+
+	echo '<div class="issuem-leaky-paywall-subscriber-info">';
+
+	do_action( 'leaky_paywall_profile_your_payment_info_start' );
+	do_action( 'leaky_paywall_subscriber_info_paid_subscriber_start' );
+
+	$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+	$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+	$status          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+	$expires         = leaky_paywall_has_user_paid( $user->user_email, $site );
+
+	if ( strcasecmp( 'active', $status ) === 0 || strcasecmp( 'deactivated', $status ) === 0 ) {
+		$payment_form = '';
+		switch ( $payment_gateway ) {
+
+			case 'stripe':
+				if ( isset( $update_card_error ) ) {
+					echo '<div class="leaky_paywall_message error"><p>' . $update_card_error . '</p></div>';
+				} elseif ( isset( $update_card_success ) ) {
+					echo '<div class="leaky_paywall_message success"><p>' . $update_card_success . '</p></div>';
+				}
+
+				$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
+
 				$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-				$status        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-				$level_id      = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-				$plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-				$level         = get_leaky_paywall_subscription_level( $level_id );
 
 				$stripe = leaky_paywall_initialize_stripe_api();
 
 				try {
-
-					// update source.
-					$cu      = $stripe->customers->update( $subscriber_id, array( 'source' => sanitize_text_field( wp_unslash( $_POST['stripeToken'] ) ) ) );
-					$sources = $stripe->customers->allSources( $subscriber_id );
-					$card_id = isset( $sources->data[0]->id ) ? $sources->data[0]->id : '';
-
-					if ( $card_id ) {
-						// update customer default source with the card ID.
-						$cu                  = $stripe->customers->update(
-							$subscriber_id,
-							array(
-								'invoice_settings' => array(
-									'default_payment_method' => $card_id,
-								),
-							)
-						);
-						$update_card_success = __( 'Your card details have been updated!', 'leaky-paywall' );
-						leaky_paywall_log( $user->user_email, 'credit card updated to ' . $card_id );
-					}
-
-					if ( strcasecmp( 'deactivated', $status ) === 0 ) {
-
-						$subs = $stripe->subscriptions->all(
-							array(
-								'customer' => $subscriber_id,
-								'status'   => 'all',
-							)
-						);
-
-						if ( ! empty( $subs->data ) ) {
-
-							foreach ( $subs->data as $sub ) {
-
-								// we are only checking against the subscribers current plan.
-								if ( $plan !== $sub->items->data[0]->plan->id ) {
-									continue;
-								}
-
-								if ( 'active' === $sub->status || 'past_due' === $sub->status || 'trialing' === $sub->status ) {
-									leaky_paywall_log( $user->user_email, 'has a subscription, did not create a new subscription after card update' );
-								} else {
-
-									// only create a new subscription if the subscriber does not have a current subscription.
-									// such as expired or canceled.
-									$new_sub = $stripe->subscriptions->create(
-										array(
-											'customer' => $cu->id,
-											'items'    => array( array( 'plan' => $plan ) ),
-										)
-									);
-
-									leaky_paywall_log( $user->user_email, 'created new subscription after card update' );
-								}
-							}
-						}
-
-						/* Translators: %s - site name */
-						$update_card_success .= sprintf( __( 'Your subscription has been restarted! Please <a href="%s">click here</a> to see your updated account status.', 'leaky-paywall' ), get_the_permalink( get_the_ID() ) );
-
-					}
-				} catch ( \Stripe\Exception\ApiErrorException $e ) {
-
-					$body              = $e->getJsonBody();
-					$err               = $body['error'];
-					$update_card_error = $err['message'];
-				} catch ( \Stripe\Exception\ApiErrorException $e ) {
-					$body              = $e->getJsonBody();
-					$err               = $body['error'];
-					$update_card_error = $err['message'];
+					$cu = $stripe->customers->retrieve( $subscriber_id );
+				} catch (\Throwable $th) {
+					//
 				}
-			}
 
-			/* Translators: %1$s - user login, %2$s - logout url */
-			$results .= '<p class="leaky-paywall-logout-link">' . sprintf( __( 'Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall' ) . '</p>', $user->user_login, wp_logout_url( get_page_link( $settings['page_for_login'] ) ) );
+				if ( isset( $cu->default_source->brand ) ) {
+					$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
+				}
 
-			$results .= '<h2 class="leaky-paywall-profile-subscription-title">' . __( 'Your Subscription', 'leaky-paywall' ) . '</h2>';
-
-			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
-
-			$profile_table  = '<table class="leaky-paywall-profile-subscription-details">';
-			$profile_table .= '<thead>';
-			$profile_table .= '<tr>';
-			$profile_table .= '	<th>' . __( 'Have Access', 'leaky-paywall' ) . '</th>';
-			$profile_table .= '	<th>' . __( 'Status', 'leaky-paywall' ) . '</th>';
-			$profile_table .= '	<th>' . __( 'Type', 'leaky-paywall' ) . '</th>';
-			$profile_table .= '	<th>' . __( 'Payment Method', 'leaky-paywall' ) . '</th>';
-			$profile_table .= '	<th>' . __( 'Expiration', 'leaky-paywall' ) . '</th>';
-			$profile_table .= '</tr>';
-			$profile_table .= '</thead>';
-
-			$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-
-			if ( leaky_paywall_user_has_access() ) {
-				$has_access = __( 'Yes', 'leaky-paywall' );
-			} else {
-				$has_access = __( 'No', 'leaky-paywall' );
-			}
-
-			$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-			$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
-			$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
-			if ( false === $level_id || empty( $settings['levels'][ $level_id ]['label'] ) ) {
-				$level_name = __( 'Undefined', 'leaky-paywall' );
-			} else {
-				$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
-			}
-
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-
-			$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-			$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
-			if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires ) {
-				$expires = __( 'Never', 'leaky-paywall' );
-			} else {
-				$date_format = 'F j, Y';
-				$expires     = mysql2date( $date_format, $expires );
-			}
-
-			$plan = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
-			if ( ! empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
-
-				if ( 'canceled' === $status ) {
-					/* Translators: %s - expiration date */
-					$expires = sprintf( __( 'Ends on %s', 'leaky-paywall' ), $expires );
+				if ( strcasecmp( 'deactivated', $status ) === 0 ) {
+					$data_label = __( 'Update Credit Card Details & Restart Subscription', 'leaky-paywall' );
 				} else {
-					/* Translators: %s - recurrs on date */
-					$expires = sprintf( __( 'Recurs on %s', 'leaky-paywall' ), $expires );
-				}
-			}
-
-			$paid       = leaky_paywall_has_user_paid( $user->user_email, $site );
-			$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-			$cancel     = '';
-
-			if ( empty( $expires ) || '0000-00-00 00:00:00' === $expiration ) {
-				$cancel = '';
-			} elseif ( strcasecmp( 'active', $status ) === 0 && $plan && 'Canceled' !== $plan ) {
-				$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-				$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-
-				if ( 'free_registration' === $payment_gateway ) {
-					$cancel = '';
-				} else {
-					/* Translators: %s - cancel url */
-					$cancel = sprintf( __( '<a href="%s">Cancel your subscription</a>', 'leaky-paywall' ), '?cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id );
-				}
-			} elseif ( ! empty( $plan ) && 'Canceled' === $plan ) {
-				/* Translators: %s - subscription url */
-				$cancel .= '<p>' . sprintf( __( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
-			}
-
-			if ( 'stripe' === $payment_gateway ) {
-				$profile_payment = __( 'Credit Card', 'leaky-paywall' );
-			} else {
-				$profile_payment = leaky_paywall_translate_payment_gateway_slug_to_name( $payment_gateway );
-			}
-
-			if ( strcasecmp( 'active', $status ) === 0 && ! leaky_paywall_user_has_access() ) {
-				$status_name = __( 'Expired', 'leaky-paywall' );
-			} else {
-				$status_name = ucfirst( $status );
-
-				if ( 'Active' === $status_name ) {
-					$status_name = __( 'Active', 'leaky-paywall' );
-				}
-			}
-
-			if ( ! empty( $status ) && ! empty( $level_name ) && ! empty( $payment_gateway ) && ! empty( $expires ) ) {
-				$profile_table .= '<tbody>';
-				$profile_table .= ' <td>' . $has_access . '</td>';
-				$profile_table .= '	<td>' . $status_name . '</td>';
-				$profile_table .= '	<td>' . $level_name . '</td>';
-				$profile_table .= '	<td>' . $profile_payment . '</td>';
-				$profile_table .= '	<td>' . $expires . '</td>';
-				$profile_table .= '</tbody>';
-			}
-
-			$profile_table .= '</table>';
-
-			if ( $cancel ) {
-				$profile_table .= '<p class="leaky-paywall-cancel-link">' . apply_filters( 'leaky_paywall_cancel_link', $cancel ) . '</p>';
-			}
-
-			$results .= apply_filters( 'leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings );
-			$results .= apply_filters( 'leaky_paywall_profile_your_subscription_end', '' );
-
-			$results .= '<div class="issuem-leaky-paywall-subscriber-info">';
-
-			$results .= apply_filters( 'leaky_paywall_profile_your_payment_info_start', '' );
-			$results .= apply_filters( 'leaky_paywall_subscriber_info_paid_subscriber_start', '' );
-
-			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
-			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-			$status          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-			$expires         = leaky_paywall_has_user_paid( $user->user_email, $site );
-
-			if ( strcasecmp( 'active', $status ) === 0 || strcasecmp( 'deactivated', $status ) === 0 ) {
-				$payment_form = '';
-				switch ( $payment_gateway ) {
-
-					case 'stripe':
-						if ( isset( $update_card_error ) ) {
-							$results .= '<div class="leaky_paywall_message error"><p>' . $update_card_error . '</p></div>';
-						} elseif ( isset( $update_card_success ) ) {
-							$results .= '<div class="leaky_paywall_message success"><p>' . $update_card_success . '</p></div>';
-						}
-
-						$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
-
-						$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
-
-						$stripe = leaky_paywall_initialize_stripe_api();
-
-						try {
-							$cu = $stripe->customers->retrieve( $subscriber_id );
-						} catch (\Throwable $th) {
-							//
-						}
-
-						if ( isset( $cu->default_source->brand ) ) {
-							$payment_form .= '<p><strong>Method</strong><br>' . $cu->default_source->brand . ' ending in ' . $cu->default_source->last4 . ' that expires ' . $cu->default_source->exp_month . '/' . $cu->default_source->exp_year . '</p>';
-						}
-
-						if ( strcasecmp( 'deactivated', $status ) === 0 ) {
-							$data_label = __( 'Update Credit Card Details & Restart Subscription', 'leaky-paywall' );
-						} else {
-							$data_label = __( 'Update Credit Card Details', 'leaky-paywall' );
-						}
-
-						$payment_form .= '<form action="" method="POST">
-									<script
-									src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-									data-key="' . $publishable_key . '"
-									data-name="' . get_bloginfo( 'name' ) . '"
-									data-panel-label="' . $data_label . '"
-									data-label="' . $data_label . '"
-									data-allow-remember-me=false
-									data-email="' . $user->user_email . '"
-									data-locale="auto">
-									</script>
-									</form>';
-
-						break;
-
-					case 'paypal-standard':
-					case 'paypal_standard':
-						$paypal_url    = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
-						$paypal_email  = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
-						$payment_form .= '<p>' . __( "You can update your payment details through PayPal's website.", 'leaky-paywall' ) . '</p>';
-						$payment_form .= '<p><a href="' . $paypal_url . '"><img src="' . LEAKY_PAYWALL_URL . 'images/btn_pponly_142x27.png" border="0"></a></p>';
-						break;
+					$data_label = __( 'Update Credit Card Details', 'leaky-paywall' );
 				}
 
-				if ( $payment_form ) {
-					$results .= '<hr>';
-					$results .= '<h2 class="leaky-paywall-your-payment-information-header">' . __( 'Your Payment Information', 'leaky-paywall' ) . '</h2>';
+				$payment_form .= '<form action="" method="POST">
+							<script
+							src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+							data-key="' . $publishable_key . '"
+							data-name="' . get_bloginfo( 'name' ) . '"
+							data-panel-label="' . $data_label . '"
+							data-label="' . $data_label . '"
+							data-allow-remember-me=false
+							data-email="' . $user->user_email . '"
+							data-locale="auto">
+							</script>
+							</form>';
 
-					if ( 'on' == $settings['stripe_customer_portal'] ) {
-						$results .= '<form method="POST" action="">
-						<button type="submit">Manage billing</button>';
-						$results .= wp_nonce_field( 'stripe_customer_portal_submit', 'stripe_customer_portal_field' );
-						$results .= '</form>';
-					} else {
-						$results .= $payment_form;
-					}
+				break;
 
-				}
-			} else if ( ! empty( $plan ) && 'Canceled' === $plan ) {
-				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Subscription Has Been Canceled', 'leaky-paywall' ) . '</h2>';
-			} else if (leaky_paywall_user_can_bypass_paywall_by_role($user) ) {
-				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __('Your user role can see all content.', 'leaky-paywall') . '</h2>';
-			} else if ( 'trial' === $status ) {
-				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __('You are currently in a trial.', 'leaky-paywall') . '</h2>';
-			} else {
-				$results .= '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Account is Not Currently Active', 'leaky-paywall' ) . '</h2>';
-				/* Translators: %s - page for subscription */
-				$results .= '<p>' . sprintf( __( 'To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
-
-			}
-
-			$results .= '</div>';
-			$results .= apply_filters( 'leaky_paywall_profile_your_payment_info_end', '' );
-
-			$results .= '<hr>';
-
-			$results .= apply_filters( 'leaky_paywall_profile_your_profile_start', '' );
-
-			$results .= '<h2 class="leaky-paywall-your-profile-header">' . __( 'Your Profile', 'leaky-paywall' ) . '</h2>';
-
-			if ( ! empty( $_POST['leaky-paywall-profile-nonce'] ) ) {
-
-				if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky-paywall-profile-nonce'] ) ), 'leaky-paywall-profile' ) ) {
-
-					try {
-						$userdata = get_userdata( $user->ID );
-						$args     = array(
-							'ID'           => $user->ID,
-							'user_login'   => $userdata->user_login,
-							'display_name' => $userdata->display_name,
-							'user_email'   => $userdata->user_email,
-						);
-
-						if ( ! empty( $_POST['username'] ) ) {
-							$args['user_login'] = sanitize_text_field( wp_unslash( $_POST['username'] ) );
-						}
-
-						if ( ! empty( $_POST['displayname'] ) ) {
-							$args['display_name'] = sanitize_text_field( wp_unslash( $_POST['displayname'] ) );
-						}
-
-						if ( ! empty( $_POST['email'] ) ) {
-							if ( is_email( wp_unslash( $_POST['email'] ) ) ) {
-								$args['user_email'] = sanitize_email( wp_unslash( $_POST['email'] ) );
-							} else {
-								throw new Exception( __( 'Invalid email address.', 'leaky-paywall' ) );
-							}
-						}
-
-						if ( ! empty( $_POST['password1'] ) && ! empty( $_POST['password2'] ) ) {
-							if ( $_POST['password1'] === $_POST['password2'] ) {
-								wp_set_password( sanitize_text_field( wp_unslash( ( $_POST['password1'] ) ) ), $user->ID );
-							} else {
-								throw new Exception( __( 'Passwords do not match.', 'leaky-paywall' ) );
-							}
-						}
-
-						$user_id = wp_update_user( $args );
-
-						if ( is_wp_error( $user_id ) ) {
-							throw new Exception( $user_id->get_error_message() );
-						} else {
-							$user     = get_userdata( $user_id ); // Refresh the user object.
-							$results .= '<div class="leaky_paywall_message success"><p>' . __( 'Profile Changes Saved.', 'leaky-paywall' ) . '</p></div>';
-
-							do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args, $userdata );
-						}
-					} catch ( Exception $e ) {
-						$results .= '<div class="leaky_paywall_message error"><p class="error">' . $e->getMessage() . '</p></div>';
-					}
-				}
-			}
-
-			$results .= '<form id="leaky-paywall-profile" action="" method="post">';
-
-			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-username">' . __( 'Username', 'leaky-paywall' ) . '</label>';
-			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . $user->user_login . '" disabled="disabled" readonly="readonly" />';
-			$results .= '</p>';
-
-			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-display-name">' . __( 'Display Name', 'leaky-paywall' ) . '</label>';
-			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-display-name" name="displayname" value="' . $user->display_name . '" />';
-			$results .= '</p>';
-
-			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-email">' . __( 'Email', 'leaky-paywall' ) . '</label>';
-			$results .= '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-email" name="email" value="' . $user->user_email . '" />';
-			$results .= '</p>';
-
-			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'New Password', 'leaky-paywall' ) . '</label>';
-			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-password1" name="password1" value="" />';
-			$results .= '</p>';
-
-			$results .= '<p>';
-			$results .= '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'New Password (again)', 'leaky-paywall' ) . '</label>';
-			$results .= '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-gift-subscription-password2" name="password2" value="" />';
-			$results .= '</p>';
-
-			$results .= apply_filters( 'leaky_paywall_profile_your_profile_before_submit', '' );
-
-			$results .= wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true, false );
-
-			$results .= '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Save Profile Changes', 'leaky-paywall' ) . '"  /></p>';
-			$results .= '</form>';
-
-			if ( 'on' === $settings['enable_user_delete_account'] ) {
-				$results .= '<form id="leaky-paywall-delete-account" action="" method="post">';
-				$results .= '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">' . __( 'Delete Account', 'leaky-paywall' ) . '</button></p>';
-				$results .= wp_nonce_field( 'leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true, false );
-				$results .= '</form>';
-			}
-
-			$results .= apply_filters( 'leaky_paywall_profile_your_profile_end', '' );
-		} else {
-
-			$results .= do_leaky_paywall_login( array() );
+			case 'paypal-standard':
+			case 'paypal_standard':
+				$paypal_url    = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
+				$paypal_email  = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+				$payment_form .= '<p>' . __( "You can update your payment details through PayPal's website.", 'leaky-paywall' ) . '</p>';
+				$payment_form .= '<p><a href="' . $paypal_url . '"><img src="' . LEAKY_PAYWALL_URL . 'images/btn_pponly_142x27.png" border="0"></a></p>';
+				break;
 		}
 
-		return $results;
+		if ( $payment_form ) {
+			echo '<hr>';
+			echo '<h2 class="leaky-paywall-your-payment-information-header">' . __( 'Your Payment Information', 'leaky-paywall' ) . '</h2>';
+
+			if ( 'on' == $settings['stripe_customer_portal'] ) {
+				echo '<form method="POST" action="">
+				<button type="submit">Manage billing</button>';
+				echo wp_nonce_field( 'stripe_customer_portal_submit', 'stripe_customer_portal_field' );
+				echo '</form>';
+			} else {
+				echo $payment_form;
+			}
+
+		}
+	} else if ( ! empty( $plan ) && 'Canceled' === $plan ) {
+		echo '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Subscription Has Been Canceled', 'leaky-paywall' ) . '</h2>';
+	} else if (leaky_paywall_user_can_bypass_paywall_by_role($user) ) {
+		echo '<h2 class="leaky-paywall-subscription-status-header">' . __('Your user role can see all content.', 'leaky-paywall') . '</h2>';
+	} else if ( 'trial' === $status ) {
+		echo '<h2 class="leaky-paywall-subscription-status-header">' . __('You are currently in a trial.', 'leaky-paywall') . '</h2>';
+	} else {
+		echo '<h2 class="leaky-paywall-subscription-status-header">' . __( 'Your Account is Not Currently Active', 'leaky-paywall' ) . '</h2>';
+		/* Translators: %s - page for subscription */
+		echo '<p>' . sprintf( __( 'To reactivate your account, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) ) . '</p>';
+
 	}
-	add_shortcode( 'leaky_paywall_profile', 'do_leaky_paywall_profile' );
+
+	echo '</div>';
+
+	do_action( 'leaky_paywall_profile_your_payment_info_end' );
+
+	echo '<hr>';
+
+	do_action( 'leaky_paywall_profile_your_profile_start' );
+
+	echo '<h2 class="leaky-paywall-your-profile-header">' . __( 'Your Profile', 'leaky-paywall' ) . '</h2>';
+
+	if ( ! empty( $_POST['leaky-paywall-profile-nonce'] ) ) {
+
+		if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky-paywall-profile-nonce'] ) ), 'leaky-paywall-profile' ) ) {
+
+			try {
+				$userdata = get_userdata( $user->ID );
+				$args     = array(
+					'ID'           => $user->ID,
+					'user_login'   => $userdata->user_login,
+					'display_name' => $userdata->display_name,
+					'user_email'   => $userdata->user_email,
+				);
+
+				if ( ! empty( $_POST['username'] ) ) {
+					$args['user_login'] = sanitize_text_field( wp_unslash( $_POST['username'] ) );
+				}
+
+				if ( ! empty( $_POST['displayname'] ) ) {
+					$args['display_name'] = sanitize_text_field( wp_unslash( $_POST['displayname'] ) );
+				}
+
+				if ( ! empty( $_POST['email'] ) ) {
+					if ( is_email( wp_unslash( $_POST['email'] ) ) ) {
+						$args['user_email'] = sanitize_email( wp_unslash( $_POST['email'] ) );
+					} else {
+						throw new Exception( __( 'Invalid email address.', 'leaky-paywall' ) );
+					}
+				}
+
+				if ( ! empty( $_POST['password1'] ) && ! empty( $_POST['password2'] ) ) {
+					if ( $_POST['password1'] === $_POST['password2'] ) {
+						wp_set_password( sanitize_text_field( wp_unslash( ( $_POST['password1'] ) ) ), $user->ID );
+					} else {
+						throw new Exception( __( 'Passwords do not match.', 'leaky-paywall' ) );
+					}
+				}
+
+				$user_id = wp_update_user( $args );
+
+				if ( is_wp_error( $user_id ) ) {
+					throw new Exception( $user_id->get_error_message() );
+				} else {
+					$user     = get_userdata( $user_id ); // Refresh the user object.
+					echo '<div class="leaky_paywall_message success"><p>' . __( 'Profile Changes Saved.', 'leaky-paywall' ) . '</p></div>';
+
+					do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args, $userdata );
+				}
+			} catch ( Exception $e ) {
+				echo '<div class="leaky_paywall_message error"><p class="error">' . $e->getMessage() . '</p></div>';
+			}
+		}
+	}
+
+	echo '<form id="leaky-paywall-profile" action="" method="post">';
+
+	echo '<p>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-username">' . __( 'Username', 'leaky-paywall' ) . '</label>';
+	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . $user->user_login . '" disabled="disabled" readonly="readonly" />';
+	echo '</p>';
+
+	echo '<p>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-display-name">' . __( 'Display Name', 'leaky-paywall' ) . '</label>';
+	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-display-name" name="displayname" value="' . $user->display_name . '" />';
+	echo '</p>';
+
+	echo '<p>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-email">' . __( 'Email', 'leaky-paywall' ) . '</label>';
+	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-email" name="email" value="' . $user->user_email . '" />';
+	echo '</p>';
+
+	echo '<p>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'New Password', 'leaky-paywall' ) . '</label>';
+	echo '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-password1" name="password1" value="" />';
+	echo '</p>';
+
+	echo '<p>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'New Password (again)', 'leaky-paywall' ) . '</label>';
+	echo '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-gift-subscription-password2" name="password2" value="" />';
+	echo '</p>';
+
+	do_action( 'leaky_paywall_profile_your_profile_before_submit' );
+
+	echo wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true, false );
+
+	echo '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Save Profile Changes', 'leaky-paywall' ) . '"  /></p>';
+	echo '</form>';
+
+	if ( 'on' === $settings['enable_user_delete_account'] ) {
+		echo '<form id="leaky-paywall-delete-account" action="" method="post">';
+		echo '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">' . __( 'Delete Account', 'leaky-paywall' ) . '</button></p>';
+		echo wp_nonce_field( 'leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true, false );
+		echo '</form>';
+	}
+
+	do_action( 'leaky_paywall_profile_your_profile_end' );
+
+//	return $results;
+
+	$content = ob_get_contents();
+	ob_end_clean();
+
+	return $content;
 }
+add_shortcode( 'leaky_paywall_profile', 'do_leaky_paywall_profile' );
+
 
 /**
  * Outputs the default Leaky Paywall register form
