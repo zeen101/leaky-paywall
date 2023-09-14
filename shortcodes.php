@@ -257,8 +257,6 @@ function do_leaky_paywall_profile() {
 
 	echo '<h2 class="leaky-paywall-profile-subscription-title">' . __( 'Your Subscription', 'leaky-paywall' ) . '</h2>';
 
-//	apply_filters( 'leaky_paywall_profile_your_subscription_start', '' );
-
 	do_action('leaky_paywall_profile_your_subscription_start');
 
 	echo '<table class="leaky-paywall-profile-subscription-details">';
@@ -563,8 +561,6 @@ function do_leaky_paywall_profile() {
 	}
 
 	do_action( 'leaky_paywall_profile_your_profile_end' );
-
-//	return $results;
 
 	$content = ob_get_contents();
 	ob_end_clean();
