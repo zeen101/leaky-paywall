@@ -478,7 +478,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		));
 
 		if ('off' == $settings['stripe_restrict_assets'] || in_array(get_the_ID(), $load_on)) {
-			wp_enqueue_script('stripe', 'https://js.stripe.com/v3/', array('jquery'), LEAKY_PAYWALL_VERSION, true);
+			wp_enqueue_script('stripe', 'https://js.stripe.com/v3/', array('jquery'), LEAKY_PAYWALL_VERSION, false);
 		}
 	}
 }
