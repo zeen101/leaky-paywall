@@ -160,7 +160,7 @@ function do_leaky_paywall_profile() {
 	ob_start();
 
 	if ( !is_user_logged_in() ) {
-		echo do_leaky_paywall_login(array());
+		echo esc_html( do_leaky_paywall_login(array()) );
 		$content = ob_get_contents();
 		ob_end_clean();
 		return $content;
@@ -244,9 +244,9 @@ function do_leaky_paywall_profile() {
 	}
 
 	/* Translators: %1$s - user login, %2$s - logout url */
-	echo '<p class="leaky-paywall-logout-link">' . sprintf(__('Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall') . '</p>', $user->user_login, wp_logout_url(get_page_link($settings['page_for_login'])));
+	echo '<p class="leaky-paywall-logout-link">' . sprintf(__('Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall') . '</p>', esc_html( $user->user_login ), esc_url( wp_logout_url(get_page_link($settings['page_for_login']))) );
 
-	echo '<h2 class="leaky-paywall-profile-subscription-title">' . __('Your Subscription', 'leaky-paywall') . '</h2>';
+	echo '<h2 class="leaky-paywall-profile-subscription-title">' . esc_html__('Your Subscription', 'leaky-paywall') . '</h2>';
 
 	do_action('leaky_paywall_profile_your_subscription_start');
 
@@ -273,7 +273,7 @@ function do_leaky_paywall_profile() {
 
 	$profile_table .= '</table>';
 
-	echo apply_filters( 'leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings );
+	echo wp_kses_post( apply_filters( 'leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings ) );
 
 	do_action( 'leaky_paywall_profile_your_subscription_end' );
 
@@ -290,7 +290,7 @@ function do_leaky_paywall_profile() {
 
 	do_action( 'leaky_paywall_profile_your_profile_start' );
 
-	echo '<h2 class="leaky-paywall-your-profile-header">' . __( 'Your Profile', 'leaky-paywall' ) . '</h2>';
+	echo '<h2 class="leaky-paywall-your-profile-header">' . esc_html__( 'Your Profile', 'leaky-paywall' ) . '</h2>';
 
 	if ( ! empty( $_POST['leaky-paywall-profile-nonce'] ) ) {
 
@@ -335,12 +335,12 @@ function do_leaky_paywall_profile() {
 					throw new Exception( $user_id->get_error_message() );
 				} else {
 					$user     = get_userdata( $user_id ); // Refresh the user object.
-					echo '<div class="leaky_paywall_message success"><p>' . __( 'Profile Changes Saved.', 'leaky-paywall' ) . '</p></div>';
+					echo '<div class="leaky_paywall_message success"><p>' . esc_html__( 'Profile Changes Saved.', 'leaky-paywall' ) . '</p></div>';
 
 					do_action( 'leaky_paywall_after_profile_changes_saved', $user_id, $args, $userdata );
 				}
 			} catch ( Exception $e ) {
-				echo '<div class="leaky_paywall_message error"><p class="error">' . $e->getMessage() . '</p></div>';
+				echo '<div class="leaky_paywall_message error"><p class="error">' . esc_html( $e->getMessage() ) . '</p></div>';
 			}
 		}
 	}
@@ -348,41 +348,41 @@ function do_leaky_paywall_profile() {
 	echo '<form id="leaky-paywall-profile" action="" method="post">';
 
 	echo '<p>';
-	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-username">' . __( 'Username', 'leaky-paywall' ) . '</label>';
-	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . $user->user_login . '" disabled="disabled" readonly="readonly" />';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-username">' . esc_html__( 'Username', 'leaky-paywall' ) . '</label>';
+	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-username" name="username" value="' . esc_attr( $user->user_login ) . '" disabled="disabled" readonly="readonly" />';
 	echo '</p>';
 
 	echo '<p>';
-	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-display-name">' . __( 'Display Name', 'leaky-paywall' ) . '</label>';
-	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-display-name" name="displayname" value="' . $user->display_name . '" />';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-display-name">' . esc_html__( 'Display Name', 'leaky-paywall' ) . '</label>';
+	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-display-name" name="displayname" value="' . esc_attr( $user->display_name ) . '" />';
 	echo '</p>';
 
 	echo '<p>';
-	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-email">' . __( 'Email', 'leaky-paywall' ) . '</label>';
-	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-email" name="email" value="' . $user->user_email . '" />';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-email">' . esc_html__( 'Email', 'leaky-paywall' ) . '</label>';
+	echo '<input type="text" class="issuem-leaky-paywall-field-input" id="leaky-paywall-email" name="email" value="' . esc_attr( $user->user_email ) . '" />';
 	echo '</p>';
 
 	echo '<p>';
-	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . __( 'New Password', 'leaky-paywall' ) . '</label>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-password1">' . esc_html__( 'New Password', 'leaky-paywall' ) . '</label>';
 	echo '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-password1" name="password1" value="" />';
 	echo '</p>';
 
 	echo '<p>';
-	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . __( 'New Password (again)', 'leaky-paywall' ) . '</label>';
+	echo '<label class="leaky-paywall-field-label" for="leaky-paywall-gift-subscription-password2">' . esc_html__( 'New Password (again)', 'leaky-paywall' ) . '</label>';
 	echo '<input type="password" class="issuem-leaky-paywall-field-input" id="leaky-paywall-gift-subscription-password2" name="password2" value="" />';
 	echo '</p>';
 
 	do_action( 'leaky_paywall_profile_your_profile_before_submit' );
 
-	echo wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true, false );
+	wp_nonce_field( 'leaky-paywall-profile', 'leaky-paywall-profile-nonce', true );
 
-	echo '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . __( 'Save Profile Changes', 'leaky-paywall' ) . '"  /></p>';
+	echo '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . esc_attr__( 'Save Profile Changes', 'leaky-paywall' ) . '"  /></p>';
 	echo '</form>';
 
 	if ( 'on' === $settings['enable_user_delete_account'] ) {
 		echo '<form id="leaky-paywall-delete-account" action="" method="post">';
-		echo '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">' . __( 'Delete Account', 'leaky-paywall' ) . '</button></p>';
-		echo wp_nonce_field( 'leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true, false );
+		echo '<p><button type="submit" onclick="return confirm(\'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?\')">' . esc_html__( 'Delete Account', 'leaky-paywall' ) . '</button></p>';
+		wp_nonce_field( 'leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true );
 		echo '</form>';
 	}
 
