@@ -45,14 +45,16 @@ if ( ! function_exists( 'do_leaky_paywall_login' ) ) {
 		$results .= '<div id="leaky-paywall-login-form">';
 
 		if ( isset( $_GET['login'] ) && 'failed' === $_GET['login'] ) {
-			$results .= '<div class="leaky_paywall_message error"><p>' . __( 'Incorrect username or password.', 'leaky-paywall' ) . '</p></div>';
+			$results .= '<div class="leaky_paywall_message error"><p>' . esc_html__( 'Incorrect username or password.', 'leaky-paywall' ) . '</p></div>';
 		}
 
 		add_action( 'login_form_bottom', 'leaky_paywall_add_lost_password_link' );
+
 		$args     = array(
 			'echo'     => false,
 			'redirect' => $page_link,
 		);
+
 		$results .= wp_login_form( apply_filters( 'leaky_paywall_login_form_args', $args ) );
 
 		$results .= '</div>';
@@ -160,7 +162,7 @@ function do_leaky_paywall_profile() {
 	ob_start();
 
 	if ( !is_user_logged_in() ) {
-		echo esc_html( do_leaky_paywall_login(array()) );
+		echo do_leaky_paywall_login(array());
 		$content = ob_get_contents();
 		ob_end_clean();
 		return $content;
