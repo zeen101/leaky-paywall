@@ -12,7 +12,7 @@ if ( ! function_exists( 'leaky_paywall_general_metaboxes' ) ) {
 	 */
 	function leaky_paywall_general_metaboxes() {
 
-		$hidden_post_types = apply_filters( 'leaky_paywall_hidden_post_types_metaboxes', array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'lp-coupons', 'ad_dropper', 'lp_group_account', 'lp_ip_exception', 'lp-subscribe-message', 'lp_sub_popup' ) );
+		$hidden_post_types = apply_filters( 'leaky_paywall_hidden_post_types_metaboxes', array( 'attachment', 'revision', 'nav_menu_item', 'lp_transaction', 'lp-coupons', 'ad_dropper', 'lp_group_account', 'lp_ip_exception', 'lp-subscribe-message', 'lp_sub_popup', 'acf-field-group' ) );
 		$post_types        = get_post_types( array(), 'objects' );
 
 		foreach ( $post_types as $post_type ) {

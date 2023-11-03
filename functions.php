@@ -68,7 +68,7 @@ if (!function_exists('is_level_deleted')) {
 
 		$level = get_leaky_paywall_subscription_level($level_id);
 
-		if (isset($level['deleted']) && 1 === $level['deleted']) {
+		if (isset($level['deleted']) && $level['deleted'] > 0 ) {
 			return true;
 		}
 
