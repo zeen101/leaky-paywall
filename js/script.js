@@ -1,8 +1,16 @@
 (function ($) {
   $(document).ready(function () {
+
+
+    $('.lpshowlogin').click(function(e) {
+      e.preventDefault();
+
+      $('.leaky-paywall-form-login').slideToggle();
+    });
+
     // registration form handler
     $("#leaky-paywall-registration-next").click(function () {
-      $(this).text("Processing... Please Wait");
+      $(this).text(leaky_paywall_script_ajax.continue_text);
       $("#leaky-paywall-registration-errors").html("");
 
       const form_data = $("#leaky-paywall-payment-form").serialize();

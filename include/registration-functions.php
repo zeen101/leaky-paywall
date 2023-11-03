@@ -1103,7 +1103,7 @@ function leaky_paywall_validate_frontend_registration() {
 	if ( ! check_ajax_referer( 'lp_register_nonce', 'nonce', false ) ) {
 
 		$return = array(
-			'message' => 'There was an error. Please try again.',
+			'message' => esc_html__( 'There was an error. Please try again.', 'leaky-paywall' ),
 			'status'  => 'error',
 		);
 
@@ -1117,7 +1117,7 @@ function leaky_paywall_validate_frontend_registration() {
 		if ( ! is_email( $email ) ) {
 
 			$return = array(
-				'message' => 'This email is invalid. Please enter a different email.',
+				'message' => esc_html__( 'This email is invalid. Please enter a different email.', 'leaky-paywall' ),
 				'status'  => 'error',
 			);
 
@@ -1127,7 +1127,7 @@ function leaky_paywall_validate_frontend_registration() {
 		if ( email_exists( $email ) ) {
 
 			$return = array(
-				'message' => 'This email already exists. Please login or enter a different email.',
+				'message' => __( 'This email already exists. Please login or enter a different email.', 'leaky-paywall' ),
 				'status'  => 'error',
 			);
 
@@ -1142,7 +1142,7 @@ function leaky_paywall_validate_frontend_registration() {
 		if ( username_exists( $username ) ) {
 
 			$return = array(
-				'message' => 'Username already taken.',
+				'message' => esc_html__( 'Username already taken.', 'leaky-paywall' ),
 				'status'  => 'error',
 			);
 

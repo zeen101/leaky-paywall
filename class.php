@@ -421,6 +421,7 @@ class Leaky_Paywall {
 				'ajaxurl'   => admin_url( 'admin-ajax.php', 'relative' ),
 				'stripe_pk' => leaky_paywall_get_stripe_public_key(),
 				'apple_pay' => $settings['enable_apple_pay'],
+				'continue_text' => esc_html__('Processing... Please Wait', 'leaky-paywall')
 			)
 		);
 	}
