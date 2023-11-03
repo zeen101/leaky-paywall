@@ -388,15 +388,22 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							break;
 
 						case 'susbcriber_id':
-							if ( is_multisite_premium() ) {
-								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true ) );
-								echo '</td>';
+
+							$subscriber_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
+							$stripe_url = $mode == 'test' ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
+
+							if ( strpos( $subscriber_id, 'cus_' ) !== false ) {
+								$output = '<a target="_blank" href="' . $stripe_url . $subscriber_id . '">' . $subscriber_id . '</a>';
+
 							} else {
-								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id', true ) );
-								echo '</td>';
+								$output = $subscriber_id;
+
 							}
+
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo wp_kses_post( $output );
+							echo '</td>';
+
 
 							break;
 
