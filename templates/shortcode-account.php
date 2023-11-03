@@ -232,6 +232,8 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 						</tbody>
 					</table>
 					<?php
+
+					do_action( 'leaky_paywall_after_profile_overview' );
 				}
 
 				break;
@@ -298,7 +300,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 		}
 
 
-		do_action('leaky_paywall_profile_your_profile_end');
+		do_action('leaky_paywall_profile_your_account_end');
 
 	?>
 
