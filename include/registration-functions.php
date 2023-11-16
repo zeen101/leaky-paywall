@@ -450,6 +450,10 @@ function leaky_paywall_process_user_registration_validation() {
 			wp_send_json( $return );
 		}
 
+		if (isset($_COOKIE['lp_nag_loc'])) {
+			$fields['lp_nag_loc'] = absint($_COOKIE['lp_nag_loc']);
+		}
+
 		leaky_paywall_create_incomplete_user( $user, $cu, $fields );
 
 		$return = array(
