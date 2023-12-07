@@ -583,8 +583,8 @@ class Leaky_Paywall_Settings
 					if ($this->check_for_caching() && 'on' !== $settings['enable_js_cookie_restrictions']) {
 					?>
 						<div class="notice-info notice">
-							<p><strong><?php esc_html_e('We noticed your site might use caching.', 'leaky-paywall'); ?></strong></p>
-							<p><?php esc_html_e('We highly recommend enabling Alternative Restrction Handling to ensure the paywall displays correctly.', 'leaky-paywall'); ?><br> <a target="_blank" href="https://docs.leakypaywall.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+							<p><strong><?php esc_html_e('Your subscription message might not be showing.', 'leaky-paywall'); ?></strong></p>
+							<p><?php esc_html_e('We noticed your site might use caching.  We recommend enabling the Alternative Restrction Handling setting below to ensure your paywall displays correctly.', 'leaky-paywall'); ?><br> <a target="_blank" href="https://docs.leakypaywall.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
 						</div>
 					<?php
 					}

@@ -225,8 +225,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$transaction_id = leaky_paywall_get_transaction_id_from_email($user->user_email);
 
-				// only recurring payments will include the word "Invoice"
-				if (strpos($stripe_object->description, 'Invoice') === false) {
+				// only recurring payments will include the word "Invoice" or "Subscription update"
+				if ( strpos($stripe_object->description, 'Invoice') === false && strpos($stripe_object->description, 'Subscription update') === false ) {
 					leaky_paywall_set_payment_transaction_id($transaction_id, $stripe_object->id);
 				}
 
