@@ -96,6 +96,11 @@ class Leaky_Paywall_Restrictions {
 	public function process_rest_content_restrictions( $content ) {
 
 		global $post;
+
+		if ( !isset( $post->ID ) ) {
+			return $content;
+		}
+
 		$this->post_id = $post->ID;
 		$this->is_rest = true;
 

@@ -448,18 +448,10 @@ function do_leaky_paywall_register_form($atts)
 		}
 	}
 
-	global $blog_id;
-	if (is_multisite_premium()) {
-		$site = '_' . $blog_id;
-	} else {
-		$site = '';
-	}
+	$site = leaky_paywall_get_current_site();
+	$currency = leaky_paywall_get_currency();
+	$userdata = wp_get_current_user();
 
-	$currency        = leaky_paywall_get_currency();
-	$currencies      = leaky_paywall_supported_currencies();
-	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
-
-	$userdata = get_userdata(get_current_user_id());
 	if (!empty($userdata)) {
 		$email    = $userdata->user_email;
 		$username = $userdata->user_login;
@@ -473,9 +465,8 @@ function do_leaky_paywall_register_form($atts)
 	}
 
 	$gateways = leaky_paywall_get_enabled_payment_gateways($level_id);
-	$one_page_form = in_array(array('Stripe Checkout', 'Credit / Debit Card'), $gateways) ? false : true;
 
-	if (array_key_exists('stripe', $gateways) || array_key_exists('stripe_checkout', $gateways)) {
+	if (array_key_exists('stripe', $gateways) && !array_key_exists('stripe_checkout', $gateways)) {
 		$one_page_form = false;
 	} else {
 		$one_page_form = true;

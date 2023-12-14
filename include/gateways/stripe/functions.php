@@ -306,6 +306,77 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	wp_send_json( $return );
 }
 
+function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
+
+	$level_id          = $fields['level_id'];
+	$level             = get_leaky_paywall_subscription_level($level_id);
+	$customer_id       = $cu->id;
+	$plan_id           = $fields['plan_id'];
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	do_action( 'leaky_paywall_before_create_stripe_subscription', $cu, $fields );
+
+	$subscription_array = array(
+		'customer' => $customer_id,
+		'items'    => array(
+			array(
+				'plan' => $plan_id,
+			),
+		),
+		'payment_behavior' => 'default_incomplete',
+		'payment_settings' => ['save_default_payment_method' => 'on_subscription'],
+		'expand' => ['latest_invoice.payment_intent'],
+	);
+
+	try {
+		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
+		leaky_paywall_log($cu, 'stripe subscription for ' . $customer_id);
+		$subscriptions = $stripe->subscriptions->all(array('limit' => '1', 'customer' => $customer_id));
+		leaky_paywall_log('after get subs', 'stripe subscription for ' . $customer_id);
+
+		if (empty($subscriptions->data)) {
+			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
+			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields));
+		} else {
+
+			leaky_paywall_errors()->add('subscription_exists', __('A subscription already exists for this user.', 'leaky-paywall'), 'register');
+
+			return false;
+
+			// foreach ($subscriptions->data as $sub) {
+
+			// 	$subscription = $stripe->subscriptions->update($sub->id, array(
+			// 		'plan' => $plan_id,
+			// 	));
+
+			// 	do_action('leaky_paywall_after_update_stripe_subscription', $cu, $sub, $level);
+			// }
+		}
+	} catch (\Stripe\Exception\ApiErrorException $e) {
+		leaky_paywall_log('error 2', 'stripe subscription');
+		leaky_paywall_log($fields, 'stripe subscription form data error 2');
+		return false;
+	}
+
+	if ( isset($subscription->latest_invoice->payment_intent->client_secret)) {
+		return $subscription->latest_invoice->payment_intent->client_secret;
+	}
+
+	if (isset($subscription->pending_setup_intent->client_secret)) {
+		return $subscription->pending_setup_intent->client_secret;
+	}
+
+
+	/*
+	return array(
+		'subscription_id' => $subscription->id,
+		'client_secret' => $subscription->latest_invoice->payment_intent->client_secret
+	);
+	*/
+
+}
+
 
 /**
  * Get Stripe Plan
@@ -546,6 +617,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 	$field_data = get_post_meta($incomplete_id, '_field_data', true);
 	$user = get_user_by('email', $user_data['email']);
 	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
+	$plan_id = '';
 
 	if ($user) {
 		$existing_customer = true;
@@ -555,10 +627,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		$status = 'new';
 	}
 
-	// if level is pay per post, don't process a stripe plan
-	if (isset($level['pay_per_post'])) {
-		$plan_id = '';
-	} else if (isset($level['recurring']) && 'on' == $level['recurring']) {
+	if (isset($level['recurring']) && 'on' == $level['recurring']) {
 
 		$plan_args = array(
 			'stripe_price'	=> $stripe_object->amount_total,
@@ -570,18 +639,17 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 
 		if ($stripe_plan) {
 			$plan_id = $stripe_plan->id;
-		} else {
-			$plan_id = '';
 		}
 
 	}
 
 	$subscriber_data = array(
 		'email' => $user_data['email'],
-		'password' => $user_data['password'],
+		'password' => isset( $user_data['password'] ) ? $user_data['password'] : '',
 		'first_name'	=> $user_data['first_name'],
 		'last_name'	=> $user_data['last_name'],
 		'level_id'	=> $user_data['level_id'],
+		'description' => $level['label'],
 		'subscriber_id'	=> $stripe_object->customer,
 		'created'	=> gmdate('Y-m-d H:i:s'),
 		'price'	=> $stripe_object->amount_total / 100,

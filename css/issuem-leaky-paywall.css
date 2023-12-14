@@ -338,7 +338,7 @@
 	display: inline-block;
     text-align: center;
     word-break: break-word;
-    background-color: #3D82CE;
+    background-color: #016B83;
     color: #fff;
     border: 1px solid #204AA7;
 	border-radius: 3px;
@@ -356,7 +356,7 @@
 	display: inline-block;
     text-align: center;
     word-break: break-word;
-    background-color: #3D82CE;
+    background-color: #016B83;
     color: #fff;
     border: 1px solid #204AA7;
 	border-radius: 3px;
@@ -424,7 +424,7 @@
 
 .leaky-paywall-form-steps .leaky-paywall-form-step.active .step-number {
 	color: #fff;
-	background: #3097DD;
+	background: #016B83;
 }
 
 .leaky-paywall-user-fields input {

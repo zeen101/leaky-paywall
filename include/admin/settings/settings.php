@@ -962,6 +962,14 @@ class Leaky_Paywall_Settings
 					} ?>
 
 					<tr>
+						<th><?php esc_html_e('Billing Address', 'leaky-paywall'); ?></th>
+						<td>
+							<p><input type="checkbox" id="stripe_billing_address" name="stripe_billing_address" <?php checked('on', $settings['stripe_billing_address']); ?> />
+								<?php esc_html_e('Display Stripe billing fields on the registration form (optional).', 'leaky-paywall'); ?></p>
+						</td>
+					</tr>
+
+					<tr>
 						<th><?php esc_html_e('Customer Portal', 'leaky-paywall'); ?></th>
 						<td>
 							<p><input type="checkbox" id="stripe_customer_portal" name="stripe_customer_portal" <?php checked('on', $settings['stripe_customer_portal']); ?> />
@@ -1415,6 +1423,7 @@ class Leaky_Paywall_Settings
 			'enable_apple_pay'                      => 'no',
 			'stripe_automatic_tax'                  => 'no',
 			'stripe_customer_portal'				=> 'no',
+			'stripe_billing_address'					=> 'no',
 			'stripe_restrict_assets'				=> 'no',
 			'stripe_tax_behavior'                   => 'exclusive',
 			'enable_paypal_on_registration'         => 'on',
@@ -1845,6 +1854,12 @@ class Leaky_Paywall_Settings
 				$settings['stripe_automatic_tax'] = 'on';
 			} else {
 				$settings['stripe_automatic_tax'] = 'off';
+			}
+
+			if (!empty($_POST['stripe_billing_address'])) {
+				$settings['stripe_billing_address'] = 'on';
+			} else {
+				$settings['stripe_billing_address'] = 'off';
 			}
 
 			if (!empty($_POST['stripe_customer_portal'])) {

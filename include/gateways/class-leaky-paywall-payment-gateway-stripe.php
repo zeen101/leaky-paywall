@@ -205,7 +205,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		}
 
 		if (empty($user)) {
-			return;
+			wp_send_json(['leaky paywall webhook received - no user found'], 200);
 		}
 
 		if (is_multisite_premium()) {
@@ -225,10 +225,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				$transaction_id = leaky_paywall_get_transaction_id_from_email($user->user_email);
 
-				// only recurring payments will include the word "Invoice" or "Subscription update"
-				if ( strpos($stripe_object->description, 'Invoice') === false && strpos($stripe_object->description, 'Subscription update') === false ) {
+				if ($stripe_object->description ) {
+					// only recurring payments will include the word "Invoice" or "Subscription update"
+					if (strpos($stripe_object->description, 'Invoice') === false && strpos($stripe_object->description, 'Subscription update') === false) {
+						leaky_paywall_set_payment_transaction_id($transaction_id, $stripe_object->id);
+					}
+				} else {
+					// if the description is null it isn't recurring so set the transaction id
 					leaky_paywall_set_payment_transaction_id($transaction_id, $stripe_object->id);
 				}
+
+
 
 				break;
 			case 'charge.failed':
@@ -390,31 +397,33 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			<input type="hidden" id="payment-intent-client" value="">
 			<input type="hidden" id="payment-intent-id" name="payment-intent-id" value="">
 
-			<?php if ('yes' == $settings['enable_apple_pay']) { ?>
-				<div id="payment-request-button">
-					<!-- A Stripe Element will be inserted here. -->
-				</div>
-			<?php } ?>
-
 			<?php
 			if (!is_ssl()) {
 				echo '<div class="leaky_paywall_message error"><p>' . esc_html__('This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes.', 'leaky-paywall') . '</p></div>';
 			}
 			?>
 
-
 			<div class="form-row">
-				<label for="card-element">
-					<?php esc_attr_e('Credit or debit card', 'leaky-paywall'); ?>
-				</label>
-				<div id="card-element">
-					<!-- A Stripe Element will be inserted here. -->
+
+				<div id="payment-element">
+					<!--Stripe.js injects the Payment Element-->
 				</div>
 
-				<!-- Used to display form errors. -->
-				<div id="card-errors" role="alert"></div>
-				<div id="lp-card-errors"></div>
+				<div id="payment-message" class="hidden"></div>
 			</div>
+
+			<?php if ('on' == $settings['stripe_billing_address']) {
+			?>
+				<div class="form-row" style="margin-top: 20px;">
+					<label><?php esc_html_e( 'Billing Address', 'leaky-paywall' ); ?></label>
+					<div id="address-element">
+						<!-- Elements will create form elements here -->
+					</div>
+				</div>
+			<?php
+			} ?>
+
+
 
 		</div>
 

@@ -517,16 +517,34 @@ function leaky_paywall_process_user_registration_validation() {
 	// temporary place to store the data.
 	leaky_paywall_create_incomplete_user( $user, $cu, $fields );
 
-	// create a paymentIntent (if not recurring).
+	// if recurring, create a pending subscription
 	if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
-		$return = array(
-			'success'     => 1,
-			'customer_id' => $cu->id,
-		);
+
+		$client_secret = leaky_paywall_create_stripe_subscription( $cu, $fields );
+
+		if ( $client_secret ) {
+			$return = array(
+				'success'     => 1,
+				'customer_id' => $cu->id,
+				'client_secret' => $client_secret
+			);
+		} else {
+
+			$errors['subscription_create'] = array(
+				'message' => __('Could not create subscription', 'leaky-paywall'),
+			);
+
+			$return = array(
+				'errors'     => $errors
+			);
+		}
+
+
 
 		wp_send_json( $return );
 	}
 
+	// if not recurring, create a payment intent
 	$stripe_price = number_format( floatval( $level['price'] ), 2, '', '' );
 
 	$intent_args = apply_filters(
