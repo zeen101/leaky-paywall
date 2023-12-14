@@ -927,17 +927,6 @@ class Leaky_Paywall_Settings
 						<td><input type="password" id="live_signing_secret" class="regular-text" name="live_signing_secret" value="<?php echo esc_attr($settings['live_signing_secret']); ?>" /></td>
 					</tr>
 
-					<tr>
-						<th><?php esc_html_e('Enable Apple Pay', 'leaky-paywall'); ?></th>
-						<td>
-							<select id="enable_apple_pay" name="enable_apple_pay">
-								<option <?php selected('yes', $settings['enable_apple_pay']); ?> value="yes">Yes</option>
-								<option <?php selected('no', $settings['enable_apple_pay']); ?> value="no">No</option>
-							</select>
-							<p class="description">You must <a target="_blank" href="https://stripe.com/docs/stripe-js/elements/payment-request-button">verify your domain with Apple Pay</a> to complete the Apple Pay setup.</p>
-						</td>
-					</tr>
-
 					<?php if (in_array('stripe_checkout', $settings['payment_gateway'])) {
 					?>
 						<tr>
