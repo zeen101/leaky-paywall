@@ -165,6 +165,15 @@
                 let form$ = jQuery('#leaky-paywall-payment-form');
                 form$.get(0).submit();
 
+                 if ( error ) {
+                    if (error.type === "card_error" || error.type === "validation_error") {
+                        showMessage(error.message);
+                    } else {
+                        showMessage("An unexpected error occurred.");
+                    }
+                    resetSubButton();
+                }
+
             } else {
                 const { error, paymentIntent } = await stripe.confirmPayment({
                     elements,
@@ -181,6 +190,15 @@
                     let form$ = jQuery('#leaky-paywall-payment-form');
                     form$.get(0).submit();
                 }
+
+                 if ( error ) {
+                    if (error.type === "card_error" || error.type === "validation_error") {
+                        showMessage(error.message);
+                    } else {
+                        showMessage("An unexpected error occurred.");
+                    }
+                    resetSubButton();
+                }
             }
 
             console.log('lp submit form after confirm payment');
@@ -192,13 +210,7 @@
             // be redirected to an intermediate site first to authorize the payment, then
             // redirected to the `return_url`.
 
-            if ( error ) {
-                if (error.type === "card_error" || error.type === "validation_error") {
-                    showMessage(error.message);
-                } else {
-                    showMessage("An unexpected error occurred.");
-                }
-            }
+
 
 
           //  setLoading(false);
@@ -207,13 +219,20 @@
         function showMessage(messageText) {
             const messageContainer = document.querySelector("#payment-message");
 
+            console.log('error: ' + messageText);
             messageContainer.classList.remove("hidden");
             messageContainer.textContent = messageText;
 
             setTimeout(function () {
                 messageContainer.classList.add("hidden");
                 messageContainer.textContent = "";
-            }, 4000);
+            }, 7000);
+        }
+
+        function resetSubButton() {
+            let subButton = document.getElementById('leaky-paywall-submit');
+            subButton.disabled = false;
+            subButton.innerHTML = 'Subscribe';
         }
 
 
