@@ -934,6 +934,7 @@ function leaky_paywall_get_levels()
 		}
 
 		$level_list[$key] = $level;
+		$level_list[$key]['id'] = $key;
 	}
 
 	return $level_list;
