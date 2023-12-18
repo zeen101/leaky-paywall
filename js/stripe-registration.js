@@ -136,16 +136,11 @@
 
         async function handleSubmit(e) {
             e.preventDefault();
-            // setLoading(true);
 
             console.log('lp form submit 1');
 
             let subButton = document.getElementById('leaky-paywall-submit');
-            let firstName = $('input[name="first_name"]').val();
-            let lastName = $('input[name="last_name"]').val();
             let emailAddress = $('input[name="email_address"]').val();
-            let clientSecret = $('#payment-intent-client').val();
-            let isRecurring = $('input[name="recurring"]').val();
             let isTrial = $('input[name="is_trial"]').val();
 
             subButton.disabled = true;
@@ -155,13 +150,12 @@
                 const { error, status } = await stripe.confirmSetup({
                     elements,
                     confirmParams: {
-                        // Make sure to change this to your payment completion page
                         return_url: leaky_paywall_stripe_registration_ajax.redirect_url,
                     },
                     redirect: 'if_required'
                 });
 
-                console.log('submit form now');
+                console.log('submit form 1');
                 let form$ = jQuery('#leaky-paywall-payment-form');
                 form$.get(0).submit();
 
@@ -188,7 +182,7 @@
                 if (paymentIntent && paymentIntent.id) {
 
                     if ( paymentIntent.status == 'succeeded') {
-                        console.log('submit form now');
+                        console.log('submit form 2');
                         let form$ = jQuery('#leaky-paywall-payment-form');
                         form$.get(0).submit();
                     } else {
