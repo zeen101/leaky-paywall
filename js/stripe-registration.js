@@ -186,9 +186,15 @@
                 });
 
                 if (paymentIntent && paymentIntent.id) {
-                    console.log('submit form now');
-                    let form$ = jQuery('#leaky-paywall-payment-form');
-                    form$.get(0).submit();
+
+                    if ( paymentIntent.status == 'succeeded') {
+                        console.log('submit form now');
+                        let form$ = jQuery('#leaky-paywall-payment-form');
+                        form$.get(0).submit();
+                    } else {
+                        resetSubButton();
+                    }
+
                 }
 
                  if ( error ) {
