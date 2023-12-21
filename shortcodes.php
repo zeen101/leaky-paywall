@@ -448,17 +448,6 @@ function do_leaky_paywall_register_form($atts)
 		}
 	}
 
-	// do not let trial users register for the same level.
-	if (is_user_logged_in() && apply_filters('leaky_paywall_disable_same_trial_level', __return_true())) {
-
-		$user_level_id = leaky_paywall_subscriber_current_level_id();
-
-		if ($level['enable_trial'] == 'on' && $user_level_id === $level_id) {
-			$content = '<p>' . __('You have already subscribed to this level. Please', 'leaky-paywall') . ' <a href="' . get_page_link($settings['page_for_subscription']) . '">' . __('go to the subscribe page', 'leaky-paywall') . '</a> ' . __('to choose a different subscription level.', 'leaky-paywall') . '</p>';
-			return $content;
-		}
-	}
-
 	$site = leaky_paywall_get_current_site();
 	$currency = leaky_paywall_get_currency();
 	$userdata = wp_get_current_user();
