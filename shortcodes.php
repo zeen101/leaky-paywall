@@ -496,14 +496,14 @@ function do_leaky_paywall_register_form($atts)
 		<?php if (!is_user_logged_in()) {
 		?>
 			<div class="leaky-paywall-form-login-toggle" style="background: #E4F8FF; border-top: 5px solid #016B83; padding: 10px 20px; margin-bottom: 20px;">
-				<p style="padding: 0; margin: 0; color: #000;"><?php esc_html_e( 'Already have an account?', 'leaky-paywall' ); ?> <a style="color: #016B83;" href="#" class="lpshowlogin"><?php esc_html_e( 'Click here to login', 'leaky-paywall' ); ?></a></p>
+				<p style="padding: 0; margin: 0; color: #000;"><?php esc_html_e('Already have an account?', 'leaky-paywall'); ?> <a style="color: #016B83;" href="#" class="lpshowlogin"><?php esc_html_e('Click here to login', 'leaky-paywall'); ?></a></p>
 			</div>
 
 			<div class="leaky-paywall-form-login" style="border: 1px solid #ddd; padding: 20px; margin-bottom: 20px;">
-				<p><?php esc_html_e( 'If you already have an account on this site, please login below. Otherwise, please proceed to the Details section.', 'leaky-paywall' ); ?></p>
+				<p><?php esc_html_e('If you already have an account on this site, please login below. Otherwise, please proceed to the Details section.', 'leaky-paywall'); ?></p>
 				<?php wp_login_form(); ?>
 
-				<p><a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php esc_html_e( 'Lost your password?', 'leaky-paywall' ); ?></a></p>
+				<p><a href="<?php echo esc_url(wp_lostpassword_url()); ?>"><?php esc_html_e('Lost your password?', 'leaky-paywall'); ?></a></p>
 			</div>
 
 			<style>
@@ -660,7 +660,7 @@ function do_leaky_paywall_register_form($atts)
 
 			<?php
 			if (0 != $level['price'] && !$one_page_form) {
-			?>
+				?>
 				<p>
 					<button id="leaky-paywall-registration-next" type="button"><?php esc_html_e('Next', 'leaky-paywall'); ?></button>
 				</p>

@@ -21,8 +21,6 @@
             validateUserData();
         });
 
-        // Handle form submission.
-        document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", handleSubmit);
 
         function validateUserData() {
 
@@ -75,12 +73,18 @@
                         buildPaymentForm(resp.pi_client);
                         showPaymentForm();
 
-                    } else {
+                          // Handle form submission.
+                        document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", handleSubmit);
+
+                    } else if (resp.customer_id) {
                         // subscription
                         $("#stripe-customer-id").val(resp.customer_id);
 
                         buildPaymentForm(resp.client_secret);
                         showPaymentForm();
+
+                          // Handle form submission.
+                        document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", handleSubmit);
 
                     }
 

@@ -302,6 +302,15 @@ function leaky_paywall_process_user_registration_validation() {
 		wp_send_json( $return );
 	}
 
+	// if free level, return
+	if ($level['price'] < 1 ) {
+		$return = array(
+			'success' => 1,
+			'level_type' => 'free'
+		);
+		wp_send_json($return);
+	}
+
 	// if stripe payment method is not active, we are done.
 	$enabled_gateways = leaky_paywall_get_enabled_payment_gateways();
 
