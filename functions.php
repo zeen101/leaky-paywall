@@ -68,7 +68,7 @@ if (!function_exists('is_level_deleted')) {
 
 		$level = get_leaky_paywall_subscription_level($level_id);
 
-		if (isset($level['deleted']) && $level['deleted'] > 0 ) {
+		if (isset($level['deleted']) && $level['deleted'] > 0) {
 			return true;
 		}
 
@@ -348,6 +348,10 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 
 		if (null === $user) {
 			$user = wp_get_current_user();
+		}
+
+		if ( !is_object( $user ) ) {
+			return;
 		}
 
 		$settings  = get_leaky_paywall_settings();
@@ -1241,12 +1245,14 @@ if (!function_exists('leaky_paywall_subscriber_current_level_id')) {
 	 *
 	 * @return array subscriber's subscription restrictions
 	 */
-	function leaky_paywall_subscriber_current_level_id()
+	function leaky_paywall_subscriber_current_level_id( $user = null )
 	{
 
-		$user = wp_get_current_user();
+		if (null === $user) {
+			$user = wp_get_current_user();
+		}
 
-		if (leaky_paywall_user_has_access( $user )) {
+		if (leaky_paywall_user_has_access($user)) {
 
 			$sites = array('');
 			if (is_multisite_premium()) {
@@ -2617,19 +2623,33 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$days_before     = (int) $settings['renewal_reminder_days_before'];
 		$date_to_compare = strtotime('+' . $days_before . ' day');
 
+		$start_date = time();
+		$end_date = strtotime('+' . $days_before . ' day'); // x days in the future
+
 		$args = array(
-			'number'     => -1,
+			'number'     => 99,
 			'meta_query' => array(
 				'relation' => 'AND',
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 					'compare' => 'EXISTS',
 				),
+				// array(
+				// 	'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+				// 	'value'   => gmdate('Y-m-d', $date_to_compare),
+				// 	'compare' => '=',
+				// 	'type'    => 'DATE',
+				// ),
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
-					'value'   => gmdate('Y-m-d', $date_to_compare),
-					'compare' => '=',
+					'value'   => array( date( 'Y-m-d', $start_date ), date( 'Y-m-d', $end_date ) ),
+					'compare' => 'BETWEEN',
 					'type'    => 'DATE',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => '0000-00-00 00:00:00',
+					'compare' => '!=',
 				),
 
 			),
@@ -2662,17 +2682,19 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				continue;
 			}
 
-			$date_differ     = leaky_paywall_date_difference($expiration, gmdate('Y-m-d H:i:s'));
+		// 	$date_differ     = leaky_paywall_date_difference($expiration, gmdate('Y-m-d H:i:s'));
 			$already_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
 			if ($already_emailed) {
 				continue;
 			}
 
-			if ($date_differ <= $days_before) {
-				leaky_paywall_email_subscription_status($user_id, 'renewal_reminder');
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, current_time('timestamp'));
-			}
+			// if ($date_differ <= $days_before) {
+
+			// }
+
+			leaky_paywall_email_subscription_status($user_id, 'renewal_reminder');
+			update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, current_time('timestamp'));
 		}
 	}
 	add_action('leaky_paywall_process_renewal_reminder', 'leaky_paywall_maybe_send_renewal_reminder');
@@ -3664,6 +3686,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$plan             = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true);
 		$subscriber_id    = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
 		$subscriber_notes = get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true);
+		$renewal_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
 		if (!$level_id) {
 			return;
@@ -3770,7 +3793,21 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			}
 			?>
 
-			<?php do_action( 'leaky_paywall_after_wp_user_profile_fields', $user ); ?>
+			<?php
+			if ($renewal_emailed) {
+			?>
+				<tr>
+					<th><label for="subscriber_notes">Renewal Reminder Email Sent</label></th>
+
+					<td>
+						<?php echo esc_attr($renewal_emailed); ?>
+
+					</td>
+				</tr>
+			<?php
+			} ?>
+
+			<?php do_action('leaky_paywall_after_wp_user_profile_fields', $user); ?>
 
 		</table>
 	<?php
@@ -4581,11 +4618,11 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 
 
-/**
- * Load any CSS we need for the plugins list table.
- */
-function leaky_paywall_plugin_list_styles()
-{
-	echo '<style>span.lp-pro-upgrade a, span.lp-pro-upgrade a:hover{color: #759542; font-weight: 600;}</style>';
-}
-add_action('admin_print_styles-plugins.php', 'leaky_paywall_plugin_list_styles');
+	/**
+	 * Load any CSS we need for the plugins list table.
+	 */
+	function leaky_paywall_plugin_list_styles()
+	{
+		echo '<style>span.lp-pro-upgrade a, span.lp-pro-upgrade a:hover{color: #759542; font-weight: 600;}</style>';
+	}
+	add_action('admin_print_styles-plugins.php', 'leaky_paywall_plugin_list_styles');
