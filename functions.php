@@ -343,7 +343,7 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 	 * @param object $user object from WordPress database.
 	 * @return bool true if the user has access or false if they have either expired or their payment status is set to deactived
 	 */
-	function leaky_paywall_user_has_access($user = null)
+	function leaky_paywall_user_has_access( $user = null )
 	{
 
 		if (null === $user) {
@@ -351,7 +351,7 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 		}
 
 		if ( !is_object( $user ) ) {
-			return;
+			return false;
 		}
 
 		$settings  = get_leaky_paywall_settings();
