@@ -567,20 +567,26 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			return;
 		}
 
-		$subscriptions = $cus->subscriptions['data'];
+		$subscriptions = $stripe->subscriptions->all(array(
+			'customer' => $cus->id,
+			'limit' => '1'
+		));
 
-		if (empty( $subscriptions ) ) {
+		if (empty($subscriptions)) {
 			return;
 		}
 
-		$current_period_end = $subscriptions[0]->current_period_end;
+		foreach ($subscriptions->data as $subscription) {
 
-		if ( !$current_period_end ) {
-			return;
+			$current_period_end = $subscription->current_period_end;
+			$plan = $subscription->plan->id;
+
+			if ($current_period_end) {
+				$expires = date_i18n('Y-m-d 23:59:59', $current_period_end);
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
+			}
 		}
-
-		$expires = date_i18n( 'Y-m-d 23:59:59', $current_period_end );
-		update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
 
 	} catch (\Throwable $th) {
 		return;
