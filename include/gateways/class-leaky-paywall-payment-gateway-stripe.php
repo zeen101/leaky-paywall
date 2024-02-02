@@ -285,6 +285,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ('past_due' == $stripe_object->status) {
 					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
 				}
+
+				// this is triggered by cancelling in the Stripe customer portal
+				if ('cancellation_requested' == $stripe_object->cancellation_details->reason ) {
+					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
+					do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
+				}
+
 				break;
 
 			case 'customer.subscription.created':
