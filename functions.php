@@ -2633,7 +2633,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				),
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
-					'value'   => array( date( 'Y-m-d', $start_date ), date( 'Y-m-d', $end_date ) ),
+					'value'   => array( gmdate( 'Y-m-d', $start_date ), gmdate( 'Y-m-d', $end_date ) ),
 					'compare' => 'BETWEEN',
 					'type'    => 'DATE',
 				),
