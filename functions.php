@@ -2603,8 +2603,6 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_maybe_send_renewal_reminder()
 	{
 
-		global $blog_id;
-
 		$settings = get_leaky_paywall_settings();
 		$mode     = leaky_paywall_get_current_mode();
 		$site     = leaky_paywall_get_current_site();
@@ -2620,11 +2618,8 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		leaky_paywall_log(current_time('Y-m-d'), 'process renewal reminder');
 
-		$days_before     = (int) $settings['renewal_reminder_days_before'];
-		$date_to_compare = strtotime('+' . $days_before . ' day');
-
-		$start_date = time();
-		$end_date = strtotime('+' . $days_before . ' day'); // x days in the future
+		$start_date = time(); // now
+		$end_date = strtotime('+' . absint($settings['renewal_reminder_days_before']) . ' day'); // x days in the future
 
 		$args = array(
 			'number'     => 99,
@@ -2634,12 +2629,6 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 					'compare' => 'EXISTS',
 				),
-				// array(
-				// 	'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
-				// 	'value'   => gmdate('Y-m-d', $date_to_compare),
-				// 	'compare' => '=',
-				// 	'type'    => 'DATE',
-				// ),
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
 					'value'   => array( date( 'Y-m-d', $start_date ), date( 'Y-m-d', $end_date ) ),
@@ -2682,16 +2671,11 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				continue;
 			}
 
-		// 	$date_differ     = leaky_paywall_date_difference($expiration, gmdate('Y-m-d H:i:s'));
 			$already_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
 			if ($already_emailed) {
 				continue;
 			}
-
-			// if ($date_differ <= $days_before) {
-
-			// }
 
 			leaky_paywall_email_subscription_status($user_id, 'renewal_reminder');
 			update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, current_time('timestamp'));
