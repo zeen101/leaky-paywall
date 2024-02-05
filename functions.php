@@ -899,6 +899,8 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 			array(
 				'ID'         => $user_id,
 				'user_email' => $email,
+				'first_name' => $meta_args['first_name'],
+				'last_name' => $meta_args['last_name']
 			)
 		);
 
@@ -3672,7 +3674,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$subscriber_notes = get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true);
 		$renewal_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
-		if (!$level_id) {
+		if (!is_numeric( $level_id )) {
 			return;
 		}
 
@@ -3690,7 +3692,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<th><label for="level_id">Level ID</label></th>
 
 				<td>
-					<?php echo esc_attr($level_id); ?>
+					<?php echo esc_html($level_id); ?>
 
 				</td>
 			</tr>
@@ -3699,7 +3701,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<th><label for="level_description">Level Description</label></th>
 
 				<td>
-					<?php echo esc_attr($level['label']); ?>
+					<?php echo esc_html($description); ?>
 
 				</td>
 			</tr>
@@ -3708,7 +3710,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<th><label for="payment_gateway">Payment Gateway</label></th>
 
 				<td>
-					<?php echo esc_attr($gateway); ?>
+					<?php echo esc_html($gateway); ?>
 
 				</td>
 			</tr>
@@ -3717,7 +3719,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<th><label for="payment_status">Payment Status</label></th>
 
 				<td>
-					<?php echo esc_attr($status); ?>
+					<?php echo esc_html($status); ?>
 
 				</td>
 			</tr>
@@ -3726,7 +3728,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<th><label for="expires">Expires</label></th>
 
 				<td>
-					<?php echo esc_attr($expires); ?>
+					<?php echo esc_html($expires); ?>
 
 				</td>
 			</tr>
@@ -3738,7 +3740,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					<th><label for="plan">Plan</label></th>
 
 					<td>
-						<?php echo esc_attr($plan); ?>
+						<?php echo esc_html($plan); ?>
 
 					</td>
 				</tr>
@@ -3754,7 +3756,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					<th><label for="subscriber_id">Subscriber ID</label></th>
 
 					<td>
-						<?php echo esc_attr($subscriber_id); ?>
+						<?php echo esc_html($subscriber_id); ?>
 
 					</td>
 				</tr>
@@ -3769,7 +3771,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					<th><label for="subscriber_notes">Subscriber Notes</label></th>
 
 					<td>
-						<?php echo esc_attr($subscriber_notes); ?>
+						<?php echo esc_html($subscriber_notes); ?>
 
 					</td>
 				</tr>
@@ -3784,7 +3786,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					<th><label for="subscriber_notes">Renewal Reminder Email Sent</label></th>
 
 					<td>
-						<?php echo esc_attr($renewal_emailed); ?>
+						<?php echo esc_html($renewal_emailed); ?>
 
 					</td>
 				</tr>

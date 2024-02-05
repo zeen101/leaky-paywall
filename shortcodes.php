@@ -455,8 +455,8 @@ function do_leaky_paywall_register_form($atts)
 	if (!empty($userdata)) {
 		$email    = $userdata->user_email;
 		$username = $userdata->user_login;
-		$first    = $userdata->first_name;
-		$last     = $userdata->last_name;
+		$first    = $userdata->first_name ? $userdata->first_name : leaky_paywall_old_form_value('first_name', false);
+		$last     = $userdata->last_name ? $userdata->last_name : leaky_paywall_old_form_value('last_name', false);
 	} else {
 		$email    = leaky_paywall_old_form_value('email_address', false);
 		$username = leaky_paywall_old_form_value('username', false);
