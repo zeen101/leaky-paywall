@@ -146,6 +146,13 @@
             let subButton = document.getElementById('leaky-paywall-submit');
             let emailAddress = $('input[name="email_address"]').val();
             let isTrial = $('input[name="is_trial"]').val();
+            let paymentMethod = $('input[name="payment_method"]:checked').val();
+
+            if ( paymentMethod != 'stripe' ) {
+                let form$ = jQuery('#leaky-paywall-payment-form');
+                form$.get(0).submit();
+                return;
+            }
 
             subButton.disabled = true;
             subButton.innerHTML = leaky_paywall_stripe_registration_ajax.continue_text;
