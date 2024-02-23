@@ -453,7 +453,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 						if (method == 'stripe') {
 							$('.leaky-paywall-card-details').slideDown();
-							button.text('<?php echo esc_js($default_button_text); ?>');
+							button.text('<?php echo htmlspecialchars_decode( esc_js($default_button_text) ); ?>');
 						}
 
 					});

@@ -102,7 +102,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					if (method == 'paypal_standard') {
 						$('.leaky-paywall-card-details').slideUp();
-						button.text('<?php echo esc_js( $paypal_button_text ); ?>');
+						button.text('<?php echo htmlspecialchars_decode( esc_js( $paypal_button_text ) ); ?>');
 					}
 
 				});
