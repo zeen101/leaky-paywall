@@ -463,6 +463,8 @@ function leaky_paywall_process_user_registration_validation() {
 			$fields['lp_nag_loc'] = absint($_COOKIE['lp_nag_loc']);
 		}
 
+		$fields = apply_filters( 'leaky_paywall_stripe_checkout_fields', $fields );
+
 		leaky_paywall_create_incomplete_user( $user, $cu, $fields );
 
 		$return = array(
