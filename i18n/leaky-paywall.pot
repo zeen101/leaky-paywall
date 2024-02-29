@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-02-28T16:42:57+00:00\n"
+"POT-Creation-Date: 2024-02-29T20:26:20+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.7.1\n"
 "X-Domain: leaky-paywall\n"
@@ -72,128 +72,128 @@ msgstr ""
 msgid "Passwords do not match."
 msgstr ""
 
-#: class.php:441
+#: class.php:440
 msgid "Processing... Please Wait"
 msgstr ""
 
-#: class.php:442
+#: class.php:441
 #: shortcodes.php:654
 msgid "Next"
 msgstr ""
 
-#: class.php:505
-#: class.php:548
+#: class.php:504
+#: class.php:547
 msgid "Unable to verify security token. Subscriber not added. Please try again."
 msgstr ""
 
-#: class.php:540
+#: class.php:539
 msgid "Subscriber added."
 msgstr ""
 
-#: class.php:543
-#: class.php:628
+#: class.php:542
+#: class.php:627
 msgid "You must include a valid email address."
 msgstr ""
 
-#: class.php:624
+#: class.php:623
 msgid "Subscriber updated."
+msgstr ""
+
+#: class.php:678
+#: class.php:742
+msgid "Username (required)"
 msgstr ""
 
 #: class.php:679
 #: class.php:743
-msgid "Username (required)"
+msgid "Email Address (required)"
 msgstr ""
 
 #: class.php:680
 #: class.php:744
-msgid "Email Address (required)"
-msgstr ""
-
-#: class.php:681
-#: class.php:745
 msgid "Price Paid"
 msgstr ""
 
-#: class.php:683
-#: class.php:747
+#: class.php:682
+#: class.php:746
 #: subscriber-table.php:179
 msgid "Expires"
 msgstr ""
 
-#: class.php:685
-#: class.php:749
+#: class.php:684
+#: class.php:748
 msgid "Enter 0 for never expires"
 msgstr ""
 
-#: class.php:688
-#: class.php:752
+#: class.php:687
+#: class.php:751
 msgid "Subscription Level"
 msgstr ""
 
-#: class.php:703
-#: class.php:767
+#: class.php:702
+#: class.php:766
 #: subscriber-table.php:182
 #: templates/shortcode-account.php:217
 msgid "Payment Status"
 msgstr ""
 
-#: class.php:705
-#: class.php:769
+#: class.php:704
+#: class.php:768
 #: shortcodes.php:248
 msgid "Active"
 msgstr ""
 
-#: class.php:706
-#: class.php:770
+#: class.php:705
+#: class.php:769
 msgid "Canceled"
 msgstr ""
 
-#: class.php:707
-#: class.php:771
+#: class.php:706
+#: class.php:770
 msgid "Deactivated"
 msgstr ""
 
-#: class.php:711
-#: class.php:775
+#: class.php:710
+#: class.php:774
 #: shortcodes.php:269
 #: templates/shortcode-account.php:229
 msgid "Payment Method"
 msgstr ""
 
-#: class.php:722
-#: class.php:786
+#: class.php:721
+#: class.php:785
 #: subscriber-table.php:175
 msgid "Subscriber ID"
 msgstr ""
 
-#: class.php:725
+#: class.php:724
 #: subscriber-table.php:177
 msgid "Plan"
 msgstr ""
 
-#: class.php:726
+#: class.php:725
 msgid "Leave empty for Non-Recurring"
 msgstr ""
 
-#: class.php:729
+#: class.php:728
 msgid "Subscriber Notes"
 msgstr ""
 
-#: class.php:736
+#: class.php:735
 msgid "Cancel"
 msgstr ""
 
 #. Translators: %s - url for settings
-#: class.php:896
+#: class.php:895
 msgid "Please complete your PayPal setup for Leaky Paywall. %s."
 msgstr ""
 
 #. Translators: %s - url for settings
-#: class.php:896
+#: class.php:895
 msgid "Complete Your Setup Now"
 msgstr ""
 
-#: class.php:923
+#: class.php:922
 msgid "Dismiss"
 msgstr ""
 

@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 4.21.0
+Stable tag: 4.21.1
 Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -12,83 +12,36 @@ The most flexible paywall for WordPress. Sell subscriptions without sacrificing 
 
 == Description ==
 
-[Leaky Paywall](https://leakypaywall.com/) is built specifically to help news and magazine publishers enagage readers, deliver a seamless subscription experience, and to convert paid subscribers. Leaky Paywall builds email lists and easily creates new content products.
+[Leaky Paywall](https://leakypaywall.com/) is a subscription management platform built natively for WordPress. It lets publishers and developers implement a highly customizable subscription system for news, magazine, and content creators.
 
-Leaky Paywall lets you customize the paywall experience to precisely match your content.
+Our open-source solution offers a suite of tools to nurture reader engagement, streamline subscription processes, and maximize revenue opportunities, all while ensuring compliance with SCA and GDPR regulations.
 
-Restrict and sell access to: articles, categories/tags, custom post types, in-content PDFs/video/audio, premium newsletters, and time based archive content. Block incognito browsing for more conversions.
+Leaky Paywall flexibility presents an opportunity to tailor the subscription experience to fit the unique needs of each publisher.
 
-Sell individual subscriptions, corporate and bulk access, individual articles, newsletters, donations, offer free registrations, MultiPass multiple website access, and even access to iOS & Android apps..
+**Key features**
 
-https://www.youtube.com/watch?v=v2nJWiekJw0&t=12s
-
-Leaky Paywall core is free, open source, integrates with the most [3rd party platforms](https://leakypaywall.com/features/), and is [SCA](https://docs.leakypaywall.com/article/180-sca-compliance) and [GDPR compliant](https://docs.leakypaywall.com/article/66-how-to-be-gdpr-compliant-with-leaky-paywall). Leaky Paywall takes no revenue share and you have control over your subscriber data forever. [Premium plans](https://leakypaywall.com/upgrade-to-leaky-paywall-pro/) offer additional features.
-
-**Features**
-
-* Custom paywall settings out of the box: metered paywall, hybrid paywall, hard paywall, time-wall, free registrations, donations, paid newsletters, and memberships
-* Flexible restrictions: restrict by post type, category, tag, taxonomy, time based archive content, individual posts, and in-content sections
-* Build your email list with a limited access free subscription level
-* Incognito browser blocking
-* Multiple website access: Our MultiPass lets you sell a single subscription that allows access to two or more of your websites
+* Content restrictions include articles, categories/tags, custom post types, and multimedia content like PDFs, videos, and audio files
+* Customizable paywall settings (metered, dynamic, hybrid, hard, time-wall)
+* Customize access using our hooks and filters
+* Content indexed by search engines and socially shareable via metering or referrer source
+* Subscriber only newsletter capabilities
+* Group, IP address and corporate subscriptions
+* Donations
+* [UniPress](https://leakypaywall.com/unipress-apps/) iOS and Android mobile apps
+* Incognito browsing blocking
+* Registration wall for email list building
+* Multiple-website access via MultiPass
+* CRM integrations such as MailChimp, HubSpot, ZOHO, Campaign Monitor, Pipedrive, and Zapier
+* Circulation software integration such as simplecirc, Darwin, Omeda, PSA, PCS, MagHub, RunMags, Interlink
+* Payment gateways include Stripe (we are a [Stripe Verified Partner](https://stripe.com/partners/leaky-paywall)), Authorize.net, PayPal, Apple Pay, Google pay, WooCommerce, and 100s more
 * Insights provides actionable data from subscriber behavior
-* Sell access to web issues/flipbooks: Integrates with [IssueM](https://leakypaywall.com/issuem/), our web issue publisher toolkit
-* Sell digital, print, and premium+ subscriptions
-* Leaky Paywall gets your content indexed and ranked in Google search. All your articles can be shared 1000s of times in social media
-* Easy metered paywall setup: Let your readers read X number of free articles before they need to subscribe
-* iOS and Android app publishing: With [UniPress](https://leakypaywall.com/unipress-apps/), easily give your subscribers access to apps and enjoy discovery in the app stores
-* No revenue sharing, all data is under your control
-* We are a [Stripe Verified Partner](https://stripe.com/partners/leaky-paywall)
+* Leaky Paywall's ecosystem is further enriched with over [40 add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/), enabling functionalities like recurring payments, trial subscriptions, pay-per-post access, multiple subscription levels, premium archive access, and custom registration fields. For developers looking to extend the platform's capabilities, the add-on system provides a flexible way to meet the diverse needs of publishers.
 
+The platform is backed by extensive [documentation](https://docs.leakypaywall.com/), Zoom level support and a community of contributors on [GitHub](https://github.com/zeen101/leaky-paywall), encouraging ongoing development and innovation.
 
-**Integrations**
+This core plugin lets you set up 1 non-recurring subscription level with Stripe or PayPal integration. It also supports all of our [extensions](https://leakypaywall.com/downloads/category/leaky-paywall-addons/).
 
-* Stripe, Stripe Checkout, Apple Pay, Google Pay, Authorize.net, PayPal, and 100s of others others via our WooCommerce integration
-* MailChimp
-* MagHub
-* RunMags
-* SimpleCirc
-* HubSpot
-* ZOHO
-* Campaign Monitor
-* Pipedrive
-* Interlink
-* Omeda
-* Darwin
-* Publisher Service Associates (PSA)
-* Publisher’s Creative Systems (PCS)
-* Zapier
-* iOS and Android apps: Leaky Paywall integrates with our [UniPress iOS and Android app platform](https://leakypaywall.com/unipress/) to give your subscribers native mobile apps for the best reading experience available today. Your subscribers will have instant access to your content in the apps after subscribing with Leaky Paywall. All content is managed right in WordPress for true 1 click publishing
-* More integrations in development
-
-
-**40+ Add-ons available to power up your publication**
-Some of our [add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=addons&utm_medium=description_tab&utm_content=addons&utm_campaign=readme) include:
-
-* [Recurring Payments](https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_source=addons&utm_medium=description_tab&utm_content=recurring_payments&utm_campaign=readme) charges subscribers automatically when its time for their subscription to renew
-* [Trials](https://leakypaywall.com/downloads/leaky-paywall-trials/?utm_source=addons&utm_medium=description_tab&utm_content=trials&utm_campaign=readme) allow subscribers to sign up for a trial to any recurring level
-* [Pay Per Post](https://leakypaywall.com/downloads/leaky-paywall-pay-per-post/?utm_source=addons&utm_medium=description_tab&utm_content=payperpost&utm_campaign=readme) allow a user to pay for access to a single post, page, article or other post type
-* [Multiple Levels](https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_source=addons&utm_medium=description_tab&utm_content=multiple_levels&utm_campaign=readme) allows you to give your readers different subscription options
-* [Coupon Codes](https://leakypaywall.com/downloads/leaky-paywall-coupons/?utm_source=addons&utm_medium=description_tab&utm_content=coupon_codes&utm_campaign=readme) allows you to create unlimited coupon codes for your subscription levels
-* [Gift Subscriptions](https://leakypaywall.com/downloads/gift-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=gift_subscriptions&utm_campaign=readme) allows friends and family to buy gift subscriptions
-* [IP Blocker](https://leakypaywall.com/downloads/leaky-paywall-ip-blocker/) stops readers from using incognito browsing mode
-* [Custom Registration Fields](https://leakypaywall.com/downloads/leaky-paywall-custom-registration-fields/) Add custom fields to the Leaky Paywall registration form with our drag and drop form field builder
-* [Basic Shipping](https://leakypaywall.com/downloads/leaky-paywall-basic-shipping/?utm_source=addons&utm_medium=description_tab&utm_content=shipping&utm_campaign=readme) lets you collect address information for shipping during registration.
-* [IP Exceptions](https://leakypaywall.com/downloads/ip-exceptions/?utm_source=addons&utm_medium=description_tab&utm_content=ip_exceptions&utm_campaign=readme) allow visitors from designated IPs to view articles and posts without having to subscribe.
-* [Ad Blocker Notice](https://leakypaywall.com/downloads/leaky-paywall-ad-blocker-notice/) lets you display a notice encouraging users to disable their Ad Blocker or Subscribe to your publication
-* [Corporate subscriptions](https://leakypaywall.com/downloads/corporate-subscriptions/?utm_source=addons&utm_medium=description_tab&utm_content=corporate_subscriptions&utm_campaign=readme) allow restricting access by domain or email address.
-* [Reporting Tool](https://leakypaywall.com/downloads/reporting-tool-free/?utm_source=addons&utm_medium=description_tab&utm_content=reporting_tool&utm_campaign=readme) allows you to filter and download a CSV file of the subscriber info you need.
-* [File restrictions](https://leakypaywall.com/downloads/subscriber-downloads/?utm_source=addons&utm_medium=description_tab&utm_content=file_restrictions&utm_campaign=readme) hides any link to any file (PDF, image, etc) in your media library.
-* [MailChimp](https://leakypaywall.com/downloads/leaky-paywall-mailchimp/?utm_source=addons&utm_medium=description_tab&utm_content=mailchimp&utm_campaign=readme) automatically adds new subscribers to a Mailchimp list.
-* [Bulk Import Subscribers](https://leakypaywall.com/downloads/leaky-paywall-bulk-import-subscribers/?utm_source=addons&utm_medium=description_tab&utm_content=bulk_import&utm_campaign=readme) allows you to bulk import subscribers from a CSV file.
-* [Article Countdown Nag](https://leakypaywall.com/downloads/article-countdown-nag/?utm_source=addons&utm_medium=description_tab&utm_content=countdown_nag&utm_campaign=readme) lets the reader know how many free articles they have left before they need to subscribe.
-* [More… see all our add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/)
-
-Lots of great documentation available: [https://docs.leakypaywall.com](https://docs.leakypaywall.com)
-
-We love contributions! Head over to our GitHub page if your feeling inspired [https://github.com/zeen101/leaky-paywall](https://github.com/zeen101/leaky-paywall)
-
-More info at [https://leakypaywall.com/](https://leakypaywall.com/)
+Learn more about [Leaky Paywall](https://leakypaywall.com/) or [grab a demo](https://leakypaywall.com/demo/). We would love to show you around.
 
 == Installation ==
 
@@ -114,6 +67,11 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.21.1 =
+* Add leaky_paywall_stripe_checkout_fields filter
+* Update translation strings
+* Fix ampersand display on register button
 
 = 4.21.0 =
 * Add check for paypal payment method when using multiple options on the register form
