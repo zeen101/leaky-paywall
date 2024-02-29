@@ -510,7 +510,7 @@ function do_leaky_paywall_register_form($atts)
 
 		<ul class="leaky-paywall-subscription-details">
 			<li class="leaky-paywall-subscription-details-subscription-name"><strong><?php printf(esc_attr__('Your Order:', 'leaky-paywall')); ?></strong> <?php echo wp_kses_post(apply_filters('leaky_paywall_registration_level_name', $level['label'])); ?></li>
-			<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf(esc_attr__('Subscription Length:', 'leaky-paywall')); ?></strong> <?php echo 'unlimited' === $level['subscription_length_type'] ? esc_attr__('Forever', 'leaky-paywall') : esc_attr($level['interval_count']) . ' ' . esc_attr($level['interval']) . ($level['interval_count'] > 1 ? 's' : ''); ?></li>
+			<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf(esc_attr__('Subscription Length:', 'leaky-paywall')); ?></strong> <?php echo 'unlimited' === $level['subscription_length_type'] ? esc_attr__('Forever', 'leaky-paywall') : esc_attr($level['interval_count']) . ' ' . leaky_paywall_get_interval_text( $level['interval'], $level['interval_count'] ); ?></li>
 			<li class="leaky-paywall-subscription-details-recurring"><strong><?php printf(esc_attr__('Recurring:', 'leaky-paywall')); ?> </strong> <?php echo !empty($level['recurring']) && 'on' === $level['recurring'] ? esc_attr__('Yes', 'leaky-paywall') : esc_attr__('No', 'leaky-paywall'); ?></li>
 			<li class="leaky-paywall-subscription-details-content-access"><strong><?php printf(esc_attr__('Content Access:', 'leaky-paywall')); ?></strong>
 

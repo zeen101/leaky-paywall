@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-02-26T17:02:15+00:00\n"
+"POT-Creation-Date: 2024-02-28T16:42:57+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.7.1\n"
 "X-Domain: leaky-paywall\n"
@@ -66,123 +66,134 @@ msgstr ""
 msgid "Upgrade"
 msgstr ""
 
-#: class.php:439
+#: class.php:414
+#: shortcodes.php:338
+#: shortcodes.php:952
+msgid "Passwords do not match."
+msgstr ""
+
+#: class.php:441
 msgid "Processing... Please Wait"
 msgstr ""
 
-#: class.php:501
-#: class.php:544
+#: class.php:442
+#: shortcodes.php:654
+msgid "Next"
+msgstr ""
+
+#: class.php:505
+#: class.php:548
 msgid "Unable to verify security token. Subscriber not added. Please try again."
 msgstr ""
 
-#: class.php:536
+#: class.php:540
 msgid "Subscriber added."
 msgstr ""
 
-#: class.php:539
-#: class.php:624
+#: class.php:543
+#: class.php:628
 msgid "You must include a valid email address."
 msgstr ""
 
-#: class.php:620
+#: class.php:624
 msgid "Subscriber updated."
-msgstr ""
-
-#: class.php:675
-#: class.php:739
-msgid "Username (required)"
-msgstr ""
-
-#: class.php:676
-#: class.php:740
-msgid "Email Address (required)"
-msgstr ""
-
-#: class.php:677
-#: class.php:741
-msgid "Price Paid"
 msgstr ""
 
 #: class.php:679
 #: class.php:743
-#: subscriber-table.php:179
-msgid "Expires"
+msgid "Username (required)"
+msgstr ""
+
+#: class.php:680
+#: class.php:744
+msgid "Email Address (required)"
 msgstr ""
 
 #: class.php:681
 #: class.php:745
+msgid "Price Paid"
+msgstr ""
+
+#: class.php:683
+#: class.php:747
+#: subscriber-table.php:179
+msgid "Expires"
+msgstr ""
+
+#: class.php:685
+#: class.php:749
 msgid "Enter 0 for never expires"
 msgstr ""
 
-#: class.php:684
-#: class.php:748
+#: class.php:688
+#: class.php:752
 msgid "Subscription Level"
 msgstr ""
 
-#: class.php:699
-#: class.php:763
+#: class.php:703
+#: class.php:767
 #: subscriber-table.php:182
 #: templates/shortcode-account.php:217
 msgid "Payment Status"
 msgstr ""
 
-#: class.php:701
-#: class.php:765
+#: class.php:705
+#: class.php:769
 #: shortcodes.php:248
 msgid "Active"
 msgstr ""
 
-#: class.php:702
-#: class.php:766
+#: class.php:706
+#: class.php:770
 msgid "Canceled"
-msgstr ""
-
-#: class.php:703
-#: class.php:767
-msgid "Deactivated"
 msgstr ""
 
 #: class.php:707
 #: class.php:771
+msgid "Deactivated"
+msgstr ""
+
+#: class.php:711
+#: class.php:775
 #: shortcodes.php:269
 #: templates/shortcode-account.php:229
 msgid "Payment Method"
 msgstr ""
 
-#: class.php:718
-#: class.php:782
+#: class.php:722
+#: class.php:786
 #: subscriber-table.php:175
 msgid "Subscriber ID"
 msgstr ""
 
-#: class.php:721
+#: class.php:725
 #: subscriber-table.php:177
 msgid "Plan"
 msgstr ""
 
-#: class.php:722
+#: class.php:726
 msgid "Leave empty for Non-Recurring"
 msgstr ""
 
-#: class.php:725
+#: class.php:729
 msgid "Subscriber Notes"
 msgstr ""
 
-#: class.php:732
+#: class.php:736
 msgid "Cancel"
 msgstr ""
 
 #. Translators: %s - url for settings
-#: class.php:892
+#: class.php:896
 msgid "Please complete your PayPal setup for Leaky Paywall. %s."
 msgstr ""
 
 #. Translators: %s - url for settings
-#: class.php:892
+#: class.php:896
 msgid "Complete Your Setup Now"
 msgstr ""
 
-#: class.php:919
+#: class.php:923
 msgid "Dismiss"
 msgstr ""
 
@@ -453,34 +464,42 @@ msgid "for life"
 msgstr ""
 
 #: functions.php:2430
+#: functions.php:4627
 msgid "day"
 msgstr ""
 
 #: functions.php:2433
+#: functions.php:4625
 msgid "days"
 msgstr ""
 
 #: functions.php:2436
+#: functions.php:4635
 msgid "week"
 msgstr ""
 
 #: functions.php:2439
+#: functions.php:4633
 msgid "weeks"
 msgstr ""
 
 #: functions.php:2442
+#: functions.php:4643
 msgid "month"
 msgstr ""
 
 #: functions.php:2445
+#: functions.php:4641
 msgid "months"
 msgstr ""
 
 #: functions.php:2448
+#: functions.php:4651
 msgid "year"
 msgstr ""
 
 #: functions.php:2451
+#: functions.php:4649
 msgid "years"
 msgstr ""
 
@@ -2436,11 +2455,6 @@ msgstr ""
 msgid "Invalid email address."
 msgstr ""
 
-#: shortcodes.php:338
-#: shortcodes.php:952
-msgid "Passwords do not match."
-msgstr ""
-
 #: shortcodes.php:348
 msgid "Profile Changes Saved."
 msgstr ""
@@ -2565,10 +2579,6 @@ msgstr ""
 
 #: shortcodes.php:640
 msgid "Confirm Password"
-msgstr ""
-
-#: shortcodes.php:654
-msgid "Next"
 msgstr ""
 
 #: shortcodes.php:688

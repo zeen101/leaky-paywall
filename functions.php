@@ -4612,3 +4612,46 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		echo '<style>span.lp-pro-upgrade a, span.lp-pro-upgrade a:hover{color: #759542; font-weight: 600;}</style>';
 	}
 	add_action('admin_print_styles-plugins.php', 'leaky_paywall_plugin_list_styles');
+
+/**
+ * Allow interval text to be translatable
+ */
+function leaky_paywall_get_interval_text( $interval, $interval_count ) {
+
+	$interval_text = '';
+
+	if ($interval == 'day') {
+		if ($interval_count > 1) {
+			$interval_text = esc_html__('days', 'leaky-paywall');
+		} else {
+			$interval_text = esc_html__('day', 'leaky-paywall');
+		}
+	}
+
+	if ($interval == 'week') {
+		if ($interval_count > 1) {
+			$interval_text = esc_html__('weeks', 'leaky-paywall');
+		} else {
+			$interval_text = esc_html__('week', 'leaky-paywall');
+		}
+	}
+
+	if ($interval == 'month') {
+		if ($interval_count > 1) {
+			$interval_text = esc_html__('months', 'leaky-paywall');
+		} else {
+			$interval_text = esc_html__('month', 'leaky-paywall');
+		}
+	}
+
+	if ($interval == 'year') {
+		if ($interval_count > 1) {
+			$interval_text = esc_html__('years', 'leaky-paywall');
+		} else {
+			$interval_text = esc_html__('year', 'leaky-paywall');
+		}
+	}
+
+	return $interval_text;
+
+}

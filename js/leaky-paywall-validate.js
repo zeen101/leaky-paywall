@@ -110,7 +110,7 @@
         if (passwordField.val() && passwordConfirmField.val()) {
           $(
             '<p class="leaky-paywall-input-error password-error">' +
-              "Passwords don't match" +
+              leaky_paywall_validate_ajax.password_text +
               "</p>"
           ).insertAfter(passwordConfirmField);
         }

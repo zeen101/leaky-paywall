@@ -47,7 +47,7 @@
                             value.message +
                             "</p>"
                         );
-                        $("#leaky-paywall-registration-next").text("Next");
+                        $("#leaky-paywall-registration-next").text( leaky_paywall_stripe_registration_ajax.next_text );
                         $("#leaky-paywall-registration-errors").show();
 
                         $("html, body").animate(
