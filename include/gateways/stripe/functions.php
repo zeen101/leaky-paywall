@@ -339,22 +339,11 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
 			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields));
 		} else {
-
 			leaky_paywall_errors()->add('subscription_exists', __('A subscription already exists for this user.', 'leaky-paywall'), 'register');
-
 			return false;
-
-			// foreach ($subscriptions->data as $sub) {
-
-			// 	$subscription = $stripe->subscriptions->update($sub->id, array(
-			// 		'plan' => $plan_id,
-			// 	));
-
-			// 	do_action('leaky_paywall_after_update_stripe_subscription', $cu, $sub, $level);
-			// }
 		}
-	} catch (\Stripe\Exception\ApiErrorException $e) {
-		leaky_paywall_log('error 2', 'stripe subscription');
+	} catch (\Throwable $th) {
+		leaky_paywall_log($th->getMessage(), 'stripe subscription - error 2');
 		leaky_paywall_log($fields, 'stripe subscription form data error 2');
 		return false;
 	}
@@ -367,13 +356,11 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		return $subscription->pending_setup_intent->client_secret;
 	}
 
-
-	/*
-	return array(
-		'subscription_id' => $subscription->id,
-		'client_secret' => $subscription->latest_invoice->payment_intent->client_secret
-	);
-	*/
+	if ( isset( $subscription->pending_setup_intent)) {
+		// get setup intent client secret
+		$intent = $stripe->setupIntents->retrieve( $subscription->pending_setup_intent );
+		return $intent->client_secret;
+	}
 
 }
 
