@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 4.21.0\n"
+"Project-Id-Version: Leaky Paywall 4.21.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-02-29T20:26:20+00:00\n"
+"POT-Creation-Date: 2024-03-06T22:11:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.7.1\n"
 "X-Domain: leaky-paywall\n"
@@ -68,7 +68,7 @@ msgstr ""
 
 #: class.php:414
 #: shortcodes.php:338
-#: shortcodes.php:952
+#: shortcodes.php:954
 msgid "Passwords do not match."
 msgstr ""
 
@@ -77,7 +77,7 @@ msgid "Processing... Please Wait"
 msgstr ""
 
 #: class.php:441
-#: shortcodes.php:654
+#: shortcodes.php:656
 msgid "Next"
 msgstr ""
 
@@ -330,7 +330,7 @@ msgid "Subscription Length"
 msgstr ""
 
 #: functions.php:1633
-#: shortcodes.php:513
+#: shortcodes.php:515
 msgid "Forever"
 msgstr ""
 
@@ -2116,7 +2116,7 @@ msgstr ""
 msgid "There was an error. Please try again."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:343
+#: include/gateways/stripe/functions.php:342
 msgid "A subscription already exists for this user."
 msgstr ""
 
@@ -2231,13 +2231,13 @@ msgid "Expiration (MM/YYYY)"
 msgstr ""
 
 #: include/registration-functions.php:766
-#: shortcodes.php:597
+#: shortcodes.php:599
 #: templates/shortcode-account.php:254
 msgid "First Name"
 msgstr ""
 
 #: include/registration-functions.php:771
-#: shortcodes.php:602
+#: shortcodes.php:604
 #: templates/shortcode-account.php:260
 msgid "Last Name"
 msgstr ""
@@ -2367,14 +2367,14 @@ msgid "Log Out"
 msgstr ""
 
 #: shortcodes.php:179
-#: shortcodes.php:514
+#: shortcodes.php:516
 #: subscriber-table.php:493
 #: templates/shortcode-account.php:226
 msgid "Yes"
 msgstr ""
 
 #: shortcodes.php:181
-#: shortcodes.php:514
+#: shortcodes.php:516
 #: subscriber-table.php:497
 #: templates/shortcode-account.php:226
 msgid "No"
@@ -2451,7 +2451,7 @@ msgid "Your Profile"
 msgstr ""
 
 #: shortcodes.php:330
-#: shortcodes.php:944
+#: shortcodes.php:946
 msgid "Invalid email address."
 msgstr ""
 
@@ -2460,7 +2460,7 @@ msgid "Profile Changes Saved."
 msgstr ""
 
 #: shortcodes.php:361
-#: shortcodes.php:623
+#: shortcodes.php:625
 msgid "Username"
 msgstr ""
 
@@ -2488,100 +2488,104 @@ msgstr ""
 msgid "Save Profile Changes"
 msgstr ""
 
-#: shortcodes.php:394
+#: shortcodes.php:392
+msgid "Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?"
+msgstr ""
+
+#: shortcodes.php:396
 msgid "Delete Account"
 msgstr ""
 
-#: shortcodes.php:436
+#: shortcodes.php:438
 msgid "Please"
 msgstr ""
 
-#: shortcodes.php:436
-#: shortcodes.php:446
+#: shortcodes.php:438
+#: shortcodes.php:448
 msgid "go to the subscribe page"
 msgstr ""
 
-#: shortcodes.php:436
+#: shortcodes.php:438
 msgid "to choose a subscription level."
 msgstr ""
 
-#: shortcodes.php:446
+#: shortcodes.php:448
 msgid "You are already subscribed to this level. Please"
 msgstr ""
 
-#: shortcodes.php:446
+#: shortcodes.php:448
 msgid "to choose a different subscription level."
 msgstr ""
 
-#: shortcodes.php:483
+#: shortcodes.php:485
 msgid "Order Summary"
 msgstr ""
 
-#: shortcodes.php:488
+#: shortcodes.php:490
 msgid "Already have an account?"
 msgstr ""
 
-#: shortcodes.php:488
+#: shortcodes.php:490
 msgid "Click here to login"
 msgstr ""
 
-#: shortcodes.php:492
+#: shortcodes.php:494
 msgid "If you already have an account on this site, please login below. Otherwise, please proceed to the Details section."
 msgstr ""
 
-#: shortcodes.php:495
+#: shortcodes.php:497
 msgid "Lost your password?"
 msgstr ""
 
-#: shortcodes.php:512
+#: shortcodes.php:514
 msgid "Your Order:"
 msgstr ""
 
-#: shortcodes.php:513
+#: shortcodes.php:515
 msgid "Subscription Length:"
 msgstr ""
 
-#: shortcodes.php:514
+#: shortcodes.php:516
 msgid "Recurring:"
 msgstr ""
 
-#: shortcodes.php:515
+#: shortcodes.php:517
 msgid "Content Access:"
 msgstr ""
 
-#: shortcodes.php:557
+#: shortcodes.php:559
 msgid "Total:"
 msgstr ""
 
-#: shortcodes.php:570
+#: shortcodes.php:572
 msgid "Account Setup"
 msgstr ""
 
-#: shortcodes.php:574
+#: shortcodes.php:576
 msgid "Payment"
 msgstr ""
 
-#: shortcodes.php:594
+#: shortcodes.php:596
 msgid "Your Details"
 msgstr ""
 
-#: shortcodes.php:607
+#: shortcodes.php:609
 msgid "Email Address"
 msgstr ""
 
-#: shortcodes.php:617
+#: shortcodes.php:619
 msgid "Account Details"
 msgstr ""
 
-#: shortcodes.php:635
+#: shortcodes.php:637
 msgid "Password"
 msgstr ""
 
-#: shortcodes.php:640
+#: shortcodes.php:642
 msgid "Confirm Password"
 msgstr ""
 
-#: shortcodes.php:688
+#: shortcodes.php:690
 msgid "Payment Information"
 msgstr ""
 
