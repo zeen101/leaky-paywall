@@ -172,9 +172,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			return;
 		}
 
+		$stripe = leaky_paywall_initialize_stripe_api();
+
 		if ($endpoint_secret) {
 
-			$stripe = leaky_paywall_initialize_stripe_api();
 			$sig_header = isset($_SERVER['HTTP_STRIPE_SIGNATURE']) ? sanitize_text_field($_SERVER['HTTP_STRIPE_SIGNATURE']) : '';
 
 			try {
@@ -204,6 +205,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			$user = get_leaky_paywall_subscriber_by_subscriber_id($stripe_object->customer, $mode);
 
 			// if empty, get email from stripe customer and then get user by email
+			if ( !$user ) {
+				$stripe_customer = $stripe->customers->retrieve( $stripe_object->customer );
+				$user = get_user_by( 'email', $stripe_customer->email );
+			}
+
 		}
 
 		if (empty($user)) {
@@ -267,11 +273,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			case 'invoice.payment_succeeded':
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
-				// get the subscription and sync expiration date
-				$stripe = leaky_paywall_initialize_stripe_api();
-				$sub = $stripe->subscriptions->retrieve($stripe_object->subscription);
-				$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+
+				if ($stripe_object->subscription !== null ) {
+					// get the subscription and sync expiration date
+					$stripe = leaky_paywall_initialize_stripe_api();
+					$sub = $stripe->subscriptions->retrieve($stripe_object->subscription);
+					$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
+					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+				}
+
 				break;
 			case 'invoice.paid':
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
