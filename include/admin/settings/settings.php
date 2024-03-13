@@ -1629,11 +1629,11 @@ class Leaky_Paywall_Settings
 				$settings['new_subscriber_email'] = 'off';
 			}
 
-			if (!empty($_POST['new_email_subject'])) {
+			if (isset($_POST['new_email_subject'])) {
 				$settings['new_email_subject'] = sanitize_text_field(wp_unslash($_POST['new_email_subject']));
 			}
 
-			if (!empty($_POST['new_email_body'])) {
+			if (isset($_POST['new_email_body'])) {
 				$settings['new_email_body'] = wp_kses_post(wp_unslash($_POST['new_email_body']));
 			}
 
@@ -1643,11 +1643,11 @@ class Leaky_Paywall_Settings
 				$settings['renewal_reminder_email'] = 'off';
 			}
 
-			if (!empty($_POST['renewal_reminder_email_subject'])) {
+			if (isset($_POST['renewal_reminder_email_subject'])) {
 				$settings['renewal_reminder_email_subject'] = sanitize_text_field(wp_unslash($_POST['renewal_reminder_email_subject']));
 			}
 
-			if (!empty($_POST['renewal_reminder_email_body'])) {
+			if (isset($_POST['renewal_reminder_email_body'])) {
 				$settings['renewal_reminder_email_body'] = wp_kses_post(wp_unslash($_POST['renewal_reminder_email_body']));
 			}
 
