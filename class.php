@@ -44,7 +44,7 @@ class Leaky_Paywall {
 		add_action( 'http_api_curl', array( $this, 'force_ssl_version' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_wp_enqueue_scripts' ) );
-		add_filter('script_loader_tag', array( $this, 'add_type_attribute' ) , 10, 3);
+		add_filter( 'script_loader_tag', array( $this, 'add_type_attribute' ) , 10, 3);
 		add_action( 'admin_print_styles', array( $this, 'admin_wp_print_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 
@@ -59,6 +59,27 @@ class Leaky_Paywall {
 		add_action( 'rest_api_init', array( $this, 'process_rest_content_restrictions' ) );
 
 		add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
+
+	}
+
+	/**
+	 * Get the current LP DB Version
+	 * Should be 'false' until version 1.0.6 has been activated
+	 * for the custom transaction table.
+	 */
+	public function get_db_version() {
+
+		return get_option( 'LEAKY_PAYWALL_DB_VERSION' );
+
+	}
+
+	/**
+	 * Set DB Version to the current version
+	 */
+	public function update_db_version() {
+
+		return update_option( 'LEAKY_PAYWALL_DB_VERSION', LEAKY_PAYWALL_DB_VERSION );
+
 	}
 
 	/**

@@ -261,9 +261,11 @@ class Leaky_Paywall_Settings
 	public function output_general_settings($current_section)
 	{
 
+		global $leaky_paywall;
+
 		$settings = $this->get_settings();
 
-		if ($current_section == 'general') :
+		if ($current_section == 'general') {
 
 			do_action('leaky_paywall_before_general_settings');
 
@@ -281,6 +283,14 @@ class Leaky_Paywall_Settings
 				</table>
 
 			<?php } ?>
+
+			<div>
+				<?php 
+				//if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
+					echo 'You are using an old version of the dabatase, please backup your current database and run this <a href="' . esc_url(admin_url()) . 'admin.php?page=issuem-leaky-paywall&section=use-transaction-tables">migration script</a>.';
+				//}
+				?>
+			</div>
 
 			<h2><?php esc_html_e('General Settings', 'leaky-paywall'); ?></h2>
 
@@ -343,12 +353,8 @@ class Leaky_Paywall_Settings
 			<?php do_action('leaky_paywall_settings_form', $settings); // here for backwards compatibility.
 			?>
 
-		<?php endif; // general
+		<?php } else if ($current_section == 'pages') { ?>
 
-
-		if ($current_section == 'pages') :
-
-		?>
 			<table id="leaky_paywall_administrator_options" class="form-table leaky-paywall-settings-table">
 
 				<tr>
@@ -463,7 +469,11 @@ class Leaky_Paywall_Settings
 
 			</table>
 
-		<?php endif; ?>
+		<?php } else if ($current_section == 'use-transaction-tables') { ?>
+
+			MIGRATING
+
+		<?php } ?>
 
 
 	<?php

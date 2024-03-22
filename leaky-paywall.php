@@ -28,7 +28,7 @@ if ( ! defined( 'ZEEN101_STORE_URL' ) ) {
 define( 'LEAKY_PAYWALL_NAME', 'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 'leaky-paywall' );
 define( 'LEAKY_PAYWALL_VERSION', '4.21.2' );
-define( 'LEAKY_PAYWALL_DB_VERSION', '1.0.5' );
+define( 'LEAKY_PAYWALL_DB_VERSION', '1.0.6' );
 define( 'LEAKY_PAYWALL_URL', plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LEAKY_PAYWALL_BASENAME', plugin_basename( __FILE__ ) );
@@ -83,7 +83,15 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'metaboxes.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/template-functions.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/dashboard-widgets.php';
-		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction.php';
+		
+		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '>=' ) ) {
+			require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction-table.php';
+			include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction-table.php';
+		} else {
+			require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction.php';
+			include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
+		}
+
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-incomplete-user.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/functions.php';
@@ -96,7 +104,6 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/registration-functions.php';
 		include LEAKY_PAYWALL_PATH . 'include/rest-functions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-restrictions.php';
-		include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';
 	//	include LEAKY_PAYWALL_PATH . 'include/class-lp-onboarding.php';
 

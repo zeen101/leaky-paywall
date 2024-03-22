@@ -25,8 +25,6 @@ class LP_Transaction {
 
 	private $payment_status;
 
-	private $coupon_code;
-
 	private $is_recurring;
 
 	/**
