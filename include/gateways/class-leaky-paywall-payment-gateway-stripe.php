@@ -73,6 +73,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			!isset($_POST['leaky_paywall_register_nonce'])
 			|| !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['leaky_paywall_register_nonce'])), 'leaky-paywall-register-nonce')
 		) {
+			leaky_paywall_log('nonce error', 'stripe signup - error 1');
 			wp_die(
 				esc_html__('An error occurred, please contact the site administrator: ', 'leaky-paywall') . esc_html(get_bloginfo('admin_email')),
 				esc_html__('Error', 'leaky-paywall'),
@@ -92,6 +93,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		);
 
 		if (empty($incomplete_user)) {
+			leaky_paywall_log('incomplete user error', 'stripe signup - error 2');
 			wp_die(
 				esc_html__('An error occurred, please contact the site administrator: ', 'leaky-paywall') . esc_html(get_bloginfo('admin_email')),
 				esc_html__('Error', 'leaky-paywall'),
@@ -111,6 +113,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		}
 
 		if (!$customer_id) {
+			leaky_paywall_log('customer id error', 'stripe signup - error 3');
 			wp_die(
 				esc_html__('An error occurred, please contact the site administrator: ', 'leaky-paywall') . esc_html(get_bloginfo('admin_email')),
 				esc_html__('Error', 'leaky-paywall'),
