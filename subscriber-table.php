@@ -173,7 +173,6 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'name'          => __( 'Name', 'leaky-paywall' ),
 			'level_id'      => __( 'Level ID', 'leaky-paywall' ),
 			'susbcriber_id' => __( 'Subscriber ID', 'leaky-paywall' ),
-			'price'         => __( 'Price', 'leaky-paywall' ),
 			'plan'          => __( 'Plan', 'leaky-paywall' ),
 			'created'       => __( 'Created', 'leaky-paywall' ),
 			'expires'       => __( 'Expires', 'leaky-paywall' ),
@@ -196,7 +195,6 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'email'         => array( 'email', false ),
 			'level_id'      => array( 'level_id', false ),
 			'susbcriber_id' => array( 'susbcriber_id', false ),
-			'price'         => array( 'price', false ),
 			'plan'          => array( 'plan', false ),
 			'gateway'       => array( 'payment_gateway', false ),
 			'status'        => array( 'payment_status', false ),
@@ -404,19 +402,6 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							echo wp_kses_post( $output );
 							echo '</td>';
 
-
-							break;
-
-						case 'price':
-							if ( is_multisite_premium() ) {
-								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-								echo number_format( (float) get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true ), '2' );
-								echo '</td>';
-							} else {
-								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-								echo number_format( (float) get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_price', true ), '2' );
-								echo '</td>';
-							}
 
 							break;
 
