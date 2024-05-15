@@ -474,6 +474,21 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 						}
 						return true; // We don't need to process anymore.
 
+					case 'subscr_failed':
+						if (isset($_REQUEST['subscr_id'])) { // subscr_payment.
+							$user = get_leaky_paywall_subscriber_by_subscriber_id(sanitize_text_field(wp_unslash($_REQUEST['subscr_id'])), $mode);
+							if (is_multisite_premium()) {
+								$site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id(sanitize_text_field(wp_unslash($_REQUEST['subscr_id'])));
+								if ($site_id) {
+									$site = '_' . $site_id;
+								}
+							}
+							if (!empty($user) && 0 !== $user->ID) {
+								update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+							}
+						}
+						return true; // We don't need to process anymore.
+
 					case 'subscr_eot':
 						if ( isset( $_REQUEST['subscr_id'] ) ) { // subscr_payment.
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( sanitize_text_field( wp_unslash( $_REQUEST['subscr_id'] ) ), $mode );
