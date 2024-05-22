@@ -46,7 +46,7 @@ function lp_rest_get_post_meta( $user, $field_name, $request ) {
     $payment_gateway = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
     $payment_status = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 
-    return array(
+    $data = [
         'level_id'  => $level_id,
         'subscriber_id' => $subscriber_id,
         'price' => $price,
@@ -56,5 +56,7 @@ function lp_rest_get_post_meta( $user, $field_name, $request ) {
         'has_access' => $has_access,
         'payment_gateway' => $payment_gateway,
         'payment_status' => $payment_status
-    );
+    ];
+
+    return apply_filters( 'leaky_paywall_rest_meta', $data, $user_obj );
 }
