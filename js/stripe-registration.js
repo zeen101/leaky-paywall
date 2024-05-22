@@ -190,15 +190,15 @@
                         return_url: leaky_paywall_stripe_registration_ajax.redirect_url,
                         receipt_email: emailAddress,
                     },
-                    redirect: 'if_required'
+                    // redirect: 'if_required'
                 });
 
                 if (paymentIntent && paymentIntent.id) {
 
                     if ( paymentIntent.status == 'succeeded') {
                         console.log('submit form 2');
-                        let form$ = jQuery('#leaky-paywall-payment-form');
-                        form$.get(0).submit();
+                        // let form$ = jQuery('#leaky-paywall-payment-form');
+                        // form$.get(0).submit();
                     } else {
                         resetSubButton();
                     }

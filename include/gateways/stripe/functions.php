@@ -695,7 +695,268 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 
 	}
 
+}
 
+add_action('leaky_paywall_before_process_stripe_webhook', 'leaky_paywall_process_stripe_subscription_payment_element_webhook');
+
+function leaky_paywall_process_stripe_subscription_payment_element_webhook($stripe_event) {
+
+	// if ($stripe_event->type != 'customer.subscription.updated') {
+	// 	return;
+	// }
+
+	if ($stripe_event->type != 'payment_intent.succeeded') {
+		return;
+	}
+
+	return;
+
+	// Stripe says to create the sale in the database here, but we need to log the user in after submission. The webhook can't do that.  Maybe we attempt to create sale here if it wasn't already created by pi flow.  If the transaction already exists, then exit.
+
+	$stripe_object = $stripe_event->data->object;
+
+	leaky_paywall_log($stripe_object->customer, 'stripe subscription updated event customer');
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	$incomplete_id = '';
+
+	try {
+		$cu = $stripe->customers->retrieve($stripe_object->customer);
+		$incomplete_id = leaky_paywall_get_incomplete_user_from_email($cu->email);
+	} catch (\Throwable $th) {
+		//throw $th;
+	}
+
+	if (!$incomplete_id) {
+		leaky_paywall_log($stripe_object->customer, 'stripe subscription updated event no incomplete found');
+		return;
+	}
+
+	$user_data = get_post_meta($incomplete_id, '_user_data', true);
+	$field_data = get_post_meta($incomplete_id, '_field_data', true);
+	$user = get_user_by('email', $user_data['email']);
+	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
+	$plan_id = '';
+
+	if ($user) {
+		$existing_customer = true;
+		$status = 'update';
+	} else {
+		$existing_customer = false;
+		$status = 'new';
+	}
+
+	if (isset($level['recurring']) && 'on' == $level['recurring']) {
+
+		$price = $stripe_object->plan->amount;
+		$plan = $stripe_object->plan->id;
+	} else {
+
+		$price = $stripe_object->amount;
+		$plan = '';
+
+	}
+
+	$subscriber_data = array(
+		'email' => $user_data['email'],
+		'password' => isset($user_data['password']) ? $user_data['password'] : '',
+		'first_name'	=> $user_data['first_name'],
+		'last_name'	=> $user_data['last_name'],
+		'level_id'	=> $user_data['level_id'],
+		'description' => $level['label'],
+		'subscriber_id'	=> $stripe_object->customer,
+		'created'	=> gmdate('Y-m-d H:i:s'),
+		'price'	=> $price / 100,
+		'plan'	=> $plan,
+		'interval_count' => $level['interval_count'],
+		'interval'	=> $level['interval'],
+		'recurring'	=> false,
+		'currency' => leaky_paywall_get_currency(),
+		'new_user'	=> true,
+		'payment_gateway'	=> 'stripe',
+		'payment_status'	=> 'active',
+		'site'	=> leaky_paywall_get_current_site(),
+		'mode' => leaky_paywall_get_current_mode(),
+	);
+
+	if ($existing_customer) {
+		$subscriber_data['need_new'] = false;
+	} else {
+		$subscriber_data['need_new'] = true;
+	}
+
+	if ($existing_customer) {
+		$user_id = leaky_paywall_update_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+	} else {
+		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
+	}
+
+	$subscriber_data['user_id'] = $user_id;
+
+	$transaction = new LP_Transaction($subscriber_data);
+	$transaction_id = $transaction->create();
+	$subscriber_data['transaction_id'] = $transaction_id;
+
+	update_post_meta($transaction_id, '_field_data', $field_data);
+
+	if (isset($field_data['lp_nag_loc'])) {
+		update_post_meta($transaction_id, '_nag_location_id', $field_data['lp_nag_loc']);
+	}
+
+	// do_action('leaky_paywall_after_stripe_subscription_completed', $subscriber_data);
+
+	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+
+	// Send email notifications
+
+
+}
+
+add_action( 'init', 'leaky_paywall_maybe_process_payment_intent_redirect_url' );
+
+function leaky_paywall_maybe_process_payment_intent_redirect_url() {
+
+	if ( !isset( $_GET['payment_intent'] ) ) {
+		return;
+	}
+
+	$settings = get_leaky_paywall_settings();
+
+	$pi_id = sanitize_text_field( $_GET['payment_intent'] );
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$pi = $stripe->paymentIntents->retrieve($pi_id);
+	} catch (\Throwable $th) {
+		//throw $th;
+	}
+
+	if ( !isset($pi->status) ) {
+		return;
+	}
+
+	if ( 'succeeded' != $pi->status ) {
+		return;
+	}
+
+	$incomplete_id = '';
+
+	try {
+		$cu = $stripe->customers->retrieve($pi->customer);
+	} catch (\Throwable $th) {
+		//throw $th;
+	}
+
+	if ( !isset( $cu->email ) ) {
+		return;
+	}
+
+	$incomplete_id = leaky_paywall_get_incomplete_user_from_email($cu->email);
+
+	if ( !$incomplete_id ) {
+		return;
+	}
+
+	$user_data = get_post_meta($incomplete_id, '_user_data', true);
+	$field_data = get_post_meta($incomplete_id, '_field_data', true);
+	$user = get_user_by('email', $user_data['email']);
+	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
+	$plan_id = '';
+
+	if ($user) {
+		$existing_customer = true;
+		$status = 'update';
+	} else {
+		$existing_customer = false;
+		$status = 'new';
+	}
+
+	if (isset($level['recurring']) && 'on' == $level['recurring']) {
+
+		try {
+			$subscriptions = $stripe->subscriptions->all(array(
+				'customer' => $cu->id,
+				'limit' => '1'
+			));
+
+			foreach ($subscriptions->data as $subscription) {
+				// get subscription plan id
+				$plan_id = $subscription->plan->id;
+			}
+
+		} catch (\Throwable $th) {
+			//throw $th;
+		}
+
+	}
+
+	$subscriber_data = array(
+		'email' => $user_data['email'],
+		'password' => isset($user_data['password']) ? $user_data['password'] : '',
+		'first_name'	=> $user_data['first_name'],
+		'last_name'	=> $user_data['last_name'],
+		'level_id'	=> $user_data['level_id'],
+		'description' => $level['label'],
+		'subscriber_id'	=> $pi->customer,
+		'created'	=> gmdate('Y-m-d H:i:s'),
+		'price'	=> $pi->amount / 100,
+		'plan'	=> $plan_id,
+		'interval_count' => $level['interval_count'],
+		'interval'	=> $level['interval'],
+		'recurring'	=> false,
+		'currency' => leaky_paywall_get_currency(),
+		'new_user'	=> true,
+		'payment_gateway'	=> 'stripe',
+		'payment_status'	=> 'active',
+		'site'	=> leaky_paywall_get_current_site(),
+		'mode' => leaky_paywall_get_current_mode(),
+	);
+
+	if ($existing_customer) {
+		$subscriber_data['need_new'] = false;
+	} else {
+		$subscriber_data['need_new'] = true;
+	}
+
+	if ($existing_customer) {
+		$user_id = leaky_paywall_update_subscriber(NULL, $user_data['email'], $pi->customer, $subscriber_data);
+	} else {
+		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $pi->customer, $subscriber_data);
+	}
+
+	$subscriber_data['user_id'] = $user_id;
+
+	$transaction = new LP_Transaction($subscriber_data);
+	$transaction_id = $transaction->create();
+	$subscriber_data['transaction_id'] = $transaction_id;
+
+	update_post_meta($transaction_id, '_field_data', $field_data);
+
+	if (isset($field_data['lp_nag_loc'])) {
+		update_post_meta($transaction_id, '_nag_location_id', $field_data['lp_nag_loc']);
+	}
+
+	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+
+	leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
+
+	// log the user in.
+	leaky_paywall_log_in_user($user_id);
+
+	do_action('leaky_paywall_after_process_registration', $subscriber_data);
+
+	$restrictions = new Leaky_Paywall_Restrictions();
+	$restrictions->clear_cookie();
+
+	if (isset($_COOKIE['lp_nag_loc'])) {
+		update_post_meta($transaction_id, '_nag_location_id', absint($_COOKIE['lp_nag_loc']));
+	}
+
+	// send the newly created user to the appropriate page after logging them in.
+	wp_safe_redirect(leaky_paywall_get_redirect_url($settings, $subscriber_data));
+	exit;
 
 }
 
