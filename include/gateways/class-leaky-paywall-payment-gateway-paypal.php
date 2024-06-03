@@ -582,16 +582,16 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				$transaction_id = leaky_paywall_get_transaction_id_from_email( sanitize_email( wp_unslash( $_REQUEST['custom'] ) ) );
 
 				if ( $transaction_id ) {
-					$args['password'] = get_post_meta( $transaction_id, '_password', true );
-					delete_post_meta( $transaction_id, '_password' ); // dont want this in the database.
-					$args['first_name']     = get_post_meta( $transaction_id, '_first_name', true );
-					$args['last_name']      = get_post_meta( $transaction_id, '_last_name', true );
-					$args['login']          = get_post_meta( $transaction_id, '_login', true );
+					$args['password'] = LP_Transaction::get_meta( $transaction_id, '_password', true );
+					LP_Transaction::delete_meta( $transaction_id, '_password' ); // dont want this in the database.
+					$args['first_name']     = LP_Transaction::get_meta( $transaction_id, '_first_name', true );
+					$args['last_name']      = LP_Transaction::get_meta( $transaction_id, '_last_name', true );
+					$args['login']          = LP_Transaction::get_meta( $transaction_id, '_login', true );
 					$args['transaction_id'] = $transaction_id;
 
 					if ( 'cart' == $_REQUEST['txn_type'] || 'web_accept' == $_REQUEST['txn_type'] || 'subscr_signup' == $_REQUEST['txn_type'] ) {
-						update_post_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
-						update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+						LP_Transaction::update_meta( $transaction_id, '_paypal_request', json_encode( $_REQUEST ) );
+						LP_Transaction::update_meta( $transaction_id, '_transaction_status', 'complete' );
 						leaky_paywall_set_payment_transaction_id( $transaction_id, sanitize_text_field( wp_unslash( $_REQUEST['txn_id'] ) ) );
 					}
 				} else {
@@ -652,17 +652,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			$transaction_email = $this->email;
 		}
 
-		$transaction = array(
-			'post_title'   => 'Transaction for ' . $transaction_email,
-			'post_content' => '',
-			'post_status'  => 'publish',
-			'post_author'  => 1,
-			'post_type'    => 'lp_transaction',
-		);
-
-		// Insert the post into the database.
-		$transaction_id = wp_insert_post( $transaction );
-
 		if ( isset( $_POST['password'] ) ) {
 			$transaction_password = sanitize_text_field( wp_unslash( $_POST['password'] ) );
 		} else {
@@ -717,20 +706,30 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			$price = '';
 		}
 
-		update_post_meta( $transaction_id, '_email', $transaction_email );
-		update_post_meta( $transaction_id, '_password', $transaction_password );
-		update_post_meta( $transaction_id, '_first_name', $first_name );
-		update_post_meta( $transaction_id, '_last_name', $last_name );
-		update_post_meta( $transaction_id, '_login', $username );
-		update_post_meta( $transaction_id, '_level_id', $level_id );
-		update_post_meta( $transaction_id, '_gateway', 'paypal' );
-		update_post_meta( $transaction_id, '_price', $price );
-		update_post_meta( $transaction_id, '_currency', $currency );
-		update_post_meta( $transaction_id, '_transaction_status', 'incomplete' );
+		$user = get_user_by( 'login', $username );
+
+		$transaction_data = array(
+			'user_id'            => $user->ID,
+			'email'              => $transaction_email,
+			'first_name'         => $first_name,
+			'last_name'	         => $last_name,
+			'level_id'           => $level_id,
+			'price'              => $price,
+			'recurring'          => false,
+			'currency'           => $currency,
+			'new_user'           => true,
+			'payment_gateway'    => 'paypal',
+			'transaction_status' => 'incomplete',
+		);
+
+		$transaction = new LP_Transaction( $transaction_data );
+		$transaction_id = $transaction->create();
+
+		LP_Transaction::update_meta( $transaction_id, '_password', $transaction_password );
 
 		if ( isset( $_REQUEST['txn_type'] ) ) {
-			update_post_meta( $transaction_id, '_paypal_request', array_map( 'sanitize_text_field', wp_unslash( $_REQUEST ) ) );
-			update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+			LP_Transaction::update_meta( $transaction_id, '_paypal_request', array_map( 'sanitize_text_field', wp_unslash( $_REQUEST ) ) );
+			LP_Transaction::update_meta( $transaction_id, '_transaction_status', 'complete' );
 		}
 
 		do_action( 'leaky_paywall_save_data_to_paypal_transaction', $transaction_id );

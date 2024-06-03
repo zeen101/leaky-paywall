@@ -4476,6 +4476,79 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	}
 	add_action('admin_notices', 'leaky_paywall_display_rate_us_notice', 20);
 
+		/**
+	 * Display Leaky Paywall rate us notice
+	 */
+	function leaky_paywall_display_db_1_0_6_upgrade_notice()
+	{
+
+		if ( 
+			   !empty( $_GET['page'] ) && 'issuem-leaky-paywall' == $_GET['page']
+			&& !empty( $_GET['tab'] ) && 'updates' == $_GET['tab']
+		) {
+			return;
+		}
+		
+		if ( !current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$notice_id = 'show_db_1_0_6_notice';
+		$notice = get_option( $notice_id );
+
+		if ( empty( $notice ) ) {
+			return;
+		}
+
+		$dismiss_url = add_query_arg(
+			array(
+				'action'    => 'leaky_paywall_set_db_1_0_6_notice_viewed',
+				'notice_id' => esc_attr( $notice_id ),
+			),
+			admin_url()
+		);
+
+	?>
+		<div class="notice notice-warning is-dismissible" data-notice_id="<?php echo esc_attr( $notice_id ); ?>">
+			<div class="leaky-paywall-message-inner">
+
+				<div class="leaky-paywall-message-content">
+					<p><strong><?php echo esc_html__( 'Update Recommended:', 'leaky-paywall' ); ?></strong><?php esc_html_e( 'We have noticed large sites with numberous transactions have difficulty with how transactions are currently stored. We recommend using a newer method of handling transactions that is more performant. Please make a backup of your database and then click the "Update the Database" button to begin the process of updating your transaction table.', 'leaky-paywall' ); ?></p>
+					<p class="leaky-paywall-message-actions">
+						<a href="<?php echo esc_url(admin_url()) . 'admin.php?page=issuem-leaky-paywall&tab=updates' ?>" class="button button-primary"><?php esc_html_e('Update the Database', 'leaky-paywall'); ?></a>
+						<a href="<?php echo esc_url_raw($dismiss_url); ?>" class="button leaky-paywall-button-notice-dismiss"><?php esc_html_e('Ignore', 'leaky-paywall'); ?></a>
+					</p>
+				</div>
+				<div class="leaky-paywall-message-logo">
+					<img src="<?php echo esc_url(LEAKY_PAYWALL_URL); ?>/images/zeen101-logo.png" alt="ZEEN101" width="100">
+				</div>
+			</div>
+		</div>
+
+		<style>
+			.leaky-paywall-message-inner {
+				overflow: hidden;
+				width: 100%;
+			}
+
+			.leaky-paywall-message-inner .leaky-paywall-message-content {
+				width: 60%;
+				float: left;
+			}
+
+			.leaky-paywall-message-inner .leaky-paywall-message-logo {
+				width: 20%;
+				float: right;
+				text-align: right;
+				padding-top: 7px;
+				padding-bottom: 7px;
+			}
+		</style>
+	<?php
+	}
+	add_action( 'admin_notices', 'leaky_paywall_display_db_1_0_6_upgrade_notice', 20 );
+
+
 	/**
 	 * Update admin notice viewed
 	 */
@@ -4506,25 +4579,35 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_get_transaction_id_from_email($email)
 	{
 
+		global $leaky_paywall;
 		$transaction_id = '';
 
-		$args = array(
-			'post_type'       => 'lp_transaction',
-			'number_of_posts' => 1,
-			'meta_query'      => array(
-				array(
-					'key'     => '_email',
-					'value'   => $email,
-					'compare' => '=',
+		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
+
+			$args = array(
+				'post_type'       => 'lp_transaction',
+				'number_of_posts' => 1,
+				'meta_query'      => array(
+					array(
+						'key'     => '_email',
+						'value'   => $email,
+						'compare' => '=',
+					),
 				),
-			),
-		);
+			);
+	
+			$transactions = get_posts($args);
+	
+			if (!empty($transactions)) {
+				$transaction    = $transactions[0];
+				$transaction_id = $transaction->ID;
+			}
 
-		$transactions = get_posts($args);
+		} else {
 
-		if (!empty($transactions)) {
-			$transaction    = $transactions[0];
-			$transaction_id = $transaction->ID;
+			$transction = LP_Transaction::get_transaction_by( 'email', $email );
+			$transcation_id = $transaction->ID;
+
 		}
 
 		return $transaction_id;

@@ -56,6 +56,10 @@ if ( ! defined( 'PAYPAL_NVP_API_LIVE_URL' ) ) {
 	define( 'PAYPAL_NVP_API_LIVE_URL', 'https://api-3t.paypal.com/nvp' );
 }
 
+// Composer
+require_once( LEAKY_PAYWALL_PATH . 'vendor/autoload.php' );
+require_once( LEAKY_PAYWALL_PATH . 'vendor/woocommerce/action-scheduler/action-scheduler.php' );
+
 /**
  * Instantiate Pigeon Pack class, require helper files
  *
@@ -129,3 +133,170 @@ function leaky_paywall_plugins_loaded() {
 	}
 }
 add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); // wait for the plugins to be loaded before init.
+
+function leaky_paywall_activation() {
+
+	create_leaky_paywall_transaction_tables();
+
+}
+register_activation_hook( __FILE__, 'leaky_paywall_activation' );
+
+function create_leaky_paywall_transaction_tables() {
+
+    global $wpdb;
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+    $charset_collate = $wpdb->get_charset_collate();
+    $table_name = $wpdb->prefix . 'lp_transactions';
+
+	// Create the Leaky Paywall Transactions Table
+    $sql = "CREATE TABLE $table_name (
+        `ID`                     BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        `user_id`                BIGINT(20) UNSIGNED NOT NULL,
+        `email`                  LONGTEXT NOT NULL,
+        `first_name`             LONGTEXT NOT NULL,
+        `last_name`              LONGTEXT NOT NULL,
+        `level_id`               BIGINT(20) UNSIGNED NOT NULL,
+        `price`                  LONGTEXT NOT NULL,
+        `currency`               LONGTEXT NOT NULL,
+        `payment_gateway`        LONGTEXT NOT NULL,
+        `payment_gateway_txn_id` LONGTEXT NOT NULL,
+        `payment_status`         LONGTEXT NOT NULL,
+        `transaction_status`     LONGTEXT NOT NULL,
+        `is_recurring`           TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+		`date_updated`           DATETIME NULL,
+		`date_created`           DATETIME NULL,
+        PRIMARY KEY          (`id`),
+		KEY `payment_status` (`payment_status`),
+		KEY `user_id`        (`user_id`),
+		KEY `date_created`   (`date_created`),
+		KEY `date_updated`   (`date_updated`)
+    ) $charset_collate;";
+
+    dbDelta( $sql );
+
+	// Create the Leaky Paywall Transaction Meta Table
+    $table_name = $wpdb->prefix . 'lp_transaction_meta';
+
+    $sql = "CREATE TABLE $table_name (
+        `meta_id`        BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+		`transaction_id` BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+        `meta_key`       VARCHAR(255) DEFAULT NULL,
+        `meta_value`     LONGTEXT DEFAULT NULL,
+        PRIMARY KEY          (`meta_id`),
+		KEY `transaction_id` (`transaction_id`),
+		KEY `meta_key`       (`meta_key`(191))
+    ) $charset_collate;";
+
+    dbDelta( $sql );
+
+}
+
+function migrate_lp_transaction_data( $page = 1 ) {
+
+	$limit = 100;
+
+	$f = fopen( '/var/www/lp.lewayotte.com/logs/transaction.log', 'a' );
+
+	$args = array(
+		'post_type'       => 'lp_transaction',
+		'post_status'     => 'publish',
+		'number_of_posts' => $limit,
+		'offset'          => --$page,
+	);
+
+	$transactions = get_posts( $args );
+
+	$transaction_meta_map = [
+		'_login'              => 'user_id', // moved to user_id
+		'_email'              => 'email',
+		'_first_name'         => 'first_name',
+		'_last_name'          => 'last_name',
+		'_level_id'           => 'level_id',
+		'_price'              => 'price',
+		'_currency'           => 'currency',
+		'_status'             => 'payment_status', // moved to payment_status
+		'_gateway'            => 'payment_gateway', // moved to payment_gateway
+		'_gateway_txn_id'     => 'payment_gateway_txn_id', // moved to payment_gateway_txn_id
+		'_transaction_status' => 'transaction_status',
+		'_is_recurring'       => 'is_recurring',
+	];
+
+	$ignore_meta = [
+		'_edit_lock'
+	];
+
+	foreach( $transactions as $transaction ) {
+
+		$transaction_meta = get_post_meta( $transaction->ID );
+		$insert_transaction = [];
+		$insert_transaction_meta = [];
+
+		foreach( $transaction_meta as $key => $value ) {
+
+			if ( in_array( $key, $ignore_meta ) ) {
+
+				continue;
+
+			}
+			
+			if ( !empty( $transaction_meta_map[$key] ) ) {
+
+				if ( '_login' == $key ) {
+
+					$user = get_user_by( 'login', $value[0] );
+					$insert_transaction[$transaction_meta_map[$key]] = $user->ID;
+
+
+				} else {
+
+					$insert_transaction[$transaction_meta_map[$key]] = $value[0];
+
+				}
+
+			} else {
+
+				$new_meta_key = ltrim( $key, '_' );
+				$insert_transaction_meta[$new_meta_key] = $value[0];
+
+			}
+			
+		}
+
+		//fwrite( $f, "Insert Transaction\n" );
+		//fwrite( $f, print_r( $insert_transaction, true ) );
+		$new_transaction = new LP_Transaction( $insert_transaction );
+		$transaction_id = $new_transaction->create();
+
+		//fwrite( $f, var_export( $new_transaction, true ) );
+		fwrite( $f, var_export( $transaction_id, true ) );
+		
+		//fwrite( $f, "Insert Transaction Meta\n" );
+		//fwrite( $f, print_r( $insert_transaction_meta, true ) );
+		if ( !empty( $transaction_id ) ) {
+
+			foreach( $insert_transaction_meta as $key => $value ) {
+	
+				LP_Transaction::update_meta( $transaction_id, $key, $value );
+	
+			}
+
+		}
+
+	}
+
+	$total = wp_count_posts( 'lp_transaction' )->publish;
+	fwrite( $f, "Total Transactions: $total\n" );
+
+	if ( $limit * $page < $total ) { //If we've processed less than the total number of transactions, we should continue processing
+
+		$page++;
+		fwrite( $f, "as_enqueue_async_action\n" );
+		//as_enqueue_async_action( 'migrate_lp_transaction_data', [ $page ] );
+	
+	}
+
+	fclose( $f );
+	
+}
+add_action( 'migrate_lp_transaction_data', 'migrate_lp_transaction_data' );

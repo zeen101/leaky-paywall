@@ -80,4 +80,22 @@ class LP_Transaction {
 
 	}
 
+	public static function update_meta( $transaction_id, $meta_key, $meta_value ) {
+
+		update_post_meta( $transaction_id, $meta_key, $meta_value );
+
+	}
+
+	public static function get_meta( $transaction_id, $meta_key ) {
+
+		return get_post_meta( $transaction_id, $meta_key );
+
+	}
+
+	public static function delete_meta( $transaction_id, $meta_key ) {
+
+		delete_post_meta( $transaction_id, $meta_key );
+
+	}
+
 }

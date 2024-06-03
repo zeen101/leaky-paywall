@@ -41,6 +41,8 @@ class Leaky_Paywall {
 	 */
 	public function __construct() {
 
+		add_action( 'init', array( $this, 'version_check' ) );
+		
 		add_action( 'http_api_curl', array( $this, 'force_ssl_version' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_wp_enqueue_scripts' ) );
@@ -60,6 +62,18 @@ class Leaky_Paywall {
 
 		add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
 
+	}
+
+	public function version_check() {
+			
+		$db_version = $this->get_db_version();
+
+		if ( version_compare( $db_version, LEAKY_PAYWALL_DB_VERSION, '<' ) ) {
+			update_option( 'show_db_1_0_6_notice', LEAKY_PAYWALL_DB_VERSION );
+		} else {
+			delete_option( 'show_db_1_0_6_notice' );
+		}
+			
 	}
 
 	/**

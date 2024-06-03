@@ -680,10 +680,10 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		$transaction_id = $transaction->create();
 		$subscriber_data['transaction_id'] = $transaction_id;
 
-		update_post_meta( $transaction_id, '_field_data', $field_data );
+		LP_Transaction::update_meta( $transaction_id, '_field_data', $field_data );
 
 		if (isset($field_data['lp_nag_loc'])) {
-			update_post_meta($transaction_id, '_nag_location_id', $field_data['lp_nag_loc']);
+			LP_Transaction::update_meta($transaction_id, '_nag_location_id', $field_data['lp_nag_loc']);
 		}
 
 		do_action('leaky_paywall_after_stripe_checkout_completed', $subscriber_data);

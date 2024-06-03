@@ -234,6 +234,9 @@ class Leaky_Paywall_Settings
 			case 'licenses':
 				$this->output_licenses_settings($current_section);
 				break;
+			case 'updates':
+				$this->output_updates_settings($current_section);
+				break;
 			case 'help':
 				$this->output_help_settings($current_section);
 				break;
@@ -247,7 +250,7 @@ class Leaky_Paywall_Settings
 
 		wp_nonce_field('leaky_paywall_update_settings_nonce', 'leaky_paywall_update_settings_nonce_field');
 
-		$hide_submit_tabs = apply_filters('leaky_paywall_hide_submit_tabs', array('licenses', 'help'));
+		$hide_submit_tabs = apply_filters('leaky_paywall_hide_submit_tabs', array('licenses', 'help', 'updates', ''));
 
 		if (!in_array($current_tab, $hide_submit_tabs)) {
 		?>
@@ -283,14 +286,6 @@ class Leaky_Paywall_Settings
 				</table>
 
 			<?php } ?>
-
-			<div>
-				<?php 
-				//if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
-					echo 'You are using an old version of the dabatase, please backup your current database and run this <a href="' . esc_url(admin_url()) . 'admin.php?page=issuem-leaky-paywall&section=use-transaction-tables">migration script</a>.';
-				//}
-				?>
-			</div>
 
 			<h2><?php esc_html_e('General Settings', 'leaky-paywall'); ?></h2>
 
@@ -469,10 +464,6 @@ class Leaky_Paywall_Settings
 
 			</table>
 
-		<?php } else if ($current_section == 'use-transaction-tables') { ?>
-
-			MIGRATING
-
 		<?php } ?>
 
 
@@ -554,8 +545,6 @@ class Leaky_Paywall_Settings
 					</table>
 				</td>
 			</tr>
-
-
 
 			<tr class="restriction-options">
 				<th>&nbsp;</th>
@@ -1273,13 +1262,60 @@ class Leaky_Paywall_Settings
 
 		do_action('leaky_paywall_before_licenses_settings'); ?>
 
-			<p>Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, <a href="https://leakypaywall.com/my-account/#tabs-2">please login to your account to renew your license</a>.</p>
+		<p>Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, <a href="https://leakypaywall.com/my-account/#tabs-2">please login to your account to renew your license</a>.</p>
 
-			<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our extensions</a></h2>
+		<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our extensions</a></h2>
 
-			<?php wp_nonce_field('verify', 'leaky_paywall_license_wpnonce'); ?>
+		<?php 
+		
+		wp_nonce_field('verify', 'leaky_paywall_license_wpnonce');
 
-		<?php do_action('leaky_paywall_after_licenses_settings');
+		do_action('leaky_paywall_after_licenses_settings');
+	}
+
+	public function output_updates_settings($current_section)
+	{
+
+		global $leaky_paywall;
+
+		do_action('leaky_paywall_before_updates_settings');
+
+		$notice_id = 'show_db_1_0_6_notice';
+		$notice = get_option( $notice_id );
+
+		if ( empty( $notice ) ) {
+			//return;
+		}
+
+		if ( !empty( $_GET['start'] ) && 'true' == $_GET['start'] ) {
+
+			// At this step, we create the new transaction tables (if they need to be created)
+			echo '<p>Creating Leaky Paywall Transactions Tables</p>';
+			create_leaky_paywall_transaction_tables();
+
+			// At this step, all new transactions should be processed using the new transaction methods
+			echo '<p>Updating Leaky Paywall Transactions DB Version</p>';
+			$leaky_paywall->update_db_version();
+
+			// At this step, we create an async schedule to migrate all the existing transaction data to the new tables
+			echo '<p>Migrating Transactions to the new tables, this might takes some time, but we are running this as a background task, so you can do other things...</p>';
+			as_enqueue_async_action( 'migrate_lp_transaction_data' );
+
+		} else {
+
+			?>
+
+			<p><strong><?php echo esc_html__( 'Update Recommended:', 'leaky-paywall' ); ?></strong><?php esc_html_e( 'We have noticed large sites with numberous transactions have difficulty with how transactions are currently stored. We recommend using a newer method of handling transactions that is more performant. Please make a backup of your database and then click the "Update the Database" button to begin the process of updating your transaction table.', 'leaky-paywall' ); ?></p>
+			<p class="leaky-paywall-message-actions">
+				<a href="<?php echo esc_url(admin_url()) . 'admin.php?page=issuem-leaky-paywall&tab=updates&start=true&step=1' ?>" class="button button-primary"><?php esc_html_e('Update the Database', 'leaky-paywall'); ?></a>
+			</p>
+			
+			<?php
+		}
+
+		wp_nonce_field('verify', 'leaky_paywall_updates_wpnonce');
+
+		do_action('leaky_paywall_after_updates_settings');
 	}
 
 	public function output_help_settings($current_section)
@@ -1314,6 +1350,7 @@ class Leaky_Paywall_Settings
 			'payments',
 			'emails',
 			'licenses',
+			'updates',
 			'help'
 		);
 
@@ -1337,6 +1374,7 @@ class Leaky_Paywall_Settings
 			),
 			'emails' => array(),
 			'licenses' => array(),
+			'updates' => array(),
 			'help' => array()
 		));
 
