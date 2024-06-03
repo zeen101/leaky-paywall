@@ -102,6 +102,52 @@ class LP_Transaction {
 
 	}
 
+	public static function query( $args = [] ) {
+
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'lp_transactions';
+		
+		$defaults = [
+			'select'   => '*',
+			'where'    => '',
+			'limit'    => -1,
+			'order_by' => 'ID',
+			'order'    => 'DESC',
+		];
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$query = $wpdb->prepare( "SELECT {$args['select']} FROM $table_name", null );
+		
+		if (!empty($args['where'])) {
+			$query .= $wpdb->prepare( " WHERE {$args['where']}" );
+		}
+		
+		if ($args['limit'] > 0) {
+			$query .= $wpdb->prepare( " LIMIT %d", $args['limit'] );
+		}
+		
+		$query .= $wpdb->prepare( " ORDER BY %s %s", $args['order_by'], $args['order'] );
+		
+		$results = $wpdb->get_results( $query );
+		
+		return $results;
+
+	}
+
+	public static function get_total() {
+
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'lp_transactions';
+		
+		$result = $wpdb->get_var( "SELECT COUNT(`ID`) FROM $table_name" );
+		
+		return $result;
+
+	}
+
 	public static function get_transaction_by( $key, $value ) {
 
 		global $wpdb;

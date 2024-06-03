@@ -296,7 +296,15 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array( $this, 'subscribers_page' ) );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
+		if ( version_compare( $this->get_db_version(), '1.0.6', '<' ) ) {
+
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions' . $this->get_db_version, 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
+
+		} else {
+
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-transactions', array( $this, 'transactions_page' ) );
+
+		}
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-insights', array( $insights, 'insights_page' ) );
 
@@ -318,6 +326,7 @@ class Leaky_Paywall {
 
 		if (
 			'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-transactions' === $hook_suffix
 			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix
 			|| 'index.php' === $hook_suffix
 			|| 'leaky-paywall_page_leaky-paywall-upgrade' ===
@@ -845,6 +854,74 @@ class Leaky_Paywall {
 
 			</div>
 			<?php
+
+	}
+
+	/**
+	 * Create and Display Leaky Paywall Transactions page
+	 *
+	 * @since 1.0.0
+	 */
+	public function transactions_page() {
+		global $blog_id;
+		$settings = get_leaky_paywall_settings();
+
+		if ( is_multisite_premium() && ! is_main_site( $blog_id ) ) {
+			$site = '_' . $blog_id;
+		} else {
+			$site = '';
+		}
+
+		$headings           = apply_filters( 'leaky_paywall_bulk_add_headings', array( 'username', 'email', 'price', 'expires', 'status', 'level-id', 'subscriber-id' ) );
+
+		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
+
+		$this->display_zeen101_dot_com_leaky_rss_item();
+
+		?>
+
+		<div id="lp-header" class="lp-header">
+			<div id="lp-header-wrapper">
+				<span id="lp-header-branding">
+					<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>">
+				</span>
+				<span class="lp-header-page-title-wrap">
+					<span class="lp-header-separator">/</span>
+					<h1 class="lp-header-page-title">Transactions</h1>
+				</span>
+			</div>
+		</div>
+
+		<div class="wrap">
+
+		<?php
+
+		// Create an instance of our package class...
+		$transaction_table = new LP_Transaction_Table();
+		$pagenum           = $transaction_table->get_pagenum();
+		// Fetch, prepare, sort, and filter our data...
+		$transaction_table->prepare_items();
+		$total_pages = $transaction_table->get_pagination_arg( 'total_pages' );
+		if ( $pagenum > $total_pages && $total_pages > 0 ) {
+			wp_safe_redirect( esc_url_raw( add_query_arg( 'paged', $total_pages ) ) );
+			exit();
+		}
+
+		?>
+
+			<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
+			<form id="leaky-paywall-transactions" method="get">
+				<!-- For plugins, we also need to ensure that the form posts back to our current page -->
+				<input type="hidden" name="page" value="<?php echo isset( $_GET['page'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; ?>" />
+				<!-- Now we can render the completed list table -->
+				<div class="tablenav top">
+					<?php $transaction_table->search_box( __( 'Search Transactions' ), 'leaky-paywall' ); ?>
+				</div>
+				<?php $transaction_table->display(); ?>
+			</form>
+
+		</div>
+		<?php
 
 	}
 

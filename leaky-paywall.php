@@ -83,9 +83,9 @@ function leaky_paywall_plugins_loaded() {
 
 		require_once LEAKY_PAYWALL_PATH . 'functions.php';
 		require_once LEAKY_PAYWALL_PATH . 'shortcodes.php';
-		require_once LEAKY_PAYWALL_PATH . 'subscriber-table.php';
 		require_once LEAKY_PAYWALL_PATH . 'metaboxes.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/template-functions.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscriber-table.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/dashboard-widgets.php';
 		
 		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '>=' ) ) {
