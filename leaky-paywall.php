@@ -166,8 +166,8 @@ function create_leaky_paywall_transaction_tables() {
         `is_recurring`           TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 		`date_updated`           DATETIME NULL,
 		`date_created`           DATETIME NULL,
-        PRIMARY KEY          (`id`),
-		KEY `payment_status` (`payment_status`),
+        PRIMARY KEY          (`ID`),
+		KEY `payment_status` (`payment_status`(768)),
 		KEY `user_id`        (`user_id`),
 		KEY `date_created`   (`date_created`),
 		KEY `date_updated`   (`date_updated`)
