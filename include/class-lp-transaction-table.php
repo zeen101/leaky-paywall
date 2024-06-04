@@ -37,6 +37,10 @@ class LP_Transaction {
 
 	private $is_recurring;
 
+	private $date_updated;
+
+	private $date_created;
+
 	/**
 	 * The constructor
 	 *
@@ -44,6 +48,31 @@ class LP_Transaction {
 	 */
 	public function __construct( $args ) {
 
+		$mysql_date_format = 'Y-m-d H:i:s';
+		$timezone = new DateTimeZone( 'UTC' );
+
+		if ( empty( $args['date_updated'] ) ) {
+
+			$date_updated = current_time( 'mysql', 1 );
+
+		} else {
+
+			$datetime = new DateTime( $args['date_updated'], $timezone );
+			$date_updated = $datetime->format( $mysql_date_format );
+		
+		}
+
+		if ( empty( $args['date_created'] ) ) {
+
+			$date_created = current_time( 'mysql', 1 );
+
+		} else {
+
+			$datetime = new DateTime( $args['date_updated'], $timezone );
+			$date_created = $datetime->format( $mysql_date_format );
+		
+		}
+		
 		$this->login                  = $args['login'];
 		$this->user_id                = $args['user_id'];
 		$this->email                  = $args['email'];
@@ -57,6 +86,8 @@ class LP_Transaction {
 		$this->payment_status         = $args['payment_status'];
 		$this->transaction_status     = $args['payment_status'];
 		$this->is_recurring           = isset( $args['is_recurring'] ) ? 1 : 0;
+		$this->date_updated           = $date_updated;
+		$this->date_created           = $date_created;
 
 	}
 
@@ -87,8 +118,8 @@ class LP_Transaction {
 			'payment_status'         => $this->payment_status,
 			'transaction_status'     => $this->transaction_status,
 			'is_recurring'           => $this->is_recurring,
-			'date_updated'           => current_time( 'mysql', 1 ),
-			'date_created'           => current_time( 'mysql', 1 ),
+			'date_updated'           => $this->date_updated,
+			'date_created'           => $this->date_created,
 		];
 
 		$return = $wpdb->insert(

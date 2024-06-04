@@ -196,8 +196,6 @@ function migrate_lp_transaction_data( $page = 1 ) {
 
 	$limit = 100;
 
-	$f = fopen( '/var/www/lp.lewayotte.com/logs/transaction.log', 'a' );
-
 	$args = array(
 		'post_type'       => 'lp_transaction',
 		'post_status'     => 'publish',
@@ -229,7 +227,10 @@ function migrate_lp_transaction_data( $page = 1 ) {
 	foreach( $transactions as $transaction ) {
 
 		$transaction_meta = get_post_meta( $transaction->ID );
-		$insert_transaction = [];
+		$insert_transaction = [
+			'date_created' => $transaction->post_date_gmt,
+			'date_updated' => $transaction->post_modified_gmt,
+		];
 		$insert_transaction_meta = [];
 
 		foreach( $transaction_meta as $key => $value ) {
@@ -247,7 +248,6 @@ function migrate_lp_transaction_data( $page = 1 ) {
 					$user = get_user_by( 'login', $value[0] );
 					$insert_transaction[$transaction_meta_map[$key]] = $user->ID;
 
-
 				} else {
 
 					$insert_transaction[$transaction_meta_map[$key]] = $value[0];
@@ -263,16 +263,9 @@ function migrate_lp_transaction_data( $page = 1 ) {
 			
 		}
 
-		//fwrite( $f, "Insert Transaction\n" );
-		//fwrite( $f, print_r( $insert_transaction, true ) );
 		$new_transaction = new LP_Transaction( $insert_transaction );
 		$transaction_id = $new_transaction->create();
 
-		//fwrite( $f, var_export( $new_transaction, true ) );
-		fwrite( $f, var_export( $transaction_id, true ) );
-		
-		//fwrite( $f, "Insert Transaction Meta\n" );
-		//fwrite( $f, print_r( $insert_transaction_meta, true ) );
 		if ( !empty( $transaction_id ) ) {
 
 			foreach( $insert_transaction_meta as $key => $value ) {
@@ -286,17 +279,13 @@ function migrate_lp_transaction_data( $page = 1 ) {
 	}
 
 	$total = wp_count_posts( 'lp_transaction' )->publish;
-	fwrite( $f, "Total Transactions: $total\n" );
 
 	if ( $limit * $page < $total ) { //If we've processed less than the total number of transactions, we should continue processing
 
 		$page++;
-		fwrite( $f, "as_enqueue_async_action\n" );
-		//as_enqueue_async_action( 'migrate_lp_transaction_data', [ $page ] );
+		as_enqueue_async_action( 'migrate_lp_transaction_data', [ $page ] );
 	
 	}
-
-	fclose( $f );
 	
 }
 add_action( 'migrate_lp_transaction_data', 'migrate_lp_transaction_data' );
