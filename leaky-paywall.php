@@ -256,8 +256,7 @@ function migrate_lp_transaction_data( $page = 1 ) {
 
 			} else {
 
-				$new_meta_key = ltrim( $key, '_' );
-				$insert_transaction_meta[$new_meta_key] = $value[0];
+				$insert_transaction_meta[$key] = $value[0];
 
 			}
 			

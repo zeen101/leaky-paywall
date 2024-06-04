@@ -146,13 +146,8 @@ function leaky_paywall_insights_get_new_paid_subs( $period ) {
 
             foreach( $transactions as $transaction ) {
 
-                $price = get_post_meta($transaction->ID, '_price', true);
-
-                if ( $price == '0.00') {
-                    continue;
-                }
-
                 $new_paid_subs = $new_paid_subs + 1;
+                
             }
 
         }
@@ -249,137 +244,196 @@ function leaky_paywall_insights_get_new_free_subs( $period ) {
 
 function leaky_paywall_insights_get_paid_content( $period ) {
 
+    global $leaky_paywall;
+
     $paid_content = array();
     $args_period = leaky_paywall_insights_get_formatted_period($period);
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-	);
+    if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
 
-	$transactions = get_posts( $args );
+        $args = array(
+            'post_type'      => 'lp_transaction',
+            'order'          => 'DESC',
+            'posts_per_page' => 999,
+            'date_query'     => array(
+                array(
+                    'after'  => $args_period,
+                    'column' => 'post_date',
+                ),
+            ),
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => '_status',
+                    'value'   => 'incomplete',
+                    'compare' => 'NOT LIKE',
+                ),
+                array(
+                    'key'     => '_price',
+                    'value'   => '0',
+                    'compare' => '>',
+                ),
+            ),
+        );
 
-	if ( ! empty( $transactions ) ) {
-		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-			$status   = get_post_meta( $transaction->ID, '_status', true );
-            $nag_loc = get_post_meta( $transaction->ID, '_nag_location_id', true );
+        $transactions = get_posts( $args );
 
-            if ( $status != 'incomplete' && $price > 0 && $nag_loc ) {
+    } else {
+
+        $mysql_date_format = 'Y-m-d H:i:s';
+        $timezone = new DateTimeZone( 'UTC' );
+        $datetime = new DateTime( $args_period, $timezone );
+        $date_created = $datetime->format( $mysql_date_format );
+
+        $args = [
+            'where'  => '
+                `payment_status` NOT LIKE "incomplete"
+            AND `price` > 0
+            AND `date_created` > "' . $date_created . '"'
+        ];
+
+        $transactions = LP_Transaction::query( $args );
+        
+    }
+
+    if ( ! empty( $transactions ) ) {
+
+        foreach ( $transactions as $transaction ) {
+
+            $nag_loc = LP_Transaction::get_meta( $transaction->ID, '_nag_location_id', true );
+
+            if ( $nag_loc ) {
+
                 $paid_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
                 $paid_content[$nag_loc]['count'] = isset( $paid_content[$nag_loc]['count'] ) ? $paid_content[$nag_loc]['count'] + 1 : 1;
+            
             }
-
-		}
-
-        if ( !empty( $paid_content ) ) {
-
-            foreach( $paid_content as $item ) {
-                $sorted_paid_content[$item['url']] = $item['count'];
-
-            }
-
-            arsort( $sorted_paid_content );
-
-            $i = 1;
-
-            foreach( $sorted_paid_content as $perm => $num ) {
-
-                if ( $i > 10 ) {
-                    break;
-                }
-                $new_paid_content[] = $perm . ' - (' . $num . ')';
-
-                $i++;
-            }
-
-
-
-            return $new_paid_content;
 
         }
 
+        foreach( $paid_content as $item ) {
 
+            $sorted_paid_content[$item['url']] = $item['count'];
 
+        }
 
+        arsort( $sorted_paid_content );
 
-	} else {
+        $sorted_paid_content = array_slice( $sorted_paid_content, 0, 10 );
+
+        foreach( $sorted_paid_content as $perm => $num ) {
+
+            $new_paid_content[] = $perm . ' - (' . $num . ')';
+
+        }
+
+        $paid_content = $new_paid_content;
+
+    } else {
+
         $paid_content[] = 'No data found for selected time period.';
+        
     }
 
     return $paid_content;
+
 }
 
 
 function leaky_paywall_insights_get_free_content( $period ) {
 
+    global $leaky_paywall;
+
     $free_content = array();
     $args_period = leaky_paywall_insights_get_formatted_period( $period );
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-	);
+    if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
 
-	$transactions = get_posts( $args );
+        $args = array(
+            'post_type'      => 'lp_transaction',
+            'order'          => 'DESC',
+            'posts_per_page' => 999,
+            'date_query'     => array(
+                array(
+                    'after'  => $args_period,
+                    'column' => 'post_date',
+                ),
+            ),
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => '_status',
+                    'value'   => 'incomplete',
+                    'compare' => 'NOT LIKE',
+                ),
+                array(
+                    'key'     => '_price',
+                    'value'   => '0',
+                    'compare' => '=',
+                ),
+            ),
+        );
+
+        $transactions = get_posts( $args );
+
+    } else {
+
+        $mysql_date_format = 'Y-m-d H:i:s';
+        $timezone = new DateTimeZone( 'UTC' );
+        $datetime = new DateTime( $args_period, $timezone );
+        $date_created = $datetime->format( $mysql_date_format );
+
+        $args = [
+            'where'  => '
+                `payment_status` NOT LIKE "incomplete"
+            AND `price` = 0
+            AND `date_created` > "' . $date_created . '"'
+        ];
+
+        $transactions = LP_Transaction::query( $args );
+        
+    }
 
 	if ( ! empty( $transactions ) ) {
+
 		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-			$status   = get_post_meta( $transaction->ID, '_status', true );
-            $nag_loc = get_post_meta( $transaction->ID, '_nag_location_id', true );
 
-            if ( $price > 0 ) {
-                continue;
-            }
+            $nag_loc = LP_Transaction::get_meta( $transaction->ID, '_nag_location_id', true );
 
-            if ( $status != 'incomplete' && $nag_loc ) {
+            if ( $nag_loc ) {
+
                 $free_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
                 $free_content[$nag_loc]['count'] = isset( $free_content[$nag_loc]['count'] ) ? $free_content[$nag_loc]['count'] + 1 : 1;
+            
             }
 
 		}
 
         if ( !empty( $free_content ) ) {
+
             foreach( $free_content as $item ) {
+
                 $sorted_free_content[$item['url']] = $item['count'];
 
             }
 
             arsort( $sorted_free_content );
 
-
-            $j = 1;
+            $sorted_free_content = array_slice( $sorted_free_content, 0, 10 );
 
             foreach( $sorted_free_content as $perm => $num ) {
 
-                if ( $j > 10 ) {
-                    break;
-                }
                 $new_free_content[] = $perm . ' - (' . $num . ')';
 
-                $j++;
             }
 
-            return $new_free_content;
+            $free_content = $new_free_content;
         }
 
 	} else {
+
         $free_content[] = 'No data found for selected time period.';
+
     }
 
     return $free_content;

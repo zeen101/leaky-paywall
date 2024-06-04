@@ -265,7 +265,7 @@ class LP_Transaction {
 
 	}
 
-	public static function get_meta( $transaction_id, $meta_key ) {
+	public static function get_meta( $transaction_id, $meta_key, $single = true ) {
 
 		global $wpdb;
 		

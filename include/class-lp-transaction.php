@@ -86,9 +86,9 @@ class LP_Transaction {
 
 	}
 
-	public static function get_meta( $transaction_id, $meta_key ) {
+	public static function get_meta( $transaction_id, $meta_key, $single = true ) {
 
-		return get_post_meta( $transaction_id, $meta_key );
+		return get_post_meta( $transaction_id, $meta_key, $single );
 
 	}
 
