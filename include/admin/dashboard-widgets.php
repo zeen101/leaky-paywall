@@ -33,43 +33,82 @@ add_action( 'wp_dashboard_setup', 'leaky_paywall_register_recent_subscribers_das
  */
 function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callback_args ) {
 
+	global $leaky_paywall;
+
 	$settings = get_leaky_paywall_settings();
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
 	$revenue  = 0;
 
-	$args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => '-30 days',
-				'column' => 'post_date',
-			),
-		),
-		'meta_query' => array(
-			'relation' => 'AND',
-			array(
-				'key'     => '_status',
-				'value'   => 'incomplete',
-				'compare' => 'NOT LIKE',
-			),
-			array(
-				'key'     => '_price',
-				'value'   => '0',
-				'compare' => '>',
-			),
-		),
-	);
+    if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
 
-	$transactions = get_posts( $args );
+		$args = array(
+			'post_type'      => 'lp_transaction',
+			'order'          => 'DESC',
+			'posts_per_page' => 9999,
+			'date_query'     => array(
+				array(
+					'after'  => '-30 days',
+					'column' => 'post_date',
+				),
+			),
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_status',
+					'value'   => 'incomplete',
+					'compare' => 'NOT LIKE',
+				),
+				array(
+					'key'     => '_price',
+					'value'   => '0',
+					'compare' => '>',
+				),
+			),
+		);
 
-	if ( ! empty( $transactions ) ) {
-		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-			$revenue = $revenue + (float)$price;
+		$transactions = get_posts( $args );
+
+		$revenue = 0;
+
+		if ( ! empty( $transactions ) ) {
+
+			foreach ( $transactions as $transaction ) {
+
+				$revenue  += (float)LP_Transaction::get_meta( $transaction->ID, '_price', true );
+			
+			}
+
 		}
+
+	} else {
+
+        $mysql_date_format = 'Y-m-d H:i:s';
+		$timezone = new DateTimeZone( 'UTC' );
+        $datetime = new DateTime( '-30 days', $timezone );
+        $date_created = $datetime->format( $mysql_date_format );
+
+        $args = [
+            'where'  => '
+                `payment_status` NOT LIKE "incomplete"
+            AND `price` > 0
+            AND `date_created` > "' . $date_created . '"'
+        ];
+
+        $transactions = LP_Transaction::query( $args );
+
+		$revenue = 0;
+
+		if ( ! empty( $transactions ) ) {
+
+			foreach( $transactions as $transaction ) {
+
+				$revenue  += (float)$transaction->price;
+
+			}
+
+		}
+
 	}
 
 	$args = array(
@@ -78,8 +117,8 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		'number'     => 5,
 		'meta_query' => array(
 			array(
-				'key'    => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
-				'comare' => 'EXISTS',
+				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+				'compare' => 'EXISTS',
 			),
 		),
 	);
