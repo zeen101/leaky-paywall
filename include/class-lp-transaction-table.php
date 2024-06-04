@@ -85,7 +85,7 @@ class LP_Transaction {
 		$this->payment_gateway_txn_id = isset( $args['payment_gateway_txn_id'] ) ? $args['payment_gateway_txn_id'] : '';
 		$this->payment_status         = $args['payment_status'];
 		$this->transaction_status     = $args['payment_status'];
-		$this->is_recurring           = isset( $args['is_recurring'] ) ? 1 : 0;
+		$this->is_recurring           = empty( $args['is_recurring'] ) ? 0 : 1;
 		$this->date_updated           = $date_updated;
 		$this->date_created           = $date_created;
 
@@ -162,6 +162,40 @@ class LP_Transaction {
 		$query .= $wpdb->prepare( " ORDER BY %s %s", $args['order_by'], $args['order'] );
 		
 		$results = $wpdb->get_results( $query );
+		
+		return $results;
+
+	}
+
+	public static function get_var( $args = [] ) {
+
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'lp_transactions';
+		
+		$defaults = [
+			'select'   => '*',
+			'where'    => '',
+			'limit'    => -1,
+			'order_by' => 'ID',
+			'order'    => 'DESC',
+		];
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$query = $wpdb->prepare( "SELECT {$args['select']} FROM $table_name", null );
+		
+		if (!empty($args['where'])) {
+			$query .= $wpdb->prepare( " WHERE {$args['where']}" );
+		}
+		
+		if ($args['limit'] > 0) {
+			$query .= $wpdb->prepare( " LIMIT %d", $args['limit'] );
+		}
+		
+		$query .= $wpdb->prepare( " ORDER BY %s %s", $args['order_by'], $args['order'] );
+		
+		$results = $wpdb->get_var( $query );
 		
 		return $results;
 

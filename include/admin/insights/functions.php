@@ -30,42 +30,65 @@ function lp_reports_get_data() {
 
 function leaky_paywall_insights_get_total_revenue( $period ) {
 
+    global $leaky_paywall;
+
     $revenue = 0;
     $args_period = leaky_paywall_insights_get_formatted_period( $period );
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-        'meta_query' => array(
-            'relation' => 'AND',
-            array(
-                'key'     => '_status',
-                'value'   => 'incomplete',
-                'compare' => 'NOT LIKE',
-            ),
-            array(
-                'key'     => '_price',
-                'value'   => '0',
-                'compare' => '>',
-            ),
-        ),
-	);
+    if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
 
-	$transactions = get_posts( $args );
+        $args = array(
+            'post_type'      => 'lp_transaction',
+            'order'          => 'DESC',
+            'posts_per_page' => 9999,
+            'date_query'     => array(
+                array(
+                    'after'  => $args_period,
+                    'column' => 'post_date',
+                ),
+            ),
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => '_status',
+                    'value'   => 'incomplete',
+                    'compare' => 'NOT LIKE',
+                ),
+                array(
+                    'key'     => '_price',
+                    'value'   => '0',
+                    'compare' => '>',
+                ),
+            ),
+        );
 
-	if ( ! empty( $transactions ) ) {
-		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-            $revenue = $revenue + $price;
-		}
-	}
+        $transactions = get_posts( $args );
+
+        if ( ! empty( $transactions ) ) {
+            foreach ( $transactions as $transaction ) {
+                $price   = LP_Transaction::get_meta( $transaction->ID, '_price', true );
+                $revenue = $revenue + $price;
+            }
+        }
+
+    } else {
+
+        $mysql_date_format = 'Y-m-d H:i:s';
+		$timezone = new DateTimeZone( 'UTC' );
+        $datetime = new DateTime( $args_period, $timezone );
+        $date_created = $datetime->format( $mysql_date_format );
+
+        $args = [
+            'select' => 'SUM(`price`) AS revenue',
+            'where'  => '
+                `payment_status` NOT LIKE "incomplete"
+            AND `price` > 0
+            AND `date_created` > "' . $date_created . '"'
+        ];
+
+        $revenue = LP_Transaction::get_var( $args );
+
+    }
 
     $formatted_revenue = leaky_paywall_get_current_currency_symbol() . number_format( $revenue, 2 );
 
@@ -76,59 +99,83 @@ function leaky_paywall_insights_get_total_revenue( $period ) {
 
 function leaky_paywall_insights_get_new_paid_subs( $period ) {
 
+    global $leaky_paywall;
+
     $new_paid_subs = 0;
     $args_period = leaky_paywall_insights_get_formatted_period($period);
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-        'meta_query' => array(
-            'relation' => 'AND',
-            array(
-                'key'     => '_status',
-                'value'   => 'incomplete',
-                'compare' => 'NOT LIKE',
+    if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
+
+        $args = array(
+            'post_type'      => 'lp_transaction',
+            'order'          => 'DESC',
+            'posts_per_page' => 9999,
+            'date_query'     => array(
+                array(
+                    'after'  => $args_period,
+                    'column' => 'post_date',
+                ),
             ),
-            array(
-                'key'     => '_price',
-                'value'   => '0',
-                'compare' => '>',
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => '_status',
+                    'value'   => 'incomplete',
+                    'compare' => 'NOT LIKE',
+                ),
+                array(
+                    'key'     => '_price',
+                    'value'   => '0',
+                    'compare' => '>',
+                ),
+                array(
+                    'key'     => '_is_recurring',
+                    'value'   => false,
+                    'compare' => '=',
+                ),
+                array(
+                    'key'     => '_rcpt_email',
+                    'compare' => 'NOT EXISTS',
+                ),
             ),
-            array(
-                'key'     => '_is_recurring',
-                'value'   => false,
-                'compare' => '=',
-            ),
-            array(
-                'key'     => '_rcpt_email',
-                'compare' => 'NOT EXISTS',
-            ),
-        ),
-	);
+        );
 
-	$transactions = get_posts( $args );
+        $transactions = get_posts( $args );
 
-	if ( ! empty( $transactions ) ) {
+        if ( ! empty( $transactions ) ) {
 
-        foreach( $transactions as $transaction ) {
+            foreach( $transactions as $transaction ) {
 
-            $price = get_post_meta($transaction->ID, '_price', true);
+                $price = get_post_meta($transaction->ID, '_price', true);
 
-            if ( $price == '0.00') {
-                continue;
+                if ( $price == '0.00') {
+                    continue;
+                }
+
+                $new_paid_subs = $new_paid_subs + 1;
             }
 
-            $new_paid_subs = $new_paid_subs + 1;
         }
 
-	}
+    } else {
+
+        $mysql_date_format = 'Y-m-d H:i:s';
+		$timezone = new DateTimeZone( 'UTC' );
+        $datetime = new DateTime( $args_period, $timezone );
+        $date_created = $datetime->format( $mysql_date_format );
+
+        $args = [
+            'select' => 'COUNT(`ID`) AS new_paid_subs',
+            'where'  => '
+                `payment_status` NOT LIKE "incomplete"
+            AND `price` > 0
+            AND `is_recurring` = 0
+            AND `date_created` > "' . $date_created . '"'
+        ];
+
+        $new_paid_subs = LP_Transaction::get_var( $args );
+        
+    }
 
     return $new_paid_subs;
 
@@ -137,41 +184,64 @@ function leaky_paywall_insights_get_new_paid_subs( $period ) {
 
 function leaky_paywall_insights_get_new_free_subs( $period ) {
 
+    global $leaky_paywall;
+
     $new_free_subs = 0;
     $args_period = leaky_paywall_insights_get_formatted_period($period);
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-        'meta_query' => array(
-            'relation' => 'AND',
-            array(
-                'key'     => '_status',
-                'value'   => 'incomplete',
-                'compare' => 'NOT LIKE',
+    if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
+
+        $args = array(
+            'post_type'      => 'lp_transaction',
+            'order'          => 'DESC',
+            'posts_per_page' => 9999,
+            'date_query'     => array(
+                array(
+                    'after'  => $args_period,
+                    'column' => 'post_date',
+                ),
             ),
-            array(
-                'key'     => '_price',
-                'value'   => '0',
-                'compare' => '=',
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => '_status',
+                    'value'   => 'incomplete',
+                    'compare' => 'NOT LIKE',
+                ),
+                array(
+                    'key'     => '_price',
+                    'value'   => '0',
+                    'compare' => '=',
+                ),
             ),
-        ),
-	);
+        );
 
-	$transactions = get_posts( $args );
+        $transactions = get_posts( $args );
 
-	if ( ! empty( $transactions ) ) {
+        if ( ! empty( $transactions ) ) {
 
-        $new_free_subs = count( $transactions );
+            $new_free_subs = count( $transactions );
 
-	}
+        }
+
+    } else {
+
+        $mysql_date_format = 'Y-m-d H:i:s';
+		$timezone = new DateTimeZone( 'UTC' );
+        $datetime = new DateTime( $args_period, $timezone );
+        $date_created = $datetime->format( $mysql_date_format );
+
+        $args = [
+            'select' => 'COUNT(`ID`) AS new_free_subs',
+            'where'  => '
+                `payment_status` NOT LIKE "incomplete"
+            AND `price` = 0
+            AND `date_created` > "' . $date_created . '"'
+        ];
+
+        $new_free_subs = LP_Transaction::get_var( $args );
+
+    }
 
     return $new_free_subs;
 
