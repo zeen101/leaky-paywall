@@ -198,11 +198,13 @@ function migrate_lp_transaction_data( $page = 1 ) {
 
 	$limit = 100;
 
+	$paged = $page - 1;
+
 	$args = array(
 		'post_type'       => 'lp_transaction',
 		'post_status'     => 'publish',
 		'number_of_posts' => $limit,
-		'offset'          => ( $page - 1 ),
+		'offset'          => $paged,
 	);
 
 	$transactions = get_posts( $args );

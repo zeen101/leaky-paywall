@@ -1299,7 +1299,7 @@ class Leaky_Paywall_Settings
 
 			// At this step, we create an async schedule to migrate all the existing transaction data to the new tables
 			echo '<p>Migrating Transactions to the new tables, this might takes some time, but we are running this as a background task, so you can do other things...</p>';
-			as_enqueue_async_action( 'migrate_lp_transaction_data' );
+			as_enqueue_async_action( 'migrate_lp_transaction_data', [ 1 ] ); // 1 = first page
 
 		} else {
 
