@@ -197,17 +197,18 @@ function migrate_lp_transaction_data( $page = 1 ) {
 	global $wpdb;
 
 	$limit = 100;
+	$paged = $limit * ( $page - 1 );
 
-	$paged = $page - 1;
-
-	$args = array(
-		'post_type'       => 'lp_transaction',
-		'post_status'     => 'publish',
-		'number_of_posts' => $limit,
-		'offset'          => $paged,
-	);
-
-	$transactions = get_posts( $args );
+	$query = "
+		SELECT ID, post_date_gmt, post_modified_gmt
+		FROM {$wpdb->posts} 
+		WHERE 
+			post_type = 'lp_transaction'
+		AND post_status = 'publish'
+		LIMIT %d
+		OFFSET %d
+		";
+	$transactions = $wpdb->get_results( $wpdb->prepare( $query, [ $limit, $paged ] ) );
 
 	$transaction_meta_map = [
 		'_login'              => 'user_id', // moved to user_id
