@@ -194,6 +194,8 @@ function create_leaky_paywall_transaction_tables() {
 
 function migrate_lp_transaction_data( $page = 1 ) {
 
+	global $wpdb;
+
 	$limit = 100;
 
 	$args = array(
@@ -277,10 +279,10 @@ function migrate_lp_transaction_data( $page = 1 ) {
 
 	}
 
-	$wp_count_posts = wp_count_posts( 'lp_transaction' );
-	$total = $wp_count_posts->publish;
+	$query = "SELECT COUNT( * ) AS num_posts FROM {$wpdb->posts} WHERE post_type = 'lp_transaction'";
+	$total = $wpdb->get_var( $query );
 
-	if ( $limit * $page < $total ) { //If we've processed less than the total number of transactions, we should continue processing
+	if ( $limit * $page <= $total ) { //If we've processed less than the total number of transactions, we should continue processing
 
 		$page++;
 		as_enqueue_async_action( 'migrate_lp_transaction_data', [ $page ] );

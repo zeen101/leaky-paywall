@@ -73,7 +73,7 @@ class LP_Transaction {
 		
 		}
 		
-		$this->login                  = $args['login'];
+		$this->login                  = empty( $args['login'] ) ? '' : $args['login'];
 		$this->user_id                = $args['user_id'];
 		$this->email                  = $args['email'];
 		$this->first_name             = $args['first_name'];
