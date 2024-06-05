@@ -202,7 +202,7 @@ function migrate_lp_transaction_data( $page = 1 ) {
 		'post_type'       => 'lp_transaction',
 		'post_status'     => 'publish',
 		'number_of_posts' => $limit,
-		'offset'          => --$page,
+		'offset'          => ( $page - 1 ),
 	);
 
 	$transactions = get_posts( $args );
