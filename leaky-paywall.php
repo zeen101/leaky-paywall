@@ -277,7 +277,8 @@ function migrate_lp_transaction_data( $page = 1 ) {
 
 	}
 
-	$total = wp_count_posts( 'lp_transaction' )->publish;
+	$wp_count_posts = wp_count_posts( 'lp_transaction' );
+	$total = $wp_count_posts->publish;
 
 	if ( $limit * $page < $total ) { //If we've processed less than the total number of transactions, we should continue processing
 
