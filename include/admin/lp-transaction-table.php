@@ -24,6 +24,26 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  */
 class LP_Transaction_Table extends WP_List_Table {
 
+	private $removable_query_args;
+
+	function __construct() {
+
+		parent::__construct();
+
+		$this->removable_query_args = wp_removable_query_args();
+		$this->removable_query_args = array_merge( 
+			$this->removable_query_args, 
+			[ 
+				'order_by',
+				'order',
+				'limit',
+				'offset',
+				'search',
+			] 
+		);
+
+	}
+
 	/**
 	 * The constructor
 	 */
@@ -173,6 +193,9 @@ class LP_Transaction_Table extends WP_List_Table {
 
 		$alt = '';
 
+		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+		$current_url = remove_query_arg( $this->removable_query_args, $current_url );
+
 		foreach ( $this->items as $transaction ) {
 
 			$user = get_user_by( 'ID', $transaction->user_id );
@@ -198,7 +221,7 @@ class LP_Transaction_Table extends WP_List_Table {
 						case 'wp_user_login':
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							?>
-							<strong><?php echo esc_html( $user->user_login ); ?></strong>
+							<strong><a href="<?php echo esc_url( add_query_arg( 'edit', $transaction->ID, $current_url ) ) ?>"><?php echo esc_html( $user->user_login ); ?></a></strong>
 
 							<?php
 							// if the user switching plugin is activated, add switch to link to LP subscriber table for easier testing.

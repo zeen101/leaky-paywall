@@ -877,7 +877,9 @@ class Leaky_Paywall {
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
 		$this->display_zeen101_dot_com_leaky_rss_item();
-		
+
+		if ( empty( $_REQUEST['edit'] ) ) {
+
 		?>
 
 		<div id="lp-header" class="lp-header">
@@ -923,6 +925,77 @@ class Leaky_Paywall {
 
 		</div>
 		<?php
+
+		} else {
+
+			?>
+
+			<div id="lp-header" class="lp-header">
+				<div id="lp-header-wrapper">
+					<span id="lp-header-branding">
+						<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>">
+					</span>
+					<span class="lp-header-page-title-wrap">
+						<span class="lp-header-separator">/</span>
+						<h1 class="lp-header-page-title">Transactions</h1>
+					</span>
+				</div>
+			</div>
+	
+			<div class="wrap">
+
+				<?php
+
+					$transaction = LP_Transaction::get_single_transaction_by( 'ID', (int)$_REQUEST['edit'] );
+
+					if ( empty( $transaction ) ) {
+
+						_e( 'No Transaction Found', 'leaky-paywall' );
+
+					} else {
+
+						$transaction_meta = LP_Transaction::get_meta( $transaction->ID );
+
+						?>
+						<table id="leaky_paywall_transaction" class="form-table leaky-paywall-settings-table">
+
+						<tbody>
+
+						<?php
+
+						foreach( $transaction as $key => $value ) {
+						?>
+						<tr>
+							<th><?php echo $key; ?></th>
+							<td><?php echo $value; ?></td>
+						</tr>
+						<?php
+						}
+
+						foreach( $transaction_meta as $meta ) {
+							?>
+							<tr>
+								<th><?php echo $meta->meta_key; ?></th>
+								<td><?php echo $meta->meta_value; ?></td>
+							</tr>
+							<?php
+						}
+
+						?>
+
+						</tbody>
+						</table>
+
+						<?php
+		
+					}
+
+				?>
+	
+			</div>
+
+			<?php
+		}
 
 	}
 

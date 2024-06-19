@@ -223,19 +223,21 @@ class LP_Transaction {
 
 	}
 
-	public static function get_transaction_by( $key, $value ) {
+	public static function get_single_transaction_by( $key, $value ) {
 
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . 'lp_transactions';
 
-		$exists = $wpdb->get_row( 
+		$results = $wpdb->get_row( 
 			$wpdb->prepare( 
-				"SELECT * FROM $table_name WHERE %s = %s", 
+				"SELECT * FROM $table_name WHERE %i = %s", 
 				$key,
 				$value 
 			) 
 		);
+
+		return $results;
 
 	}
 
@@ -245,13 +247,15 @@ class LP_Transaction {
 
 		$table_name = $wpdb->prefix . 'lp_transactions';
 
-		$exists = $wpdb->get_results( //changed from get_row to get_results
+		$results = $wpdb->get_results( //changed from get_row to get_results
 				$wpdb->prepare(
-						"SELECT * FROM $table_name WHERE %s = %s",
+						"SELECT * FROM $table_name WHERE %i = %s",
 						$key,
 						$value
 				)
 		);
+
+		return $results;
 
 	}
 
@@ -291,19 +295,32 @@ class LP_Transaction {
 
 	}
 
-	public static function get_meta( $transaction_id, $meta_key, $single = true ) {
+	public static function get_meta( $transaction_id, $meta_key = null, $single = true ) {
 
 		global $wpdb;
 		
 		$table_name = $wpdb->prefix . 'lp_transaction_meta';
 		
-		$meta_value = $wpdb->get_var( 
-			$wpdb->prepare( 
-				"SELECT meta_value FROM $table_name WHERE transaction_id = %d AND meta_key = %s", 
-				$transaction_id, 
-				$meta_key 
-			) 
-		);
+		if ( !empty( $meta_key ) ) {
+
+			$meta_value = $wpdb->get_var( 
+				$wpdb->prepare( 
+					"SELECT meta_value FROM $table_name WHERE transaction_id = %d AND meta_key = %s", 
+					$transaction_id, 
+					$meta_key 
+				) 
+			);
+
+		} else {
+
+			$meta_value = $wpdb->get_results( 
+				$wpdb->prepare( 
+					"SELECT meta_key, meta_value FROM $table_name WHERE transaction_id = %d", 
+					$transaction_id
+				) 
+			);
+
+		}
 		
 		return $meta_value;
 
