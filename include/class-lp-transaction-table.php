@@ -239,6 +239,22 @@ class LP_Transaction {
 
 	}
 
+	public static function get_transactions_by( $key, $value ) { // added the S to make it plural
+
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'lp_transactions';
+
+		$exists = $wpdb->get_results( //changed from get_row to get_results
+				$wpdb->prepare(
+						"SELECT * FROM $table_name WHERE %s = %s",
+						$key,
+						$value
+				)
+		);
+
+	}
+
 	public static function update_meta( $transaction_id, $meta_key, $meta_value ) {
 
 		global $wpdb;
