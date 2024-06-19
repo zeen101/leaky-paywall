@@ -143,6 +143,7 @@ class LP_Transaction {
 			'select'   => '*',
 			'where'    => '',
 			'limit'    => -1,
+			'offset'   => 0,
 			'order_by' => 'ID',
 			'order'    => 'DESC',
 		];
@@ -155,12 +156,16 @@ class LP_Transaction {
 			$query .= $wpdb->prepare( " WHERE {$args['where']}" );
 		}
 		
-		if ($args['limit'] > 0) {
-			$query .= $wpdb->prepare( " LIMIT %d", $args['limit'] );
+		if ( 'desc' === strtolower( $args['order'] ) ) {
+			$query .= $wpdb->prepare( " ORDER BY %i DESC", $args['order_by'] );
+		} else {
+			$query .= $wpdb->prepare( " ORDER BY %i ASC", $args['order_by'] );
 		}
-		
-		$query .= $wpdb->prepare( " ORDER BY %s %s", $args['order_by'], $args['order'] );
-		
+
+		if ($args['limit'] > 0) {
+			$query .= $wpdb->prepare( " LIMIT %d, %d", $args['offset'], $args['limit'] );
+		}
+
 		$results = $wpdb->get_results( $query );
 		
 		return $results;
@@ -177,6 +182,7 @@ class LP_Transaction {
 			'select'   => '*',
 			'where'    => '',
 			'limit'    => -1,
+			'offset'   => 0,
 			'order_by' => 'ID',
 			'order'    => 'DESC',
 		];
@@ -190,10 +196,14 @@ class LP_Transaction {
 		}
 		
 		if ($args['limit'] > 0) {
-			$query .= $wpdb->prepare( " LIMIT %d", $args['limit'] );
+			$query .= $wpdb->prepare( " LIMIT %d, %d", $args['offset'], $args['limit'] );
 		}
 		
-		$query .= $wpdb->prepare( " ORDER BY %s %s", $args['order_by'], $args['order'] );
+		if ( 'DESC' === strtolower( $args['order'] ) ) {
+			$query .= $wpdb->prepare( " ORDER BY %i DESC", $args['order_by'] );
+		} else {
+			$query .= $wpdb->prepare( " ORDER BY %i ASC", $args['order_by'] );
+		}
 		
 		$results = $wpdb->get_var( $query );
 		

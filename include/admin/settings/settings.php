@@ -215,6 +215,10 @@ class Leaky_Paywall_Settings
 	public function output_settings_fields($current_tab, $current_section)
 	{
 
+		if (!in_array($current_tab, $this->get_settings_tabs(), true)) {
+			return;
+		}
+		
 		switch ($current_tab) {
 			case 'general':
 				$this->output_general_settings($current_section);
@@ -1343,6 +1347,8 @@ class Leaky_Paywall_Settings
 
 	public function get_settings_tabs()
 	{
+		global $leaky_paywall;
+
 		$tabs = array(
 			'general',
 			'restrictions',
@@ -1353,6 +1359,13 @@ class Leaky_Paywall_Settings
 			'updates',
 			'help'
 		);
+
+		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '>=' ) ) {
+			$updates_tab = 'updates';
+			$tabs = array_filter( $tabs, function( $value ) use ( $updates_tab ) {
+				return $value !== $updates_tab;
+			});
+		}
 
 		return apply_filters('leaky_paywall_settings_tabs', $tabs);
 	}

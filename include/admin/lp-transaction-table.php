@@ -67,15 +67,15 @@ class LP_Transaction_Table extends WP_List_Table {
 		$paged = $this->get_pagenum();
 
 		$args = array(
-			'number' => $transactions_per_page,
+			'limit' => $transactions_per_page,
 			'offset' => ( $paged - 1 ) * $transactions_per_page,
 			'search' => $transaction_search,
 		);
 
 		if ( ! empty( $_REQUEST['orderby'] ) ) {
-			$args['orderby'] = sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) );
+			$args['order_by'] = sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) );
 		} else {
-			$args['orderby'] = 'ID';
+			$args['order_by'] = 'ID';
 		}
 
 		if ( ! empty( $_REQUEST['order'] ) ) {
@@ -134,7 +134,7 @@ class LP_Transaction_Table extends WP_List_Table {
 			'level_id'           => __( 'Level ID', 'leaky-paywall' ),
 			'price'              => __( 'Price', 'leaky-paywall' ),
 			'currency'           => __( 'Currency', 'leaky-paywall' ),
-			'gateway'            => __( 'Payment Gateway', 'leaky-paywall' ),
+			'payment_gateway'    => __( 'Payment Gateway', 'leaky-paywall' ),
 			'gateway_txn_id'     => __( 'Payment Transaction ID', 'leaky-paywall' ),
 			'payment_status'     => __( 'Payment Status', 'leaky-paywall' ),
 			'transaction_status' => __( 'Transaction Status', 'leaky-paywall' ),
@@ -149,16 +149,14 @@ class LP_Transaction_Table extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'wp_user_login'      => array( 'wp_user_login', false ),
-			'email'              => array( 'email', false ),
-			'name'               => array( 'name', false ),
-			'level_id'           => array( 'level_id', false ),
-			'price'              => array( 'price', false ),
-			'currency'           => array( 'currency', false ),
-			'gateway'            => array( 'gateway', false ),
-			'gateway_txn_id'     => array( 'gateway_txn_id', false ),
-			'payment_status'     => array( 'payment_status', false ),
-			'transaction_status' => array( 'transaction_status', false ),
+			'email'                  => array( 'email', false ),
+			'level_id'               => array( 'level_id', false ),
+			'price'                  => array( 'price', false ),
+			'currency'               => array( 'currency', false ),
+			'payment_gateway'        => array( 'payment_gateway', false ),
+			'payment_gateway_txn_id' => array( 'payment_gateway_txn_id', false ),
+			'payment_status'         => array( 'payment_status', false ),
+			'transaction_status'     => array( 'transaction_status', false ),
 		);
 		$sortable_columns = apply_filters( 'leaky_paywall_transaction_sortable_columns', $sortable_columns );
 
@@ -259,13 +257,13 @@ class LP_Transaction_Table extends WP_List_Table {
 								echo '</td>';
 							break;
 
-						case 'gateway':
+						case 'payment_gateway':
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							echo esc_attr( leaky_paywall_translate_payment_gateway_slug_to_name( $transaction->payment_gateway ) );
 							echo '</td>';
 							break;
 
-						case 'gateway_txn_id':
+						case 'payment_gateway_txn_id':
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							echo esc_attr( leaky_paywall_translate_payment_gateway_slug_to_name( $transaction->payment_gateway_txn_id ) );
 							echo '</td>';

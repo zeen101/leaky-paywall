@@ -877,7 +877,7 @@ class Leaky_Paywall {
 		$mode = 'off' === $settings['test_mode'] ? 'live' : 'test';
 
 		$this->display_zeen101_dot_com_leaky_rss_item();
-
+		
 		?>
 
 		<div id="lp-header" class="lp-header">
@@ -899,6 +899,7 @@ class Leaky_Paywall {
 		// Create an instance of our package class...
 		$transaction_table = new LP_Transaction_Table();
 		$pagenum           = $transaction_table->get_pagenum();
+
 		// Fetch, prepare, sort, and filter our data...
 		$transaction_table->prepare_items();
 		$total_pages = $transaction_table->get_pagination_arg( 'total_pages' );
