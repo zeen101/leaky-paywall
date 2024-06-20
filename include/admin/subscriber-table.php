@@ -58,7 +58,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		$paged = $this->get_pagenum();
 
 		$args = array(
-			'limit' => $users_per_page,
+			'number' => $users_per_page,
 			'offset' => ( $paged - 1 ) * $users_per_page,
 			'search' => $usersearch,
 		);
