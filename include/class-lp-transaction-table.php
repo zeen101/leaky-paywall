@@ -59,7 +59,7 @@ class LP_Transaction {
 
 			$datetime = new DateTime( $args['date_updated'], $timezone );
 			$date_updated = $datetime->format( $mysql_date_format );
-		
+
 		}
 
 		if ( empty( $args['date_created'] ) ) {
@@ -70,9 +70,9 @@ class LP_Transaction {
 
 			$datetime = new DateTime( $args['date_updated'], $timezone );
 			$date_created = $datetime->format( $mysql_date_format );
-		
+
 		}
-		
+
 		$this->login                  = empty( $args['login'] ) ? '' : $args['login'];
 		$this->user_id                = $args['user_id'];
 		$this->email                  = $args['email'];
@@ -138,7 +138,7 @@ class LP_Transaction {
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . 'lp_transactions';
-		
+
 		$defaults = [
 			'select'   => '*',
 			'where'    => '',
@@ -147,15 +147,15 @@ class LP_Transaction {
 			'order_by' => 'ID',
 			'order'    => 'DESC',
 		];
-		
+
 		$args = wp_parse_args( $args, $defaults );
-		
+
 		$query = $wpdb->prepare( "SELECT {$args['select']} FROM $table_name", null );
-		
+
 		if (!empty($args['where'])) {
 			$query .= $wpdb->prepare( " WHERE {$args['where']}" );
 		}
-		
+
 		if ( 'desc' === strtolower( $args['order'] ) ) {
 			$query .= $wpdb->prepare( " ORDER BY %i DESC", $args['order_by'] );
 		} else {
@@ -167,7 +167,7 @@ class LP_Transaction {
 		}
 
 		$results = $wpdb->get_results( $query );
-		
+
 		return $results;
 
 	}
@@ -177,7 +177,7 @@ class LP_Transaction {
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . 'lp_transactions';
-		
+
 		$defaults = [
 			'select'   => '*',
 			'where'    => '',
@@ -186,27 +186,27 @@ class LP_Transaction {
 			'order_by' => 'ID',
 			'order'    => 'DESC',
 		];
-		
+
 		$args = wp_parse_args( $args, $defaults );
-		
+
 		$query = $wpdb->prepare( "SELECT {$args['select']} FROM $table_name", null );
-		
+
 		if (!empty($args['where'])) {
 			$query .= $wpdb->prepare( " WHERE {$args['where']}" );
 		}
-		
+
 		if ($args['limit'] > 0) {
 			$query .= $wpdb->prepare( " LIMIT %d, %d", $args['offset'], $args['limit'] );
 		}
-		
+
 		if ( 'DESC' === strtolower( $args['order'] ) ) {
 			$query .= $wpdb->prepare( " ORDER BY %i DESC", $args['order_by'] );
 		} else {
 			$query .= $wpdb->prepare( " ORDER BY %i ASC", $args['order_by'] );
 		}
-		
+
 		$results = $wpdb->get_var( $query );
-		
+
 		return $results;
 
 	}
@@ -216,9 +216,9 @@ class LP_Transaction {
 		global $wpdb;
 
 		$table_name = $wpdb->prefix . 'lp_transactions';
-		
+
 		$result = $wpdb->get_var( "SELECT COUNT(`ID`) FROM $table_name" );
-		
+
 		return $result;
 
 	}
@@ -229,12 +229,12 @@ class LP_Transaction {
 
 		$table_name = $wpdb->prefix . 'lp_transactions';
 
-		$results = $wpdb->get_row( 
-			$wpdb->prepare( 
-				"SELECT * FROM $table_name WHERE %i = %s", 
+		$results = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM $table_name WHERE %i = %s",
 				$key,
-				$value 
-			) 
+				$value
+			)
 		);
 
 		return $results;
@@ -262,32 +262,32 @@ class LP_Transaction {
 	public static function update_meta( $transaction_id, $meta_key, $meta_value ) {
 
 		global $wpdb;
-		
+
 		$table_name = $wpdb->prefix . 'lp_transaction_meta';
-		
+
 		// Check if the meta key already exists for the transaction ID
-		$exists = $wpdb->get_var( 
-			$wpdb->prepare( 
-				"SELECT COUNT(*) FROM $table_name WHERE transaction_id = %d AND meta_key = %s", 
-				$transaction_id, 
-				$meta_key 
-			) 
+		$exists = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM $table_name WHERE transaction_id = %d AND meta_key = %s",
+				$transaction_id,
+				$meta_key
+			)
 		);
-		
+
 		if ( $exists > 0 ) {
 
 			// Update the existing meta data
-			$wpdb->update( 
-				$table_name, 
-				array( 'meta_value' => $meta_value ), 
-				array( 'transaction_id' => $transaction_id, 'meta_key' => $meta_key ) 
+			$wpdb->update(
+				$table_name,
+				array( 'meta_value' => $meta_value ),
+				array( 'transaction_id' => $transaction_id, 'meta_key' => $meta_key )
 			);
 
 		} else {
 
 			// Insert new meta data
-			$wpdb->insert( 
-				$table_name, 
+			$wpdb->insert(
+				$table_name,
 				array( 'transaction_id' => $transaction_id, 'meta_key' => $meta_key, 'meta_value' => $meta_value )
 			);
 
@@ -298,30 +298,30 @@ class LP_Transaction {
 	public static function get_meta( $transaction_id, $meta_key = null, $single = true ) {
 
 		global $wpdb;
-		
+
 		$table_name = $wpdb->prefix . 'lp_transaction_meta';
-		
+
 		if ( !empty( $meta_key ) ) {
 
-			$meta_value = $wpdb->get_var( 
-				$wpdb->prepare( 
-					"SELECT meta_value FROM $table_name WHERE transaction_id = %d AND meta_key = %s", 
-					$transaction_id, 
-					$meta_key 
-				) 
+			$meta_value = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT meta_value FROM $table_name WHERE transaction_id = %d AND meta_key = %s",
+					$transaction_id,
+					$meta_key
+				)
 			);
 
 		} else {
 
-			$meta_value = $wpdb->get_results( 
-				$wpdb->prepare( 
-					"SELECT meta_key, meta_value FROM $table_name WHERE transaction_id = %d", 
+			$meta_value = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT meta_key, meta_value FROM $table_name WHERE transaction_id = %d",
 					$transaction_id
-				) 
+				)
 			);
 
 		}
-		
+
 		return $meta_value;
 
 	}
@@ -329,12 +329,12 @@ class LP_Transaction {
 	public static function delete_meta( $transaction_id, $meta_key ) {
 
 		global $wpdb; // Get the WordPress database object
-		
+
 		$table_name = $wpdb->prefix . 'lp_transaction_meta';
-		
-		$wpdb->delete( 
-			$table_name, 
-			array( 'transaction_id' => $transaction_id, 'meta_key' => $meta_key ) 
+
+		$wpdb->delete(
+			$table_name,
+			array( 'transaction_id' => $transaction_id, 'meta_key' => $meta_key )
 		);
 
 	}
