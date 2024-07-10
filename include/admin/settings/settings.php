@@ -1512,12 +1512,19 @@ class Leaky_Paywall_Settings
 			return false;
 		}
 
-		$settings = $this->get_settings();
-		$level_id = absint($_GET['delete_level_id']);
-		$settings['levels'][$level_id]['deleted'] = 1;
-		$this->update_settings($settings);
+		$nonce = sanitize_text_field( $_GET['_wpnonce'] );
 
-		return true;
+		if (!wp_verify_nonce($nonce, 'leaky-paywall-level-row-nonce')) {
+			die(__('Failed Security Check', 'leaky-paywall'));
+		} else {
+			$settings = $this->get_settings();
+			$level_id = absint($_GET['delete_level_id']);
+			$settings['levels'][$level_id]['deleted'] = 1;
+			$this->update_settings($settings);
+			return true;
+		}
+
+		return false;
 	}
 
 	public function process_settings_update($current_tab, $current_section)

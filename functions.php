@@ -1451,10 +1451,10 @@ if (!function_exists('leaky_paywall_server_pdf_download')) {
 
 function build_leaky_paywall_subscription_levels_row_summary($level, $row_key)
 {
-
+	$nonce = wp_create_nonce('leaky-paywall-level-row-nonce');
 	$settings = get_leaky_paywall_settings();
 	$duration = $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'];
-	$delete_link = admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=subscriptions&delete_level_id=' . $row_key;
+	$delete_link = admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=subscriptions&delete_level_id=' . $row_key . '&_wpnonce=' . esc_attr($nonce);
 
 ?>
 	<tr>
