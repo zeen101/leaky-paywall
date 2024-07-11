@@ -54,7 +54,6 @@ class Leaky_Paywall {
 
 		add_action( 'wp', array( $this, 'process_content_restrictions' ) );
 		add_action( 'wp', array( $this, 'process_pdf_restrictions' ) );
-		add_action( 'wp', array( $this, 'process_cancellation_request' ) );
 		add_action( 'init', array( $this, 'process_js_content_restrictions' ) );
 		add_action( 'rest_api_init', array( $this, 'process_rest_content_restrictions' ) );
 
@@ -108,55 +107,6 @@ class Leaky_Paywall {
 		if ( isset( $_GET['issuem-pdf-download'] ) ) {
 			$restrictions = new Leaky_Paywall_Restrictions();
 			$restrictions->pdf_access();
-		}
-	}
-
-	/**
-	 * Process a cancellation request
-	 */
-	public function process_cancellation_request() {
-
-		if ( is_admin() ) {
-			return;
-		}
-
-		$settings = get_leaky_paywall_settings();
-
-		if ( leaky_paywall_has_user_paid() ) {
-
-			if ( $this->is_cancel_request() ) {
-				wp_die( wp_kses_post( leaky_paywall_cancellation_confirmation() ), esc_attr( $settings['site_name'] ) . ' - Cancel Request' );
-			}
-
-			$this->redirect_from_login_page();
-		} else {
-
-			if ( ! empty( $_REQUEST['r'] ) ) {
-				$this->process_passwordless_login();
-			}
-		}
-	}
-
-	/**
-	 * Check if the user is trying to cancel
-	 */
-	public function is_cancel_request() {
-		$settings = get_leaky_paywall_settings();
-
-		if ( isset( $_REQUEST['cancel'] ) ) {
-
-			if (
-				( ! empty( $settings['page_for_subscription'] ) && is_page( $settings['page_for_subscription'] ) )
-				|| ( ! empty( $settings['page_for_profile'] ) && is_page( $settings['page_for_profile'] ) )
-			) {
-				return true;
-			} elseif ( isset( $_GET['lp_cancel'] ) ) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
 		}
 	}
 
@@ -321,6 +271,14 @@ class Leaky_Paywall {
 
 		if ( 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
 			wp_enqueue_script( 'leaky_paywall_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
+
+			wp_localize_script(
+				'leaky_paywall_js',
+				'leaky_paywall_js',
+				array(
+					'lpJsNonce' => wp_create_nonce('leaky-paywall-js-nonce'),
+				)
+			);
 		}
 
 		if ( 'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix ) {

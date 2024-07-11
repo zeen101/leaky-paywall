@@ -4,7 +4,7 @@ Requires at least: 5.6
 Tested up to: 6.4.3
 Requires PHP: 7.4
 Stable tag: 4.21.2
-Tags: metered paywall, paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
+Tags: paywall, subscriptions, subscriber, membership, metered paywall
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 

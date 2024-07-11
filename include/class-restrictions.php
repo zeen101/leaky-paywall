@@ -48,26 +48,7 @@ class Leaky_Paywall_Restrictions {
 		$this->is_ajax = false;
 		$this->is_rest = false;
 
-		add_action( 'wp_footer', array( $this, 'display_viewed_content_debug' ) );
 		add_action( 'wp_footer', array( $this, 'hide_initial_content_display' ) );
-	}
-
-	/**
-	 * Debug for displaying viewed content
-	 */
-	public function display_viewed_content_debug() {
-		if ( ! isset( $_GET['leaky_paywall_debug'] ) ) {
-			return;
-		}
-		?>
-		<div style="position:absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 9999;">
-			<?php
-			echo '<pre>' . esc_html__( 'Viewed Content:', 'leaky-paywall' ) . ' ';
-			print_r( $this->get_content_viewed_by_user() );
-			echo '</pre>';
-			?>
-		</div>
-		<?php
 	}
 
 	/**

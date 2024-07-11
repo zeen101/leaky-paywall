@@ -987,129 +987,6 @@ if (!function_exists('leaky_paywall_translate_payment_gateway_slug_to_name')) {
 	}
 }
 
-if (!function_exists('leaky_paywall_cancellation_confirmation')) {
-
-	/**
-	 * Cancels a subscriber from Stripe subscription plan
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return string Cancellation form output
-	 * @throws Exception Generated during a Stripe call.
-	 */
-	function leaky_paywall_cancellation_confirmation()
-	{
-		$settings = get_leaky_paywall_settings();
-		$mode     = leaky_paywall_get_current_mode();
-		$site     = leaky_paywall_get_current_site();
-		$form     = '';
-
-		if (is_user_logged_in()) {
-
-			if (!empty($_REQUEST['payment_gateway'])) {
-				$payment_gateway = sanitize_text_field(wp_unslash($_REQUEST['payment_gateway']));
-			} else {
-				return '<p>' . __('No payment gateway defined.', 'leaky-paywall') . '</p>';
-			}
-
-			if (!empty($_REQUEST['subscriber_id'])) {
-				$subscriber_id = sanitize_text_field(wp_unslash($_REQUEST['subscriber_id']));
-			} else {
-				return '<p>' . __('No subscriber ID defined.', 'leaky-paywall') . '</p>';
-			}
-
-			if (isset($_REQUEST['cancel']) && empty($_REQUEST['cancel'])) {
-
-				$form               = '<h3>' . __('Cancel Subscription', 'leaky-paywall') . '</h3>';
-				$cancel_description = '<p>' . __('Cancellations take effect at the end of your billing cycle, and we can’t give partial refunds for unused time in the billing cycle. If you still wish to cancel now, you may proceed, or you can come back later.', 'leaky-paywall') . '</p>';
-
-				/* Translators: %s - site name */
-				$cancel_description .= '<p>' . sprintf(__(' Thank you for the time you’ve spent subscribed to %s. We hope you’ll return someday. ', 'leaky-paywall'), $settings['site_name']) . '</p>';
-
-				$form .= apply_filters('leaky_paywall_cancel_subscription_description', $cancel_description);
-
-				$form .= '<p><a href="' . esc_url(add_query_arg(array('cancel' => 'confirm'))) . '">' . __('Yes, please cancel my subscription.', 'leaky-paywall') . '</a></p><p><a href="' . get_page_link($settings['page_for_profile']) . '">' . __('No thanks, I would like to continue my subscription.', 'leaky-paywall') . '</a></p>';
-			} elseif (!empty($_REQUEST['cancel']) && 'confirm' === $_REQUEST['cancel']) {
-
-				$user = wp_get_current_user();
-
-				if ('stripe' === $payment_gateway) {
-
-					try {
-
-						$stripe = leaky_paywall_initialize_stripe_api();
-
-						$cu = $stripe->customers->retrieve($subscriber_id);
-
-						if (!empty($cu)) {
-							if (isset($cu->deleted) && true === $cu->deleted) {
-								throw new Exception(__('Unable to find valid Stripe customer ID to unsubscribe. Please contact support', 'leaky-paywall'));
-							}
-						}
-
-						if (null == $cu) {
-							throw new Exception(__('No subscriptions found for customer ID. Please contact support', 'leaky-paywall'));
-						}
-
-						// $subscriptions = $cu->subscriptions->all( array( 'limit' => '1' ) );
-
-						$subscriptions = $stripe->subscriptions->all(array(
-							'customer' => $cu->id,
-							'limit' => '1'
-						));
-
-						if (!empty($subscriptions->data)) {
-							foreach ($subscriptions->data as $subscription) {
-								$sub = $stripe->subscriptions->retrieve($subscription->id);
-								$results = $sub->cancel();
-							}
-						} else {
-							// no subscriptions found for stripe customer.
-							leaky_paywall_log('no subscriptions found', 'leaky paywall canceled stripe subscription for ' . $user->user_email);
-						}
-
-						if (!empty($results->status) && 'canceled' === $results->status) {
-							/* Translators: %s - site name */
-							$form .= '<p>' . sprintf(__('Your subscription has been successfully canceled. You will continue to have access to %s until the end of your billing cycle. Thank you for the time you have spent subscribed to our site and we hope you will return soon!', 'leaky-paywall'), $settings['site_name']) . '</p>';
-							// We are creating plans with the site of '_all', even on single sites.  This is a quick fix but needs to be readdressed.
-							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, 'Canceled');
-							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan_all', 'Canceled');
-							update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
-
-							do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
-							leaky_paywall_log($results, 'leaky paywall canceled stripe subscription for ' . $user->user_email);
-						} else {
-							$form .= '<p>' . sprintf(__('ERROR: An error occured when trying to unsubscribe you from your account, please try again. If you continue to have trouble, please contact us. Thank you.', 'leaky-paywall'), $settings['site_name']) . '</p>';
-						}
-
-						/* Translators: %s - site name */
-						$form .= '<a href="' . get_home_url() . '">' . sprintf(__('Return to %s...', 'leaky-paywall'), $settings['site_name']) . '</a>';
-					} catch (\Throwable $th) {
-
-						/* Translators: %s - error message */
-						$form = '<h3>' . sprintf(__('Error processing request: %s. Please contact support.', 'leaky-paywall'), $th->getMessage()) . '</h3>';
-						leaky_paywall_log($th->getMessage(), 'leaky paywall stripe cancel error - for user ' . $user->user_email);
-					}
-				} elseif ('paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway) {
-
-					$paypal_url   = 'test' === $mode ? 'https://www.sandbox.paypal.com/' : 'https://www.paypal.com/';
-					$paypal_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
-					$form        .= '<p>' . sprintf(__('You must cancel your account through PayPal. Please click this unsubscribe button to complete the cancellation process.', 'leaky-paywall'), $settings['site_name']) . '</p>';
-					$form        .= '<p><a href="' . $paypal_url . '?cmd=_subscr-find&alias=' . rawurlencode($paypal_email) . '"><img src="' . LEAKY_PAYWALL_URL . 'images/btn_unsubscribe_LG.gif" border="0"></a></p>';
-				} else {
-
-					$form .= '<p>' . __('Unable to determine your payment method. Please contact support for help canceling your account.', 'leaky-paywall') . '</p>';
-				}
-			}
-		} else {
-
-			$form .= '<p>' . __('You must be logged in to cancel your account.', 'leaky-paywall') . '</p>';
-		}
-
-		return apply_filters('leaky_paywall_cancellation_confirmation', $form);
-	}
-}
-
 if (!function_exists('create_leaky_paywall_login_hash')) {
 
 	/**
@@ -1329,107 +1206,6 @@ if (!function_exists('leaky_paywall_subscriber_current_level_ids')) {
 		}
 
 		return apply_filters('leaky_paywall_subscriber_current_level_ids', $level_ids);
-	}
-}
-
-if (!function_exists('leaky_paywall_subscriber_query')) {
-
-	/**
-	 * Gets leaky paywall subscribers
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param array   $args Leaky Paywall Subscribers.
-	 * @param integer $blog_id The blog id.
-	 * @return mixed $wpdb var or false if invalid hash.
-	 */
-	function leaky_paywall_subscriber_query($args, $blog_id = false)
-	{
-
-		if (!empty($args)) {
-			$site     = '';
-			$settings = get_leaky_paywall_settings();
-			if (!empty($blog_id) && is_multisite_premium()) {
-				$site = '_' . $blog_id;
-			}
-
-			$mode = leaky_paywall_get_current_mode();
-
-			if (!empty($args['search'])) {
-
-				$search = trim($args['search']);
-
-				if (is_email($search)) {
-
-					$args['meta_query']     = array(
-						array(
-							'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-							'compare' => 'EXISTS',
-						),
-					);
-					$args['search']         = $search;
-					$args['search_columns'] = array('user_login', 'user_email');
-				} else {
-
-					$args['meta_query'] = array(
-						'relation' => 'AND',
-						array(
-							'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-							'compare' => 'EXISTS',
-						),
-						array(
-							'value'   => $search,
-							'compare' => 'LIKE',
-						),
-					);
-					unset($args['search']);
-				}
-			} else {
-				$args['meta_query'] = array(
-					array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-						'compare' => 'EXISTS',
-					),
-				);
-			}
-
-			if (!empty($_GET['user-type']) && 'lpsubs' !== $_GET['user-type']) {
-				unset($args['meta_query']);
-			}
-
-			if (isset($_GET['filter-level']) && 'lpsubs' === $_GET['user-type']) {
-
-				$level = sanitize_text_field(wp_unslash($_GET['filter-level']));
-
-				if ('all' !== $level) {
-
-					$args['meta_query'][] = array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-						'value'   => $level,
-						'compare' => 'LIKE',
-					);
-				}
-			}
-
-			if (isset($_GET['filter-status']) && 'lpsubs' === $_GET['user-type']) {
-
-				$status = sanitize_text_field(wp_unslash($_GET['filter-status']));
-
-				if ('all' !== $status) {
-
-					$args['meta_query'][] = array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
-						'value'   => $status,
-						'compare' => 'LIKE',
-					);
-				}
-			}
-
-			$users = get_users($args);
-			return $users;
-		}
-
-		return false;
 	}
 }
 
@@ -1760,6 +1536,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		 */
 		function build_leaky_paywall_subscription_row_ajax()
 		{
+
 			if (isset($_REQUEST['row-key'])) {
 				// phpcs:ignore
 				die(build_leaky_paywall_subscription_levels_row(array(), sanitize_text_field(wp_unslash($_REQUEST['row-key']))));
@@ -1874,6 +1651,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		 */
 		function build_leaky_paywall_subscription_row_post_type_ajax()
 		{
+
+			if (!wp_verify_nonce(sanitize_text_field( $_POST['nonce'] ), 'leaky-paywall-js-nonce')) {
+				die(esc_html__('Failed Security Check', 'leaky-paywall'));
+			}
 
 			if (isset($_REQUEST['select-post-key']) && isset($_REQUEST['row-key'])) {
 				$settings = get_leaky_paywall_settings();
@@ -1993,6 +1774,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_get_restriction_row_post_type_taxonomies()
 	{
 
+		if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+			die(esc_html__('Failed Security Check', 'leaky-paywall'));
+		}
+
 		$post_type    = isset($_REQUEST['post_type']) ? sanitize_text_field(wp_unslash($_REQUEST['post_type'])) : '';
 		$taxes        = get_object_taxonomies($post_type, 'objects');
 		$hidden_taxes = apply_filters('leaky_paywall_settings_hidden_taxonomies', array('post_format', 'yst_prominent_words'));
@@ -2050,6 +1835,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		 */
 		function build_leaky_paywall_default_restriction_row_ajax()
 		{
+			if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+				die(esc_html__('Failed Security Check', 'leaky-paywall'));
+			}
 
 			if (isset($_REQUEST['row-key'])) {
 				// phpcs:ignore
@@ -4431,6 +4219,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$dismiss_url = add_query_arg(
 			array(
 				'action'    => 'leaky_paywall_set_admin_notice_viewed',
+				'nonce' 	=> wp_create_nonce('leaky-paywall-admin-notice-nonce'),
 				'notice_id' => esc_attr($notice_id),
 			),
 			admin_url()
@@ -4481,6 +4270,14 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 */
 	function leaky_paywall_update_admin_notice_viewed()
 	{
+
+		if ( !isset($_GET['nonce'])) {
+			return;
+		}
+
+		if (!wp_verify_nonce(sanitize_text_field($_GET['nonce']), 'leaky-paywall-admin-notice-nonce')) {
+			return;
+		}
 
 		if (!isset($_GET['action'])) {
 			return;

@@ -1515,7 +1515,7 @@ class Leaky_Paywall_Settings
 		$nonce = sanitize_text_field( $_GET['_wpnonce'] );
 
 		if (!wp_verify_nonce($nonce, 'leaky-paywall-level-row-nonce')) {
-			die(__('Failed Security Check', 'leaky-paywall'));
+			die(esc_html__('Failed Security Check', 'leaky-paywall'));
 		} else {
 			$settings = $this->get_settings();
 			$level_id = absint($_GET['delete_level_id']);

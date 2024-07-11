@@ -27,7 +27,7 @@ if ( ! defined( 'ZEEN101_STORE_URL' ) ) {
 
 define( 'LEAKY_PAYWALL_NAME', 'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION', '4.21.2' );
+define( 'LEAKY_PAYWALL_VERSION', '4.21.3' );
 define( 'LEAKY_PAYWALL_DB_VERSION', '1.0.5' );
 define( 'LEAKY_PAYWALL_URL', plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', plugin_dir_path( __FILE__ ) );
