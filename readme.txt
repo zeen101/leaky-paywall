@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 6.4.3
+Tested up to: 6.5.5
 Requires PHP: 7.4
-Stable tag: 4.21.2
+Stable tag: 4.21.3
 Tags: paywall, subscriptions, subscriber, membership, metered paywall
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html

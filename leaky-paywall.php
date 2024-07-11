@@ -11,7 +11,7 @@ Plugin Name: Leaky Paywall
 Plugin URI: https://leakypaywall.com/
 Description: The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
 Author: Leaky Paywall
-Version: 4.21.2
+Version: 4.21.3
 Author URI: https://leakypaywall.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: leaky-paywall
