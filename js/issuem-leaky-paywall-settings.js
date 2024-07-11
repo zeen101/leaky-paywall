@@ -65,6 +65,7 @@ $leaky_paywall_settings(document).ready(function ($) {
         "leaky_paywall_subscription_row_" + row_key + "_last_post_type_key";
       var data = {
         action: "issuem-leaky-paywall-add-new-subscription-row-post-type",
+        nonce: leaky_paywall_js.lpJsNonce,
         "select-post-key": ++window[select_post_key],
         "row-key": row_key,
       };

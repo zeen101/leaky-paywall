@@ -68,6 +68,14 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 
 == Changelog ==
 
+= 4.21.3 =
+* Fix for CSRF vulnerability for deleting a level
+* Process stripe payment element redirect url
+* Add leaky_paywall_rest_meta filter
+* Add webhook handling for the subscr_failed event from paypal
+* Find user by email if subscriber id is missing
+* Hide deleted levels from add new subscriber form
+
 = 4.21.2 =
 * Get stripe client secret from pending setup intent
 * Add translation strings

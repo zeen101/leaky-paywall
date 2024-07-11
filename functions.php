@@ -1835,6 +1835,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		 */
 		function build_leaky_paywall_default_restriction_row_ajax()
 		{
+
 			if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
 				die(esc_html__('Failed Security Check', 'leaky-paywall'));
 			}
