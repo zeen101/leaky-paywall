@@ -158,7 +158,6 @@
             subButton.innerHTML = leaky_paywall_stripe_registration_ajax.continue_text;
 
             if ( isTrial ) {
-
                 const { error, status } = await stripe.confirmSetup({
                     elements,
                     confirmParams: {
@@ -168,6 +167,8 @@
                 });
 
                 console.log('submit form 1');
+                let form$ = jQuery('#leaky-paywall-payment-form');
+                form$.get(0).submit();
 
                  if ( error ) {
                     if (error.type === "card_error" || error.type === "validation_error") {
@@ -176,13 +177,9 @@
                         showMessage("An unexpected error occurred.");
                     }
                     resetSubButton();
-                } else {
-                    let form$ = jQuery('#leaky-paywall-payment-form');
-                    form$.get(0).submit();
                 }
 
             } else {
-
                 const { error, paymentIntent } = await stripe.confirmPayment({
                     elements,
                     confirmParams: {
@@ -190,22 +187,22 @@
                         return_url: leaky_paywall_stripe_registration_ajax.redirect_url,
                         receipt_email: emailAddress,
                     },
-                    // redirect: 'if_required'
+                    redirect: 'if_required'
                 });
 
                 if (paymentIntent && paymentIntent.id) {
 
                     if ( paymentIntent.status == 'succeeded') {
                         console.log('submit form 2');
-                        // let form$ = jQuery('#leaky-paywall-payment-form');
-                        // form$.get(0).submit();
+                        let form$ = jQuery('#leaky-paywall-payment-form');
+                        form$.get(0).submit();
                     } else {
                         resetSubButton();
                     }
 
                 }
 
-                if ( error ) {
+                 if ( error ) {
                     if (error.type === "card_error" || error.type === "validation_error") {
                         showMessage(error.message);
                     } else {
@@ -214,7 +211,6 @@
                     resetSubButton();
                 }
             }
-
 
             console.log('lp submit form after confirm payment');
 
@@ -254,4 +250,3 @@
 	}); // doc ready
 
 })( jQuery );
-
