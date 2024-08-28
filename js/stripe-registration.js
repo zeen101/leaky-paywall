@@ -158,17 +158,13 @@
             subButton.innerHTML = leaky_paywall_stripe_registration_ajax.continue_text;
 
             if ( isTrial ) {
-                const { error, status } = await stripe.confirmSetup({
+                const { error } = await stripe.confirmSetup({
                     elements,
                     confirmParams: {
                         return_url: leaky_paywall_stripe_registration_ajax.redirect_url,
                     },
                     redirect: 'if_required'
                 });
-
-                console.log('submit form 1');
-                let form$ = jQuery('#leaky-paywall-payment-form');
-                form$.get(0).submit();
 
                  if ( error ) {
                     if (error.type === "card_error" || error.type === "validation_error") {
@@ -177,6 +173,10 @@
                         showMessage("An unexpected error occurred.");
                     }
                     resetSubButton();
+                } else {
+                    console.log('submit form 1');
+                    let form$ = jQuery('#leaky-paywall-payment-form');
+                    form$.get(0).submit();
                 }
 
             } else {
