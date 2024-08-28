@@ -238,6 +238,7 @@ class Leaky_Paywall {
 			|| 'leaky-paywall_page_leaky-paywall-upgrade' ===
 			$hook_suffix
 			|| 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
+			|| 'admin_page_lp-onboarding-1' === $hook_suffix
 		) {
 			wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 		}

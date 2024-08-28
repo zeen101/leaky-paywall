@@ -90,6 +90,7 @@ function leaky_paywall_plugins_loaded() {
 
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/settings/settings.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/insights.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding.php';
 
 		include LEAKY_PAYWALL_PATH . 'include/license-key.php';
 		include LEAKY_PAYWALL_PATH . 'include/error-tracking.php';
@@ -98,7 +99,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/class-restrictions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';
-	//	include LEAKY_PAYWALL_PATH . 'include/class-lp-onboarding.php';
+
 
 		// gateways.
 		include LEAKY_PAYWALL_PATH . 'include/gateways/gateway-functions.php';

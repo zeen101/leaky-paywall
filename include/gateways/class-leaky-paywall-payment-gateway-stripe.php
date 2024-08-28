@@ -301,6 +301,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
 				}
 
+				if ('incomplete_expired' == $stripe_object->status) {
+					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+				}
+
 				// this is triggered by cancelling in the Stripe customer portal
 				if ('cancellation_requested' == $stripe_object->cancellation_details->reason ) {
 					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
