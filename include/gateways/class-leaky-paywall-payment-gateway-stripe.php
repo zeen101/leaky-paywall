@@ -208,10 +208,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			$user = get_leaky_paywall_subscriber_by_subscriber_id($stripe_object->customer, $mode);
 
 			// if empty, get email from stripe customer and then get user by email
-			if ( !$user ) {
-				$stripe_customer = $stripe->customers->retrieve( $stripe_object->customer );
-				$user = get_user_by( 'email', $stripe_customer->email );
-			}
+			// if ( !$user ) {
+			// 	$stripe_customer = $stripe->customers->retrieve( $stripe_object->customer );
+			// 	$user = get_user_by( 'email', $stripe_customer->email );
+			// }
 
 		}
 
