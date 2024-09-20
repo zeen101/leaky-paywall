@@ -2,7 +2,12 @@
 
 	$(document).ready( function() {
 
-        const stripe = Stripe(leaky_paywall_stripe_registration_ajax.stripe_pk);
+        let stripe = Stripe(leaky_paywall_stripe_registration_ajax.stripe_pk);
+
+        if ( leaky_paywall_stripe_registration_ajax.client_id ) {
+            console.log('found me');
+            stripe = Stripe(leaky_paywall_stripe_registration_ajax.stripe_pk, { stripeAccount: leaky_paywall_stripe_registration_ajax.client_id});
+        }
 
         let elements;
 

@@ -399,7 +399,8 @@ class Leaky_Paywall {
 						'continue_text' => esc_html__('Processing... Please Wait', 'leaky-paywall'),
 						'next_text' => esc_html__('Next', 'leaky-paywall'),
 						'billing_address' => $settings['stripe_billing_address'],
-						'redirect_url' => get_page_link($settings['page_for_profile'])
+						'redirect_url' => get_page_link($settings['page_for_profile']),
+						'client_id' => isset( $settings['connected_account_id'] ) ? $settings['connected_account_id'] : ''
 					)
 				);
 

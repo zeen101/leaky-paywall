@@ -882,22 +882,50 @@ class Leaky_Paywall_Settings
 						</th>
 					</tr>
 
-					<tr>
+					<tr <?php echo $settings['live_publishable_key'] && !$settings['connected_account_id'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
+						<th><?php esc_html_e('Connection Status', 'leaky-paywall'); ?></th>
+						<td>
+							<?php
+
+							if ($settings['connected_account_id']) {
+								$stripe = leaky_paywall_initialize_stripe_api();
+
+								try {
+									$account = $stripe->accounts->retrieve($settings['connected_account_id']);
+									echo '<div class="notice inline notice-success"><p><strong> ' . $account->business_profile->name . '</strong><br>' . $account->email . '<br>account id: ' . $settings['connected_account_id'] . '</p></div>';
+									echo '<p>Your Stripe account is connected in ' . leaky_paywall_get_current_mode() . ' mode. <a href="#">Disconnect this account.</a></p>';
+								} catch (\Throwable $th) {
+									echo '<div class="notice inline notice-success"><p>' . $settings['connected_account_id'] . ' You do not have access to the account, or it does not exist.' . '<br><a href="' . $this->get_connect_url() . '">Connect with Stripe</a></div>';
+								}
+
+							} else {
+							?>
+								<a href="<?php echo $this->get_connect_url(); ?>">Connect with Stripe</a>
+								<p>Connect with Stripe for pay as you go pricing: 3% per-transaction fee + Stripe fees. Have questions about connecting with Stripe? See the documentation.</p>
+							<?php
+							}
+
+							?>
+
+						</td>
+					</tr>
+
+					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Live Publishable Key', 'leaky-paywall'); ?></th>
 						<td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo esc_attr($settings['live_publishable_key']); ?>" /></td>
 					</tr>
 
-					<tr>
+					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Live Secret Key', 'leaky-paywall'); ?></th>
 						<td><input type="password" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo esc_attr($settings['live_secret_key']); ?>" /></td>
 					</tr>
 
-					<tr>
+					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Test Publishable Key', 'leaky-paywall'); ?></th>
 						<td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo esc_attr($settings['test_publishable_key']); ?>" /></td>
 					</tr>
 
-					<tr>
+					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Test Secret Key', 'leaky-paywall'); ?></th>
 						<td><input type="password" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo esc_attr($settings['test_secret_key']); ?>" /></td>
 					</tr>
@@ -1512,7 +1540,7 @@ class Leaky_Paywall_Settings
 			return false;
 		}
 
-		$nonce = sanitize_text_field( $_GET['_wpnonce'] );
+		$nonce = sanitize_text_field($_GET['_wpnonce']);
 
 		if (!wp_verify_nonce($nonce, 'leaky-paywall-level-row-nonce')) {
 			die(esc_html__('Failed Security Check', 'leaky-paywall'));
@@ -2111,5 +2139,40 @@ class Leaky_Paywall_Settings
 		$html_allowed['a']['onclick'] = 1;
 
 		return $html_allowed;
+	}
+
+	public function get_connect_url()
+	{
+
+		$return_url = add_query_arg(
+			array(
+				'page'      => 'issuem-leaky-paywall',
+				'tab'       => 'payments',
+			),
+			admin_url('admin.php')
+		);
+
+		$refresh_url = add_query_arg(
+			array(
+				'page'      => 'issuem-leaky-paywall',
+				'tab'       => 'payments',
+				'connect_refresh'   => 'true'
+			),
+			admin_url('admin.php')
+		);
+
+		$mode = leaky_paywall_get_current_mode();
+
+		$stripe_connect_url = add_query_arg(
+			array(
+				'live_mode'         => $mode == 'live' ? true : false,
+				'state'             => str_pad(wp_rand(wp_rand(), PHP_INT_MAX), 100, wp_rand(), STR_PAD_BOTH),
+				'customer_site_url' => esc_url_raw($return_url),
+				'customer_refresh_url' => esc_url_raw($refresh_url)
+			),
+			'https://leakypaywall.com/?lp_gateway_connect_init=stripe_connect'
+		);
+
+		return $stripe_connect_url;
 	}
 }

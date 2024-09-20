@@ -269,6 +269,8 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		'expand'   => array( 'latest_invoice.payment_intent' ),
 	);
 
+	$subscription_params = apply_filters( 'leaky_paywall_stripe_subscription_params', [], $level, $fields );
+
 	try {
 		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
 		leaky_paywall_log( $customer, 'stripe checkout subscription for ' . $customer_id );
@@ -277,7 +279,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 
 		if ( empty( $subscriptions->data ) ) {
 			leaky_paywall_log( 'empty sub data', 'stripe checkout subscription for ' . $customer_id );
-			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ) );
+			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ), $subscription_params );
 		} else {
 
 			foreach ( $subscriptions->data as $subscription ) {
@@ -329,15 +331,17 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		'expand' => ['latest_invoice.payment_intent'],
 	);
 
+	$subscription_params = apply_filters('leaky_paywall_stripe_subscription_params', [], $level, $fields);
+
 	try {
 		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
 		leaky_paywall_log($cu, 'stripe subscription for ' . $customer_id);
-		$subscriptions = $stripe->subscriptions->all(array('limit' => '1', 'customer' => $customer_id));
+		$subscriptions = $stripe->subscriptions->all(array('limit' => '1', 'customer' => $customer_id), $subscription_params);
 		leaky_paywall_log('after get subs', 'stripe subscription for ' . $customer_id);
 
 		if (empty($subscriptions->data)) {
 			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
-			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields));
+			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), $subscription_params);
 		} else {
 			leaky_paywall_errors()->add('subscription_exists', __('A subscription already exists for this user.', 'leaky-paywall'), 'register');
 			return false;
@@ -460,8 +464,10 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 		'id'             => sanitize_title_with_dashes( leaky_paywall_normalize_chars( $level['label'] ) ) . '-' . $time,
 	);
 
+	$plan_params = apply_filters( 'leaky_paywall_stripe_plan_params', [], $level, $plan_args );
+
 	try {
-		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ) );
+		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ), $plan_params );
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
 	} catch ( \Throwable $th ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
@@ -1024,4 +1030,176 @@ function leaky_paywall_maybe_generate_stripe_customer_portal() {
 	header("Location: " . $session->url);
 	exit();
 
+}
+
+add_action('admin_init', 'leaky_paywall_connect_maybe_process_refresh');
+
+function leaky_paywall_connect_maybe_process_refresh()
+{
+
+	if (!isset($_GET['connect_refresh'])) {
+		return;
+	}
+
+	if ('true' == $_GET['connect_refresh']) {
+		wp_redirect($this->get_connect_url());
+		exit;
+	}
+}
+
+
+add_action('admin_init', 'leaky_paywall_connect_maybe_process_return');
+
+function leaky_paywall_connect_maybe_process_return()
+{
+
+	if (!isset($_GET['connected_account_id'])) {
+		return;
+	}
+
+	$settings = get_leaky_paywall_settings();
+	$connected_account_id = sanitize_text_field($_GET['connected_account_id']);
+	$settings['connected_account_id'] = $connected_account_id;
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+	$onboarding_completed = false;
+
+	try {
+		$stripe_account = $stripe->accounts->retrieve($connected_account_id);
+
+		if ( $stripe_account->details_submitted == 1 ) {
+			// they have completed onboarding
+			$onboarding_completed = true;
+		}
+
+	} catch (\Throwable $th) {
+		//throw $th;
+	}
+
+	if ( $onboarding_completed ) {
+
+		$lp_credentials_url = add_query_arg(
+			array(
+				'mode'         => leaky_paywall_get_current_mode(),
+				'account_id'             => $connected_account_id,
+				'customer_site_url' => urlencode(home_url()),
+			),
+			'https://leakypaywall.com/?lp_gateway_connect_credentials=stripe_connect'
+		);
+
+		$response = wp_remote_get(esc_url_raw($lp_credentials_url));
+
+		$data = json_decode($response['body']);
+
+		if ( isset( $data->public_key ) ) {
+			// use mode
+			$array_key = leaky_paywall_get_current_mode() . '_publishable_key';
+			$settings[$array_key] = $data->public_key;
+		}
+
+		if ( isset( $data->secret_key ) ) {
+			$array_key = leaky_paywall_get_current_mode() . '_secret_key';
+			$settings[$array_key] = $data->secret_key;
+		}
+
+	}
+
+	update_leaky_paywall_settings($settings);
+
+}
+
+add_filter('leaky_paywall_payment_intent_params', 'leaky_paywall_connect_adjust_intent_params', 50, 2);
+
+function leaky_paywall_connect_adjust_intent_params( $params, $level ) {
+	$settings = get_leaky_paywall_settings();
+	if ($settings['connected_account_id']) {
+		$params['stripe_account'] = $settings['connected_account_id'];
+	}
+
+	return $params;
+}
+
+add_filter('leaky_paywall_payment_intent_args', 'leaky_paywall_connect_adjust_intent_args', 50, 2);
+
+function leaky_paywall_connect_adjust_intent_args($args, $level)
+{
+	$settings = get_leaky_paywall_settings();
+	if ($settings['connected_account_id']) {
+		$fee = round( $level['price'] * 0.1, 2 ) * 100;
+		$args['application_fee_amount'] = $fee;
+	}
+
+	return $args;
+}
+
+add_filter('leaky_paywall_process_stripe_payment_customer_params', 'leaky_paywall_connect_adjust_customer_params', 99, 2 );
+
+function leaky_paywall_connect_adjust_customer_params($params, $fields) {
+
+	$settings = get_leaky_paywall_settings();
+	if ($settings['connected_account_id']) {
+		$params['stripe_account'] = $settings['connected_account_id'];
+	}
+	return $params;
+}
+
+
+add_filter('leaky_paywall_stripe_subscription_params', 'leaky_paywall_connect_adjust_subscription_params', 99, 3 );
+
+function leaky_paywall_connect_adjust_subscription_params( $params, $level, $fields ) {
+	$settings = get_leaky_paywall_settings();
+
+	if ($settings['connected_account_id']) {
+		$params['stripe_account'] = $settings['connected_account_id'];
+	}
+
+	return $params;
+}
+
+// add_action('leaky_paywall_before_process_stripe_webhook', 'leaky_paywall_connect_adjust_first_subscription_invoice', 99 );
+
+// function leaky_paywall_connect_adjust_first_subscription_invoice($stripe_event) {
+
+// 	if ( $stripe_event->type != 'invoice.created' ) {
+// 		return;
+// 	}
+
+// 	$settings = get_leaky_paywall_settings();
+
+// 	if ($settings['connected_account_id']) {
+// 		$stripe = leaky_paywall_initialize_stripe_api();
+
+// 		try {
+// 			$invoice = $stripe->invoices->update($stripe_event->data->object->id, ['application_fee_amount' => 123], ['stripe_account' => $settings['connected_account_id']]);
+// 		} catch (\Throwable $th) {
+// 			leaky_paywall_log($th->getMessage(), 'lp stripe connect invoice update error');
+// 		}
+// 	}
+
+// }
+
+
+add_filter('leaky_paywall_stripe_plan_params', 'leaky_paywall_connect_adjust_plan_params', 99, 3 );
+
+function leaky_paywall_connect_adjust_plan_params( $params, $level, $plan_args ) {
+	$settings = get_leaky_paywall_settings();
+
+	if ($settings['connected_account_id']) {
+		$params['stripe_account'] = $settings['connected_account_id'];
+	}
+
+	return $params;
+}
+
+
+add_filter('leaky_paywall_stripe_subscription_args', 'leaky_paywall_connect_adjust_subscription_args', 99, 3 );
+
+function leaky_paywall_connect_adjust_subscription_args($subscription_array, $level, $fields) {
+	$settings = get_leaky_paywall_settings();
+
+	if ($settings['connected_account_id']) {
+		$subscription_array['application_fee_percent'] = 10;
+	}
+
+	return $subscription_array;
 }

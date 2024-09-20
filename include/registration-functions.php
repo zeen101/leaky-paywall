@@ -508,10 +508,16 @@ function leaky_paywall_process_user_registration_validation() {
 		);
 
 		$customer_array = apply_filters( 'leaky_paywall_process_stripe_payment_customer_array', $customer_array, $fields );
+		$customer_params = apply_filters('leaky_paywall_process_stripe_payment_customer_params', [], $level);
 
 		try {
-			$cu = $stripe->customers->create( $customer_array );
+			$cu = $stripe->customers->create( $customer_array, $customer_params );
 		} catch ( \Throwable $th ) {
+
+			echo '<pre>';
+			print_r( $th->getMessage() );
+			echo '</pre>';
+			die();
 			$errors['stripe_customer'] = array(
 				'message' => __( 'Could not create customer.', 'leaky-paywall' ),
 			);
@@ -571,9 +577,17 @@ function leaky_paywall_process_user_registration_validation() {
 		$level
 	);
 
+	$intent_params = apply_filters( 'leaky_paywall_payment_intent_params', [], $level );
+
 	try {
-		$intent = $stripe->paymentIntents->create( $intent_args );
+		$intent = $stripe->paymentIntents->create( $intent_args, $intent_params );
 	} catch ( \Throwable $th ) {
+
+		echo '<pre>';
+		print_r( $th->getMessage() );
+		echo '</pre>';
+		die();
+
 		$errors['payment_intent'] = array(
 			'message' => __( 'Could not create payment intent.', 'leaky-paywall' ),
 		);

@@ -207,10 +207,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		if (!empty($stripe_object->customer)) {
 			$user = get_leaky_paywall_subscriber_by_subscriber_id($stripe_object->customer, $mode);
 
+			if ($settings['connected_account_id']) {
+				$cu_params['stripe_account'] = $settings['connected_account_id'];
+			} else {
+				$cu_params = [];
+			}
+
 			// if empty, get email from stripe customer and then get user by email
 			if ( !$user ) {
-				$stripe_customer = $stripe->customers->retrieve( $stripe_object->customer );
-				$user = get_user_by( 'email', $stripe_customer->email );
+				try {
+					$stripe_customer = $stripe->customers->retrieve($stripe_object->customer, $cu_params);
+					$user = get_user_by('email', $stripe_customer->email);
+				} catch (\Throwable $th) {
+					//throw $th;
+				}
+
 			}
 
 		}
@@ -280,9 +291,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ($stripe_object->subscription !== null ) {
 					// get the subscription and sync expiration date
 					$stripe = leaky_paywall_initialize_stripe_api();
-					$sub = $stripe->subscriptions->retrieve($stripe_object->subscription);
-					$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+
+					try {
+						$sub = $stripe->subscriptions->retrieve($stripe_object->subscription);
+						$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
+						update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+					} catch (\Throwable $th) {
+						leaky_paywall_log( $th->getMessage(), 'lp stripe - error retrieving subscription' );
+					}
+
 				}
 
 				break;
