@@ -213,6 +213,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				$cu_params = [];
 			}
 
+			// @todo: remove this lookup
 			// if empty, get email from stripe customer and then get user by email
 			if ( !$user ) {
 				try {
