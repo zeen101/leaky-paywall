@@ -50,15 +50,6 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		$this->test_mode = 'off' === $settings['test_mode'] ? false : true;
 
-		if ( $this->test_mode ) {
-
-			$this->api_endpoint = 'https://api-3t.sandbox.paypal.com/nvp';
-			$this->checkout_url = 'https://www.paypal.com/cgi-bin/webscr';
-		} else {
-
-			$this->api_endpoint = 'https://api-3t.paypal.com/nvp';
-			$this->checkout_url = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
-		}
 	}
 
 	/**
