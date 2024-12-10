@@ -27,6 +27,7 @@ function leaky_paywall_process_registration() {
 	}
 
 	if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' ) ) {
+		leaky_paywall_log('failed nonce verification', 'lp error - register nonce not verified for process registration');
 		return;
 	}
 
@@ -134,6 +135,7 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		! isset( $_POST['leaky_paywall_register_nonce'] )
 		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_register_nonce'] ) ), 'leaky-paywall-register-nonce' )
 	) {
+		leaky_paywall_log($subscriber_data['subscriber_email'], 'lp error - register nonce not verified for subscriber registration' );
 	   return;
 	}
 
