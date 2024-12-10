@@ -579,6 +579,10 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
 			}
+
+			if ( $subscription->status == 'active' ) {
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+			}
 		}
 
 	} catch (\Throwable $th) {
@@ -1061,9 +1065,10 @@ function leaky_paywall_connect_maybe_process_return()
 	$connected_account_id = sanitize_text_field($_GET['connected_account_id']);
 	$settings['connected_account_id'] = $connected_account_id;
 
-	$stripe = leaky_paywall_initialize_stripe_api();
-	$onboarding_completed = false;
+	// $stripe = leaky_paywall_initialize_stripe_api();
+	$onboarding_completed = true;
 
+	/*
 	try {
 		$stripe_account = $stripe->accounts->retrieve($connected_account_id);
 
@@ -1075,6 +1080,7 @@ function leaky_paywall_connect_maybe_process_return()
 	} catch (\Throwable $th) {
 		//throw $th;
 	}
+		*/
 
 	if ( $onboarding_completed ) {
 
@@ -1203,3 +1209,43 @@ function leaky_paywall_connect_adjust_subscription_args($subscription_array, $le
 
 	return $subscription_array;
 }
+
+add_action( 'admin_init', 'leaky_paywall_stripe_disconnect');
+
+function leaky_paywall_stripe_disconnect() {
+
+	if (! isset($_GET['action']) ) {
+		return;
+	}
+
+	if ( sanitize_text_field( $_GET['action'] ) != 'lp_stripe_disconnect' ) {
+		return;
+	}
+
+	/*
+	if (
+		! isset($_GET['_wpnonce']) ||
+		! wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'lp_stripe_disconnect_action' )
+	) {
+		return;
+	}
+		*/
+
+	$settings = get_leaky_paywall_settings();
+
+	$settings['connected_account_id'] = '';
+	$settings['live_secret_key'] = '';
+	$settings['live_publishable_key'] = '';
+	$settings['test_secret_key'] = '';
+	$settings['test_publishable_key'] = '';
+
+	foreach( $settings['payment_gateway'] as $key => $value ) {
+		if ( $value == 'stripe' ) {
+			unset( $settings['payment_gateway'][$key] );
+		}
+	}
+
+	update_leaky_paywall_settings( $settings );
+
+}
+
