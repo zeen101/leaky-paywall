@@ -76,6 +76,14 @@ if (!function_exists('is_level_deleted')) {
 	}
 }
 
+function is_level_hidden($level)
+{
+	if (isset($level['hide_registration_form']) && $level['hide_registration_form'] == 'on') {
+		return true;
+	}
+	return false;
+}
+
 if (!function_exists('get_leaky_paywall_subscribers_site_id_by_subscriber_id')) {
 	/**
 	 * Get subscriber's site id by their subscriber id
@@ -343,14 +351,14 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 	 * @param object $user object from WordPress database.
 	 * @return bool true if the user has access or false if they have either expired or their payment status is set to deactived
 	 */
-	function leaky_paywall_user_has_access( $user = null )
+	function leaky_paywall_user_has_access($user = null)
 	{
 
 		if (null === $user) {
 			$user = wp_get_current_user();
 		}
 
-		if ( !is_object( $user ) ) {
+		if (!is_object($user)) {
 			return false;
 		}
 
@@ -722,6 +730,10 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 	{
 
 		if (!is_email($email)) {
+			return false;
+		}
+
+		if (apply_filters('leaky_paywall_new_subscriber_abort', false, $email, $meta_args)) {
 			return false;
 		}
 
@@ -1124,7 +1136,7 @@ if (!function_exists('leaky_paywall_subscriber_current_level_id')) {
 	 *
 	 * @return array subscriber's subscription restrictions
 	 */
-	function leaky_paywall_subscriber_current_level_id( $user = null )
+	function leaky_paywall_subscriber_current_level_id($user = null)
 	{
 
 		if (null === $user) {
@@ -1274,6 +1286,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			'interval'                      => 'month',
 			'recurring'                     => 'off',
 			'hide_subscribe_card'           => 'off',
+			'hide_registration_form'           => 'off',
 			'plan_id'                       => array(),
 			'post_types'                    => array(
 				array(
@@ -1383,15 +1396,6 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 			<tr>
 				<th>
-					<label for="level-hide-subscribe-card-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Hide Subscribe Card', 'leaky-paywall'); ?></label>
-				</th>
-				<td>
-					<input id="level-hide-subscribe-card-<?php echo esc_attr($row_key); ?>" class="hide-subscribe- card" type="checkbox" name="levels[<?php echo esc_attr($row_key); ?>][hide_subscribe_card]" value="on" <?php echo checked('on', $level['hide_subscribe_card'], false); ?> /> <?php esc_html_e('Do not display subscribe card on subscribe page', 'leaky-paywall'); ?>
-				</td>
-			</tr>
-
-			<tr>
-				<th>
 					<label for="level-price-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Subscription Price', 'leaky-paywall'); ?></label>
 				</th>
 				<td>
@@ -1476,7 +1480,23 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				</td>
 			</tr>
 
+			<tr>
+				<th>
+					<label for="level-hide-subscribe-card-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Hide Subscribe Card', 'leaky-paywall'); ?></label>
+				</th>
+				<td>
+					<input id="level-hide-subscribe-card-<?php echo esc_attr($row_key); ?>" class="hide-subscribe- card" type="checkbox" name="levels[<?php echo esc_attr($row_key); ?>][hide_subscribe_card]" value="on" <?php echo checked('on', $level['hide_subscribe_card'], false); ?> /> <?php esc_html_e('Do not display subscribe card on subscribe page', 'leaky-paywall'); ?>
+				</td>
+			</tr>
 
+			<tr>
+				<th>
+					<label for="level-hide-registration-form-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Hide Registration Form', 'leaky-paywall'); ?></label>
+				</th>
+				<td>
+					<input id="level-hide-registration-form-<?php echo esc_attr($row_key); ?>" class="hide-registration-form" type="checkbox" name="levels[<?php echo esc_attr($row_key); ?>][hide_registration_form]" value="on" <?php echo checked('on', $level['hide_registration_form'], false); ?> /> <?php esc_html_e('Disable the direct sign up link for this level, but still allow manual assignment.', 'leaky-paywall'); ?>
+				</td>
+			</tr>
 
 			<?php
 			if (is_multisite_premium()) {
@@ -1652,7 +1672,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		function build_leaky_paywall_subscription_row_post_type_ajax()
 		{
 
-			if (!wp_verify_nonce(sanitize_text_field( $_POST['nonce'] ), 'leaky-paywall-js-nonce')) {
+			if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
 				die(esc_html__('Failed Security Check', 'leaky-paywall'));
 			}
 
@@ -2422,7 +2442,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				),
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
-					'value'   => array( gmdate( 'Y-m-d', $start_date ), gmdate( 'Y-m-d', $end_date ) ),
+					'value'   => array(gmdate('Y-m-d', $start_date), gmdate('Y-m-d', $end_date)),
 					'compare' => 'BETWEEN',
 					'type'    => 'DATE',
 				),
@@ -3446,7 +3466,6 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_show_extra_profile_fields($user)
 	{
 
-		$settings = get_leaky_paywall_settings();
 		$mode     = leaky_paywall_get_current_mode();
 		$site     = leaky_paywall_get_current_site();
 
@@ -3454,7 +3473,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		if ($level_id) {
 			$level = get_leaky_paywall_subscription_level($level_id);
 		}
-		$description      = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_description' . $site, true);
+		$description      = $level['label'];
 		$gateway          = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
 		$status           = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 		$expires          = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
@@ -3463,7 +3482,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$subscriber_notes = get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true);
 		$renewal_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
-		if (!is_numeric( $level_id )) {
+		if (!is_numeric($level_id)) {
 			return;
 		}
 
@@ -4272,7 +4291,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_update_admin_notice_viewed()
 	{
 
-		if ( !isset($_GET['nonce'])) {
+		if (!isset($_GET['nonce'])) {
 			return;
 		}
 
@@ -4411,45 +4430,45 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	}
 	add_action('admin_print_styles-plugins.php', 'leaky_paywall_plugin_list_styles');
 
-/**
- * Allow interval text to be translatable
- */
-function leaky_paywall_get_interval_text( $interval, $interval_count ) {
+	/**
+	 * Allow interval text to be translatable
+	 */
+	function leaky_paywall_get_interval_text($interval, $interval_count)
+	{
 
-	$interval_text = '';
+		$interval_text = '';
 
-	if ($interval == 'day') {
-		if ($interval_count > 1) {
-			$interval_text = esc_html__('days', 'leaky-paywall');
-		} else {
-			$interval_text = esc_html__('day', 'leaky-paywall');
+		if ($interval == 'day') {
+			if ($interval_count > 1) {
+				$interval_text = esc_html__('days', 'leaky-paywall');
+			} else {
+				$interval_text = esc_html__('day', 'leaky-paywall');
+			}
 		}
-	}
 
-	if ($interval == 'week') {
-		if ($interval_count > 1) {
-			$interval_text = esc_html__('weeks', 'leaky-paywall');
-		} else {
-			$interval_text = esc_html__('week', 'leaky-paywall');
+		if ($interval == 'week') {
+			if ($interval_count > 1) {
+				$interval_text = esc_html__('weeks', 'leaky-paywall');
+			} else {
+				$interval_text = esc_html__('week', 'leaky-paywall');
+			}
 		}
-	}
 
-	if ($interval == 'month') {
-		if ($interval_count > 1) {
-			$interval_text = esc_html__('months', 'leaky-paywall');
-		} else {
-			$interval_text = esc_html__('month', 'leaky-paywall');
+		if ($interval == 'month') {
+			if ($interval_count > 1) {
+				$interval_text = esc_html__('months', 'leaky-paywall');
+			} else {
+				$interval_text = esc_html__('month', 'leaky-paywall');
+			}
 		}
-	}
 
-	if ($interval == 'year') {
-		if ($interval_count > 1) {
-			$interval_text = esc_html__('years', 'leaky-paywall');
-		} else {
-			$interval_text = esc_html__('year', 'leaky-paywall');
+		if ($interval == 'year') {
+			if ($interval_count > 1) {
+				$interval_text = esc_html__('years', 'leaky-paywall');
+			} else {
+				$interval_text = esc_html__('year', 'leaky-paywall');
+			}
 		}
+
+		return $interval_text;
 	}
-
-	return $interval_text;
-
-}

@@ -863,6 +863,16 @@ class Leaky_Paywall_Settings
 			<?php
 			if (in_array('stripe', $settings['payment_gateway'], true) || in_array('stripe_checkout', $settings['payment_gateway'], true)) {
 				ob_start();
+
+				$is_connect = false;
+
+				if ($settings['connected_account_id']) {
+					$is_connect = true;
+				}
+
+				if (isset($_GET['show_stripe_connect'])) {
+					$is_connect = true;
+				}
 			?>
 
 				<table id="leaky_paywall_stripe_options" class="form-table">
@@ -882,7 +892,7 @@ class Leaky_Paywall_Settings
 						</th>
 					</tr>
 
-					<tr <?php echo $settings['live_publishable_key'] && !$settings['connected_account_id'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
+					<tr <?php echo !$is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Connection Status', 'leaky-paywall'); ?></th>
 						<td>
 							<?php
@@ -892,16 +902,19 @@ class Leaky_Paywall_Settings
 
 								try {
 									$account = $stripe->accounts->retrieve($settings['connected_account_id']);
-									echo '<div class="notice inline notice-success"><p><strong> ' . $account->business_profile->name . '</strong><br>' . $account->email . '<br>account id: ' . $settings['connected_account_id'] . '</p></div>';
-									echo '<p>Your Stripe account is connected in ' . leaky_paywall_get_current_mode() . ' mode. <a href="#">Disconnect this account.</a></p>';
+
+									echo '<div class="notice inline notice-success"><p><strong> ' . $account->settings->dashboard->display_name . '</strong><br>account id: ' . $settings['connected_account_id'] . '</p></div>';
+									echo '<p>Your Stripe account is connected in ' . leaky_paywall_get_current_mode() . ' mode. <a href="' . $this->get_disconnect_url() . '">Disconnect this account.</a></p>';
 								} catch (\Throwable $th) {
+
+									leaky_paywall_log( $th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id'] );
+
 									echo '<div class="notice inline notice-success"><p>' . $settings['connected_account_id'] . ' You do not have access to the account, or it does not exist.' . '<br><a href="' . $this->get_connect_url() . '">Connect with Stripe</a></div>';
 								}
-
 							} else {
 							?>
 								<a href="<?php echo $this->get_connect_url(); ?>">Connect with Stripe</a>
-								<p>Connect with Stripe for pay as you go pricing: 3% per-transaction fee + Stripe fees. Have questions about connecting with Stripe? See the documentation.</p>
+								<p>Connect with Stripe for pay as you go pricing: 10% per-transaction fee + Stripe fees. Have questions about connecting with Stripe? See the documentation.</p>
 							<?php
 							}
 
@@ -910,22 +923,22 @@ class Leaky_Paywall_Settings
 						</td>
 					</tr>
 
-					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
+					<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Live Publishable Key', 'leaky-paywall'); ?></th>
 						<td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo esc_attr($settings['live_publishable_key']); ?>" /></td>
 					</tr>
 
-					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
+					<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Live Secret Key', 'leaky-paywall'); ?></th>
 						<td><input type="password" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo esc_attr($settings['live_secret_key']); ?>" /></td>
 					</tr>
 
-					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
+					<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Test Publishable Key', 'leaky-paywall'); ?></th>
 						<td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo esc_attr($settings['test_publishable_key']); ?>" /></td>
 					</tr>
 
-					<tr <?php echo $settings['connected_account_id'] || !$settings['live_publishable_key'] ? 'class="leaky_paywall_hidden"' : ''; ?>>
+					<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
 						<th><?php esc_html_e('Test Secret Key', 'leaky-paywall'); ?></th>
 						<td><input type="password" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo esc_attr($settings['test_secret_key']); ?>" /></td>
 					</tr>
@@ -1982,7 +1995,7 @@ class Leaky_Paywall_Settings
 	 */
 	public function sanitize_levels($levels)
 	{
-		$text_fields     = array('label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card');
+		$text_fields     = array('label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card', 'hide_registration_form');
 		$textarea_fields = array('description', 'registration_form_description');
 
 		foreach ($levels as $i => $level) {
@@ -2014,7 +2027,7 @@ class Leaky_Paywall_Settings
 	 */
 	public function sanitize_level($level_id, $level)
 	{
-		$text_fields     = array('label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card');
+		$text_fields     = array('label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card', 'hide_registration_form');
 		$textarea_fields = array('description', 'registration_form_description');
 
 		foreach ($level as $key => $value) {
@@ -2174,5 +2187,19 @@ class Leaky_Paywall_Settings
 		);
 
 		return $stripe_connect_url;
+	}
+
+	public function get_disconnect_url()
+	{
+		$url = add_query_arg(
+			array(
+				'page'      => 'issuem-leaky-paywall',
+				'tab'       => 'payments',
+				'action' 	=> 'lp_stripe_disconnect'
+			),
+			admin_url('admin.php')
+		);
+
+		return wp_nonce_url($url, 'lp_stripe_disconnect_action');
 	}
 }
