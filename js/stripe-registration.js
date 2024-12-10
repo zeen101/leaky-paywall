@@ -117,6 +117,15 @@
                 });
 
                 addressElement.mount("#address-element");
+
+                // this stores on the payment method, but not the customer.  Need to update the customer after payment with these billing address details
+                addressElement.on('change', (event) => {
+                    if (event.complete){
+                        // Extract potentially complete address
+                      //  const address = event.value.address;
+                    }
+                });
+
             }
 
         }
