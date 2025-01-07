@@ -385,7 +385,6 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 	$settings    = get_leaky_paywall_settings();
 	$stripe_plan = false;
 	$match       = false;
-	$time        = time();
 
 	if ( ! isset( $level['plan_id'] ) ) {
 		$level['plan_id'] = array();
@@ -407,8 +406,10 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
 			try {
-				$stripe_plan = $stripe->plans->retrieve( $plan_id );
+				$plan_params = apply_filters('leaky_paywall_stripe_plan_params', [], $level, $plan_args);
+				$stripe_plan = $stripe->plans->retrieve($plan_id, [], $plan_params);
 			} catch ( \Throwable $th ) {
+				leaky_paywall_log($th->getMessage(), 'lp - error retrieving stripe plan for ' . $plan_id);
 				$stripe_plan = false;
 			}
 
