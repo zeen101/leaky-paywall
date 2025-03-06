@@ -216,8 +216,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		if (!empty($stripe_object->customer)) {
 			$user = get_leaky_paywall_subscriber_by_subscriber_id($stripe_object->customer, $mode);
 
-			if ($settings['connected_account_id']) {
-				$cu_params['stripe_account'] = $settings['connected_account_id'];
+			if ( isset($settings['connected_account_id'])) {
+				if ($settings['connected_account_id']) {
+					$cu_params['stripe_account'] = $settings['connected_account_id'];
+				}
 			} else {
 				$cu_params = [];
 			}

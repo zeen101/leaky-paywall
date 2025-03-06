@@ -389,7 +389,7 @@ function do_leaky_paywall_profile()
 	echo '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . esc_attr__('Save Profile Changes', 'leaky-paywall') . '"  /></p>';
 	echo '</form>';
 
-	$delete_message = esc_html__('Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?', 'leaky-paywall' );
+	$delete_message = esc_html__('Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that first to stop payments. Are you sure you want to continue?', 'leaky-paywall');
 
 	if ('on' === $settings['enable_user_delete_account']) {
 		echo '<form id="leaky-paywall-delete-account" action="" method="post">';
@@ -450,7 +450,7 @@ function do_leaky_paywall_register_form($atts)
 		}
 	}
 
-	if ( is_level_hidden( $level ) ) {
+	if (is_level_hidden($level)) {
 		$content = '<p>' . __('This level is not available. Please', 'leaky-paywall') . ' <a href="' . get_page_link($settings['page_for_subscription']) . '">' . __('go to the subscribe page', 'leaky-paywall') . '</a> ' . __('to choose a different subscription level.', 'leaky-paywall') . '</p>';
 		return $content;
 	}
@@ -517,7 +517,7 @@ function do_leaky_paywall_register_form($atts)
 
 		<ul class="leaky-paywall-subscription-details">
 			<li class="leaky-paywall-subscription-details-subscription-name"><strong><?php printf(esc_attr__('Your Order:', 'leaky-paywall')); ?></strong> <?php echo wp_kses_post(apply_filters('leaky_paywall_registration_level_name', $level['label'])); ?></li>
-			<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf(esc_attr__('Subscription Length:', 'leaky-paywall')); ?></strong> <?php echo 'unlimited' === $level['subscription_length_type'] ? esc_attr__('Forever', 'leaky-paywall') : esc_attr($level['interval_count']) . ' ' . leaky_paywall_get_interval_text( $level['interval'], $level['interval_count'] ); ?></li>
+			<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf(esc_attr__('Subscription Length:', 'leaky-paywall')); ?></strong> <?php echo 'unlimited' === $level['subscription_length_type'] ? esc_attr__('Forever', 'leaky-paywall') : esc_attr($level['interval_count']) . ' ' . leaky_paywall_get_interval_text($level['interval'], $level['interval_count']); ?></li>
 			<li class="leaky-paywall-subscription-details-recurring"><strong><?php printf(esc_attr__('Recurring:', 'leaky-paywall')); ?> </strong> <?php echo !empty($level['recurring']) && 'on' === $level['recurring'] ? esc_attr__('Yes', 'leaky-paywall') : esc_attr__('No', 'leaky-paywall'); ?></li>
 			<li class="leaky-paywall-subscription-details-content-access"><strong><?php printf(esc_attr__('Content Access:', 'leaky-paywall')); ?></strong>
 
@@ -656,7 +656,7 @@ function do_leaky_paywall_register_form($atts)
 
 			<?php
 			if (0 != $level['price'] && !$one_page_form) {
-				?>
+			?>
 				<p>
 					<button id="leaky-paywall-registration-next" type="button"><?php esc_html_e('Next', 'leaky-paywall'); ?></button>
 				</p>
@@ -716,6 +716,7 @@ function do_leaky_paywall_register_form($atts)
 				<button id="leaky-paywall-submit" type="submit"><?php echo esc_html(leaky_paywall_get_registration_checkout_button_text()); ?></button>
 			</div>
 
+			<?php do_action('leaky_paywall_after_registration_submit_field', $gateways, $level_id); ?>
 
 		</div> <!-- .leaky-paywall-registration-payment-container -->
 
