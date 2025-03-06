@@ -861,7 +861,6 @@ function do_leaky_paywall_not_subscriber_shortcode($atts, $content = null)
 	}
 
 	$user     = wp_get_current_user();
-	$settings = get_leaky_paywall_settings();
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
 
