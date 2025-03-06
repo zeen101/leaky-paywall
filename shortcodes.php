@@ -857,7 +857,7 @@ function do_leaky_paywall_not_subscriber_shortcode($atts, $content = null)
 	);
 
 	if (!is_user_logged_in()) {
-		return $content;
+		return do_shortcode( $content );
 	}
 
 	$user     = wp_get_current_user();
@@ -868,11 +868,11 @@ function do_leaky_paywall_not_subscriber_shortcode($atts, $content = null)
 	$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
 
 	if (!is_numeric($level_id)) {
-		return $content;
+		return do_shortcode( $content );
 	}
 
 	if (!leaky_paywall_user_has_access($user)) {
-		return $content;
+		return do_shortcode( $content );
 	}
 }
 
