@@ -1243,6 +1243,7 @@ function build_leaky_paywall_subscription_levels_row_summary($level, $row_key)
 	$settings = get_leaky_paywall_settings();
 	$duration = $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'];
 	$delete_link = admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=subscriptions&delete_level_id=' . $row_key . '&_wpnonce=' . esc_attr($nonce);
+	$page_for_register = $settings['page_for_register'] > 0 ? esc_url(get_page_link($settings['page_for_register']) . '?level_id=' . esc_attr($row_key)) : '';
 
 ?>
 	<tr>
@@ -1253,7 +1254,7 @@ function build_leaky_paywall_subscription_levels_row_summary($level, $row_key)
 		<td><?php echo esc_html($level['price']); ?></td>
 		<td><?php echo esc_html($duration); ?></td>
 		<td><?php echo isset($level['recurring']) ? 'recurring' : 'one time'; ?></td>
-		<td><?php echo esc_url(get_page_link($settings['page_for_register'])) . '?level_id=' . esc_attr($row_key); ?></td>
+		<td><?php echo $page_for_register; ?></td>
 	</tr>
 
 	<?php
