@@ -40,6 +40,8 @@ if (!function_exists('do_leaky_paywall_login')) {
 			$page_link = get_page_link($settings['page_for_profile']);
 		} elseif (!empty($settings['page_for_subscription'])) {
 			$page_link = get_page_link($settings['page_for_subscription']);
+		} else {
+			$page_link = home_url();
 		}
 
 		$results .= apply_filters('leaky_paywall_before_login_form', '');
