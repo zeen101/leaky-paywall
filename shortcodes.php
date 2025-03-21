@@ -789,7 +789,6 @@ function do_leaky_paywall_subscriber_shortcode($atts, $content = null)
 	$a = shortcode_atts(
 		array(
 			'levels'  => '',
-			'message' => '',
 		),
 		$atts
 	);
@@ -799,7 +798,6 @@ function do_leaky_paywall_subscriber_shortcode($atts, $content = null)
 	}
 
 	$user     = wp_get_current_user();
-	$settings = get_leaky_paywall_settings();
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
 
@@ -830,10 +828,6 @@ function do_leaky_paywall_subscriber_shortcode($atts, $content = null)
 		}
 	}
 
-	if (!empty($a['message']) && !$content) {
-		$content = '<p>' . $a['message'] . '</p>';
-	}
-
 	return do_shortcode($content);
 }
 add_shortcode('leaky_paywall_subscriber', 'do_leaky_paywall_subscriber_shortcode');
@@ -853,7 +847,6 @@ function do_leaky_paywall_not_subscriber_shortcode($atts, $content = null)
 	$a = shortcode_atts(
 		array(
 			'levels'  => '',
-			'message' => '',
 		),
 		$atts
 	);
