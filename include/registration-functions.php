@@ -316,7 +316,7 @@ function leaky_paywall_process_user_registration_validation() {
 	// if stripe payment method is not active, we are done.
 	$enabled_gateways = leaky_paywall_get_enabled_payment_gateways();
 
-	if ( in_array( 'stripe_checkout', array_keys( $enabled_gateways ) ) ) {
+	if ( array_key_exists( 'stripe_checkout', $enabled_gateways ) ) {
 
 		$stripe = leaky_paywall_initialize_stripe_api();
 
@@ -477,7 +477,8 @@ function leaky_paywall_process_user_registration_validation() {
 		wp_send_json( $return );
 	}
 
-	if ( ! in_array( 'stripe', array_keys( $enabled_gateways ) ) ) {
+	if ( !array_key_exists('stripe', $enabled_gateways)) {
+
 		$return = array(
 			'success' => 1,
 		);
@@ -516,10 +517,8 @@ function leaky_paywall_process_user_registration_validation() {
 			$cu = $stripe->customers->create( $customer_array, $customer_params );
 		} catch ( \Throwable $th ) {
 
-			echo '<pre>';
-			print_r( $th->getMessage() );
-			echo '</pre>';
-			die();
+			leaky_paywall_log($th->getMessage(), 'lp error - Could not create Stripe customer');
+
 			$errors['stripe_customer'] = array(
 				'message' => __( 'Could not create customer.', 'leaky-paywall' ),
 			);
@@ -558,7 +557,7 @@ function leaky_paywall_process_user_registration_validation() {
 			);
 		}
 
-
+		error_log('user validate create time 5: ' . (microtime(true) - $start) . ' seconds');
 
 		wp_send_json( $return );
 	}
@@ -585,10 +584,7 @@ function leaky_paywall_process_user_registration_validation() {
 		$intent = $stripe->paymentIntents->create( $intent_args, $intent_params );
 	} catch ( \Throwable $th ) {
 
-		echo '<pre>';
-		print_r( $th->getMessage() );
-		echo '</pre>';
-		die();
+		leaky_paywall_log($th->getMessage(), 'lp error - Could not create Stripe payment intent' );
 
 		$errors['payment_intent'] = array(
 			'message' => __( 'Could not create payment intent.', 'leaky-paywall' ),
