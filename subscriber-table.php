@@ -168,18 +168,18 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$users_columns = array(
-			'wp_user_login' => __( 'WordPress Username', 'leaky-paywall' ),
+		//	'wp_user_login' => __( 'WordPress Username', 'leaky-paywall' ),
 			'email'         => __( 'E-mail', 'leaky-paywall' ),
 			'name'          => __( 'Name', 'leaky-paywall' ),
 			'level_id'      => __( 'Level ID', 'leaky-paywall' ),
-			'susbcriber_id' => __( 'Subscriber ID', 'leaky-paywall' ),
-			'plan'          => __( 'Plan', 'leaky-paywall' ),
+		//	'susbcriber_id' => __( 'Subscriber ID', 'leaky-paywall' ),
+		//	'plan'          => __( 'Plan', 'leaky-paywall' ),
 			'created'       => __( 'Created', 'leaky-paywall' ),
 			'expires'       => __( 'Expires', 'leaky-paywall' ),
 			'has_access'    => __( 'Has Access', 'leaky-paywall' ),
-			'gateway'       => __( 'Gateway', 'leaky-paywall' ),
-			'status'        => __( 'Payment Status', 'leaky-paywall' ),
-			'notes'         => __( 'Notes', 'leaky-paywall' ),
+		//	'gateway'       => __( 'Gateway', 'leaky-paywall' ),
+		//	'status'        => __( 'Payment Status', 'leaky-paywall' ),
+		//	'notes'         => __( 'Notes', 'leaky-paywall' ),
 		);
 		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
 
@@ -353,20 +353,31 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							<?php
 							break;
 						case 'email':
-							$edit_link    = esc_url( add_query_arg( 'edit', rawurlencode( $user->user_email ) ) );
-							$new_edit_link    = esc_url(add_query_arg([
+
+							$edit_link    = esc_url(add_query_arg([
 								'action' => 'show',
 								'id'	=> $user->ID
 							]));
-							$edit_wp_link = admin_url() . 'user-edit.php?user_id=' . $user->ID;
+
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 							?>
 							<strong>
-								<a href="#<?php // echo $new_edit_link; ?>">
+								<a href="<?php echo $edit_link; ?>">
 									<?php echo esc_html( $user->user_email ); ?>
 								</a>
 							</strong>
-							<br><a href="<?php echo esc_url( $edit_link ); ?>" class="edit">Edit LP Sub</a> | <a href="<?php echo esc_url( $edit_wp_link ); ?>">Edit WP user</a>
+
+							<?php
+							if (method_exists('user_switching', 'maybe_switch_url')) {
+								if (is_object($user)) {
+									$link = user_switching::maybe_switch_url($user);
+									if ($link) {
+										echo '<br><a href="' . esc_url($link) . '">' . esc_html__('Switch&nbsp;To', 'leaky-paywall') . '</a>';
+									}
+								}
+							}
+							?>
+
 							</td>
 							<?php
 							break;
@@ -389,7 +400,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 								$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
 							}
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo esc_attr( $level_name );
+							echo esc_html( $level_name ) . '<br><span style="color: #999;">ID: ' . $level_id . '</span>';
 							echo '</td>';
 							break;
 

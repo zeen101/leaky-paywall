@@ -28,7 +28,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 
 	try {
 
-		$cu         = $stripe->customers->retrieve( $subscriber_id ); // stored in your application
+		$cu         = $stripe->customers->retrieve( $subscriber_id, [], leaky_paywall_get_stripe_connect_params() ); // stored in your application
 		$cu->source = sanitize_text_field( wp_unslash( $_POST['stripeToken'] ) ); // obtained with Checkout
 		$cu->save();
 

@@ -161,7 +161,6 @@ class Leaky_Paywall_Restrictions {
 	 * Check if content matches restriction rules
 	 */
 	public function content_matches_restriction_rules() {
-		$settings = get_leaky_paywall_settings();
 
 		if ( ! $this->is_single() && ! $this->is_rest ) {
 			return false;

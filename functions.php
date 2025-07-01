@@ -613,7 +613,7 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 							break;
 					}
 				} else {
-					$cu = $stripe->customers->retrieve($subscriber_id);
+					$cu = $stripe->customers->retrieve($subscriber_id, [], leaky_paywall_get_stripe_connect_params());
 
 					if (!empty($cu)) {
 						if (!empty($cu->deleted) && true === $cu->deleted) {
@@ -746,7 +746,17 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 			// the user already exists.
 			// grab the ID for later.
 			$user_id  = $user->ID;
-			$userdata = get_userdata($user_id);
+			$userdata = get_user_by('id', $user_id);
+
+			$user_data = array(
+				'user_login'      => $userdata->user_login,
+				'user_email'      => $userdata->user_email,
+				'first_name'      => $userdata->first_name,
+				'last_name'       => $userdata->last_name,
+				'display_name'    => $userdata->display_name,
+				'user_registered' => $userdata->user_registered,
+			);
+
 		} else {
 
 			// the user doesn't already exist.
@@ -776,7 +786,7 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 				$password = wp_generate_password();
 			}
 
-			$userdata = array(
+			$user_data = array(
 				'user_login'      => $login,
 				'user_email'      => $email,
 				'user_pass'       => $password,
@@ -786,15 +796,15 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 				'user_registered' => date_i18n('Y-m-d H:i:s'),
 			);
 
-			$userdata = apply_filters('leaky_paywall_userdata_before_user_create', $userdata);
-			$user_id  = wp_insert_user($userdata);
+			$user_data = apply_filters('leaky_paywall_userdata_before_user_create', $user_data);
+			$user_id  = wp_insert_user($user_data);
 		}
 
 		if (empty($user_id)) {
 			leaky_paywall_log($meta_args, 'could not create user');
 			return false;
 		} else {
-			$logged_userdata = $userdata;
+			$logged_userdata = $user_data;
 
 			if (is_array($logged_userdata)) {
 				unset($logged_userdata['user_pass']);
@@ -833,7 +843,7 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 			update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value);
 		}
 
-		do_action('leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args, $userdata);
+		do_action('leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args, $user_data);
 
 		return $user_id;
 	}

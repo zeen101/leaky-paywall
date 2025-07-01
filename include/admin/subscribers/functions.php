@@ -19,9 +19,21 @@ function lp_get_subscriber_meta( $key, $user = null ) {
 		case 'subscriber_id':
 			$value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true);
 			break;
-		case 'status':
+		case 'payment_status':
 			$value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 			break;
+        case 'created':
+            $value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_created' . $site, true);
+            break;
+        case 'plan':
+            $value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true);
+            break;
+        case 'notes':
+            $value = get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true);
+            break;
+        case 'payment_gateway':
+            $value = str_replace( ' ', '_', strtolower( get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true) ) );
+            break;
 
 		default:
 			$value = '';
@@ -29,6 +41,54 @@ function lp_get_subscriber_meta( $key, $user = null ) {
 	}
 
 	return $value;
+}
+
+function lp_update_subscriber_meta( $key, $value, $user_id ) {
+
+    $mode = leaky_paywall_get_current_mode();
+    $site = leaky_paywall_get_current_site();
+
+    switch ($key) {
+        case 'first_name':
+            wp_update_user( [ 'ID' => $user_id, 'first_name' => $value ] );
+            break;
+        case 'last_name':
+            wp_update_user(['ID' => $user_id, 'last_name' => $value]);
+            break;
+        case 'email':
+            wp_update_user(['ID' => $user_id, 'user_email' => $value]);
+            break;
+        case 'subscriber_notes':
+            update_user_meta($user_id, '_leaky_paywall_subscriber_notes', $value);
+            break;
+        case 'level_id':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, $value);
+            break;
+        case 'expires':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $value);
+            break;
+        case 'subscriber_id':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, $value);
+            break;
+        case 'payment_status':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, $value);
+            break;
+        case 'payment_gateway':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, $value);
+            break;
+        case 'expires':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $value);
+            break;
+        case 'plan':
+            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $value);
+            break;
+
+
+        default:
+            $value = '';
+            break;
+    }
+
 }
 
 function lp_render_subscription_status_badge($status) {
@@ -115,4 +175,28 @@ function lp_render_subscription_status_badge($status) {
     echo '<span class="subscription-badge ' . esc_attr($status_data['class']) . '">' . esc_html($status_data['label']) . '</span>';
     echo '<p class="description">' . esc_html($status_data['desc']) . '</p>';
     echo '</div>';
+}
+
+function leaky_paywall_get_all_transactions_by_email( $email )
+{
+
+    $args = array(
+        'post_type'       => 'lp_transaction',
+        'number_of_posts' => 99,
+        'meta_query'      => array(
+            array(
+                'key'     => '_email',
+                'value'   => $email,
+                'compare' => '=',
+            ),
+        ),
+    );
+
+    $transactions = get_posts($args);
+
+    if (!empty($transactions)) {
+        return $transactions;
+    }
+
+    return false;
 }

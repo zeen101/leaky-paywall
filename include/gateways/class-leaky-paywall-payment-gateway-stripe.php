@@ -296,7 +296,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ($stripe_object->subscription !== null ) {
 					// get the subscription and sync expiration date
 					try {
-						$sub = $stripe->subscriptions->retrieve($stripe_object->subscription);
+						$sub = $stripe->subscriptions->retrieve($stripe_object->subscription, [], leaky_paywall_get_stripe_connect_params());
 						$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
 						update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
 					} catch (\Throwable $th) {

@@ -240,10 +240,10 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id );
+		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id, [], leaky_paywall_get_stripe_connect_params() );
 		$payment_method->attach( array( 'customer' => $customer_id ) );
 
-		$customer = $stripe->customers->retrieve( $customer_id );
+		$customer = $stripe->customers->retrieve( $customer_id, [], leaky_paywall_get_stripe_connect_params() );
 		$customer->invoice_settings->default_payment_method = $payment_method_id;
 		$customer->save();
 	} catch ( \Throwable $th ) {
@@ -269,17 +269,17 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		'expand'   => array( 'latest_invoice.payment_intent' ),
 	);
 
-	$subscription_params = apply_filters( 'leaky_paywall_stripe_subscription_params', [], $level, $fields );
+	// $subscription_params = apply_filters( 'leaky_paywall_stripe_subscription_params', [], $level, $fields );
 
 	try {
 		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
 		leaky_paywall_log( $customer, 'stripe checkout subscription for ' . $customer_id );
-		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ) );
+		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ), leaky_paywall_get_stripe_connect_params() );
 		leaky_paywall_log( 'after get subs', 'stripe checkout subscription for ' . $customer_id );
 
 		if ( empty( $subscriptions->data ) ) {
 			leaky_paywall_log( 'empty sub data', 'stripe checkout subscription for ' . $customer_id );
-			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ), $subscription_params );
+			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ), leaky_paywall_get_stripe_connect_params() );
 		} else {
 
 			foreach ( $subscriptions->data as $subscription ) {
@@ -331,17 +331,17 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		'expand' => ['latest_invoice.payment_intent'],
 	);
 
-	$subscription_params = apply_filters('leaky_paywall_stripe_subscription_params', [], $level, $fields);
+// 	$subscription_params = apply_filters('leaky_paywall_stripe_subscription_params', [], $level, $fields);
 
 	try {
 		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
 		leaky_paywall_log($cu, 'stripe subscription for ' . $customer_id);
-		$subscriptions = $stripe->subscriptions->all(array('limit' => '1', 'customer' => $customer_id), $subscription_params);
+		$subscriptions = $stripe->subscriptions->all(array('limit' => '1', 'customer' => $customer_id), leaky_paywall_get_stripe_connect_params());
 		leaky_paywall_log('after get subs', 'stripe subscription for ' . $customer_id);
 
 		if (empty($subscriptions->data)) {
 			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
-			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), $subscription_params);
+			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), leaky_paywall_get_stripe_connect_params() );
 		} else {
 			leaky_paywall_errors()->add('subscription_exists', __('A subscription already exists for this user.', 'leaky-paywall'), 'register');
 			return false;
@@ -362,7 +362,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 
 	if ( isset( $subscription->pending_setup_intent)) {
 		// get setup intent client secret
-		$intent = $stripe->setupIntents->retrieve( $subscription->pending_setup_intent );
+		$intent = $stripe->setupIntents->retrieve( $subscription->pending_setup_intent, [], leaky_paywall_get_stripe_connect_params() );
 		return $intent->client_secret;
 	}
 
@@ -404,10 +404,14 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 
 		foreach ( $reversed_plans as $plan_id ) {
 
+			if ( !$plan_id ) {
+				continue; // fixes null or whitespace error
+			}
+
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
 			try {
-				$plan_params = apply_filters('leaky_paywall_stripe_plan_params', [], $level, $plan_args);
-				$stripe_plan = $stripe->plans->retrieve($plan_id, [], $plan_params);
+			//	$plan_params = apply_filters('leaky_paywall_stripe_plan_params', [], $level, $plan_args);
+				$stripe_plan = $stripe->plans->retrieve($plan_id, [], leaky_paywall_get_stripe_connect_params() );
 			} catch ( \Throwable $th ) {
 				leaky_paywall_log($th->getMessage(), 'lp - error retrieving stripe plan for ' . $plan_id);
 				$stripe_plan = false;
@@ -465,10 +469,10 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 		'id'             => sanitize_title_with_dashes( leaky_paywall_normalize_chars( $level['label'] ) ) . '-' . $time,
 	);
 
-	$plan_params = apply_filters( 'leaky_paywall_stripe_plan_params', [], $level, $plan_args );
+	// $plan_params = apply_filters( 'leaky_paywall_stripe_plan_params', [], $level, $plan_args );
 
 	try {
-		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ), $plan_params );
+		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ), leaky_paywall_get_stripe_connect_params() );
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
 	} catch ( \Throwable $th ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
@@ -555,7 +559,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$cus = $stripe->customers->retrieve( $subscriber_id );
+		$cus = $stripe->customers->retrieve( $subscriber_id, [], leaky_paywall_get_stripe_connect_params() );
 
 		if ( !is_object( $cus ) ) {
 			return;
@@ -564,7 +568,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 		$subscriptions = $stripe->subscriptions->all(array(
 			'customer' => $cus->id,
 			'limit' => '1'
-		));
+		), leaky_paywall_get_stripe_connect_params() );
 
 		if (empty($subscriptions)) {
 			return;
@@ -587,6 +591,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 		}
 
 	} catch (\Throwable $th) {
+		leaky_paywall_log($th->getMessage(), 'leaky paywall - stripe sync error');
 		return;
 	}
 }
@@ -733,7 +738,7 @@ function leaky_paywall_process_stripe_subscription_payment_element_webhook($stri
 	$incomplete_id = '';
 
 	try {
-		$cu = $stripe->customers->retrieve($stripe_object->customer);
+		$cu = $stripe->customers->retrieve($stripe_object->customer, [], leaky_paywall_get_stripe_connect_params());
 		$incomplete_id = leaky_paywall_get_incomplete_user_from_email($cu->email);
 	} catch (\Throwable $th) {
 		//throw $th;
@@ -855,7 +860,7 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 	$incomplete_id = '';
 
 	try {
-		$cu = $stripe->customers->retrieve($pi->customer);
+		$cu = $stripe->customers->retrieve($pi->customer, [], leaky_paywall_get_stripe_connect_params());
 	} catch (\Throwable $th) {
 		//throw $th;
 	}
@@ -890,7 +895,7 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 			$subscriptions = $stripe->subscriptions->all(array(
 				'customer' => $cu->id,
 				'limit' => '1'
-			));
+			), leaky_paywall_get_stripe_connect_params());
 
 			foreach ($subscriptions->data as $subscription) {
 				// get subscription plan id
@@ -1113,6 +1118,20 @@ function leaky_paywall_connect_maybe_process_return()
 
 	update_leaky_paywall_settings($settings);
 
+}
+
+function leaky_paywall_get_stripe_connect_params() {
+
+	$params = [];
+	$settings = get_leaky_paywall_settings();
+
+	if ( isset($settings['connected_account_id'])) {
+		if ($settings['connected_account_id']) {
+			$params['stripe_account'] = $settings['connected_account_id'];
+		}
+	}
+
+	return apply_filters( 'leaky_paywall_stripe_connect_params', $params );
 }
 
 add_filter('leaky_paywall_payment_intent_params', 'leaky_paywall_connect_adjust_intent_params', 50, 2);
