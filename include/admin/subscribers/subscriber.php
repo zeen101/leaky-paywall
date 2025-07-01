@@ -68,9 +68,10 @@ class Leaky_Paywall_Admin_Subscriber
 			lp_update_subscriber_meta('payment_gateway', $payment_gateway, $user_id);
 		}
 
+
 		if (isset($_POST['leaky-paywall-subscriber-expires'])) {
 
-			if ($_POST['leaky-paywall-subscriber-expires'] < 1) {
+			if ( is_numeric( $_POST['leaky-paywall-subscriber-expires'] ) && $_POST['leaky-paywall-subscriber-expires'] < 1) {
 				$expires = 0;
 			} else if (strtolower($_POST['leaky-paywall-subscriber-expires']) == 'never') {
 				$expires = 0;
