@@ -844,9 +844,9 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$pi = $stripe->paymentIntents->retrieve($pi_id);
+		$pi = $stripe->paymentIntents->retrieve($pi_id, [], leaky_paywall_get_stripe_connect_params());
 	} catch (\Throwable $th) {
-		//throw $th;
+		leaky_paywall_log( $th->getMessage(), 'lp error - retrieving payment intent from redirect url');
 	}
 
 	if ( !isset($pi->status) ) {
@@ -862,7 +862,7 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 	try {
 		$cu = $stripe->customers->retrieve($pi->customer, [], leaky_paywall_get_stripe_connect_params());
 	} catch (\Throwable $th) {
-		//throw $th;
+		leaky_paywall_log($th->getMessage(), 'lp error - retrieving customer from payment intent redirect url');
 	}
 
 	if ( !isset( $cu->email ) ) {
@@ -1023,17 +1023,12 @@ function leaky_paywall_maybe_generate_stripe_customer_portal() {
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
-		$session = \Stripe\BillingPortal\Session::create([
+		$session = $stripe->billingPortal->sessions->create([
 			'customer' => $subscriber_id,
 			'return_url' => get_page_link( $settings['page_for_profile'] ),
-		]);
+		], leaky_paywall_get_stripe_connect_params());
 	} catch (\Throwable $th) {
-
-		echo '<pre>';
-		print_r( $th->getMessage() );
-		echo '</pre>';
-		die();
-
+		leaky_paywall_log($th->getMessage(), 'lp error - generate stripe customer portal session');
 	}
 
 	// Redirect to the customer portal.
@@ -1094,7 +1089,7 @@ function leaky_paywall_connect_maybe_process_return()
 			array(
 				'mode'         => leaky_paywall_get_current_mode(),
 				'account_id'             => $connected_account_id,
-				'customer_site_url' => urlencode(home_url()),
+				'customer_site_url' => rawurlencode(home_url()),
 			),
 			'https://leakypaywall.com/?lp_gateway_connect_credentials=stripe_connect'
 		);
@@ -1182,29 +1177,6 @@ function leaky_paywall_connect_adjust_subscription_params( $params, $level, $fie
 	return $params;
 }
 
-// add_action('leaky_paywall_before_process_stripe_webhook', 'leaky_paywall_connect_adjust_first_subscription_invoice', 99 );
-
-// function leaky_paywall_connect_adjust_first_subscription_invoice($stripe_event) {
-
-// 	if ( $stripe_event->type != 'invoice.created' ) {
-// 		return;
-// 	}
-
-// 	$settings = get_leaky_paywall_settings();
-
-// 	if ($settings['connected_account_id']) {
-// 		$stripe = leaky_paywall_initialize_stripe_api();
-
-// 		try {
-// 			$invoice = $stripe->invoices->update($stripe_event->data->object->id, ['application_fee_amount' => 123], ['stripe_account' => $settings['connected_account_id']]);
-// 		} catch (\Throwable $th) {
-// 			leaky_paywall_log($th->getMessage(), 'lp stripe connect invoice update error');
-// 		}
-// 	}
-
-// }
-
-
 add_filter('leaky_paywall_stripe_plan_params', 'leaky_paywall_connect_adjust_plan_params', 99, 3 );
 
 function leaky_paywall_connect_adjust_plan_params( $params, $level, $plan_args ) {
@@ -1260,7 +1232,7 @@ function leaky_paywall_stripe_disconnect() {
 	$settings['test_publishable_key'] = '';
 
 	foreach( $settings['payment_gateway'] as $key => $value ) {
-		if ( $value == 'stripe' ) {
+		if ( $value === 'stripe' ) {
 			unset( $settings['payment_gateway'][$key] );
 		}
 	}
@@ -1268,4 +1240,3 @@ function leaky_paywall_stripe_disconnect() {
 	update_leaky_paywall_settings( $settings );
 
 }
-

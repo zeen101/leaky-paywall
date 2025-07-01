@@ -16,21 +16,25 @@ class Leaky_Paywall_Admin_Subscriber
 			return;
 		}
 
-		if (! wp_verify_nonce($_POST['leaky_paywall_admin_subscriber_update_nonce'], 'leaky_paywall_admin_subscriber_update')) {
+		if (! wp_verify_nonce(sanitize_key($_POST['leaky_paywall_admin_subscriber_update_nonce']), 'leaky_paywall_admin_subscriber_update')) {
+			return;
+		}
+
+		if (!isset($_GET['id'])) {
 			return;
 		}
 
 		$user_id = absint($_GET['id']);
 
-		$first_name = sanitize_text_field($_POST['first_name']);
-		$last_name = sanitize_text_field($_POST['last_name']);
-		$email = sanitize_text_field($_POST['email']);
-		$subscriber_notes = sanitize_textarea_field($_POST['subscriber_notes']);
-		$level_id = absint($_POST['level_id']);
-		$subscriber_id = sanitize_text_field($_POST['subscriber_id']);
-		$payment_status = sanitize_text_field($_POST['payment_status']);
-		$payment_gateway = sanitize_text_field($_POST['payment_gateway']);
-		$plan = sanitize_text_field($_POST['plan']);
+		$first_name = isset($_POST['first_name']) ? sanitize_text_field($_POST['first_name']) : '';
+		$last_name = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
+		$email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
+		$subscriber_notes = isset($_POST['subscriber_notes']) ? sanitize_textarea_field($_POST['subscriber_notes']) : '';
+		$level_id = isset($_POST['level_id']) ? absint($_POST['level_id']) : '';
+		$subscriber_id = isset($_POST['subscriber_id']) ? sanitize_text_field($_POST['subscriber_id']) : '';
+		$payment_status = isset($_POST['payment_status']) ? sanitize_text_field($_POST['payment_status']) : '';
+		$payment_gateway = isset($_POST['payment_gateway']) ? sanitize_text_field($_POST['payment_gateway']) : '';
+		$plan = isset($_POST['plan']) ? sanitize_text_field($_POST['plan']) : '';
 
 		if (isset($_POST['first_name'])) {
 			lp_update_subscriber_meta('first_name', $first_name, $user_id);
@@ -71,9 +75,9 @@ class Leaky_Paywall_Admin_Subscriber
 
 		if (isset($_POST['leaky-paywall-subscriber-expires'])) {
 
-			if ( is_numeric( $_POST['leaky-paywall-subscriber-expires'] ) && $_POST['leaky-paywall-subscriber-expires'] < 1) {
+			if (is_numeric($_POST['leaky-paywall-subscriber-expires']) && $_POST['leaky-paywall-subscriber-expires'] < 1) {
 				$expires = 0;
-			} else if (strtolower($_POST['leaky-paywall-subscriber-expires']) == 'never') {
+			} else if (strtolower(sanitize_text_field($_POST['leaky-paywall-subscriber-expires'])) === 'never') {
 				$expires = 0;
 			} else {
 				$expires = gmdate('Y-m-d 23:59:59', strtotime(trim(urldecode(sanitize_text_field(wp_unslash($_POST['leaky-paywall-subscriber-expires']))))));
@@ -91,7 +95,7 @@ class Leaky_Paywall_Admin_Subscriber
 			return;
 		}
 
-		if (! wp_verify_nonce($_POST['leaky_paywall_admin_subscriber_add_nonce'], 'leaky_paywall_admin_subscriber_add')) {
+		if (! wp_verify_nonce(sanitize_key($_POST['leaky_paywall_admin_subscriber_add_nonce']), 'leaky_paywall_admin_subscriber_add')) {
 			return;
 		}
 
@@ -144,9 +148,9 @@ class Leaky_Paywall_Admin_Subscriber
 
 		<div class="wrap">
 			<?php
-			if (isset($_GET['action']) && $_GET['action'] == 'show') {
+			if (isset($_GET['action']) && $_GET['action'] === 'show') {
 				$this->show_subscriber_page();
-			} else if (isset($_GET['action']) && $_GET['action'] == 'add') {
+			} else if (isset($_GET['action']) && $_GET['action'] === 'add') {
 				$this->add_subscriber_page();
 			} else {
 				$this->show_subscribers_table();
@@ -173,12 +177,12 @@ class Leaky_Paywall_Admin_Subscriber
 
 		<div class="add-new-sub-container" style="float: right; margin-bottom: 20px;">
 			<?php
-			$add_link    = esc_url(add_query_arg([
+			$add_link    = add_query_arg([
 				'action' => 'add',
-			]));
+			]);
 
 			?>
-			<a class="button button-primary" href="<?php echo $add_link; ?>">+ Add Subscriber</a>
+			<a class="button button-primary" href="<?php echo esc_url($add_link); ?>">+ <?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></a>
 		</div>
 
 		<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
@@ -206,7 +210,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 	?>
 		<div class="wrap">
-			<p><a href="<?php echo admin_url(); ?>admin.php?page=leaky-paywall-subscribers">All Subscribers ⤴</a></p>
+			<p><a href="<?php echo esc_url(admin_url()); ?>admin.php?page=leaky-paywall-subscribers"><?php esc_html_e('All Subscribers', 'leaky-paywall'); ?> ⤴</a></p>
 
 			<form id="leaky-paywall-susbcriber-add" name="leaky-paywall-subscriber-add" method="post">
 				<div style="display: table">
@@ -229,7 +233,7 @@ class Leaky_Paywall_Admin_Subscriber
 								if (isset($level['deleted'])) {
 									continue;
 								}
-								echo '<option value="' . esc_attr($key) . '">ID: ' . $key . ' - ' . esc_html(stripslashes($level['label']));
+								echo '<option value="' . esc_attr($key) . '">ID: ' . esc_html($key) . ' - ' . esc_html(stripslashes($level['label']));
 								echo isset($level['deleted']) && $level['deleted'] == 1 ? '(deleted)' : '';
 								echo '</option>';
 							}
@@ -261,8 +265,6 @@ class Leaky_Paywall_Admin_Subscriber
 					<?php do_action('add_leaky_paywall_subscriber_form'); ?>
 				</div>
 				<?php submit_button('Add New Subscriber'); ?>
-				<?php // wp_nonce_field('add_new_subscriber', 'leaky_paywall_add_subscriber');
-				?>
 
 				<?php wp_nonce_field('leaky_paywall_admin_subscriber_add', 'leaky_paywall_admin_subscriber_add_nonce'); ?>
 
@@ -275,7 +277,7 @@ class Leaky_Paywall_Admin_Subscriber
 	public function show_subscriber_page()
 	{
 
-		$id = absint($_GET['id']);
+		$id = isset($_GET['id']) ? absint($_GET['id']) : '';
 		$user = get_user_by('ID', $id);
 
 		if (!$user) {
@@ -315,8 +317,8 @@ class Leaky_Paywall_Admin_Subscriber
 
 	?>
 		<div class="wrap">
-			<p><a href="<?php echo admin_url(); ?>admin.php?page=leaky-paywall-subscribers">All Subscribers ⤴</a></p>
-			<h1 class="wp-heading-inline"><?php echo $user->user_email; ?></h1>
+			<p><a href="<?php echo esc_url(admin_url()); ?>admin.php?page=leaky-paywall-subscribers"><?php esc_html_e('All Subscribers', 'leaky-paywall'); ?> ⤴</a></p>
+			<h1 class="wp-heading-inline"><?php echo esc_html( $user->user_email ); ?></h1>
 			<hr class="wp-header-end">
 
 			<form method="POST" action="" id="leaky-paywall-admin-subscriber-form">
@@ -334,27 +336,27 @@ class Leaky_Paywall_Admin_Subscriber
 								<table class="form-table">
 									<tr>
 										<th><label for="first_name"><?php esc_html_e('First Name', 'leaky-paywall'); ?></label></th>
-										<td><input name="first_name" type="text" id="first_name" value="<?php echo $user->first_name; ?>" class="regular-text"></td>
+										<td><input name="first_name" type="text" id="first_name" value="<?php echo esc_attr( $user->first_name ); ?>" class="regular-text"></td>
 									</tr>
 									<tr>
 										<th><label for="last_name"><?php esc_html_e('Last Name', 'leaky-paywall'); ?></label></th>
-										<td><input name="last_name" type="text" id="last_name" value="<?php echo $user->last_name; ?>" class="regular-text"></td>
+										<td><input name="last_name" type="text" id="last_name" value="<?php echo esc_attr( $user->last_name ); ?>" class="regular-text"></td>
 									</tr>
 									<tr>
 										<th><label for="email"><?php esc_html_e('Email', 'leaky-paywall'); ?></label></th>
-										<td><input name="email" type="email" id="email" value="<?php echo $user->user_email; ?>" class="regular-text"></td>
+										<td><input name="email" type="email" id="email" value="<?php echo esc_attr( $user->user_email ); ?>" class="regular-text"></td>
 									</tr>
 									<tr>
 										<th><label for="subscriber_notes"><?php esc_html_e('Notes', 'leaky-paywall'); ?></label></th>
-										<td><textarea name="subscriber_notes" id="subscriber_notes" class="large-text" rows="4"><?php echo $subscriber_notes; ?></textarea></td>
+										<td><textarea name="subscriber_notes" id="subscriber_notes" class="large-text" rows="4"><?php echo esc_html( $subscriber_notes ); ?></textarea></td>
 									</tr>
 									<tr>
 										<th><label for="created"><?php esc_html_e('Created', 'leaky-paywall'); ?></label></th>
-										<td><?php echo gmdate( $date_format, strtotime( $created ) ); ?></td>
+										<td><?php echo esc_html( gmdate($date_format, strtotime($created)) ); ?></td>
 									</tr>
 									<tr>
 										<th><label for="has_access"><?php esc_html_e('Has Access', 'leaky-paywall'); ?></label></th>
-										<td><?php echo $has_access; ?></td>
+										<td><?php echo esc_html( $has_access ); ?></td>
 									</tr>
 									<tr>
 										<th><label for="password"><?php esc_html_e('Password', 'leaky-paywall'); ?></label></th>
@@ -393,7 +395,7 @@ class Leaky_Paywall_Admin_Subscriber
 											<select name="level_id" id="level_id">
 												<?php
 												foreach ($levels as $level) {
-													echo '<option ' . selected($level_id, $level['id']) . ' value="' . $level['id'] . '">ID: ' . $level['id'] . ' - ' .  $level['label'] . '</option>';
+													echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr( $level['id'] ) . '">ID: ' . esc_html( $level['id'] ) . ' - ' .  esc_html( $level['label'] ) . '</option>';
 												}
 												?>
 
@@ -403,12 +405,12 @@ class Leaky_Paywall_Admin_Subscriber
 									<tr>
 										<th><label for="subscriber_id"><?php esc_html_e('Subscriber ID', 'leaky-paywall'); ?></label></th>
 										<td>
-											<input name="subscriber_id" type="text" id="subscriber_id" value="<?php echo $subscriber_id; ?>" class="regular-text">
+											<input name="subscriber_id" type="text" id="subscriber_id" value="<?php echo esc_attr( $subscriber_id ); ?>" class="regular-text">
 											<?php
 											if (strpos($subscriber_id, 'cus_') !== false) {
 												echo '<br>';
 												$stripe_url = leaky_paywall_get_current_mode() == 'test' ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
-												echo '<a target="_blank" href="' . $stripe_url . $subscriber_id . '">View in Stripe</a>';
+												echo '<a target="_blank" href="' . esc_url( $stripe_url . $subscriber_id ) . '">View in Stripe</a>';
 											}
 											?>
 										</td>
@@ -421,14 +423,14 @@ class Leaky_Paywall_Admin_Subscriber
 										}
 										?>
 										<td>
-											<input name="plan" type="text" id="plan" value="<?php echo $plan; ?>" class="regular-text">
+											<input name="plan" type="text" id="plan" value="<?php echo esc_attr( $plan ); ?>" class="regular-text">
 											<br><span style="color: #999;"><?php esc_html_e('Leave empty for Non-Recurring', 'leaky-paywall'); ?></span>
 										</td>
 									</tr>
 									<tr>
 										<th><label for="expires"><?php esc_html_e('Expires', 'leaky-paywall'); ?></label></th>
 										<td>
-											<input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo $expires; ?>" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
+											<input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr( $expires ); ?>" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
 											<input type="hidden" name="date_format" value="<?php echo esc_attr($jquery_date_format); ?>" />
 											<br><span style="color: #999;"><?php esc_html_e('Enter 0 for never expires', 'leaky-paywall'); ?></span>
 										</td>
@@ -486,21 +488,21 @@ class Leaky_Paywall_Admin_Subscriber
 										?>
 												<tr>
 													<td>
-														<a href="<?php echo admin_url(); ?>/post.php?post=<?php echo $transaction->ID; ?>&action=edit"><?php echo date('M d, Y', strtotime($transaction->post_date)); ?></a>
+														<a href="<?php echo esc_url( admin_url() ); ?>/post.php?post=<?php echo esc_attr( $transaction->ID ); ?>&action=edit"><?php echo esc_html( gmdate('M d, Y', strtotime($transaction->post_date)) ); ?></a>
 													</td>
 													<td>
 														<?php echo absint($level_id) . ' - ' . isset($level['label']) ? esc_html($level['label']) : ''; ?>
 													</td>
 													<td>
-														<?php echo leaky_paywall_get_current_currency_symbol() . esc_attr(get_post_meta($transaction->ID, '_price', true)); ?>
+														<?php echo esc_html( leaky_paywall_get_current_currency_symbol() ) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?>
 													</td>
 													<td>
 														<?php
-															if ( !isset( $level['recurring'] ) ) {
-																echo 'One-time payment';
-															} else {
-																echo get_post_meta($transaction->ID, '_is_recurring', true) ? 'Subscription Renewal' : 'Initial Subscription Payment';
-															}
+														if (!isset($level['recurring'])) {
+															echo 'One-time payment';
+														} else {
+															echo get_post_meta($transaction->ID, '_is_recurring', true) ? 'Subscription Renewal' : 'Initial Subscription Payment';
+														}
 														?>
 
 													</td>

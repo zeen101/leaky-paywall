@@ -183,6 +183,7 @@ function leaky_paywall_get_all_transactions_by_email( $email )
     $args = array(
         'post_type'       => 'lp_transaction',
         'number_of_posts' => 99,
+        'suppress_filters' => false, // for caching
         'meta_query'      => array(
             array(
                 'key'     => '_email',
