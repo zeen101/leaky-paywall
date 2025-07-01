@@ -3481,9 +3481,12 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$site     = leaky_paywall_get_current_site();
 
 		$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
-		if ($level_id) {
-			$level = get_leaky_paywall_subscription_level($level_id);
+
+		if (!is_numeric($level_id)) {
+			return;
 		}
+
+		$level = get_leaky_paywall_subscription_level($level_id);
 		$description      = $level['label'];
 		$gateway          = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
 		$status           = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
@@ -3493,9 +3496,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$subscriber_notes = get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true);
 		$renewal_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
-		if (!is_numeric($level_id)) {
-			return;
-		}
+
 
 		if (false !== strpos($subscriber_id, 'cus_')) {
 			leaky_paywall_sync_stripe_subscription($user);
