@@ -300,9 +300,20 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 						$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
 						update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
 					} catch (\Throwable $th) {
-						leaky_paywall_log( $th->getMessage(), 'lp stripe - error retrieving subscription' );
+						leaky_paywall_log( $th->getMessage(), 'lp stripe - error retrieving subscription 1' );
 					}
 
+				}
+
+				if ($stripe_object->parent->subscription_details->subscription !== null) {
+					// get the subscription and sync expiration date
+					try {
+						$sub = $stripe->subscriptions->retrieve($stripe_object->parent->subscription_details->subscription, [], leaky_paywall_get_stripe_connect_params());
+						$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
+						update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+					} catch (\Throwable $th) {
+						leaky_paywall_log($th->getMessage(), 'lp stripe - error retrieving subscription 2');
+					}
 				}
 
 				break;
