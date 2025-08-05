@@ -685,7 +685,7 @@ function leaky_paywall_validate_user_data() {
 
 		if ( email_exists( $user['email'] ) ) {
 			/* Translators: %s - login url */
-			leaky_paywall_errors()->add( 'email_used', printf( esc_attr__( 'Email already registered. Please <a href="%s">login</a>', 'leaky-paywall' ), esc_url( get_page_link( $settings['page_for_login'] ) ) ), 'register' );
+			leaky_paywall_errors()->add( 'email_used', wp_kses_post( sprintf( __( 'Email already registered. Please <a href="%s">login</a>.', 'leaky-paywall' ), esc_url( get_page_link( $settings['page_for_login'] ) ) ) ), 'register' );
 		}
 
 		if ( username_exists( $user['login'] ) ) {
