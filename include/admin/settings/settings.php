@@ -86,6 +86,21 @@ class Leaky_Paywall_Settings
 
 			<div class="leaky-paywall-sidebar" style="float: right; width: 23%; margin-top: 110px;">
 
+				<div class="leaky-paywall-sidebar-widget">
+					<h3>Questions? Ask Paywall Pete!</h3>
+					<p>Our brand new AI helper, powered by Delphi AI. Trained on 1M+ words from our docs, podcasts, and articles to answer your Leaky Paywall questions.</p>
+					<a target="_blank" href="https://leakypaywall.com/paywall-pete/">Ask Paywall Pete<span class="dashicons dashicons-external"></span></a>
+				</div>
+
+				<style>
+					.dashicons-external {
+						vertical-align: middle;
+						margin-left: 4px;
+						font-size: 16px;
+						text-decoration: none;
+					}
+				</style>
+
 				<?php if (!wp_script_is('leaky_paywall_multiple_levels_js', 'enqueued')) {
 				?>
 					<div class="leaky-paywall-sidebar-widget">
@@ -111,6 +126,7 @@ class Leaky_Paywall_Settings
 				<?php
 				} else {
 				?>
+
 					<div class="leaky-paywall-sidebar-widget">
 						<h3>Documentation</h3>
 
@@ -907,7 +923,7 @@ class Leaky_Paywall_Settings
 									echo '<p>Your Stripe account is connected in ' . leaky_paywall_get_current_mode() . ' mode. <a href="' . $this->get_disconnect_url() . '">Disconnect this account.</a></p>';
 								} catch (\Throwable $th) {
 
-									leaky_paywall_log( $th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id'] );
+									leaky_paywall_log($th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id']);
 
 									echo '<div class="notice inline notice-success"><p>' . $settings['connected_account_id'] . ' You do not have access to the account, or it does not exist.' . '<br><a href="' . $this->get_connect_url() . '">Connect with Stripe</a></div>';
 								}
