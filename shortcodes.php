@@ -175,6 +175,8 @@ function do_leaky_paywall_profile()
 	}
 
 	$user = wp_get_current_user();
+	leaky_paywall_sync_stripe_subscription( $user );
+
 	$status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 
 	if (leaky_paywall_user_has_access()) {
