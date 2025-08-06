@@ -82,7 +82,7 @@ class LP_Transaction_Post_Type
 	public function transaction_details_func($post)
 	{
 
-		$level_id = esc_attr(get_post_meta($post->ID, '_level_id', true));
+		$level_id = get_post_meta($post->ID, '_level_id', true);
 		$level    = get_leaky_paywall_subscription_level($level_id);
 
 		$gateway        = get_post_meta($post->ID, '_gateway', true);
@@ -149,10 +149,10 @@ class LP_Transaction_Post_Type
 				?>
 					<tr valign="top">
 						<th scope="row">
-							<label for="apc_box1_description">Level ID </label>
+							<label for="apc_box1_description">Level</label>
 						</th>
 						<td>
-							<?php echo absint($level_id) . ' - ' . isset($level['label']) ? esc_html($level['label']) : ''; ?>
+							<?php echo isset($level['label']) ? 'ID: ' . absint($level_id) . ' - ' . esc_html($level['label']) : ''; ?>
 						</td>
 					</tr>
 				<?php
@@ -255,7 +255,7 @@ class LP_Transaction_Post_Type
 				break;
 
 			case 'level':
-				echo isset($level['label']) ? esc_html($level['label']) : '';
+				echo isset($level['label']) ? '<span style="color: #aaa;">ID: ' . $level_id . ' - </span>' . esc_html($level['label']) : '';
 				break;
 
 			case 'price':

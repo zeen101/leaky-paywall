@@ -70,7 +70,7 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-only-visible" name="leaky_paywall_only_visible[]" style="' . esc_attr( $only_visible ) . '"  multiple="multiple">';
 			foreach ( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_visible'] ), true, false ) . '>' . esc_html( $level['label'] ) . '</option>';
+				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_visible'] ), true, false ) . '>' . 'ID: ' . $key . ' - ' . esc_html( $level['label'] ) . '</option>';
 			}
 			echo '</select>';
 		}
@@ -85,7 +85,7 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 			echo '<select id="issuem-leaky-paywall-always-visible" name="leaky_paywall_always_visible[]" style="' . esc_attr( $always_visible ) . '" multiple="multiple">';
 			echo '  <option value="-1" ' . selected( in_array( '-1', $visibility['always_visible'], true ), true, false ) . '>' . esc_html__( 'Everyone', 'leaky-paywall' ) . '</option>';
 			foreach ( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['always_visible'] ), true, false ) . '>' . esc_html( $level['label'] ) . '</option>';
+				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['always_visible'] ), true, false ) . '>' . 'ID: ' . $key . ' - ' . esc_html( $level['label'] ) . '</option>';
 			}
 			echo '</select>';
 		}
@@ -99,7 +99,7 @@ if ( ! function_exists( 'leaky_paywall_content_visibility' ) ) {
 		if ( ! empty( $settings['levels'] ) ) {
 			echo '<select id="issuem-leaky-paywall-only-always-visible" name="leaky_paywall_only_always_visible[]" style="' . esc_attr( $only_always_visible ) . '" multiple="multiple">';
 			foreach ( $settings['levels'] as $key => $level ) {
-				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_always_visible'] ), true, false ) . '>' . esc_html( $level['label'] ) . '</option>';
+				echo '  <option value="' . esc_attr( $key ) . '" ' . selected( in_array( $key, $visibility['only_always_visible'] ), true, false ) . '>' . 'ID: ' . $key . ' - ' . esc_html( $level['label'] ) . '</option>';
 			}
 			echo '</select>';
 		}
