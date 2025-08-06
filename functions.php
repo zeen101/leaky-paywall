@@ -3496,11 +3496,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$subscriber_notes = get_user_meta($user->ID, '_leaky_paywall_subscriber_notes', true);
 		$renewal_emailed = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_renewal_emailed' . $site, true);
 
-
-
-		if (false !== strpos($subscriber_id, 'cus_')) {
-			leaky_paywall_sync_stripe_subscription($user);
-		}
+		leaky_paywall_sync_stripe_subscription($user);
 
 	?>
 
@@ -3768,7 +3764,12 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		if ($price > 0) {
 
 			$decimal          = $after_decimal ? $decimal_separator : '';
-			$formatted_number = number_format($before_decimal, 0, '', $thousand_separator) . $decimal . $after_decimal;
+
+			if ($before_decimal) {
+				$formatted_number = number_format($before_decimal, 0, '', $thousand_separator) . $decimal . $after_decimal;
+			} else {
+				$formatted_number = '0' . $decimal . $after_decimal; // less than $1
+			}
 
 			switch ($currency_position) {
 				case 'left':
