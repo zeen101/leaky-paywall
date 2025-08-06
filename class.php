@@ -331,6 +331,7 @@ class Leaky_Paywall {
 	 * @since 1.0.0
 	 */
 	public function frontend_scripts() {
+
 		$settings = get_leaky_paywall_settings();
 
 		if ( 'default' === $settings['css_style'] ) {
@@ -389,24 +390,21 @@ class Leaky_Paywall {
 
 		if ( $gateways->is_gateway_enabled( 'stripe' ) || $gateways->is_gateway_enabled('stripe_checkout') ) {
 
-			if ( get_the_ID() == $settings['page_for_register'] ) {
-				wp_enqueue_script('leaky_paywall_stripe_registration', LEAKY_PAYWALL_URL . 'js/stripe-registration.js', array('jquery'), LEAKY_PAYWALL_VERSION, true);
+			wp_enqueue_script('leaky_paywall_stripe_registration', LEAKY_PAYWALL_URL . 'js/stripe-registration.js', array('jquery'), LEAKY_PAYWALL_VERSION, true);
 
-				wp_localize_script(
-					'leaky_paywall_stripe_registration',
-					'leaky_paywall_stripe_registration_ajax',
-					array(
-						'ajaxurl'   => admin_url('admin-ajax.php', 'relative'),
-						'stripe_pk' => leaky_paywall_get_stripe_public_key(),
-						'continue_text' => esc_html__('Processing... Please Wait', 'leaky-paywall'),
-						'next_text' => esc_html__('Next', 'leaky-paywall'),
-						'billing_address' => $settings['stripe_billing_address'],
-						'redirect_url' => get_page_link($settings['page_for_profile']),
-						'client_id' => isset( $settings['connected_account_id'] ) ? $settings['connected_account_id'] : ''
-					)
-				);
-
-			}
+			wp_localize_script(
+				'leaky_paywall_stripe_registration',
+				'leaky_paywall_stripe_registration_ajax',
+				array(
+					'ajaxurl'   => admin_url('admin-ajax.php', 'relative'),
+					'stripe_pk' => leaky_paywall_get_stripe_public_key(),
+					'continue_text' => esc_html__('Processing... Please Wait', 'leaky-paywall'),
+					'next_text' => esc_html__('Next', 'leaky-paywall'),
+					'billing_address' => $settings['stripe_billing_address'],
+					'redirect_url' => get_page_link($settings['page_for_profile']),
+					'client_id' => isset( $settings['connected_account_id'] ) ? $settings['connected_account_id'] : ''
+				)
+			);
 
 		}
 	}
