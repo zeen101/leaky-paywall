@@ -172,14 +172,14 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'email'         => __( 'E-mail', 'leaky-paywall' ),
 			'name'          => __( 'Name', 'leaky-paywall' ),
 			'level_id'      => __( 'Level ID', 'leaky-paywall' ),
-		//	'susbcriber_id' => __( 'Subscriber ID', 'leaky-paywall' ),
 		//	'plan'          => __( 'Plan', 'leaky-paywall' ),
-			'created'       => __( 'Created', 'leaky-paywall' ),
+		//	'created'       => __( 'Created', 'leaky-paywall' ),
 			'expires'       => __( 'Expires', 'leaky-paywall' ),
 			'has_access'    => __( 'Has Access', 'leaky-paywall' ),
-		//	'gateway'       => __( 'Gateway', 'leaky-paywall' ),
-		//	'status'        => __( 'Payment Status', 'leaky-paywall' ),
-		//	'notes'         => __( 'Notes', 'leaky-paywall' ),
+			//	'gateway'       => __( 'Gateway', 'leaky-paywall' ),
+			//	'status'        => __( 'Payment Status', 'leaky-paywall' ),
+			//	'notes'         => __( 'Notes', 'leaky-paywall' ),
+			'susbcriber_id' => __('Subscriber ID', 'leaky-paywall'),
 		);
 		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
 
@@ -191,13 +191,13 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'wp_user_login' => array( 'wp_user_login', false ),
-			'email'         => array( 'email', false ),
-			'level_id'      => array( 'level_id', false ),
-			'susbcriber_id' => array( 'susbcriber_id', false ),
-			'plan'          => array( 'plan', false ),
-			'gateway'       => array( 'payment_gateway', false ),
-			'status'        => array( 'payment_status', false ),
+			// 'wp_user_login' => array( 'wp_user_login', false ),
+			// 'email'         => array( 'email', false ),
+			// 'level_id'      => array( 'level_id', false ),
+			// 'susbcriber_id' => array( 'susbcriber_id', false ),
+			// 'plan'          => array( 'plan', false ),
+			// 'gateway'       => array( 'payment_gateway', false ),
+			// 'status'        => array( 'payment_status', false ),
 		);
 		$sortable_columns = apply_filters( 'leaky_paywall_subscribers_sortable_columns', $sortable_columns );
 
@@ -315,6 +315,8 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			} else {
 				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id', true );
 			}
+
+			// leaky_paywall_sync_stripe_subscription($user);
 
 			?>
 			<tr class="<?php echo esc_attr( $alt ); ?>">
