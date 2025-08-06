@@ -288,12 +288,13 @@ class Leaky_Paywall_Admin_Subscriber
 		$transactions = leaky_paywall_get_all_transactions_by_email($user->user_email);
 
 		// sync with Stripe every time this page loads, if they have an active subscription
+		leaky_paywall_sync_stripe_subscription($user);
 
 		$levels = leaky_paywall_get_levels();
 		$subscriber_notes    = lp_get_subscriber_meta('notes', $user);
 		$level_id = lp_get_subscriber_meta('level_id', $user);
 		$expires = lp_get_subscriber_meta('expires', $user);
-		$created = lp_get_subscriber_meta('created', $user);
+		$created = lp_get_subscriber_meta('created', $user) ? lp_get_subscriber_meta('created', $user) : $user->user_registered;
 		$subscriber_id = lp_get_subscriber_meta('subscriber_id', $user);
 		$plan = lp_get_subscriber_meta('plan', $user);
 		$payment_status = lp_get_subscriber_meta('payment_status', $user);
@@ -398,7 +399,6 @@ class Leaky_Paywall_Admin_Subscriber
 													echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr( $level['id'] ) . '">ID: ' . esc_html( $level['id'] ) . ' - ' .  esc_html( $level['label'] ) . '</option>';
 												}
 												?>
-
 											</select>
 										</td>
 									</tr>
