@@ -305,7 +305,7 @@ function leaky_paywall_process_user_registration_validation() {
 	}
 
 	// if free level, return
-	if ($level['price'] < 1 ) {
+	if ($level['price'] < 0.5 ) {
 		$return = array(
 			'success' => 1,
 			'level_type' => 'free'
