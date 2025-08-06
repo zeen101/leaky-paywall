@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 6.8.1
+Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 4.22.0
+Stable tag: 4.22.1
 Tags: paywall, subscriptions, subscriber, membership, metered paywall
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -67,6 +67,14 @@ You can sell daily, weekly, monthly, and annual subscriptions, both one time and
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 4.22.1 =
+* Add level id throughout admin settings
+* Allow subscriptions less than a dollar
+* Fix formatting on subscriber admin page
+* Adjust subscriber table columns
+* Fix output of email exists error during registration
+* Add check for subscription data to invoice payment succeeded event
 
 = 4.22.0 =
 * Add new subscriber admin screens
