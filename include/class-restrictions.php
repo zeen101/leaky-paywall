@@ -697,35 +697,43 @@ class Leaky_Paywall_Restrictions {
 	 * @return boolean
 	 */
 	public function content_matches_restriction_exceptions() {
-		$match    = false;
-		$settings = get_leaky_paywall_settings();
 
-		$category_exceptions    = $settings['post_category_exceptions'];
-		$category_exception_ids = explode( ',', $category_exceptions );
+		$cache_key = 'lp_restriction_exception_' . $this->post_id;
 
-		if ( ! empty( $category_exception_ids ) ) {
-			$post_categories = get_the_category( $this->post_id );
+		if ( false === ( $match = get_transient($cache_key) ) ) {
 
-			foreach ( $post_categories as $cat ) {
-				if ( in_array( $cat->term_id, $category_exception_ids ) ) {
-					$match = true;
-				}
-			}
-		}
+			$match    = false;
+			$settings = get_leaky_paywall_settings();
 
-		$tag_exceptions    = $settings['post_tag_exceptions'];
-		$tag_exception_ids = explode( ',', $tag_exceptions );
+			$category_exceptions    = $settings['post_category_exceptions'];
+			$category_exception_ids = explode(',', $category_exceptions);
 
-		if ( ! empty( $tag_exception_ids ) ) {
-			$post_tag = get_the_tags( $this->post_id );
+			if (! empty($category_exception_ids)) {
+				$post_categories = get_the_category($this->post_id);
 
-			if ( is_array( $post_tag ) ) {
-				foreach ( $post_tag as $tag ) {
-					if ( in_array( $tag->term_id, $tag_exception_ids ) ) {
+				foreach ($post_categories as $cat) {
+					if (in_array($cat->term_id, $category_exception_ids)) {
 						$match = true;
 					}
 				}
 			}
+
+			$tag_exceptions    = $settings['post_tag_exceptions'];
+			$tag_exception_ids = explode(',', $tag_exceptions);
+
+			if (! empty($tag_exception_ids)) {
+				$post_tag = get_the_tags($this->post_id);
+
+				if (is_array($post_tag)) {
+					foreach ($post_tag as $tag) {
+						if (in_array($tag->term_id, $tag_exception_ids)) {
+							$match = true;
+						}
+					}
+				}
+			}
+
+			set_transient($cache_key, $match, 900);
 		}
 
 		return $match;
@@ -813,32 +821,44 @@ class Leaky_Paywall_Restrictions {
 	 * @return bool $is_restricted
 	 */
 	public function content_restricted_by_settings() {
-		$restrictions = $this->get_restriction_settings();
 
-		if ( empty( $restrictions ) ) {
-			return false;
+		$cache_key = 'lp_restricted_' . $this->post_id;
+
+		if ( false === ( $is_restricted = get_transient($cache_key))) {
+
+			set_transient($cache_key, false, 900); // default to false
+
+			$restrictions = $this->get_restriction_settings();
+
+			if (empty($restrictions)) {
+				set_transient($cache_key, false, 900);
+			} else {
+				$content_post_type = get_post_type($this->post_id);
+
+				foreach ($restrictions['post_types'] as $key => $restriction) {
+
+					if (! is_numeric($key)) {
+						continue;
+					}
+
+					$restriction_taxomony = isset($restriction['taxonomy']) ? $restriction['taxonomy'] : 'all';
+
+					if ($restriction['post_type'] === $content_post_type && 'all' === $restriction_taxomony) {
+						set_transient($cache_key, true, 900);
+						return true;
+					}
+
+					if ($restriction['post_type'] === $content_post_type && $this->content_taxonomy_matches($restriction_taxomony)) {
+						set_transient($cache_key, true, 900);
+						return true;
+					}
+				}
+			}
+
 		}
 
-		$content_post_type = get_post_type( $this->post_id );
+		return $is_restricted;
 
-		foreach ( $restrictions['post_types'] as $key => $restriction ) {
-
-			if ( ! is_numeric( $key ) ) {
-				continue;
-			}
-
-			$restriction_taxomony = isset( $restriction['taxonomy'] ) ? $restriction['taxonomy'] : 'all';
-
-			if ( $restriction['post_type'] === $content_post_type && 'all' === $restriction_taxomony ) {
-				return true;
-			}
-
-			if ( $restriction['post_type'] === $content_post_type && $this->content_taxonomy_matches( $restriction_taxomony ) ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
