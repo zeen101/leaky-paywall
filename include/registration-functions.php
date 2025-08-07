@@ -1286,6 +1286,80 @@ function leaky_paywall_cleanup_incomplete_user( $email ) {
 	}
 }
 
+function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
+
+	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $email );
+
+	if ( !$incomplete_id ) {
+		return false;
+	}
+
+	$user_data = get_post_meta($incomplete_id, '_user_data', true);
+	$user = get_user_by('email', $user_data['email']);
+
+	if ($user) {
+
+		$level_id = lp_get_subscriber_meta('level_id', $user);
+
+		if (is_numeric($level_id)) {
+			return false; // they are already an LP subscriber
+		}
+
+	}
+
+	$field_data = get_post_meta($incomplete_id, '_field_data', true);
+	$customer_data = get_post_meta($incomplete_id, '_customer_data', true);
+	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
+	$subscriber_id = isset( $customer_data->id ) ? $customer_data->id : '';
+
+	$subscriber_data = array(
+		'email' => $user_data['email'],
+		'password' => isset($user_data['password']) ? $user_data['password'] : '',
+		'first_name'	=> $user_data['first_name'],
+		'last_name'	=> $user_data['last_name'],
+		'level_id'	=> $user_data['level_id'],
+		'description' => $level['label'],
+		'subscriber_id'	=> $subscriber_id,
+		'created'	=> gmdate('Y-m-d H:i:s'),
+		'price'	=> $level['price'],
+		'plan'	=> $field_data['plan_id'],
+		'interval_count' => $level['interval_count'],
+		'interval'	=> $level['interval'],
+		'recurring'	=> false,
+		'currency' => leaky_paywall_get_currency(),
+		'new_user'	=> true,
+		'payment_gateway'	=> 'stripe',
+		'payment_status'	=> 'active',
+		'site'	=> leaky_paywall_get_current_site(),
+		'mode' => leaky_paywall_get_current_mode(),
+	);
+
+	$subscriber_data['need_new'] = true;
+	$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $subscriber_id, $subscriber_data);
+	$subscriber_data['user_id'] = $user_id;
+
+	$new_user = get_user_by('id', $user_id);
+
+	$transaction = new LP_Transaction($subscriber_data);
+	$transaction_id = $transaction->create();
+	$subscriber_data['transaction_id'] = $transaction_id;
+
+	update_post_meta($transaction_id, '_field_data', $field_data);
+
+	if (isset($field_data['lp_nag_loc'])) {
+		update_post_meta($transaction_id, '_nag_location_id', $field_data['lp_nag_loc']);
+	}
+
+	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+	leaky_paywall_email_subscription_status($user_id, 'new', $subscriber_data);
+	leaky_paywall_sync_stripe_subscription($new_user);
+
+	do_action('leaky_paywall_after_process_registration', $subscriber_data);
+
+	return $new_user;
+
+}
+
 add_action( 'wp_ajax_nopriv_leaky_paywall_store_nag_location', 'leaky_paywall_store_nag_location' );
 add_action( 'wp_ajax_leaky_paywall_store_nag_location', 'leaky_paywall_store_nag_location' );
 
