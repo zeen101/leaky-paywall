@@ -625,6 +625,9 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		return;
 	}
 
+	// leaky_paywall_create_subscriber_from_incomplete_user( $email );
+
+
 	$user_data = get_post_meta($incomplete_id, '_user_data', true);
 	$field_data = get_post_meta($incomplete_id, '_field_data', true);
 	$user = get_user_by('email', $user_data['email']);
@@ -1242,4 +1245,22 @@ function leaky_paywall_stripe_disconnect() {
 
 	update_leaky_paywall_settings( $settings );
 
+}
+
+add_action('admin_init', 'leaky_paywall_manually_process_incomplete_user');
+
+function leaky_paywall_manually_process_incomplete_user()
+{
+
+	if (!isset($_GET['lp_iu_email'])) {
+		return;
+	}
+
+	$email = sanitize_email($_GET['lp_iu_email']);
+
+	if ( !is_email( $email ) ) {
+		return;
+	}
+
+	leaky_paywall_create_subscriber_from_incomplete_user( $email );
 }
