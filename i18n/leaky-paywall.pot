@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 4.22.1\n"
+"Project-Id-Version: Leaky Paywall 4.22.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-06T19:47:29+00:00\n"
+"POT-Creation-Date: 2025-08-14T16:24:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: leaky-paywall\n"
@@ -1753,7 +1753,7 @@ msgid "Tax Behavior"
 msgstr ""
 
 #: include/admin/settings/settings.php:1011
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:476
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:487
 msgid "Billing Address"
 msgstr ""
 
@@ -2128,13 +2128,13 @@ msgstr ""
 msgid "An error occurred, please try again."
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:447
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:458
 #: shortcodes.php:241
 #: templates/shortcode-account.php:142
 msgid "Credit Card"
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:460
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:471
 msgid "This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes."
 msgstr ""
 
