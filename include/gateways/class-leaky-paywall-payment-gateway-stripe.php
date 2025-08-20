@@ -235,6 +235,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			if ( $stripe_event->type == 'invoice.paid' ) {
 				// Check and see if they have an incomplete user.  This can happen if the user leaves the registration page before it finishes reloading.  Only do this during an invoice.paid event per Stripe's documentation on when to provision access.
+				sleep(3);  // Stripe webhooks can be fast.  This gives the registration form more time to process.
 				$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
 
 				if ( $is_incomplete ) {
