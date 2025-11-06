@@ -555,6 +555,10 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 	$site     = leaky_paywall_get_current_site();
 	$subscriber_id = lp_get_subscriber_meta('subscriber_id', $user);
 
+	if (!$subscriber_id) {
+		return;
+	}
+
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
