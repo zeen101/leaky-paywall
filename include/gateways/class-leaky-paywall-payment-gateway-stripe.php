@@ -219,22 +219,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		if (empty($user)) {
 
-			/*
-			if ( $stripe_event->type == 'invoice.paid' ) {
-				// Check and see if they have an incomplete user.  This can happen if the user leaves the registration page before it finishes reloading.  Only do this during an invoice.paid event per Stripe's documentation on when to provision access.
-				sleep(3);  // Stripe webhooks can be fast.  This gives the registration form more time to process.
-				$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
+			if ($stripe_event->type == 'charge.succeeded' || $stripe_event->type == 'invoice.paid') {
+				$is_incomplete = false;
 
-				if ( $is_incomplete ) {
-					wp_send_json(['leaky paywall webhook received - subscriber created from incomplete user'], 200);
+				// Check and see if they have an incomplete user.  This can happen if the user leaves the registration page before it finishes reloading.  If one time (not recurring), there is only a charge event.  Recurring payments have an invoice.paid event
+
+				sleep(3);  // Stripe webhooks can be fast.  This gives the registration form more time to process.
+
+				// do not create if they have not paid
+				if ($stripe_object->amount_paid > 0) {
+					$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
 				}
-			}
-			*/
-
-			if ($stripe_event->type == 'charge.succeeded') {
-				// Check and see if they have an incomplete user.  This can happen if the user leaves the registration page before it finishes reloading.  If one time (not recurring), there is only a charge event.  But this is also sent with recurring payments
-				sleep(3);  // Stripe webhooks can be fast.  This gives the registration form more time to process.
-				$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
 
 				if ($is_incomplete) {
 					wp_send_json(['leaky paywall webhook received - subscriber created from incomplete user 2'], 200);
