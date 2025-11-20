@@ -388,7 +388,8 @@ function leaky_paywall_process_user_registration_validation() {
 
 				try {
 					$checkout_session = $stripe->checkout->sessions->create(
-						apply_filters( 'leaky_paywall_stripe_session_recurring_args', $stripe_session_args, $level )
+						apply_filters( 'leaky_paywall_stripe_session_recurring_args', $stripe_session_args, $level ),
+						leaky_paywall_get_stripe_connect_params()
 					);
 				} catch ( \Throwable $th ) {
 					$errors['checkout_session'] = array(
@@ -445,7 +446,8 @@ function leaky_paywall_process_user_registration_validation() {
 				}
 
 				$checkout_session = $stripe->checkout->sessions->create(
-					apply_filters( 'leaky_paywall_stripe_session_nonrecurring_args', $stripe_session_args, $level )
+					apply_filters( 'leaky_paywall_stripe_session_nonrecurring_args', $stripe_session_args, $level ),
+					leaky_paywall_get_stripe_connect_params()
 				);
 			} catch ( \Throwable $th ) {
 				$errors['checkout_session'] = array(

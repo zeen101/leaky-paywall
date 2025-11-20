@@ -42,7 +42,8 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 				array(
 					'customer' => $subscriber_id,
 					'status'   => 'all',
-				)
+				),
+				leaky_paywall_get_stripe_connect_params()
 			);
 
 			if ( ! empty( $subs->data ) ) {
