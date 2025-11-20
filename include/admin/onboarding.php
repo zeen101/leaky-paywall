@@ -197,6 +197,10 @@ class Leaky_Paywall_Onboarding
 			return;
 		}
 
+		if (! current_user_can(apply_filters('manage_leaky_paywall_settings', 'manage_options'))) {
+			return;
+		}
+
 		$settings = get_leaky_paywall_settings();
 		// $settings['connected_account_id'] = sanitize_text_field( $_GET['connected_account_id'] );
 

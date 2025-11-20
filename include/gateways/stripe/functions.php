@@ -1068,6 +1068,10 @@ function leaky_paywall_connect_maybe_process_return()
 		return;
 	}
 
+	if (! current_user_can(apply_filters('manage_leaky_paywall_settings', 'manage_options'))) {
+		return;
+	}
+
 	$settings = get_leaky_paywall_settings();
 	$connected_account_id = sanitize_text_field($_GET['connected_account_id']);
 	$settings['connected_account_id'] = $connected_account_id;

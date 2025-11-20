@@ -2,16 +2,16 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 4.22.3\n"
+"Project-Id-Version: Leaky Paywall 4.22.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-20T21:02:48+00:00\n"
+"POT-Creation-Date: 2025-11-20T18:39:20+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.10.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
 
 #. Plugin Name of the plugin
@@ -38,6 +38,7 @@ msgstr ""
 
 #. Translators: %s - page for login url
 #: class.php:163
+#, php-format
 msgid "Sorry, this login link is invalid or has expired. <a href=\"%s\">Try again?</a>"
 msgstr ""
 
@@ -45,6 +46,7 @@ msgstr ""
 #. Translators: %s: site name.
 #: class.php:165
 #: include/class-restrictions.php:885
+#, php-format
 msgid "back to %s"
 msgstr ""
 
@@ -145,7 +147,7 @@ msgstr ""
 #: class.php:729
 #: include/admin/subscribers/subscriber.php:244
 #: include/admin/subscribers/subscriber.php:384
-#: templates/shortcode-account.php:217
+#: templates/shortcode-account.php:218
 msgid "Payment Status"
 msgstr ""
 
@@ -176,7 +178,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:252
 #: include/admin/subscribers/subscriber.php:440
 #: shortcodes.php:273
-#: templates/shortcode-account.php:229
+#: templates/shortcode-account.php:230
 msgid "Payment Method"
 msgstr ""
 
@@ -208,6 +210,7 @@ msgstr ""
 
 #. Translators: %s - url for settings
 #: class.php:858
+#, php-format
 msgid "Please complete your PayPal setup for Leaky Paywall. %s."
 msgstr ""
 
@@ -224,6 +227,7 @@ msgstr ""
 #. Translators: %s - Error message.
 #: functions.php:656
 #: include/gateways/stripe/functions.php:100
+#, php-format
 msgid "Error processing request: %s"
 msgstr ""
 
@@ -370,21 +374,25 @@ msgstr ""
 
 #. Translators: %1$s - allowed value, %2$s - name, %3$s - post type name
 #: functions.php:2025
+#, php-format
 msgid "Access %1$s %2$s %3$s*"
 msgstr ""
 
 #. Translators: %1$s - name, %2$s - post type name
 #: functions.php:2028
+#, php-format
 msgid "Unlimited %1$s %2$s"
 msgstr ""
 
 #. Translators: %1$s - allowed value, %2$s - post type name
 #: functions.php:2045
+#, php-format
 msgid "Access %1$s %2$s*"
 msgstr ""
 
 #. Translators: %s - type of post object
 #: functions.php:2048
+#, php-format
 msgid "Unlimited %s"
 msgstr ""
 
@@ -394,11 +402,13 @@ msgstr ""
 
 #. Translators: %1$s - display price, %2$s - interval
 #: functions.php:2069
+#, php-format
 msgid "%1$s %2$s"
 msgstr ""
 
 #. Translators: %s - trial period days
 #: functions.php:2075
+#, php-format
 msgid "Free for the first %s day(s)"
 msgstr ""
 
@@ -1352,6 +1362,7 @@ msgstr ""
 
 #. Translators: %s - site name
 #: functions.php:3720
+#, php-format
 msgid "User Account Deleted on %s"
 msgstr ""
 
@@ -1514,6 +1525,7 @@ msgstr ""
 
 #. Translators: %s - shortcode for Leaky Paywall login form
 #: include/admin/settings/settings.php:387
+#, php-format
 msgid "Add this shortcode to your Log In page: %s. This page cannot be restricted."
 msgstr ""
 
@@ -1523,6 +1535,7 @@ msgstr ""
 
 #. Translators: %s - shortcode for Leaky Paywall subscription cards
 #: include/admin/settings/settings.php:410
+#, php-format
 msgid "Add this shortcode to your Subscription page: %s. This page cannot be restricted."
 msgstr ""
 
@@ -1532,6 +1545,7 @@ msgstr ""
 
 #. Translators: %s - shortcode for Leaky Paywall registration form
 #: include/admin/settings/settings.php:433
+#, php-format
 msgid "Add this shortcode to your register page: %s. This page cannot be restricted."
 msgstr ""
 
@@ -1541,6 +1555,7 @@ msgstr ""
 
 #. Translators: %s - shortcode for Leaky Paywall profile
 #: include/admin/settings/settings.php:456
+#, php-format
 msgid "Add this shortcode to your Profile page: %s. This page displays the account information for subscribers.  This page cannot be restricted."
 msgstr ""
 
@@ -1753,7 +1768,7 @@ msgid "Tax Behavior"
 msgstr ""
 
 #: include/admin/settings/settings.php:1011
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:474
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:481
 msgid "Billing Address"
 msgstr ""
 
@@ -1997,7 +2012,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:314
 #: shortcodes.php:202
 #: subscriber-table.php:482
-#: templates/shortcode-account.php:129
+#: templates/shortcode-account.php:130
 msgid "Never"
 msgstr ""
 
@@ -2006,23 +2021,23 @@ msgid "Subscriber Details"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:339
-#: include/registration-functions.php:776
+#: include/registration-functions.php:778
 #: shortcodes.php:608
-#: templates/shortcode-account.php:254
+#: templates/shortcode-account.php:255
 msgid "First Name"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:343
-#: include/registration-functions.php:781
+#: include/registration-functions.php:783
 #: shortcodes.php:613
-#: templates/shortcode-account.php:260
+#: templates/shortcode-account.php:261
 msgid "Last Name"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:347
 #: shortcodes.php:375
-#: templates/shortcode-account.php:197
-#: templates/shortcode-account.php:266
+#: templates/shortcode-account.php:198
+#: templates/shortcode-account.php:267
 msgid "Email"
 msgstr ""
 
@@ -2036,7 +2051,7 @@ msgstr ""
 
 #: include/admin/subscribers/subscriber.php:359
 #: subscriber-table.php:178
-#: templates/shortcode-account.php:225
+#: templates/shortcode-account.php:226
 msgid "Has Access"
 msgstr ""
 
@@ -2107,6 +2122,7 @@ msgstr ""
 
 #. translators: %1$ - Login url, %2$s - page for subscription
 #: include/class-restrictions.php:883
+#, php-format
 msgid "You must be logged in with a valid subscription to download Issue PDFs. Please <a href=\"%1$s\">log in</a> or <a href=\"%2$s\">subscribe</a>."
 msgstr ""
 
@@ -2128,13 +2144,13 @@ msgstr ""
 msgid "An error occurred, please try again."
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:445
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:452
 #: shortcodes.php:241
-#: templates/shortcode-account.php:142
+#: templates/shortcode-account.php:143
 msgid "Credit Card"
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:458
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:465
 msgid "This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes."
 msgstr ""
 
@@ -2182,7 +2198,7 @@ msgstr ""
 #: include/gateways/stripe/functions.php:170
 #: include/gateways/stripe/functions.php:235
 #: include/registration-functions.php:211
-#: include/registration-functions.php:1148
+#: include/registration-functions.php:1150
 msgid "There was an error. Please try again."
 msgstr ""
 
@@ -2207,17 +2223,17 @@ msgid "A user could not be created. Please check your details and try again."
 msgstr ""
 
 #: include/registration-functions.php:249
-#: include/registration-functions.php:659
+#: include/registration-functions.php:661
 msgid "Please enter your first name"
 msgstr ""
 
 #: include/registration-functions.php:255
-#: include/registration-functions.php:663
+#: include/registration-functions.php:665
 msgid "Please enter your last name"
 msgstr ""
 
 #: include/registration-functions.php:261
-#: include/registration-functions.php:667
+#: include/registration-functions.php:669
 msgid "Invalid email"
 msgstr ""
 
@@ -2226,7 +2242,7 @@ msgid "Email already exists. Please log in."
 msgstr ""
 
 #: include/registration-functions.php:274
-#: include/registration-functions.php:672
+#: include/registration-functions.php:674
 msgid "Invalid username"
 msgstr ""
 
@@ -2235,104 +2251,105 @@ msgid "Username already exists. Please log in or try a different one."
 msgstr ""
 
 #: include/registration-functions.php:287
-#: include/registration-functions.php:677
+#: include/registration-functions.php:679
 msgid "Please enter a password"
 msgstr ""
 
 #: include/registration-functions.php:293
-#: include/registration-functions.php:681
+#: include/registration-functions.php:683
 msgid "Passwords do not match"
 msgstr ""
 
 #: include/registration-functions.php:339
-#: include/registration-functions.php:524
+#: include/registration-functions.php:526
 msgid "Could not create customer."
 msgstr ""
 
-#: include/registration-functions.php:503
+#: include/registration-functions.php:505
 msgid "Could not retrieve customer."
 msgstr ""
 
-#: include/registration-functions.php:553
+#: include/registration-functions.php:555
 msgid "Could not create subscription"
 msgstr ""
 
-#: include/registration-functions.php:588
+#: include/registration-functions.php:590
 msgid "Could not create payment intent."
 msgstr ""
 
-#: include/registration-functions.php:621
+#: include/registration-functions.php:623
 msgid "Your submission could not be processed."
 msgstr ""
 
 #. Translators: %s - login url
-#: include/registration-functions.php:688
+#: include/registration-functions.php:690
+#, php-format
 msgid "Email already registered. Please <a href=\"%s\">login</a>."
 msgstr ""
 
-#: include/registration-functions.php:692
+#: include/registration-functions.php:694
 msgid "Username already taken"
 msgstr ""
 
-#: include/registration-functions.php:696
+#: include/registration-functions.php:698
 msgid "Please enter a username"
 msgstr ""
 
-#: include/registration-functions.php:731
+#: include/registration-functions.php:733
 msgid "Name on Card"
 msgstr ""
 
-#: include/registration-functions.php:736
-#: include/registration-functions.php:1060
+#: include/registration-functions.php:738
+#: include/registration-functions.php:1062
 msgid "Card Number"
 msgstr ""
 
-#: include/registration-functions.php:741
+#: include/registration-functions.php:743
 msgid "CVC"
 msgstr ""
 
-#: include/registration-functions.php:746
+#: include/registration-functions.php:748
 msgid "Card Zip or Postal Code"
 msgstr ""
 
-#: include/registration-functions.php:751
-#: include/registration-functions.php:1069
+#: include/registration-functions.php:753
+#: include/registration-functions.php:1071
 msgid "Expiration (MM/YYYY)"
 msgstr ""
 
-#: include/registration-functions.php:788
+#: include/registration-functions.php:790
 msgid "Address"
 msgstr ""
 
-#: include/registration-functions.php:792
+#: include/registration-functions.php:794
 msgid "City"
 msgstr ""
 
-#: include/registration-functions.php:796
+#: include/registration-functions.php:798
 msgid "State or Providence"
 msgstr ""
 
-#: include/registration-functions.php:801
+#: include/registration-functions.php:803
 msgid "Card ZIP or Postal Code"
 msgstr ""
 
-#: include/registration-functions.php:806
+#: include/registration-functions.php:808
 msgid "Country"
 msgstr ""
 
-#: include/registration-functions.php:1064
+#: include/registration-functions.php:1066
 msgid "Card CVC"
 msgstr ""
 
-#: include/registration-functions.php:1164
+#: include/registration-functions.php:1166
 msgid "This email is invalid. Please enter a different email."
 msgstr ""
 
-#: include/registration-functions.php:1176
+#: include/registration-functions.php:1178
 msgid "This email already exists. Please login or enter a different email."
 msgstr ""
 
-#: include/registration-functions.php:1193
+#: include/registration-functions.php:1195
 msgid "Username already taken."
 msgstr ""
 
@@ -2342,6 +2359,7 @@ msgstr ""
 
 #. Translators: %s - post type
 #: metaboxes.php:55
+#, php-format
 msgid "This %s should..."
 msgstr ""
 
@@ -2371,16 +2389,19 @@ msgstr ""
 
 #. Translators: %1$s - post type, %2$s - post type
 #: metaboxes.php:109
+#, php-format
 msgid "\"Only\" means that only the selected subscription levels can see this %1$s, if they have not reached their %2$s limit."
 msgstr ""
 
 #. Translators: %1$s - post type, %2$s - post type
 #: metaboxes.php:111
+#, php-format
 msgid "\"Always\" means that the selected subscription levels can see this %1$s, even if they have reached their %2$s limit."
 msgstr ""
 
 #. Translators: %1$s - post type, %2$s - post type
 #: metaboxes.php:113
+#, php-format
 msgid "\"Only and Always\" means that only the selected subscription levels can see this %1$s, even if they have reached their %2$s limit."
 msgstr ""
 
@@ -2427,14 +2448,14 @@ msgstr ""
 #: shortcodes.php:183
 #: shortcodes.php:525
 #: subscriber-table.php:499
-#: templates/shortcode-account.php:226
+#: templates/shortcode-account.php:227
 msgid "Yes"
 msgstr ""
 
 #: shortcodes.php:185
 #: shortcodes.php:525
 #: subscriber-table.php:503
-#: templates/shortcode-account.php:226
+#: templates/shortcode-account.php:227
 msgid "No"
 msgstr ""
 
@@ -2445,27 +2466,31 @@ msgstr ""
 
 #. Translators: %s - expiration date
 #: shortcodes.php:213
+#, php-format
 msgid "Ends on %s"
 msgstr ""
 
 #. Translators: %s - recurrs on date
 #: shortcodes.php:216
+#, php-format
 msgid "Recurs on %s"
 msgstr ""
 
 #. Translators: %s - cancel url
 #: shortcodes.php:233
+#, php-format
 msgid "<a href=\"%s\">Cancel your subscription</a>"
 msgstr ""
 
 #. Translators: %s - subscription url
 #: shortcodes.php:237
-#: templates/shortcode-account.php:180
+#: templates/shortcode-account.php:181
+#, php-format
 msgid "You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href=\"%s\">Subscription page</a>."
 msgstr ""
 
 #: shortcodes.php:247
-#: templates/shortcode-account.php:135
+#: templates/shortcode-account.php:136
 msgid "Expired"
 msgstr ""
 
@@ -2475,6 +2500,7 @@ msgstr ""
 
 #. Translators: %1$s - user login, %2$s - logout url
 #: shortcodes.php:261
+#, php-format
 msgid "Welcome %1$s, you are currently logged in. <a href=\"%2$s\">Click here to log out.</a>"
 msgstr ""
 
@@ -2517,12 +2543,12 @@ msgid "Username"
 msgstr ""
 
 #: shortcodes.php:370
-#: templates/shortcode-account.php:248
+#: templates/shortcode-account.php:249
 msgid "Display Name"
 msgstr ""
 
 #: shortcodes.php:380
-#: templates/shortcode-account.php:272
+#: templates/shortcode-account.php:273
 msgid "New Password"
 msgstr ""
 
@@ -2642,8 +2668,8 @@ msgid "E-mail"
 msgstr ""
 
 #: subscriber-table.php:173
-#: templates/shortcode-account.php:193
-#: templates/shortcode-account.php:213
+#: templates/shortcode-account.php:194
+#: templates/shortcode-account.php:214
 msgid "Name"
 msgstr ""
 
@@ -2662,6 +2688,7 @@ msgstr ""
 
 #. Translators: %s: type of time
 #: subscriber-table.php:440
+#, php-format
 msgid "Recurring every %s"
 msgstr ""
 
@@ -2669,67 +2696,67 @@ msgstr ""
 msgid "Your card details have been updated!"
 msgstr ""
 
-#: templates/shortcode-account.php:76
+#: templates/shortcode-account.php:77
 msgid " Your subscription has been restarted!"
 msgstr ""
 
-#: templates/shortcode-account.php:96
+#: templates/shortcode-account.php:97
 msgid "Account Overview"
 msgstr ""
 
-#: templates/shortcode-account.php:99
+#: templates/shortcode-account.php:100
 msgid "Edit Profile"
 msgstr ""
 
-#: templates/shortcode-account.php:106
+#: templates/shortcode-account.php:107
 msgid "Payment Info"
 msgstr ""
 
-#: templates/shortcode-account.php:112
+#: templates/shortcode-account.php:113
 msgid "Logout"
 msgstr ""
 
-#: templates/shortcode-account.php:147
-#: templates/shortcode-account.php:152
+#: templates/shortcode-account.php:148
+#: templates/shortcode-account.php:153
 msgid "Ends on"
 msgstr ""
 
-#: templates/shortcode-account.php:154
+#: templates/shortcode-account.php:155
 msgid "Recurs on"
 msgstr ""
 
-#: templates/shortcode-account.php:159
+#: templates/shortcode-account.php:160
 msgid "Expired on"
 msgstr ""
 
-#: templates/shortcode-account.php:176
+#: templates/shortcode-account.php:177
 msgid "Cancel your subscription"
 msgstr ""
 
-#: templates/shortcode-account.php:186
+#: templates/shortcode-account.php:187
 msgid "Account overview"
 msgstr ""
 
-#: templates/shortcode-account.php:188
+#: templates/shortcode-account.php:189
 msgid "Profile"
 msgstr ""
 
-#: templates/shortcode-account.php:205
+#: templates/shortcode-account.php:206
 msgid "Your user role can see all content."
 msgstr ""
 
-#: templates/shortcode-account.php:208
+#: templates/shortcode-account.php:209
 msgid "Your plan"
 msgstr ""
 
-#: templates/shortcode-account.php:243
+#: templates/shortcode-account.php:244
 msgid "Edit your profile"
 msgstr ""
 
-#: templates/shortcode-account.php:278
+#: templates/shortcode-account.php:279
 msgid "New Password Confirm"
 msgstr ""
 
-#: templates/shortcode-account.php:284
+#: templates/shortcode-account.php:285
 msgid "Save Profile"
 msgstr ""
