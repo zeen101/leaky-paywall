@@ -228,7 +228,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				// do not create if they have not paid
 				if ($stripe_object->amount_paid > 0) {
-					$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
+
+					if ( isset( $stripe_object->customer_email ) ) {
+						$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
+					}
+
+					if (isset($stripe_object->receipt_email)) {
+						$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
+					}
+
 				}
 
 				if ($is_incomplete) {

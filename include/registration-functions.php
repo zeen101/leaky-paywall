@@ -1296,15 +1296,23 @@ function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 		return false;
 	}
 
+	$update_existing_subscriber = false;
 	$user_data = get_post_meta($incomplete_id, '_user_data', true);
 	$user = get_user_by('email', $user_data['email']);
 
 	if ($user) {
 
 		$level_id = lp_get_subscriber_meta('level_id', $user);
+		$current_level = get_leaky_paywall_subscription_level($level_id);
 
 		if (is_numeric($level_id)) {
-			return false; // they are already an LP subscriber
+
+			if ( $current_level['price'] > 0 ) {
+				return false; // they are already an LP subscriber to a paid level
+			}
+
+			$update_existing_subscriber = true;
+
 		}
 
 	}
@@ -1314,32 +1322,59 @@ function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
 	$subscriber_id = isset( $customer_data->id ) ? $customer_data->id : '';
 
-	$subscriber_data = array(
-		'email' => $user_data['email'],
-		'password' => isset($user_data['password']) ? $user_data['password'] : '',
-		'first_name'	=> $user_data['first_name'],
-		'last_name'	=> $user_data['last_name'],
-		'level_id'	=> $user_data['level_id'],
-		'description' => $level['label'],
-		'subscriber_id'	=> $subscriber_id,
-		'created'	=> gmdate('Y-m-d H:i:s'),
-		'price'	=> $level['price'],
-		'plan'	=> $field_data['plan_id'],
-		'interval_count' => $level['interval_count'],
-		'interval'	=> $level['interval'],
-		'recurring'	=> false,
-		'currency' => leaky_paywall_get_currency(),
-		'new_user'	=> true,
-		'payment_gateway'	=> 'stripe',
-		'payment_status'	=> 'active',
-		'site'	=> leaky_paywall_get_current_site(),
-		'mode' => leaky_paywall_get_current_mode(),
-	);
+	if ( $update_existing_subscriber ) {
 
-	$subscriber_data['need_new'] = true;
-	$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $subscriber_id, $subscriber_data);
+		$subscriber_data = array(
+			'email' => $user_data['email'],
+			'first_name'	=> $user_data['first_name'],
+			'last_name'	=> $user_data['last_name'],
+			'level_id'	=> $user_data['level_id'],
+			'description' => $level['label'],
+			'subscriber_id'	=> $subscriber_id,
+			'plan'	=> $field_data['plan_id'],
+			'price' => $level['price'],
+			'interval_count' => $level['interval_count'],
+			'interval'	=> $level['interval'],
+			'recurring'	=> false,
+			'currency' => leaky_paywall_get_currency(),
+			'new_user'	=> false,
+			'payment_gateway'	=> 'stripe',
+			'payment_status'	=> 'active',
+			'site'	=> leaky_paywall_get_current_site(),
+			'mode' => leaky_paywall_get_current_mode(),
+		);
+
+		$user_id = leaky_paywall_update_subscriber(null, $subscriber_data['email'], $subscriber_data['subscriber_id'], $subscriber_data);
+	} else {
+
+		$subscriber_data = array(
+			'email' => $user_data['email'],
+			'password' => isset($user_data['password']) ? $user_data['password'] : '',
+			'first_name'	=> $user_data['first_name'],
+			'last_name'	=> $user_data['last_name'],
+			'level_id'	=> $user_data['level_id'],
+			'description' => $level['label'],
+			'subscriber_id'	=> $subscriber_id,
+			'created'	=> gmdate('Y-m-d H:i:s'),
+			'price'	=> $level['price'],
+			'plan'	=> $field_data['plan_id'],
+			'interval_count' => $level['interval_count'],
+			'interval'	=> $level['interval'],
+			'recurring'	=> false,
+			'currency' => leaky_paywall_get_currency(),
+			'new_user'	=> true,
+			'payment_gateway'	=> 'stripe',
+			'payment_status'	=> 'active',
+			'site'	=> leaky_paywall_get_current_site(),
+			'mode' => leaky_paywall_get_current_mode(),
+		);
+
+		$subscriber_data['need_new'] = true;
+		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $subscriber_id, $subscriber_data);
+
+	}
+
 	$subscriber_data['user_id'] = $user_id;
-
 	$new_user = get_user_by('id', $user_id);
 
 	$transaction = new LP_Transaction($subscriber_data);

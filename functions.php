@@ -953,9 +953,9 @@ function leaky_paywall_get_levels()
 			continue;
 		}
 
-		if (is_multisite_premium() && !empty($level['site']) && 'all' !== $level['site'] && $blog_id !== $level['site']) {
-			continue;
-		}
+		// if (is_multisite_premium() && !empty($level['site']) && 'all' !== $level['site'] && $blog_id !== $level['site']) {
+		// 	continue;
+		// }
 
 		if (!is_numeric($key)) {
 			continue;

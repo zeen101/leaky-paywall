@@ -319,7 +319,7 @@ class Leaky_Paywall_Admin_Subscriber
 	?>
 		<div class="wrap">
 			<p><a href="<?php echo esc_url(admin_url()); ?>admin.php?page=leaky-paywall-subscribers"><?php esc_html_e('All Subscribers', 'leaky-paywall'); ?> ⤴</a></p>
-			<h1 class="wp-heading-inline"><?php echo esc_html( $user->user_email ); ?></h1>
+			<h1 class="wp-heading-inline"><?php echo esc_html($user->user_email); ?></h1>
 			<hr class="wp-header-end">
 
 			<form method="POST" action="" id="leaky-paywall-admin-subscriber-form">
@@ -337,27 +337,27 @@ class Leaky_Paywall_Admin_Subscriber
 								<table class="form-table">
 									<tr>
 										<th><label for="first_name"><?php esc_html_e('First Name', 'leaky-paywall'); ?></label></th>
-										<td><input name="first_name" type="text" id="first_name" value="<?php echo esc_attr( $user->first_name ); ?>" class="regular-text"></td>
+										<td><input name="first_name" type="text" id="first_name" value="<?php echo esc_attr($user->first_name); ?>" class="regular-text"></td>
 									</tr>
 									<tr>
 										<th><label for="last_name"><?php esc_html_e('Last Name', 'leaky-paywall'); ?></label></th>
-										<td><input name="last_name" type="text" id="last_name" value="<?php echo esc_attr( $user->last_name ); ?>" class="regular-text"></td>
+										<td><input name="last_name" type="text" id="last_name" value="<?php echo esc_attr($user->last_name); ?>" class="regular-text"></td>
 									</tr>
 									<tr>
 										<th><label for="email"><?php esc_html_e('Email', 'leaky-paywall'); ?></label></th>
-										<td><input name="email" type="email" id="email" value="<?php echo esc_attr( $user->user_email ); ?>" class="regular-text"></td>
+										<td><input name="email" type="email" id="email" value="<?php echo esc_attr($user->user_email); ?>" class="regular-text"></td>
 									</tr>
 									<tr>
 										<th><label for="subscriber_notes"><?php esc_html_e('Notes', 'leaky-paywall'); ?></label></th>
-										<td><textarea name="subscriber_notes" id="subscriber_notes" class="large-text" rows="4"><?php echo esc_html( $subscriber_notes ); ?></textarea></td>
+										<td><textarea name="subscriber_notes" id="subscriber_notes" class="large-text" rows="4"><?php echo esc_html($subscriber_notes); ?></textarea></td>
 									</tr>
 									<tr>
 										<th><label for="created"><?php esc_html_e('Created', 'leaky-paywall'); ?></label></th>
-										<td><?php echo esc_html( gmdate($date_format, strtotime($created)) ); ?></td>
+										<td><?php echo esc_html(gmdate($date_format, strtotime($created))); ?></td>
 									</tr>
 									<tr>
 										<th><label for="has_access"><?php esc_html_e('Has Access', 'leaky-paywall'); ?></label></th>
-										<td><?php echo esc_html( $has_access ); ?></td>
+										<td><?php echo esc_html($has_access); ?></td>
 									</tr>
 									<tr>
 										<th><label for="password"><?php esc_html_e('Password', 'leaky-paywall'); ?></label></th>
@@ -366,6 +366,17 @@ class Leaky_Paywall_Admin_Subscriber
 											<a href="<?php echo esc_url($edit_wp_link); ?>"><?php esc_html_e('Edit on WP User Profile', 'leaky-paywall'); ?></a>
 										</td>
 									</tr>
+
+									<?php
+									if (is_multisite_premium()) {
+									?>
+										<tr>
+											<th><label for="site"><?php esc_html_e('Site', 'leaky-paywall'); ?></label></th>
+											<td><input name="site" type="text" id="site" value="<?php echo get_leaky_paywall_subscribers_site_id_by_subscriber_email($user->user_email); ?>" class="regular-text"></td>
+											</td>
+										</tr>
+									<?php
+									} ?>
 
 									<?php do_action('update_leaky_paywall_subscriber_form', $user->ID); ?>
 
@@ -396,7 +407,7 @@ class Leaky_Paywall_Admin_Subscriber
 											<select name="level_id" id="level_id">
 												<?php
 												foreach ($levels as $level) {
-													echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr( $level['id'] ) . '">ID: ' . esc_html( $level['id'] ) . ' - ' .  esc_html( $level['label'] ) . '</option>';
+													echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr($level['id']) . '">ID: ' . esc_html($level['id']) . ' - ' .  esc_html($level['label']) . '</option>';
 												}
 												?>
 											</select>
@@ -405,12 +416,12 @@ class Leaky_Paywall_Admin_Subscriber
 									<tr>
 										<th><label for="subscriber_id"><?php esc_html_e('Subscriber ID', 'leaky-paywall'); ?></label></th>
 										<td>
-											<input name="subscriber_id" type="text" id="subscriber_id" value="<?php echo esc_attr( $subscriber_id ); ?>" class="regular-text">
+											<input name="subscriber_id" type="text" id="subscriber_id" value="<?php echo esc_attr($subscriber_id); ?>" class="regular-text">
 											<?php
 											if (strpos($subscriber_id, 'cus_') !== false) {
 												echo '<br>';
 												$stripe_url = leaky_paywall_get_current_mode() == 'test' ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
-												echo '<a target="_blank" href="' . esc_url( $stripe_url . $subscriber_id ) . '">View in Stripe</a>';
+												echo '<a target="_blank" href="' . esc_url($stripe_url . $subscriber_id) . '">View in Stripe</a>';
 											}
 											?>
 										</td>
@@ -423,14 +434,14 @@ class Leaky_Paywall_Admin_Subscriber
 										}
 										?>
 										<td>
-											<input name="plan" type="text" id="plan" value="<?php echo esc_attr( $plan ); ?>" class="regular-text">
+											<input name="plan" type="text" id="plan" value="<?php echo esc_attr($plan); ?>" class="regular-text">
 											<br><span style="color: #999;"><?php esc_html_e('Leave empty for Non-Recurring', 'leaky-paywall'); ?></span>
 										</td>
 									</tr>
 									<tr>
 										<th><label for="expires"><?php esc_html_e('Expires', 'leaky-paywall'); ?></label></th>
 										<td>
-											<input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr( $expires ); ?>" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
+											<input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr($expires); ?>" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
 											<input type="hidden" name="date_format" value="<?php echo esc_attr($jquery_date_format); ?>" />
 											<br><span style="color: #999;"><?php esc_html_e('Enter 0 for never expires', 'leaky-paywall'); ?></span>
 										</td>
@@ -488,13 +499,13 @@ class Leaky_Paywall_Admin_Subscriber
 										?>
 												<tr>
 													<td>
-														<a href="<?php echo esc_url( admin_url() ); ?>/post.php?post=<?php echo esc_attr( $transaction->ID ); ?>&action=edit"><?php echo esc_html( gmdate('M d, Y', strtotime($transaction->post_date)) ); ?></a>
+														<a href="<?php echo esc_url(admin_url()); ?>/post.php?post=<?php echo esc_attr($transaction->ID); ?>&action=edit"><?php echo esc_html(gmdate('M d, Y', strtotime($transaction->post_date))); ?></a>
 													</td>
 													<td>
 														<?php echo absint($level_id) . ' - ' . isset($level['label']) ? esc_html($level['label']) : ''; ?>
 													</td>
 													<td>
-														<?php echo esc_html( leaky_paywall_get_current_currency_symbol() ) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?>
+														<?php echo esc_html(leaky_paywall_get_current_currency_symbol()) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?>
 													</td>
 													<td>
 														<?php
