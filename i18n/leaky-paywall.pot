@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 4.22.4\n"
+"Project-Id-Version: Leaky Paywall 4.22.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-20T18:39:20+00:00\n"
+"POT-Creation-Date: 2025-12-05T19:13:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -125,7 +125,7 @@ msgstr ""
 #: class.php:642
 #: class.php:706
 #: include/admin/subscribers/subscriber.php:221
-#: include/admin/subscribers/subscriber.php:431
+#: include/admin/subscribers/subscriber.php:442
 #: subscriber-table.php:177
 msgid "Expires"
 msgstr ""
@@ -133,7 +133,7 @@ msgstr ""
 #: class.php:644
 #: class.php:708
 #: include/admin/subscribers/subscriber.php:223
-#: include/admin/subscribers/subscriber.php:435
+#: include/admin/subscribers/subscriber.php:446
 msgid "Enter 0 for never expires"
 msgstr ""
 
@@ -146,7 +146,7 @@ msgstr ""
 #: class.php:662
 #: class.php:729
 #: include/admin/subscribers/subscriber.php:244
-#: include/admin/subscribers/subscriber.php:384
+#: include/admin/subscribers/subscriber.php:395
 #: templates/shortcode-account.php:218
 msgid "Payment Status"
 msgstr ""
@@ -154,7 +154,7 @@ msgstr ""
 #: class.php:664
 #: class.php:731
 #: include/admin/subscribers/subscriber.php:246
-#: include/admin/subscribers/subscriber.php:387
+#: include/admin/subscribers/subscriber.php:398
 #: shortcodes.php:252
 msgid "Active"
 msgstr ""
@@ -162,21 +162,21 @@ msgstr ""
 #: class.php:665
 #: class.php:732
 #: include/admin/subscribers/subscriber.php:247
-#: include/admin/subscribers/subscriber.php:388
+#: include/admin/subscribers/subscriber.php:399
 msgid "Canceled"
 msgstr ""
 
 #: class.php:666
 #: class.php:733
 #: include/admin/subscribers/subscriber.php:248
-#: include/admin/subscribers/subscriber.php:389
+#: include/admin/subscribers/subscriber.php:400
 msgid "Deactivated"
 msgstr ""
 
 #: class.php:670
 #: class.php:737
 #: include/admin/subscribers/subscriber.php:252
-#: include/admin/subscribers/subscriber.php:440
+#: include/admin/subscribers/subscriber.php:451
 #: shortcodes.php:273
 #: templates/shortcode-account.php:230
 msgid "Payment Method"
@@ -185,18 +185,18 @@ msgstr ""
 #: class.php:681
 #: class.php:748
 #: include/admin/subscribers/subscriber.php:263
-#: include/admin/subscribers/subscriber.php:406
+#: include/admin/subscribers/subscriber.php:417
 #: subscriber-table.php:182
 msgid "Subscriber ID"
 msgstr ""
 
 #: class.php:684
-#: include/admin/subscribers/subscriber.php:419
+#: include/admin/subscribers/subscriber.php:430
 msgid "Plan"
 msgstr ""
 
 #: class.php:685
-#: include/admin/subscribers/subscriber.php:427
+#: include/admin/subscribers/subscriber.php:438
 msgid "Leave empty for Non-Recurring"
 msgstr ""
 
@@ -342,6 +342,7 @@ msgid "Disable the direct sign up link for this level, but still allow manual as
 msgstr ""
 
 #: functions.php:1516
+#: include/admin/subscribers/subscriber.php:374
 msgid "Site"
 msgstr ""
 
@@ -1768,7 +1769,7 @@ msgid "Tax Behavior"
 msgstr ""
 
 #: include/admin/settings/settings.php:1011
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:481
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:489
 msgid "Billing Address"
 msgstr ""
 
@@ -2064,35 +2065,35 @@ msgstr ""
 msgid "Edit on WP User Profile"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:378
+#: include/admin/subscribers/subscriber.php:389
 msgid "Subscription Details"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:394
+#: include/admin/subscribers/subscriber.php:405
 msgid "Level"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:467
+#: include/admin/subscribers/subscriber.php:478
 msgid "Past Transactions"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:472
+#: include/admin/subscribers/subscriber.php:483
 msgid "Date"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:473
+#: include/admin/subscribers/subscriber.php:484
 msgid "Description"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:474
+#: include/admin/subscribers/subscriber.php:485
 msgid "Amount"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:475
+#: include/admin/subscribers/subscriber.php:486
 msgid "Payment Type"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:515
+#: include/admin/subscribers/subscriber.php:526
 msgid "No transactions found"
 msgstr ""
 
@@ -2144,13 +2145,13 @@ msgstr ""
 msgid "An error occurred, please try again."
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:452
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:460
 #: shortcodes.php:241
 #: templates/shortcode-account.php:143
 msgid "Credit Card"
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:465
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:473
 msgid "This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes."
 msgstr ""
 
