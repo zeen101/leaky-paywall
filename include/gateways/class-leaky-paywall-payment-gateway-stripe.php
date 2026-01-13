@@ -227,7 +227,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				sleep(3);  // Stripe webhooks can be fast.  This gives the registration form more time to process.
 
 				// do not create if they have not paid
-				if ($stripe_object->amount_paid > 0) {
+				if ( isset($stripe_object->amount_paid ) && $stripe_object->amount_paid > 0) {
 
 					if ( isset( $stripe_object->customer_email ) ) {
 						$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
