@@ -1068,8 +1068,18 @@ function leaky_paywall_connect_maybe_process_return()
 		return;
 	}
 
+	if (! is_user_logged_in()) {
+		wp_send_json_error(
+			['message' => 'You must be logged in.'],
+			401
+		);
+	}
+
 	if (! current_user_can(apply_filters('manage_leaky_paywall_settings', 'manage_options'))) {
-		return;
+		wp_send_json_error(
+			['message' => 'Insufficient permissions.'],
+			403
+		);
 	}
 
 	$settings = get_leaky_paywall_settings();
