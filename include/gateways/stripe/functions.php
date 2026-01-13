@@ -1190,8 +1190,10 @@ add_filter('leaky_paywall_stripe_subscription_params', 'leaky_paywall_connect_ad
 function leaky_paywall_connect_adjust_subscription_params( $params, $level, $fields ) {
 	$settings = get_leaky_paywall_settings();
 
-	if ($settings['connected_account_id']) {
-		$params['stripe_account'] = $settings['connected_account_id'];
+	if ( isset($settings['connected_account_id'] )) {
+		if ($settings['connected_account_id']) {
+			$params['stripe_account'] = $settings['connected_account_id'];
+		}
 	}
 
 	return $params;
@@ -1202,8 +1204,10 @@ add_filter('leaky_paywall_stripe_plan_params', 'leaky_paywall_connect_adjust_pla
 function leaky_paywall_connect_adjust_plan_params( $params, $level, $plan_args ) {
 	$settings = get_leaky_paywall_settings();
 
-	if ($settings['connected_account_id']) {
-		$params['stripe_account'] = $settings['connected_account_id'];
+	if ( isset($settings['connected_account_id']) ) {
+		if ($settings['connected_account_id']) {
+			$params['stripe_account'] = $settings['connected_account_id'];
+		}
 	}
 
 	return $params;
