@@ -1069,39 +1069,31 @@ function leaky_paywall_connect_maybe_process_return()
 	}
 
 	if (! is_user_logged_in()) {
-		wp_send_json_error(
-			['message' => 'You must be logged in.'],
-			401
-		);
+		wp_safe_redirect(wp_login_url(admin_url()));
+		exit;
 	}
 
 	if (! current_user_can(apply_filters('manage_leaky_paywall_settings', 'manage_options'))) {
-		wp_send_json_error(
-			['message' => 'Insufficient permissions.'],
-			403
-		);
+		wp_die(esc_html__('Insufficient permissions.', 'leaky-paywall'), 403);
+	}
+
+	$incoming_state = isset($_GET['lp_connect_state']) ? sanitize_text_field(wp_unslash($_GET['lp_connect_state'])) : '';
+	$stored_state = get_transient('lp_connect_state_' . get_current_user_id());
+
+	if (empty($incoming_state) || empty($stored_state) || ! hash_equals($stored_state, $incoming_state)) {
+		wp_die(esc_html__('Invalid or expired connect session.', 'leaky-paywall'), 400);
 	}
 
 	$settings = get_leaky_paywall_settings();
-	$connected_account_id = sanitize_text_field($_GET['connected_account_id']);
+	$connected_account_id = sanitize_text_field(wp_unslash($_GET['connected_account_id']));
+
+	if (! preg_match('/^acct_[A-Za-z0-9]+$/', $connected_account_id)) {
+		wp_die(esc_html__('Invalid account id.', 'leaky-paywall'), 400);
+	}
+
 	$settings['connected_account_id'] = $connected_account_id;
 
-	// $stripe = leaky_paywall_initialize_stripe_api();
 	$onboarding_completed = true;
-
-	/*
-	try {
-		$stripe_account = $stripe->accounts->retrieve($connected_account_id);
-
-		if ( $stripe_account->details_submitted == 1 ) {
-			// they have completed onboarding
-			$onboarding_completed = true;
-		}
-
-	} catch (\Throwable $th) {
-		//throw $th;
-	}
-		*/
 
 	if ( $onboarding_completed ) {
 
@@ -1114,9 +1106,24 @@ function leaky_paywall_connect_maybe_process_return()
 			'https://leakypaywall.com/?lp_gateway_connect_credentials=stripe_connect'
 		);
 
-		$response = wp_remote_get(esc_url_raw($lp_credentials_url));
+		$response = wp_remote_get(esc_url_raw($lp_credentials_url), ['timeout' => 15]);
 
-		$data = json_decode($response['body']);
+		if (is_wp_error($response)) {
+			wp_die(esc_html($response->get_error_message()), 502);
+		}
+
+		$code = wp_remote_retrieve_response_code($response);
+		$body = wp_remote_retrieve_body($response);
+
+		if ($code < 200 || $code >= 300 || empty($body)) {
+			wp_die(esc_html__('Failed to retrieve credentials.', 'leaky-paywall'), 502);
+		}
+
+		$data = json_decode($body);
+
+		if (! is_object($data)) {
+			wp_die(esc_html__('Invalid credentials response.', 'leaky-paywall'), 502);
+		}
 
 		if ( isset( $data->public_key ) ) {
 			// use mode
@@ -1129,10 +1136,13 @@ function leaky_paywall_connect_maybe_process_return()
 			$settings[$array_key] = $data->secret_key;
 		}
 
+		update_leaky_paywall_settings($settings);
+
+		delete_transient('lp_connect_state_' . get_current_user_id());
 	}
 
-	update_leaky_paywall_settings($settings);
-
+	wp_safe_redirect(remove_query_arg(['connected_account_id', 'lp_connect_state']));
+	exit;
 }
 
 function leaky_paywall_get_stripe_connect_params() {

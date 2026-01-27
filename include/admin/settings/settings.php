@@ -2173,10 +2173,14 @@ class Leaky_Paywall_Settings
 	public function get_connect_url()
 	{
 
+		$state = wp_generate_password(32, false, false);
+		set_transient('lp_connect_state_' . get_current_user_id(), $state, 15 * MINUTE_IN_SECONDS);
+
 		$return_url = add_query_arg(
 			array(
 				'page'      => 'issuem-leaky-paywall',
 				'tab'       => 'payments',
+				'lp_connect_state' => $state,
 			),
 			admin_url('admin.php')
 		);
@@ -2185,7 +2189,8 @@ class Leaky_Paywall_Settings
 			array(
 				'page'      => 'issuem-leaky-paywall',
 				'tab'       => 'payments',
-				'connect_refresh'   => 'true'
+				'connect_refresh'   => 'true',
+				'lp_connect_state'  => $state,
 			),
 			admin_url('admin.php')
 		);
@@ -2195,7 +2200,7 @@ class Leaky_Paywall_Settings
 		$stripe_connect_url = add_query_arg(
 			array(
 				'live_mode'         => $mode == 'live' ? true : false,
-				'state'             => str_pad(wp_rand(wp_rand(), PHP_INT_MAX), 100, wp_rand(), STR_PAD_BOTH),
+				'lp_connect_state'             => $state,
 				'customer_site_url' => esc_url_raw($return_url),
 				'customer_refresh_url' => esc_url_raw($refresh_url)
 			),
