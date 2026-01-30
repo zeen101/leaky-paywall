@@ -1991,7 +1991,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 						$results .= '<div id="option-' . $level_id . '" class="leaky_paywall_subscription_option ' . $current_level . '">';
 						if ($current_level) {
-							$results .= '<p class="leaky-paywall-subscription-current-level">Your Current Level</p>';
+							$results .= '<p class="leaky-paywall-subscription-current-level">' .  __('Your Current Level', 'leaky-paywall') . '</p>';
 						}
 						$results .= '<h3 class="leaky_paywall_subscription_option_title">' . apply_filters('leaky_paywall_subscription_option_title', stripslashes($level['label'])) . '</h3>';
 
