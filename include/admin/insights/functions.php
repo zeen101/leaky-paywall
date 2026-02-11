@@ -30,44 +30,28 @@ function lp_reports_get_data() {
 
 function leaky_paywall_insights_get_total_revenue( $period ) {
 
-    $revenue = 0;
+    global $wpdb;
+
     $args_period = leaky_paywall_insights_get_formatted_period( $period );
+    $after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-        'meta_query' => array(
-            'relation' => 'AND',
-            array(
-                'key'     => '_status',
-                'value'   => 'incomplete',
-                'compare' => 'NOT LIKE',
-            ),
-            array(
-                'key'     => '_price',
-                'value'   => '0',
-                'compare' => '>',
-            ),
-        ),
-	);
+    $revenue = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COALESCE(SUM(CAST(pm_price.meta_value AS DECIMAL(10,2))), 0)
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm_price
+                 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+             INNER JOIN {$wpdb->postmeta} pm_status
+                 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+             WHERE p.post_type = 'lp_transaction'
+             AND p.post_date > %s
+             AND pm_status.meta_value != 'incomplete'
+             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) > 0",
+            $after_date
+        )
+    );
 
-	$transactions = get_posts( $args );
-
-	if ( ! empty( $transactions ) ) {
-		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-            $revenue = $revenue + $price;
-		}
-	}
-
-    $formatted_revenue = leaky_paywall_get_current_currency_symbol() . number_format( $revenue, 2 );
+    $formatted_revenue = leaky_paywall_get_current_currency_symbol() . number_format( (float) $revenue, 2 );
 
     return html_entity_decode( $formatted_revenue );
 
@@ -76,172 +60,102 @@ function leaky_paywall_insights_get_total_revenue( $period ) {
 
 function leaky_paywall_insights_get_new_paid_subs( $period ) {
 
-    $new_paid_subs = 0;
-    $args_period = leaky_paywall_insights_get_formatted_period($period);
+    global $wpdb;
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-        'meta_query' => array(
-            'relation' => 'AND',
-            array(
-                'key'     => '_status',
-                'value'   => 'incomplete',
-                'compare' => 'NOT LIKE',
-            ),
-            array(
-                'key'     => '_price',
-                'value'   => '0',
-                'compare' => '>',
-            ),
-            array(
-                'key'     => '_is_recurring',
-                'value'   => false,
-                'compare' => '=',
-            ),
-            array(
-                'key'     => '_rcpt_email',
-                'compare' => 'NOT EXISTS',
-            ),
-        ),
-	);
+    $args_period = leaky_paywall_insights_get_formatted_period( $period );
+    $after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
 
-	$transactions = get_posts( $args );
+    $count = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*)
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm_price
+                 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+             INNER JOIN {$wpdb->postmeta} pm_status
+                 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+             LEFT JOIN {$wpdb->postmeta} pm_recurring
+                 ON p.ID = pm_recurring.post_id AND pm_recurring.meta_key = '_is_recurring'
+             LEFT JOIN {$wpdb->postmeta} pm_rcpt
+                 ON p.ID = pm_rcpt.post_id AND pm_rcpt.meta_key = '_rcpt_email'
+             WHERE p.post_type = 'lp_transaction'
+             AND p.post_date > %s
+             AND pm_status.meta_value != 'incomplete'
+             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) > 0
+             AND (pm_recurring.meta_value IS NULL OR pm_recurring.meta_value = '' OR pm_recurring.meta_value = '0')
+             AND pm_rcpt.meta_id IS NULL",
+            $after_date
+        )
+    );
 
-	if ( ! empty( $transactions ) ) {
-
-        foreach( $transactions as $transaction ) {
-
-            $price = get_post_meta($transaction->ID, '_price', true);
-
-            if ( $price == '0.00') {
-                continue;
-            }
-
-            $new_paid_subs = $new_paid_subs + 1;
-        }
-
-	}
-
-    return $new_paid_subs;
+    return (int) $count;
 
 }
 
 
 function leaky_paywall_insights_get_new_free_subs( $period ) {
 
-    $new_free_subs = 0;
-    $args_period = leaky_paywall_insights_get_formatted_period($period);
+    global $wpdb;
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 9999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-        'meta_query' => array(
-            'relation' => 'AND',
-            array(
-                'key'     => '_status',
-                'value'   => 'incomplete',
-                'compare' => 'NOT LIKE',
-            ),
-            array(
-                'key'     => '_price',
-                'value'   => '0',
-                'compare' => '=',
-            ),
-        ),
-	);
+    $args_period = leaky_paywall_insights_get_formatted_period( $period );
+    $after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
 
-	$transactions = get_posts( $args );
+    $count = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*)
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm_price
+                 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+             INNER JOIN {$wpdb->postmeta} pm_status
+                 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+             WHERE p.post_type = 'lp_transaction'
+             AND p.post_date > %s
+             AND pm_status.meta_value != 'incomplete'
+             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0",
+            $after_date
+        )
+    );
 
-	if ( ! empty( $transactions ) ) {
-
-        $new_free_subs = count( $transactions );
-
-	}
-
-    return $new_free_subs;
+    return (int) $count;
 
 }
 
 function leaky_paywall_insights_get_paid_content( $period ) {
 
+    global $wpdb;
+
+    $args_period = leaky_paywall_insights_get_formatted_period( $period );
+    $after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
+
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT pm_nag.meta_value AS nag_loc, COUNT(*) AS total
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm_price
+                 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+             INNER JOIN {$wpdb->postmeta} pm_status
+                 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+             INNER JOIN {$wpdb->postmeta} pm_nag
+                 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
+             WHERE p.post_type = 'lp_transaction'
+             AND p.post_date > %s
+             AND pm_status.meta_value != 'incomplete'
+             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) > 0
+             AND pm_nag.meta_value != ''
+             GROUP BY pm_nag.meta_value
+             ORDER BY total DESC
+             LIMIT 10",
+            $after_date
+        )
+    );
+
+    if ( empty( $results ) ) {
+        return array( 'No data found for selected time period.' );
+    }
+
     $paid_content = array();
-    $args_period = leaky_paywall_insights_get_formatted_period($period);
-
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-	);
-
-	$transactions = get_posts( $args );
-
-	if ( ! empty( $transactions ) ) {
-		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-			$status   = get_post_meta( $transaction->ID, '_status', true );
-            $nag_loc = get_post_meta( $transaction->ID, '_nag_location_id', true );
-
-            if ( $status != 'incomplete' && $price > 0 && $nag_loc ) {
-                $paid_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
-                $paid_content[$nag_loc]['count'] = isset( $paid_content[$nag_loc]['count'] ) ? $paid_content[$nag_loc]['count'] + 1 : 1;
-            }
-
-		}
-
-        if ( !empty( $paid_content ) ) {
-
-            foreach( $paid_content as $item ) {
-                $sorted_paid_content[$item['url']] = $item['count'];
-
-            }
-
-            arsort( $sorted_paid_content );
-
-            $i = 1;
-
-            foreach( $sorted_paid_content as $perm => $num ) {
-
-                if ( $i > 10 ) {
-                    break;
-                }
-                $new_paid_content[] = $perm . ' - (' . $num . ')';
-
-                $i++;
-            }
-
-
-
-            return $new_paid_content;
-
-        }
-
-
-
-
-
-	} else {
-        $paid_content[] = 'No data found for selected time period.';
+    foreach ( $results as $row ) {
+        $url = get_the_permalink( $row->nag_loc );
+        $paid_content[] = $url . ' - (' . $row->total . ')';
     }
 
     return $paid_content;
@@ -250,66 +164,41 @@ function leaky_paywall_insights_get_paid_content( $period ) {
 
 function leaky_paywall_insights_get_free_content( $period ) {
 
-    $free_content = array();
+    global $wpdb;
+
     $args_period = leaky_paywall_insights_get_formatted_period( $period );
+    $after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
 
-    $args = array(
-		'post_type'      => 'lp_transaction',
-		'order'          => 'DESC',
-		'posts_per_page' => 999,
-		'date_query'     => array(
-			array(
-				'after'  => $args_period,
-				'column' => 'post_date',
-			),
-		),
-	);
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT pm_nag.meta_value AS nag_loc, COUNT(*) AS total
+             FROM {$wpdb->posts} p
+             INNER JOIN {$wpdb->postmeta} pm_price
+                 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+             INNER JOIN {$wpdb->postmeta} pm_status
+                 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+             INNER JOIN {$wpdb->postmeta} pm_nag
+                 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
+             WHERE p.post_type = 'lp_transaction'
+             AND p.post_date > %s
+             AND pm_status.meta_value != 'incomplete'
+             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0
+             AND pm_nag.meta_value != ''
+             GROUP BY pm_nag.meta_value
+             ORDER BY total DESC
+             LIMIT 10",
+            $after_date
+        )
+    );
 
-	$transactions = get_posts( $args );
+    if ( empty( $results ) ) {
+        return array( 'No data found for selected time period.' );
+    }
 
-	if ( ! empty( $transactions ) ) {
-		foreach ( $transactions as $transaction ) {
-			$price   = get_post_meta( $transaction->ID, '_price', true );
-			$status   = get_post_meta( $transaction->ID, '_status', true );
-            $nag_loc = get_post_meta( $transaction->ID, '_nag_location_id', true );
-
-            if ( $price > 0 ) {
-                continue;
-            }
-
-            if ( $status != 'incomplete' && $nag_loc ) {
-                $free_content[$nag_loc]['url'] = get_the_permalink( $nag_loc );
-                $free_content[$nag_loc]['count'] = isset( $free_content[$nag_loc]['count'] ) ? $free_content[$nag_loc]['count'] + 1 : 1;
-            }
-
-		}
-
-        if ( !empty( $free_content ) ) {
-            foreach( $free_content as $item ) {
-                $sorted_free_content[$item['url']] = $item['count'];
-
-            }
-
-            arsort( $sorted_free_content );
-
-
-            $j = 1;
-
-            foreach( $sorted_free_content as $perm => $num ) {
-
-                if ( $j > 10 ) {
-                    break;
-                }
-                $new_free_content[] = $perm . ' - (' . $num . ')';
-
-                $j++;
-            }
-
-            return $new_free_content;
-        }
-
-	} else {
-        $free_content[] = 'No data found for selected time period.';
+    $free_content = array();
+    foreach ( $results as $row ) {
+        $url = get_the_permalink( $row->nag_loc );
+        $free_content[] = $url . ' - (' . $row->total . ')';
     }
 
     return $free_content;
@@ -321,11 +210,11 @@ function leaky_paywall_insights_get_active_subs( $period ) {
     $active_subs = array();
     $levels = leaky_paywall_get_levels();
 
-    foreach( $levels as $level_id => $level ) {
+    foreach ( $levels as $level_id => $level ) {
 
         $active_subs[] = array(
-            'name' => $level['label'],
-            'count' => leaky_paywall_insights_get_active_subs_for_level( $level_id )
+            'name'  => $level['label'],
+            'count' => leaky_paywall_insights_get_active_subs_for_level( $level_id ),
         );
 
     }
@@ -336,34 +225,31 @@ function leaky_paywall_insights_get_active_subs( $period ) {
 
 function leaky_paywall_insights_get_active_subs_for_level( $level_id ) {
 
-    $mode     = leaky_paywall_get_current_mode();
-	$site     = leaky_paywall_get_current_site();
+    $mode = leaky_paywall_get_current_mode();
+    $site = leaky_paywall_get_current_site();
 
-    $users = get_users(
-        array(
-            // 'number' => 2999,
-            'meta_query' => array(
-                'relation' => 'AND',
-                array(
-                    'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-                    'value'   => $level_id,
-                     'compare' => '='
-                ),
-                array(
-                    'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
-                    'value'   => 'active',
-                     'compare' => '='
-                ),
-            )
-        )
-
+    $args = array(
+        'fields'      => 'ID',
+        'count_total' => true,
+        'number'      => 1,
+        'meta_query'  => array(
+            'relation' => 'AND',
+            array(
+                'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+                'value'   => $level_id,
+                'compare' => '=',
+            ),
+            array(
+                'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+                'value'   => 'active',
+                'compare' => '=',
+            ),
+        ),
     );
 
-    if ( empty( $users ) ) {
-        return 0;
-    }
+    $subscribers = new WP_User_Query( $args );
 
-    return count( $users );
+    return $subscribers->get_total();
 
 }
 

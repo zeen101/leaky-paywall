@@ -135,6 +135,7 @@ class Leaky_Paywall_Insights
 
 		$levels = leaky_paywall_get_levels();
 		$data = array();
+		$counts = $this->get_all_active_subscriber_counts();
 
 	?>
 		<h3><?php esc_html_e('Top Active Subscriptions', 'leaky-paywall'); ?></h3>
@@ -147,10 +148,7 @@ class Leaky_Paywall_Insights
 				continue;
 			}
 
-			$total_subscribers = 0;
-			$total_subscribers = $this->get_total_active_subscribers($id);
-
-			$data[$level['label']] = $total_subscribers;
+			$data[$level['label']] = isset($counts[$id]) ? $counts[$id] : 0;
 		}
 
 		arsort($data);
@@ -166,44 +164,51 @@ class Leaky_Paywall_Insights
 		echo '</table>';
 	}
 
-	public function get_total_active_subscribers($level_id)
+	/**
+	 * Get active subscriber counts for all levels in a single query.
+	 *
+	 * @return array Associative array of level_id => count.
+	 */
+	public function get_all_active_subscriber_counts()
 	{
+		$cache_key = 'lp-active-subs-all';
 
-		$cache_key = 'lp-active-subs-' . $level_id;
+		if (false === ($counts = get_transient($cache_key))) {
 
-		if (false === ($total = get_transient($cache_key))) {
+			global $wpdb;
 
 			$mode = leaky_paywall_get_current_mode();
 			$site = leaky_paywall_get_current_site();
 
-			$args = array(
-				'fields' => 'ID',
-				'meta_query' => array(
-					'relation' => 'AND',
-					array(
-						'key' => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-						'compare' => 'EXISTS',
-					),
-					array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-						'value'   => $level_id,
-						'compare' => 'LIKE',
-					),
-					array(
-						'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
-						'value'   => 'active',
-						'compare' => 'LIKE',
-					)
+			$level_key  = '_issuem_leaky_paywall_' . $mode . '_level_id' . $site;
+			$status_key = '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site;
+
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT lm.meta_value AS level_id, COUNT(*) AS total
+					 FROM {$wpdb->usermeta} lm
+					 INNER JOIN {$wpdb->usermeta} sm
+						 ON lm.user_id = sm.user_id
+						 AND sm.meta_key = %s
+						 AND sm.meta_value = 'active'
+					 WHERE lm.meta_key = %s
+					 GROUP BY lm.meta_value",
+					$status_key,
+					$level_key
 				)
 			);
 
-			$subscribers = new WP_User_Query($args);
-			$total = $subscribers->get_total();
+			$counts = array();
+			if ($results) {
+				foreach ($results as $row) {
+					$counts[$row->level_id] = (int) $row->total;
+				}
+			}
 
-			set_transient($cache_key, $total, 300);
+			set_transient($cache_key, $counts, 300);
 		}
 
-		return $total;
+		return $counts;
 	}
 
 	public function content_insights()
