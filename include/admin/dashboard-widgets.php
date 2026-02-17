@@ -158,7 +158,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Date', 'leaky-paywall' ); ?></th>
-					<th><?php esc_html_e( 'Name', 'leaky-paywall' ); ?></th>
+					<th><?php esc_html_e( 'Email', 'leaky-paywall' ); ?></th>
 					<th><?php esc_html_e( 'Level', 'leaky-paywall' ); ?></th>
 				</tr>
 			</thead>
@@ -170,18 +170,13 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 					continue;
 				}
 
-				$name = trim( $user->first_name . ' ' . $user->last_name );
-				if ( ! $name ) {
-					$name = $user->user_email;
-				}
-
 				$level_name = isset( $settings['levels'][ $level_id ]['label'] )
 					? stripslashes( $settings['levels'][ $level_id ]['label'] )
 					: '#' . $level_id;
 			?>
 				<tr>
 					<td><?php echo esc_html( gmdate( 'M d, Y', strtotime( $user->user_registered ) ) ); ?></td>
-					<td><a href="<?php echo esc_url( admin_url( 'user-edit.php?user_id=' . $user->ID ) ); ?>"><?php echo esc_html( $name ); ?></a></td>
+					<td><a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-subscribers&action=show&id=' . $user->ID ) ); ?>"><?php echo esc_html( $user->user_email ); ?></a></td>
 					<td><?php echo esc_html( $level_name ); ?></td>
 				</tr>
 			<?php endforeach; ?>
