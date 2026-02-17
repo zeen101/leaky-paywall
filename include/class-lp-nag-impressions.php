@@ -249,6 +249,27 @@ class LP_Nag_Impressions {
 
 		return $nag_type;
 	}
+
+	/**
+	 * Get total impressions for a specific nag type (all time).
+	 *
+	 * @param string $nag_type The nag type string.
+	 * @return int
+	 */
+	public static function get_total_for_nag_type( $nag_type ) {
+		global $wpdb;
+
+		$table_name = self::get_table_name();
+
+		$total = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COALESCE(SUM(count), 0) FROM $table_name WHERE nag_type = %s",
+				$nag_type
+			)
+		);
+
+		return (int) $total;
+	}
 }
 
 LP_Nag_Impressions::init();
