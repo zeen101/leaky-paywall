@@ -22,6 +22,9 @@ class LP_Transaction_Post_Type
 
 		add_filter('manage_edit-lp_transaction_columns', array($this, 'transaction_columns'));
 		add_action('manage_lp_transaction_posts_custom_column', array($this, 'transaction_custom_columns'), 10, 2);
+
+		add_action('restrict_manage_posts', array($this, 'add_filters'), 10, 2);
+		add_action('pre_get_posts', array($this, 'apply_filters'));
 	}
 
 	/**
@@ -316,6 +319,166 @@ class LP_Transaction_Post_Type
 					echo 'One Time';
 				}
 				break;
+		}
+	}
+	/**
+	 * Add filter dropdowns above the transaction list table.
+	 *
+	 * @param string $post_type The current post type.
+	 * @param string $which     Top or bottom.
+	 */
+	public function add_filters($post_type, $which)
+	{
+		if ('lp_transaction' !== $post_type) {
+			return;
+		}
+
+		$current_type    = isset($_GET['lp_payment_type']) ? sanitize_text_field($_GET['lp_payment_type']) : '';
+		$current_level   = isset($_GET['lp_level']) ? sanitize_text_field($_GET['lp_level']) : '';
+		$current_gateway = isset($_GET['lp_gateway']) ? sanitize_text_field($_GET['lp_gateway']) : '';
+
+		// Payment type filter.
+		?>
+		<select name="lp_payment_type">
+			<option value=""><?php esc_html_e('All payment types', 'leaky-paywall'); ?></option>
+			<option value="paid" <?php selected($current_type, 'paid'); ?>><?php esc_html_e('Paid', 'leaky-paywall'); ?></option>
+			<option value="free" <?php selected($current_type, 'free'); ?>><?php esc_html_e('Free', 'leaky-paywall'); ?></option>
+			<option value="refund" <?php selected($current_type, 'refund'); ?>><?php esc_html_e('Refund', 'leaky-paywall'); ?></option>
+			<option value="renewal" <?php selected($current_type, 'renewal'); ?>><?php esc_html_e('Renewal', 'leaky-paywall'); ?></option>
+		</select>
+		<?php
+
+		// Level filter.
+		$settings = get_leaky_paywall_settings();
+		$levels   = isset($settings['levels']) ? $settings['levels'] : array();
+
+		if (!empty($levels)) {
+			?>
+			<select name="lp_level">
+				<option value=""><?php esc_html_e('All levels', 'leaky-paywall'); ?></option>
+				<?php foreach ($levels as $level_id => $level) : ?>
+					<option value="<?php echo esc_attr($level_id); ?>" <?php selected($current_level, (string) $level_id); ?>>
+						<?php echo esc_html(isset($level['label']) ? $level['label'] : 'Level ' . $level_id); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<?php
+		}
+
+		// Gateway filter.
+		global $wpdb;
+		$gateways = $wpdb->get_col(
+			"SELECT DISTINCT meta_value FROM {$wpdb->postmeta}
+			 WHERE meta_key = '_gateway' AND meta_value != ''
+			 ORDER BY meta_value ASC"
+		);
+
+		if (!empty($gateways)) {
+			?>
+			<select name="lp_gateway">
+				<option value=""><?php esc_html_e('All gateways', 'leaky-paywall'); ?></option>
+				<?php foreach ($gateways as $gateway) : ?>
+					<option value="<?php echo esc_attr($gateway); ?>" <?php selected($current_gateway, $gateway); ?>>
+						<?php echo esc_html(ucwords(str_replace('_', ' ', $gateway))); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<?php
+		}
+	}
+
+	/**
+	 * Modify the query based on the selected filters.
+	 *
+	 * @param WP_Query $query The query object.
+	 */
+	public function apply_filters($query)
+	{
+		global $pagenow;
+
+		if (!is_admin() || 'edit.php' !== $pagenow || !$query->is_main_query()) {
+			return;
+		}
+
+		if ($query->get('post_type') !== 'lp_transaction') {
+			return;
+		}
+
+		$meta_query = $query->get('meta_query');
+		if (!is_array($meta_query)) {
+			$meta_query = array();
+		}
+
+		// Payment type filter.
+		if (!empty($_GET['lp_payment_type'])) {
+			$type = sanitize_text_field($_GET['lp_payment_type']);
+
+			switch ($type) {
+				case 'paid':
+					$meta_query[] = array(
+						'key'     => '_price',
+						'value'   => '0',
+						'compare' => '>',
+						'type'    => 'DECIMAL(10,2)',
+					);
+					$meta_query[] = array(
+						'key'     => '_status',
+						'value'   => 'refund',
+						'compare' => '!=',
+					);
+					break;
+				case 'free':
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_price',
+							'value'   => '0',
+							'compare' => '=',
+							'type'    => 'DECIMAL(10,2)',
+						),
+						array(
+							'key'     => '_price',
+							'compare' => 'NOT EXISTS',
+						),
+					);
+					break;
+				case 'refund':
+					$meta_query[] = array(
+						'key'     => '_status',
+						'value'   => 'refund',
+						'compare' => '=',
+					);
+					break;
+				case 'renewal':
+					$meta_query[] = array(
+						'key'     => '_is_recurring',
+						'value'   => '1',
+						'compare' => '=',
+					);
+					break;
+			}
+		}
+
+		// Level filter.
+		if (isset($_GET['lp_level']) && '' !== $_GET['lp_level']) {
+			$meta_query[] = array(
+				'key'     => '_level_id',
+				'value'   => sanitize_text_field($_GET['lp_level']),
+				'compare' => '=',
+			);
+		}
+
+		// Gateway filter.
+		if (!empty($_GET['lp_gateway'])) {
+			$meta_query[] = array(
+				'key'     => '_gateway',
+				'value'   => sanitize_text_field($_GET['lp_gateway']),
+				'compare' => '=',
+			);
+		}
+
+		if (!empty($meta_query)) {
+			$query->set('meta_query', $meta_query);
 		}
 	}
 }
