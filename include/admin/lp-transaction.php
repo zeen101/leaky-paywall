@@ -25,6 +25,8 @@ class LP_Transaction_Post_Type
 
 		add_action('restrict_manage_posts', array($this, 'add_filters'), 10, 2);
 		add_action('pre_get_posts', array($this, 'apply_filters'));
+		add_filter('manage_edit-lp_transaction_sortable_columns', array($this, 'sortable_columns'));
+		add_filter('months_dropdown_results', array($this, 'remove_months_dropdown'), 10, 2);
 	}
 
 	/**
@@ -336,6 +338,20 @@ class LP_Transaction_Post_Type
 		$current_type    = isset($_GET['lp_payment_type']) ? sanitize_text_field($_GET['lp_payment_type']) : '';
 		$current_level   = isset($_GET['lp_level']) ? sanitize_text_field($_GET['lp_level']) : '';
 		$current_gateway = isset($_GET['lp_gateway']) ? sanitize_text_field($_GET['lp_gateway']) : '';
+		$current_date    = isset($_GET['lp_date_range']) ? sanitize_text_field($_GET['lp_date_range']) : '';
+
+		// Date range filter.
+		?>
+		<select name="lp_date_range">
+			<option value=""><?php esc_html_e('All dates', 'leaky-paywall'); ?></option>
+			<option value="today" <?php selected($current_date, 'today'); ?>><?php esc_html_e('Today', 'leaky-paywall'); ?></option>
+			<option value="7days" <?php selected($current_date, '7days'); ?>><?php esc_html_e('Last 7 days', 'leaky-paywall'); ?></option>
+			<option value="30days" <?php selected($current_date, '30days'); ?>><?php esc_html_e('Last 30 days', 'leaky-paywall'); ?></option>
+			<option value="this_month" <?php selected($current_date, 'this_month'); ?>><?php esc_html_e('This month', 'leaky-paywall'); ?></option>
+			<option value="last_month" <?php selected($current_date, 'last_month'); ?>><?php esc_html_e('Last month', 'leaky-paywall'); ?></option>
+			<option value="this_year" <?php selected($current_date, 'this_year'); ?>><?php esc_html_e('This year', 'leaky-paywall'); ?></option>
+		</select>
+		<?php
 
 		// Payment type filter.
 		?>
@@ -480,6 +496,84 @@ class LP_Transaction_Post_Type
 		if (!empty($meta_query)) {
 			$query->set('meta_query', $meta_query);
 		}
+
+		// Date range filter.
+		if (!empty($_GET['lp_date_range'])) {
+			$range = sanitize_text_field($_GET['lp_date_range']);
+			$after = '';
+
+			switch ($range) {
+				case 'today':
+					$after = gmdate('Y-m-d 00:00:00');
+					break;
+				case '7days':
+					$after = gmdate('Y-m-d H:i:s', strtotime('-7 days'));
+					break;
+				case '30days':
+					$after = gmdate('Y-m-d H:i:s', strtotime('-30 days'));
+					break;
+				case 'this_month':
+					$after = gmdate('Y-m-01 00:00:00');
+					break;
+				case 'last_month':
+					$after = gmdate('Y-m-01 00:00:00', strtotime('first day of last month'));
+					$before = gmdate('Y-m-01 00:00:00');
+					break;
+				case 'this_year':
+					$after = gmdate('Y-01-01 00:00:00');
+					break;
+			}
+
+			if ($after) {
+				$date_query = array(
+					array('after' => $after, 'inclusive' => true),
+				);
+
+				if (!empty($before)) {
+					$date_query[0]['before'] = $before;
+				}
+
+				$query->set('date_query', $date_query);
+			}
+		}
+
+		// Sortable column ordering.
+		$orderby = $query->get('orderby');
+
+		if ('transaction_price' === $orderby) {
+			$query->set('meta_key', '_price');
+			$query->set('orderby', 'meta_value_num');
+		}
+	}
+
+	/**
+	 * Remove the default WordPress months dropdown for transactions.
+	 *
+	 * @param array  $months    The months data.
+	 * @param string $post_type The current post type.
+	 * @return array
+	 */
+	public function remove_months_dropdown($months, $post_type)
+	{
+		if ('lp_transaction' === $post_type) {
+			return array();
+		}
+
+		return $months;
+	}
+
+	/**
+	 * Define which columns are sortable.
+	 *
+	 * @param array $columns The sortable columns.
+	 * @return array
+	 */
+	public function sortable_columns($columns)
+	{
+		$columns['price']   = 'transaction_price';
+		$columns['created'] = 'date';
+
+		return $columns;
 	}
 }
 
