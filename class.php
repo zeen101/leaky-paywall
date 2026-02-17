@@ -54,7 +54,6 @@ class Leaky_Paywall {
 
 		add_action( 'wp', array( $this, 'process_content_restrictions' ) );
 		add_action( 'wp', array( $this, 'process_pdf_restrictions' ) );
-		add_action( 'init', array( $this, 'process_js_content_restrictions' ) );
 		add_action( 'rest_api_init', array( $this, 'process_rest_content_restrictions' ) );
 
 		add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
@@ -72,14 +71,12 @@ class Leaky_Paywall {
 
 	/**
 	 * Process restrictions with javascript
+	 *
+	 * Note: The AJAX handlers are no longer needed when using the REST API
+	 * restriction check (leaky-paywall-check.js). The REST endpoint registered
+	 * by Leaky_Paywall_REST_Restrictions handles all restriction checks.
 	 */
 	public function process_js_content_restrictions() {
-		$settings = get_leaky_paywall_settings();
-
-		if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
-			$restrictions = new Leaky_Paywall_Restrictions();
-			$restrictions->process_js_content_restrictions();
-		}
 	}
 
 	/**
@@ -344,18 +341,24 @@ class Leaky_Paywall {
 				return;
 			}
 
-			wp_enqueue_script( 'js_cookie_js', LEAKY_PAYWALL_URL . 'js/js-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
-			wp_enqueue_script( 'leaky_paywall_cookie_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-cookie.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
-
 			$post_container   = apply_filters( 'leaky_paywall_js_restriction_post_container', $settings['js_restrictions_post_container'] );
 			$page_container   = apply_filters( 'leaky_paywall_js_restriction_page_container', $settings['js_restrictions_page_container'] );
 			$lead_in_elements = apply_filters( 'leaky_paywall_js_restriction_lead_in_elements', $settings['lead_in_elements'] );
 
+			wp_enqueue_script(
+				'leaky-paywall-check',
+				LEAKY_PAYWALL_URL . 'js/leaky-paywall-check.js',
+				array(),
+				LEAKY_PAYWALL_VERSION,
+				true
+			);
+
 			wp_localize_script(
-				'leaky_paywall_cookie_js',
-				'leaky_paywall_cookie_ajax',
+				'leaky-paywall-check',
+				'leaky_paywall_check_config',
 				array(
-					'ajaxurl'          => admin_url( 'admin-ajax.php', 'relative' ),
+					'rest_url'         => rest_url( 'leaky-paywall/v1/check-restrictions' ),
+					'nonce'            => wp_create_nonce( 'wp_rest' ),
 					'post_container'   => $post_container,
 					'page_container'   => $page_container,
 					'lead_in_elements' => $lead_in_elements,
@@ -503,6 +506,7 @@ class Leaky_Paywall {
 					}
 				}
 			} elseif ( ! empty( $_POST['leaky_paywall_edit_subscriber'] ) ) {
+
 				if ( ! wp_verify_nonce( sanitize_key( $_POST['leaky_paywall_edit_subscriber'] ), 'edit_subscriber' ) ) {
 					echo '<div class="error settings-error" id="setting-error-invalid_nonce"><p><strong>' . esc_html__( 'Unable to verify security token. Subscriber not added. Please try again.', 'leaky-paywall' ) . '</strong></p></div>';
 				} else {
@@ -524,7 +528,7 @@ class Leaky_Paywall {
 							$status          = isset( $_POST['leaky-paywall-subscriber-status'] ) ? sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-status'] ) ) : '';
 							$payment_gateway = isset( $_POST['leaky-paywall-subscriber-payment-gateway'] ) ? trim( rawurldecode( sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-payment-gateway'] ) ) ) ) : '';
 							$subscriber_id   = isset( $_POST['leaky-paywall-subscriber-id'] ) ? trim( rawurldecode( sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-id'] ) ) ) ) : '';
-							$plan            = isset( $_POST['leaky-paywall-plan'] ) ? trim( rawurldecode( sanitize_text_field( wp_unslash( $_POST['leaky-paywall-plan'] ) ) ) ) : '';
+							$plan            = isset( $_POST['leaky-paywall-plan'] ) ? sanitize_text_field( wp_unslash( $_POST['leaky-paywall-plan'] ) ) : '';
 
 							if ( empty( $_POST['leaky-paywall-subscriber-expires'] ) ) {
 								$expires = 0;

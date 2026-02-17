@@ -63,6 +63,9 @@ class Leaky_Paywall_Insights
 			case 'content':
 				$this->content_insights();
 				break;
+			case 'impressions':
+				$this->impressions_insights();
+				break;
 			default:
 				// do nothing
 				break;
@@ -291,6 +294,103 @@ class Leaky_Paywall_Insights
 <?php
 	}
 
+	public function impressions_insights()
+	{
+		if ( isset( $_POST['lp_insights_filter_date_field'] ) && wp_verify_nonce( sanitize_key( $_POST['lp_insights_filter_date_field'] ), 'lp_insights_filter_date' ) ) {
+			$period = isset( $_POST['filter-date-range'] ) ? sanitize_text_field( $_POST['filter-date-range'] ) : '30 days';
+		} else {
+			$period = '30 days';
+		}
+
+		$total_impressions = LP_Nag_Impressions::get_total_impressions( $period );
+		$by_nag_type       = LP_Nag_Impressions::get_impressions_by_nag_type( $period );
+		$top_posts         = LP_Nag_Impressions::get_top_posts_with_conversions( $period );
+
+		?>
+
+		<h3><?php esc_html_e( 'Nag Impressions', 'leaky-paywall' ); ?></h3>
+
+		<p>
+		<form id="leaky_paywall_insights_date_range_filter" method="POST">
+			<label for="filter-by-date-range" class="screen-reader-text"><?php esc_html_e( 'Filter by date range', 'leaky-paywall' ); ?></label>
+			<select name="filter-date-range" id="filter-by-date-range">
+				<option value="today" <?php selected( $period, 'today' ); ?>><?php esc_html_e( 'Last 24 hours', 'leaky-paywall' ); ?></option>
+				<option value="7 days" <?php selected( $period, '7 days' ); ?>><?php esc_html_e( 'Last 7 days', 'leaky-paywall' ); ?></option>
+				<option value="30 days" <?php selected( $period, '30 days' ); ?>><?php esc_html_e( 'Last 30 days', 'leaky-paywall' ); ?></option>
+				<option value="3 months" <?php selected( $period, '3 months' ); ?>><?php esc_html_e( 'Last 3 months', 'leaky-paywall' ); ?></option>
+			</select>
+
+			<input name="filter_action" id="lp_insights_date_range_filter_submit" class="button" value="Filter" type="submit">
+			<?php wp_nonce_field( 'lp_insights_filter_date', 'lp_insights_filter_date_field' ); ?>
+		</form>
+		</p>
+
+		<div class="card-stats">
+			<div class="card"><span class="dashicons dashicons-visibility"></span>
+				<div class="card-content">
+					<div class="card-title"><?php esc_html_e( 'Total Nag Impressions', 'leaky-paywall' ); ?></div>
+					<div class="card-amount"><?php echo esc_html( number_format( $total_impressions ) ); ?></div>
+				</div>
+			</div>
+		</div>
+
+		<h3><?php esc_html_e( 'Impressions by Nag Type', 'leaky-paywall' ); ?></h3>
+
+		<?php if ( empty( $by_nag_type ) ) : ?>
+			<p><?php esc_html_e( 'No impression data found for selected time period.', 'leaky-paywall' ); ?></p>
+		<?php else : ?>
+			<table class="wp-list-table widefat fixed striped table-view-list">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Nag Type', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Impressions', 'leaky-paywall' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $by_nag_type as $row ) : ?>
+						<tr>
+							<td><?php echo esc_html( LP_Nag_Impressions::get_nag_type_label( $row->nag_type ) ); ?></td>
+							<td><?php echo esc_html( number_format( (int) $row->total ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<h3><?php esc_html_e( 'Top Content by Nag Impressions', 'leaky-paywall' ); ?></h3>
+		<p><?php esc_html_e( 'Posts where the nag was shown most often, with conversion rates.', 'leaky-paywall' ); ?></p>
+
+		<?php if ( empty( $top_posts ) ) : ?>
+			<p><?php esc_html_e( 'No impression data found for selected time period.', 'leaky-paywall' ); ?></p>
+		<?php else : ?>
+			<table class="wp-list-table widefat fixed striped table-view-list">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Content', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Impressions', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Conversions', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Conversion Rate', 'leaky-paywall' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $top_posts as $row ) :
+						$title = get_the_title( $row->post_id );
+						$url   = get_the_permalink( $row->post_id );
+					?>
+						<tr>
+							<td><a href="<?php echo esc_url( $url ); ?>" target="_blank"><?php echo esc_html( $title ? $title : '#' . $row->post_id ); ?></a></td>
+							<td><?php echo esc_html( number_format( $row->impressions ) ); ?></td>
+							<td><?php echo esc_html( number_format( $row->conversions ) ); ?></td>
+							<td><?php echo esc_html( $row->rate . '%' ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+	<?php
+	}
+
 	public function get_insights_tabs()
 	{
 
@@ -298,6 +398,7 @@ class Leaky_Paywall_Insights
 			'overview',
 			'subscriptions',
 			'content',
+			'impressions',
 		);
 
 		return apply_filters('leaky_paywall_insights_tabs', $tabs);
