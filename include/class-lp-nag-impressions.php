@@ -270,6 +270,27 @@ class LP_Nag_Impressions {
 
 		return (int) $total;
 	}
+
+	/**
+	 * Get the number of days since tracking began.
+	 *
+	 * @return int Days since first recorded impression, or 0 if no data.
+	 */
+	public static function get_days_of_data() {
+		global $wpdb;
+
+		$table_name = self::get_table_name();
+
+		$earliest = $wpdb->get_var( "SELECT MIN(nag_date) FROM $table_name" );
+
+		if ( ! $earliest ) {
+			return 0;
+		}
+
+		$diff = strtotime( current_time( 'Y-m-d' ) ) - strtotime( $earliest );
+
+		return max( 0, (int) floor( $diff / DAY_IN_SECONDS ) );
+	}
 }
 
 LP_Nag_Impressions::init();
