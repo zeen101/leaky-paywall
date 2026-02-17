@@ -116,7 +116,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		</div>
 		<div class="lp-dash-stat">
 			<div class="lp-dash-stat-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
-			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywalls Displayed', 'leaky-paywall' ); ?></div>
+			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></div>
 		</div>
 	</div>
 

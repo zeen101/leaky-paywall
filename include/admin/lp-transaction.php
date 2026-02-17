@@ -209,6 +209,30 @@ class LP_Transaction_Post_Type
 		}
 		?>
 
+		<?php
+		$refund_for = get_post_meta( $post->ID, '_refund_for', true );
+		if ( $refund_for ) {
+			$original_email = get_post_meta( $refund_for, '_email', true );
+		?>
+			<table class="form-table">
+				<tbody>
+					<tr valign="top">
+						<th scope="row">
+							<label>Refund For</label>
+						</th>
+						<td>
+							<a href="<?php echo esc_url( admin_url( 'post.php?post=' . absint( $refund_for ) . '&action=edit' ) ); ?>">
+								Transaction #<?php echo absint( $refund_for ); ?>
+								<?php if ( $original_email ) { echo '(' . esc_html( $original_email ) . ')'; } ?>
+							</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php
+		}
+		?>
+
 		<?php do_action('leaky_paywall_after_transaction_meta_box', $post); ?>
 
 <?php
@@ -259,13 +283,18 @@ class LP_Transaction_Post_Type
 				break;
 
 			case 'price':
+				$price = get_post_meta($post_id, '_price', true);
 
-				if (is_numeric(get_post_meta($post_id, '_price', true))) {
-					echo esc_attr(leaky_paywall_get_current_currency_symbol() . number_format(get_post_meta($post_id, '_price', true), 2));
+				if (is_numeric($price)) {
+					$formatted = esc_attr(leaky_paywall_get_current_currency_symbol() . number_format($price, 2));
+					if ($price < 0) {
+						echo '<span style="color: #b32d2e;">' . $formatted . '</span>';
+					} else {
+						echo $formatted;
+					}
 				} else {
-					echo esc_attr(leaky_paywall_get_current_currency_symbol() . get_post_meta($post_id, '_price', true), 2);
+					echo esc_attr(leaky_paywall_get_current_currency_symbol() . $price);
 				}
-
 
 				break;
 
@@ -278,7 +307,14 @@ class LP_Transaction_Post_Type
 				break;
 
 			case 'type':
-				echo get_post_meta($post_id, '_is_recurring', true) ? 'Recurring' : 'One Time';
+				$status = get_post_meta($post_id, '_status', true);
+				if ('refund' === $status) {
+					echo '<span style="color: #b32d2e;">Refund</span>';
+				} elseif (get_post_meta($post_id, '_is_recurring', true)) {
+					echo 'Recurring';
+				} else {
+					echo 'One Time';
+				}
 				break;
 		}
 	}

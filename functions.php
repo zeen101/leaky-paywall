@@ -4373,6 +4373,119 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		update_post_meta($transaction_id, '_gateway_txn_id', $gateway_transaction_id);
 	}
 
+	/**
+	 * Find a transaction by its gateway transaction ID.
+	 *
+	 * @since 4.21.0
+	 *
+	 * @param string $gateway_id The gateway transaction ID (charge ID or payment intent ID).
+	 * @return int Transaction post ID, or 0 if not found.
+	 */
+	function leaky_paywall_find_transaction_by_gateway_id( $gateway_id ) {
+		$args = array(
+			'post_type'      => 'lp_transaction',
+			'posts_per_page' => 1,
+			'post_status'    => 'publish',
+			'meta_query'     => array(
+				array(
+					'key'     => '_gateway_txn_id',
+					'value'   => $gateway_id,
+					'compare' => '=',
+				),
+			),
+			'fields' => 'ids',
+		);
+
+		$posts = get_posts( $args );
+
+		return ! empty( $posts ) ? $posts[0] : 0;
+	}
+
+	/**
+	 * Get the total amount already refunded for a given charge ID.
+	 *
+	 * Looks up existing refund transactions linked to the charge to prevent
+	 * duplicate refund records when Stripe retries webhooks.
+	 *
+	 * @since 4.21.0
+	 *
+	 * @param string $charge_id The Stripe charge ID.
+	 * @return float Total refunded amount (positive number).
+	 */
+	function leaky_paywall_get_existing_refund_total( $charge_id ) {
+		global $wpdb;
+
+		$total = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COALESCE( SUM( ABS( CAST( pm_price.meta_value AS DECIMAL(10,2) ) ) ), 0 )
+				 FROM {$wpdb->posts} p
+				 INNER JOIN {$wpdb->postmeta} pm_price
+					 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+				 INNER JOIN {$wpdb->postmeta} pm_ref
+					 ON p.ID = pm_ref.post_id AND pm_ref.meta_key = '_refund_charge_id'
+				 WHERE p.post_type = 'lp_transaction'
+				 AND pm_ref.meta_value = %s",
+				$charge_id
+			)
+		);
+
+		return (float) $total;
+	}
+
+	/**
+	 * Create a refund transaction with a negative price.
+	 *
+	 * @since 4.21.0
+	 *
+	 * @param int    $original_txn_id The original transaction post ID (0 if not found).
+	 * @param object $user            The WordPress user object.
+	 * @param string $charge_id       The Stripe charge ID.
+	 * @param float  $refund_amount   The refund amount (positive number).
+	 * @return int The refund transaction post ID.
+	 */
+	function leaky_paywall_create_refund_transaction( $original_txn_id, $user, $charge_id, $refund_amount ) {
+		$level_id = '';
+		$currency = '';
+
+		if ( $original_txn_id ) {
+			$level_id = get_post_meta( $original_txn_id, '_level_id', true );
+			$currency = get_post_meta( $original_txn_id, '_currency', true );
+		}
+
+		$transaction = array(
+			'post_title'   => 'Refund for ' . $user->user_email,
+			'post_content' => '',
+			'post_status'  => 'publish',
+			'post_author'  => 1,
+			'post_type'    => 'lp_transaction',
+		);
+
+		$transaction_id = wp_insert_post( $transaction );
+
+		update_post_meta( $transaction_id, '_email', $user->user_email );
+		update_post_meta( $transaction_id, '_first_name', $user->first_name );
+		update_post_meta( $transaction_id, '_last_name', $user->last_name );
+		update_post_meta( $transaction_id, '_level_id', $level_id );
+		update_post_meta( $transaction_id, '_gateway', 'stripe' );
+		update_post_meta( $transaction_id, '_gateway_txn_id', $charge_id );
+		update_post_meta( $transaction_id, '_price', '-' . number_format( $refund_amount, 2, '.', '' ) );
+		update_post_meta( $transaction_id, '_currency', $currency );
+		update_post_meta( $transaction_id, '_status', 'refund' );
+		update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+		update_post_meta( $transaction_id, '_is_recurring', false );
+		update_post_meta( $transaction_id, '_refund_charge_id', $charge_id );
+
+		if ( $original_txn_id ) {
+			update_post_meta( $transaction_id, '_refund_for', $original_txn_id );
+		}
+
+		do_action( 'leaky_paywall_after_create_refund_transaction', $transaction_id, $original_txn_id, $user );
+
+		leaky_paywall_log( 'Refund transaction ' . $transaction_id . ' created for ' . $user->user_email . ' - amount: ' . $refund_amount, 'stripe refund' );
+
+		return $transaction_id;
+	}
+
 
 	/**
 	 * Check login fail

@@ -284,11 +284,33 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				do_action('leaky_paywall_failed_payment', $user);
 				break;
 			case 'charge.refunded':
-				if ($stripe_object->refunded) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
-				} else {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+				// Deactivate the user.
+				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+
+				// Record the refund as a negative-amount transaction.
+				$charge_id            = $stripe_object->id;
+				$total_refunded_cents = isset( $stripe_object->amount_refunded ) ? $stripe_object->amount_refunded : 0;
+
+				if ( $total_refunded_cents > 0 ) {
+					$total_refunded = $total_refunded_cents / 100;
+
+					// Find the original transaction by charge ID or payment intent.
+					$original_txn_id = leaky_paywall_find_transaction_by_gateway_id( $charge_id );
+
+					if ( ! $original_txn_id && ! empty( $stripe_object->payment_intent ) ) {
+						$original_txn_id = leaky_paywall_find_transaction_by_gateway_id( $stripe_object->payment_intent );
+					}
+
+					// Sum existing refund transactions for this charge to handle partial/duplicate webhooks.
+					$existing_refund_total = leaky_paywall_get_existing_refund_total( $charge_id );
+					$refund_amount         = round( $total_refunded - $existing_refund_total, 2 );
+
+					if ( $refund_amount > 0 ) {
+						leaky_paywall_create_refund_transaction( $original_txn_id, $user, $charge_id, $refund_amount );
+					}
 				}
+
+				do_action( 'leaky_paywall_stripe_refund', $user, $stripe_object );
 				break;
 			case 'charge.dispute.created':
 			case 'charge.dispute.updated':

@@ -46,7 +46,7 @@ function leaky_paywall_insights_get_total_revenue( $period ) {
              WHERE p.post_type = 'lp_transaction'
              AND p.post_date > %s
              AND pm_status.meta_value != 'incomplete'
-             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) > 0",
+             AND (CAST(pm_price.meta_value AS DECIMAL(10,2)) > 0 OR pm_status.meta_value = 'refund')",
             $after_date
         )
     );
