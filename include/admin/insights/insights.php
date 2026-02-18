@@ -193,7 +193,7 @@ class Leaky_Paywall_Insights
 					 INNER JOIN {$wpdb->usermeta} sm
 						 ON lm.user_id = sm.user_id
 						 AND sm.meta_key = %s
-						 AND sm.meta_value = 'active'
+						 AND sm.meta_value IN ('active', 'pending_cancel', 'trial')
 					 WHERE lm.meta_key = %s
 					 GROUP BY lm.meta_value",
 					$status_key,

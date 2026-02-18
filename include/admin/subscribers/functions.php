@@ -98,6 +98,11 @@ function lp_render_subscription_status_badge($status) {
             'class' => 'status-active',
             'desc'  => 'Your subscription is active and billing as scheduled.',
         ],
+        'pending_cancel' => [
+            'label' => 'Cancels Soon',
+            'class' => 'status-warning',
+            'desc'  => 'Canceled but still active until the current billing period ends.',
+        ],
         'trialing' => [
             'label' => 'Trial Active',
             'class' => 'status-trial',
@@ -163,6 +168,11 @@ function lp_render_subscription_status_badge($status) {
             'class' => 'status-warning',
             'desc'  => 'Your payment failed, but your subscription is still active for now.',
         ],
+        'deactivated' => [
+            'label' => 'Deactivated',
+            'class' => 'status-failed',
+            'desc'  => 'Your subscription has been deactivated due to a payment issue.',
+        ],
     ];
 
     $status_data = $status_map[$status] ?? [
@@ -175,6 +185,27 @@ function lp_render_subscription_status_badge($status) {
     echo '<span class="subscription-badge ' . esc_attr($status_data['class']) . '">' . esc_html($status_data['label']) . '</span>';
     echo '<p class="description">' . esc_html($status_data['desc']) . '</p>';
     echo '</div>';
+}
+
+/**
+ * Return a human-readable label for a payment status.
+ *
+ * @since 4.23.0
+ * @param string $status The raw payment status value.
+ * @return string
+ */
+function lp_get_status_label( $status ) {
+	$labels = array(
+		'active'         => __( 'Active', 'leaky-paywall' ),
+		'pending_cancel' => __( 'Cancels Soon', 'leaky-paywall' ),
+		'trial'          => __( 'Trial', 'leaky-paywall' ),
+		'canceled'       => __( 'Canceled', 'leaky-paywall' ),
+		'expired'        => __( 'Expired', 'leaky-paywall' ),
+		'deactivated'    => __( 'Deactivated', 'leaky-paywall' ),
+		'suspended'      => __( 'Suspended', 'leaky-paywall' ),
+	);
+
+	return isset( $labels[ $status ] ) ? $labels[ $status ] : ucfirst( str_replace( '_', ' ', $status ) );
 }
 
 function leaky_paywall_get_all_transactions_by_email( $email )

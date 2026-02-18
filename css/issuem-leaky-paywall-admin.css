@@ -387,3 +387,57 @@ input[type="submit"].lp-inline-button {
 .lp-header-page-title-wrap .button {
   margin-left: 5px
 }
+
+/* Status badges */
+
+.lp-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.lp-status-badge--active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.lp-status-badge--pending_cancel {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.lp-status-badge--trial {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.lp-status-badge--canceled {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.lp-status-badge--expired {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.lp-status-badge--deactivated {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.lp-status-badge--suspended {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Relative dates */
+
+.lp-relative-date {
+  cursor: help;
+  border-bottom: 1px dotted #999;
+}

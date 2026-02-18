@@ -168,18 +168,11 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$users_columns = array(
-		//	'wp_user_login' => __( 'WordPress Username', 'leaky-paywall' ),
 			'email'         => __( 'E-mail', 'leaky-paywall' ),
 			'name'          => __( 'Name', 'leaky-paywall' ),
-			'level_id'      => __( 'Level ID', 'leaky-paywall' ),
-		//	'plan'          => __( 'Plan', 'leaky-paywall' ),
-		//	'created'       => __( 'Created', 'leaky-paywall' ),
+			'level_id'      => __( 'Level', 'leaky-paywall' ),
+			'status'        => __( 'Status', 'leaky-paywall' ),
 			'expires'       => __( 'Expires', 'leaky-paywall' ),
-			'has_access'    => __( 'Has Access', 'leaky-paywall' ),
-			//	'gateway'       => __( 'Gateway', 'leaky-paywall' ),
-			//	'status'        => __( 'Payment Status', 'leaky-paywall' ),
-			//	'notes'         => __( 'Notes', 'leaky-paywall' ),
-			'susbcriber_id' => __('Subscriber ID', 'leaky-paywall'),
 		);
 		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
 
@@ -255,10 +248,13 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			$status_filter_args = apply_filters(
 				'leaky_paywall_status_filter_args',
 				array(
-					'all'         => 'All Statuses',
-					'active'      => 'Active',
-					'deactivated' => 'Deactivated',
-					'canceled'    => 'Canceled',
+					'all'            => 'All Statuses',
+					'active'         => 'Active',
+					'pending_cancel' => 'Pending Cancel',
+					'trial'          => 'Trial',
+					'canceled'       => 'Canceled',
+					'expired'        => 'Expired',
+					'deactivated'    => 'Deactivated',
 				)
 			);
 			?>
@@ -356,32 +352,41 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							break;
 						case 'email':
 
-							$edit_link    = esc_url(add_query_arg([
+							$edit_link = esc_url( add_query_arg( array(
 								'action' => 'show',
-								'id'	=> $user->ID
-							]));
+								'id'     => $user->ID,
+							) ) );
+
+							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							?>
-							<strong>
-								<a href="<?php echo $edit_link; ?>">
-									<?php echo esc_html( $user->user_email ); ?>
-								</a>
-							</strong>
+							echo '<strong><a href="' . $edit_link . '">' . esc_html( $user->user_email ) . '</a></strong>';
 
-							<?php
-							if (method_exists('user_switching', 'maybe_switch_url')) {
-								if (is_object($user)) {
-									$link = user_switching::maybe_switch_url($user);
-									if ($link) {
-										echo '<br><a href="' . esc_url($link) . '">' . esc_html__('Switch&nbsp;To', 'leaky-paywall') . '</a>';
-									}
+							// Row actions.
+							$actions = array();
+							$actions['edit'] = '<a href="' . $edit_link . '">' . __( 'Edit', 'leaky-paywall' ) . '</a>';
+
+							if ( ! empty( $subscriber_id ) && strpos( $subscriber_id, 'cus_' ) !== false ) {
+								$stripe_url = 'test' === $mode ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
+								$actions['stripe'] = '<a href="' . esc_url( $stripe_url . $subscriber_id ) . '" target="_blank">' . __( 'View in Stripe', 'leaky-paywall' ) . '</a>';
+							}
+
+							if ( method_exists( 'user_switching', 'maybe_switch_url' ) && is_object( $user ) ) {
+								$switch_url = user_switching::maybe_switch_url( $user );
+								if ( $switch_url ) {
+									$actions['switch_to'] = '<a href="' . esc_url( $switch_url ) . '">' . __( 'Switch To', 'leaky-paywall' ) . '</a>';
 								}
 							}
-							?>
 
-							</td>
-							<?php
+							echo '<div class="row-actions">';
+							$action_links = array();
+							foreach ( $actions as $action => $link ) {
+								$action_links[] = '<span class="' . esc_attr( $action ) . '">' . $link . '</span>';
+							}
+							echo implode( ' | ', $action_links );
+							echo '</div>';
+
+							echo '</td>';
 							break;
 
 						case 'name':
@@ -478,16 +483,25 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 							$expires = apply_filters( 'do_leaky_paywall_profile_shortcode_expiration_column', $expires, $user, $mode, $site, $level_id );
 
-							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
-								$expires = __( 'Never', 'leaky-paywall' );
-							} else {
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
 
-								$date_format = 'F j, Y';
-								$expires     = mysql2date( $date_format, $expires );
+							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
+								echo esc_html__( 'Never', 'leaky-paywall' );
+							} else {
+								$expires_ts   = strtotime( $expires );
+								$full_date    = date_i18n( 'F j, Y', $expires_ts );
+								$now          = current_time( 'timestamp' );
+								$diff         = $expires_ts - $now;
+
+								if ( $diff > 0 ) {
+									$relative = sprintf( __( 'in %s', 'leaky-paywall' ), human_time_diff( $now, $expires_ts ) );
+								} else {
+									$relative = sprintf( __( '%s ago', 'leaky-paywall' ), human_time_diff( $expires_ts, $now ) );
+								}
+
+								echo '<span title="' . esc_attr( $full_date ) . '" class="lp-relative-date">' . esc_html( $relative ) . '</span>';
 							}
 
-							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo esc_attr( $expires );
 							echo '</td>';
 							break;
 
@@ -512,15 +526,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							break;
 
 						case 'status':
-							if ( is_multisite_premium() ) {
-								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true ) );
-								echo '</td>';
-							} else {
-								echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-								echo esc_attr( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status', true ) );
-								echo '</td>';
-							}
+							$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
+							echo '<span class="lp-status-badge lp-status-badge--' . esc_attr( $status ) . '">' . esc_html( lp_get_status_label( $status ) ) . '</span>';
+							echo '</td>';
 							break;
 						case 'notes':
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';

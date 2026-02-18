@@ -132,8 +132,10 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 			$expires = mysql2date( 'F j, Y', $expires );
 		}
 
-		if ( strcasecmp( 'active', $payment_status ) == 0 && ! leaky_paywall_user_has_access( $user ) ) {
+		if ( 'expired' === $payment_status ) {
 			$status_name = __( 'Expired', 'leaky-paywall' );
+		} elseif ( 'pending_cancel' === $payment_status ) {
+			$status_name = __( 'Pending Cancel', 'leaky-paywall' );
 		} else {
 			$status_name = ucfirst( $payment_status );
 		}
@@ -149,7 +151,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 
 		if ( ! empty( $plan ) && 'Canceled' !== $plan && 'Never' !== $expires ) {
 
-			if ( 'canceled' == $payment_status ) {
+			if ( 'canceled' == $payment_status || 'pending_cancel' == $payment_status ) {
 				$expires_label = __( 'Ends on', 'leaky-paywall' );
 			} else {
 				$expires_label = __( 'Recurs on', 'leaky-paywall' );
@@ -167,6 +169,8 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expiration ) {
 			$cancel_text = '';
+		} elseif ( 'pending_cancel' == $payment_status ) {
+			$cancel_text = sprintf( esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		} elseif ( strcasecmp( 'active', $payment_status ) == 0 && $plan && 'Canceled' !== $plan ) {
 			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_subscriber_id' . $site, true );
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_gateway' . $site, true );

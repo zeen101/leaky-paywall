@@ -322,7 +322,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'invoice.updated':
 				break;
 			case 'customer.deleted':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired');
 				break;
 
 			case 'invoice.payment_succeeded':
@@ -371,9 +371,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
 				}
 
-				// this is triggered by cancelling in the Stripe customer portal
-				if ('cancellation_requested' == $stripe_object->cancellation_details->reason ) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
+				// cancel_at_period_end: user keeps access until period ends.
+				if ( ! empty( $stripe_object->cancel_at_period_end ) ) {
+					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel');
 					do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
 				}
 
@@ -386,11 +386,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'customer.subscription.deleted':
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired');
 
-				if ('canceled' == $stripe_object->status) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
-				//	do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
-				} else {
+				if ( ! empty( $stripe_object->current_period_end ) ) {
 					$expires = date_i18n('Y-m-d 23:59:59', $stripe_object->current_period_end);
 					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
 				}
@@ -398,7 +396,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'payment_intent.canceled':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled');
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
 				break;
 
 			case 'payment_intent.succeeded':

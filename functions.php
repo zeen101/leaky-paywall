@@ -341,15 +341,29 @@ if (!function_exists('get_leaky_paywall_email_from_login_hash')) {
 }
 
 
+/**
+ * Returns the list of payment statuses that grant content access.
+ *
+ * @since 4.23.0
+ * @return array
+ */
+function leaky_paywall_access_statuses() {
+	return apply_filters( 'leaky_paywall_access_statuses', array( 'active', 'pending_cancel', 'trial' ) );
+}
+
 if (!function_exists('leaky_paywall_user_has_access')) {
 
 	/**
-	 * Determine if a user has access based on their expiration date and their payment status.
+	 * Determine if a user has access based on their payment status.
+	 *
+	 * Status is the single source of truth for access. The daily expiration
+	 * cron and gateway webhooks are responsible for transitioning statuses
+	 * (e.g. active → expired) when a subscription period ends.
 	 *
 	 * @since 4.9.3
 	 *
 	 * @param object $user object from WordPress database.
-	 * @return bool true if the user has access or false if they have either expired or their payment status is set to deactived
+	 * @return bool true if the user has access based on their payment status.
 	 */
 	function leaky_paywall_user_has_access($user = null)
 	{
@@ -362,27 +376,11 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 			return false;
 		}
 
-		$settings  = get_leaky_paywall_settings();
-		$mode      = leaky_paywall_get_current_mode();
-		$site      = leaky_paywall_get_current_site();
-		$unexpired = false;
-
-		$expires        = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
+		$mode           = leaky_paywall_get_current_mode();
+		$site           = leaky_paywall_get_current_site();
 		$payment_status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 
-		if (empty($expires) || '0000-00-00 00:00:00' === $expires) {
-			$unexpired = true;
-		} else {
-			if (strtotime($expires) > time()) {
-				$unexpired = true;
-			}
-		}
-
-		if ($unexpired && $payment_status && 'deactivated' !== $payment_status) {
-			$has_access = true;
-		} else {
-			$has_access = false;
-		}
+		$has_access = in_array( $payment_status, leaky_paywall_access_statuses(), true );
 
 		if (!is_user_logged_in()) {
 			$has_access = false;
@@ -533,7 +531,7 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 		if ('stripe' !== $payment_gateway) {
 
 			if ('paypal_standard' === $payment_gateway || 'paypal-standard' === $payment_gateway) {
-				if (!empty($plan) && 'active' === $payment_status) {
+				if (!empty($plan) && in_array($payment_status, array('active', 'pending_cancel'), true)) {
 					return 'subscription';
 				}
 			}
@@ -542,27 +540,18 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 
 				case 'Active':
 				case 'active':
-				case 'refunded':
-				case 'refund':
+				case 'pending_cancel':
+				case 'trial':
 					$expires = apply_filters('leaky_paywall_has_user_paid_expires', $expires, $payment_gateway, $payment_status, $subscriber_id, $plan, $expires, $user, $mode, $site);
 					if (empty($expires) || '0000-00-00 00:00:00' === $expires) {
 						return 'unlimited';
 					}
-
-					if (strtotime($expires) < time()) {
-						$expired = $expires;
-					} else {
-						$paid = true;
-					}
+					$paid = true;
 					break;
-					/* phpcs:ignore to cover any spelling. */
+				case 'refunded':
+				case 'refund':
 				case 'cancelled':
 				case 'canceled':
-					if (empty($expires) || '0000-00-00 00:00:00' === $expires) {
-						$expired = true;
-					} else {
-						$canceled = true;
-					}
 				case 'reversed':
 				case 'buyer_complaint':
 				case 'denied':
@@ -570,6 +559,7 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 				case 'failed':
 				case 'voided':
 				case 'deactivated':
+				case 'suspended':
 					break;
 			}
 		} else {
@@ -583,26 +573,17 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 					switch ($payment_status) {
 						case 'Active':
 						case 'active':
-						case 'refunded':
-						case 'refund':
+						case 'pending_cancel':
+						case 'trial':
 							if (empty($expires) || '0000-00-00 00:00:00' === $expires) {
 								return 'unlimited';
 							}
-
-							if (strtotime($expires) < time()) {
-								$expired = $expires;
-							} else {
-								$paid = true;
-							}
+							$paid = true;
 							break;
+						case 'refunded':
+						case 'refund':
 						case 'cancelled':
 						case 'canceled':
-							if (empty($expires) || '0000-00-00 00:00:00' === $expires) {
-								$expired = true;
-							} else {
-								$canceled = true;
-							}
-							break;
 						case 'reversed':
 						case 'buyer_complaint':
 						case 'denied':
@@ -610,6 +591,7 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 						case 'failed':
 						case 'voided':
 						case 'deactivated':
+						case 'suspended':
 							break;
 					}
 				} else {
@@ -1214,15 +1196,7 @@ if (!function_exists('leaky_paywall_subscriber_current_level_ids')) {
 			$level_id = apply_filters('get_leaky_paywall_subscription_level_level_id', $level_id);
 			$status   = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 
-			if ('active' === $status && is_numeric($level_id) && leaky_paywall_user_has_access($user)) {
-				$level_ids[] = $level_id;
-			}
-
-			if ('trial' === $status && is_numeric($level_id) && leaky_paywall_user_has_access($user)) {
-				$level_ids[] = $level_id;
-			}
-
-			if ('canceled' === $status && is_numeric($level_id) && leaky_paywall_user_has_access($user)) {
+			if ( is_numeric( $level_id ) && in_array( $status, leaky_paywall_access_statuses(), true ) ) {
 				$level_ids[] = $level_id;
 			}
 		}
@@ -2504,6 +2478,209 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 	}
 	add_action('leaky_paywall_process_renewal_reminder', 'leaky_paywall_maybe_send_renewal_reminder');
+
+
+	/**
+	 * Register the expiration check cron job on admin_init.
+	 *
+	 * @since 4.23.0
+	 */
+	function leaky_paywall_expiration_check_schedule() {
+		if ( ! wp_next_scheduled( 'leaky_paywall_process_expiration_check' ) ) {
+			wp_schedule_event( time(), 'daily', 'leaky_paywall_process_expiration_check' );
+		}
+	}
+	add_action( 'admin_init', 'leaky_paywall_expiration_check_schedule' );
+
+	/**
+	 * Clear the expiration check cron on plugin deactivation.
+	 *
+	 * @since 4.23.0
+	 */
+	function leaky_paywall_expiration_check_deactivation() {
+		wp_clear_scheduled_hook( 'leaky_paywall_process_expiration_check' );
+	}
+	register_deactivation_hook( __FILE__, 'leaky_paywall_expiration_check_deactivation' );
+
+	/**
+	 * Safety net: transition subscribers with access-granting statuses
+	 * whose expiration dates have passed to 'expired'.
+	 *
+	 * Processes in batches to avoid memory issues on large sites.
+	 *
+	 * @since 4.23.0
+	 */
+	function leaky_paywall_process_expiration_check() {
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+
+		$access_statuses = leaky_paywall_access_statuses();
+
+		$args = array(
+			'number'     => 200,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'value'   => $access_statuses,
+					'compare' => 'IN',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => gmdate( 'Y-m-d H:i:s' ),
+					'compare' => '<',
+					'type'    => 'DATETIME',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => '0000-00-00 00:00:00',
+					'compare' => '!=',
+				),
+			),
+		);
+
+		$users = get_users( $args );
+
+		if ( empty( $users ) ) {
+			return;
+		}
+
+		foreach ( $users as $user ) {
+			$current_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+
+			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
+
+			leaky_paywall_log( $user->user_email, 'cron: expired subscriber (was: ' . $current_status . ')' );
+
+			do_action( 'leaky_paywall_cron_expired_subscriber', $user, $current_status );
+		}
+	}
+	add_action( 'leaky_paywall_process_expiration_check', 'leaky_paywall_process_expiration_check' );
+
+
+	/**
+	 * One-time migration to align existing subscriber statuses with the new
+	 * status-as-source-of-truth system.
+	 *
+	 * - canceled + future expiration → pending_cancel
+	 * - active/trial + past expiration + no recurring plan → expired
+	 * - canceled + past/no expiration → expired
+	 *
+	 * @since 4.23.0
+	 */
+	function leaky_paywall_migrate_subscriber_statuses() {
+
+		$migration_key = 'leaky_paywall_status_migration_v1';
+
+		if ( get_option( $migration_key ) ) {
+			return;
+		}
+
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+		$now  = gmdate( 'Y-m-d H:i:s' );
+
+		// 1. Canceled subscribers with future expiration → pending_cancel.
+		$users_to_pending = get_users( array(
+			'number'     => 500,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'value'   => 'canceled',
+					'compare' => '=',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => $now,
+					'compare' => '>',
+					'type'    => 'DATETIME',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => '0000-00-00 00:00:00',
+					'compare' => '!=',
+				),
+			),
+		) );
+
+		foreach ( $users_to_pending as $user ) {
+			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel' );
+			leaky_paywall_log( $user->user_email, 'migration: canceled -> pending_cancel' );
+		}
+
+		// 2. Active/trial subscribers with past expiration + no recurring plan → expired.
+		$users_to_expire = get_users( array(
+			'number'     => 500,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'value'   => array( 'active', 'trial' ),
+					'compare' => 'IN',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => $now,
+					'compare' => '<',
+					'type'    => 'DATETIME',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => '0000-00-00 00:00:00',
+					'compare' => '!=',
+				),
+			),
+		) );
+
+		foreach ( $users_to_expire as $user ) {
+			$old_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+			$plan       = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
+
+			// Skip active recurring subscribers — their subscription may still be valid.
+			if ( 'active' === $old_status && ! empty( $plan ) ) {
+				continue;
+			}
+
+			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
+			leaky_paywall_log( $user->user_email, 'migration: ' . $old_status . ' -> expired' );
+		}
+
+		// 3. Canceled subscribers with past or no expiration → expired.
+		$users_canceled_expired = get_users( array(
+			'number'     => 500,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'value'   => 'canceled',
+					'compare' => '=',
+				),
+				array(
+					'relation' => 'OR',
+					array(
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+						'value'   => $now,
+						'compare' => '<',
+						'type'    => 'DATETIME',
+					),
+					array(
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+						'value'   => '0000-00-00 00:00:00',
+						'compare' => '=',
+					),
+				),
+			),
+		) );
+
+		foreach ( $users_canceled_expired as $user ) {
+			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
+			leaky_paywall_log( $user->user_email, 'migration: canceled (past) -> expired' );
+		}
+
+		update_option( $migration_key, true );
+	}
+	add_action( 'admin_init', 'leaky_paywall_migrate_subscriber_statuses' );
 
 
 	/**

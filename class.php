@@ -666,7 +666,10 @@ class Leaky_Paywall {
 									<label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php esc_html_e( 'Payment Status', 'leaky-paywall' ); ?></label>
 									<select name="leaky-paywall-subscriber-status">
 										<option value="active" <?php selected( 'active', $payment_status ); ?>><?php esc_html_e( 'Active', 'leaky-paywall' ); ?></option>
+										<option value="pending_cancel" <?php selected( 'pending_cancel', $payment_status ); ?>><?php esc_html_e( 'Pending Cancel', 'leaky-paywall' ); ?></option>
+										<option value="trial" <?php selected( 'trial', $payment_status ); ?>><?php esc_html_e( 'Trial', 'leaky-paywall' ); ?></option>
 										<option value="canceled" <?php selected( 'canceled', $payment_status ); ?>><?php esc_html_e( 'Canceled', 'leaky-paywall' ); ?></option>
+										<option value="expired" <?php selected( 'expired', $payment_status ); ?>><?php esc_html_e( 'Expired', 'leaky-paywall' ); ?></option>
 										<option value="deactivated" <?php selected( 'deactivated', $payment_status ); ?>><?php esc_html_e( 'Deactivated', 'leaky-paywall' ); ?></option>
 									</select>
 								</p>
@@ -733,7 +736,10 @@ class Leaky_Paywall {
 									<label for="leaky-paywall-subscriber-status" style="display:table-cell"><?php esc_html_e( 'Payment Status', 'leaky-paywall' ); ?></label>
 									<select name="leaky-paywall-subscriber-status">
 										<option value="active"><?php esc_html_e( 'Active', 'leaky-paywall' ); ?></option>
+										<option value="pending_cancel"><?php esc_html_e( 'Pending Cancel', 'leaky-paywall' ); ?></option>
+										<option value="trial"><?php esc_html_e( 'Trial', 'leaky-paywall' ); ?></option>
 										<option value="canceled"><?php esc_html_e( 'Canceled', 'leaky-paywall' ); ?></option>
+										<option value="expired"><?php esc_html_e( 'Expired', 'leaky-paywall' ); ?></option>
 										<option value="deactivated"><?php esc_html_e( 'Deactivated', 'leaky-paywall' ); ?></option>
 									</select>
 								</p>

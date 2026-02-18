@@ -458,7 +458,13 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								}
 							}
 							if ( ! empty( $user ) && 0 !== $user->ID ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'canceled' );
+								$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+
+								if ( ! empty( $expires ) && '0000-00-00 00:00:00' !== $expires && strtotime( $expires ) > time() ) {
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel' );
+								} else {
+									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
+								}
 
 								do_action( 'leaky_paywall_cancelled_subscriber', $user, 'paypal' );
 							}

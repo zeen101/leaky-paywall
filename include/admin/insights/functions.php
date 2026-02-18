@@ -241,8 +241,8 @@ function leaky_paywall_insights_get_active_subs_for_level( $level_id ) {
             ),
             array(
                 'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
-                'value'   => 'active',
-                'compare' => '=',
+                'value'   => array( 'active', 'pending_cancel', 'trial' ),
+                'compare' => 'IN',
             ),
         ),
     );
