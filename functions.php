@@ -2419,106 +2419,37 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 * @param string  $status The status of the notification.
 	 * @param array   $args The details of the subscriber.
 	 */
-	function leaky_paywall_email_subscription_status($user_id, $status = 'new', $args = '')
-	{
+	function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
 
-		// if the args come through as a WP User object, then the user already exists in the system and we don't know their password.
-		if (!empty($args) && is_array($args)) {
-			$password = isset($args['password']) ? $args['password'] : '';
-		} else {
-			$password = '';
+		$password = '';
+		if ( ! empty( $args ) && is_array( $args ) ) {
+			$password = isset( $args['password'] ) ? $args['password'] : '';
 		}
 
-		$settings = get_leaky_paywall_settings();
+		do_action( 'leaky_paywall_before_email_status', $user_id, $status );
 
-		$mode = leaky_paywall_get_current_mode();
-		$site = leaky_paywall_get_current_site();
+		$emails     = LP_Emails::instance();
+		$email_args = array( 'password' => $password, 'status' => $status );
 
-		$user_info     = get_userdata($user_id);
-		$message       = '';
-		$admin_message = '';
-		$headers       = array();
-
-		$admin_email_recipients = esc_attr($settings['admin_new_subscriber_email_recipients']);
-		$admin_email_subject    = esc_attr($settings['admin_new_subscriber_email_subject']);
-
-		$site_name  = stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8'));
-		$from_name  = isset($settings['from_name']) ? $settings['from_name'] : $site_name;
-		$from_email = isset($settings['from_email']) ? $settings['from_email'] : get_option('admin_email');
-
-		$headers[] = 'From: ' . stripslashes_deep(html_entity_decode($from_name, ENT_COMPAT, 'UTF-8')) . " <$from_email>";
-		$headers[] = 'Reply-To: ' . $from_email;
-		$headers[] = 'Content-Type: text/html; charset=UTF-8';
-
-		$attachments = apply_filters('leaky_paywall_email_attachments', array(), $user_info, $status);
-
-		do_action('leaky_paywall_before_email_status', $user_id, $status);
-
-		switch ($status) {
-
+		switch ( $status ) {
 			case 'new':
 			case 'update':
-				$message = stripslashes(apply_filters('leaky_paywall_new_email_message', $settings['new_email_body'], $user_id));
-				$subject = stripslashes(apply_filters('leaky_paywall_new_email_subject', $settings['new_email_subject'], $user_id));
-
-				$filtered_subject = leaky_paywall_filter_email_tags($subject, $user_id, $user_info->display_name, $password);
-				$filtered_message = leaky_paywall_filter_email_tags($message, $user_id, $user_info->display_name, $password);
-
-				$filtered_message = wpautop(make_clickable($filtered_message));
-
-				if ('traditional' === $settings['login_method'] && 'off' === $settings['new_subscriber_email']) {
-
-					if (apply_filters('leaky_paywall_send_' . $status . '_email', true, $user_id)) {
-						wp_mail($user_info->user_email, $filtered_subject, $filtered_message, $headers, $attachments);
-					}
+				$new_sub = $emails->get_email( 'new_subscriber' );
+				if ( $new_sub ) {
+					$new_sub->trigger( $user_id, $email_args );
 				}
 
-				if ('off' === $settings['new_subscriber_admin_email']) {
-					// new user subscribe admin email.
-
-					$level_id   = get_user_meta($user_info->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
-					$level      = get_leaky_paywall_subscription_level($level_id);
-					$level_name = $level['label'];
-
-					$admin_raw_message = '<p>A new user has signed up on ' . $site_name . '.</p>
-					<h3>Subscriber details</h3>
-					<ul>
-					<li><strong>Subscription:</strong> ' . $level_name . '</li>';
-
-					if ($user_info->first_name) {
-						$admin_raw_message .= '<li><strong>Name:</strong> ' . $user_info->first_name . ' ' . $user_info->last_name . '</li>';
-					}
-
-					$admin_raw_message .= '<li><strong>Email:</strong> ' . $user_info->user_email . '</li>
-					</ul>
-					';
-
-					$admin_message = apply_filters('leaky_paywall_new_subscriber_admin_email', $admin_raw_message, $user_info);
-
-					if ($admin_email_recipients) {
-						if (apply_filters('leaky_paywall_send_' . $status . '_admin_email', true, $user_id)) {
-							wp_mail($admin_email_recipients, $admin_email_subject, $admin_message, $headers, $attachments);
-						}
-					}
+				$admin = $emails->get_email( 'admin_new_subscriber' );
+				if ( $admin ) {
+					$admin->trigger( $user_id, $email_args );
 				}
-
 				break;
 
 			case 'renewal_reminder':
-				$message = stripslashes(apply_filters('leaky_paywall_renewal_reminder_email_message', $settings['renewal_reminder_email_body'], $user_id));
-
-				$filtered_subject = leaky_paywall_filter_email_tags($settings['renewal_reminder_email_subject'], $user_id, $user_info->display_name, $password);
-				$filtered_message = leaky_paywall_filter_email_tags($message, $user_id, $user_info->display_name, $password);
-
-				$filtered_message = wpautop(make_clickable($filtered_message));
-
-				if ('traditional' === $settings['login_method']) {
-					wp_mail($user_info->user_email, $filtered_subject, $filtered_message, $headers, $attachments);
+				$renewal = $emails->get_email( 'renewal_reminder' );
+				if ( $renewal ) {
+					$renewal->trigger( $user_id, $email_args );
 				}
-
-				break;
-
-			default:
 				break;
 		}
 	}
@@ -2554,23 +2485,23 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_maybe_send_renewal_reminder()
 	{
 
-		$settings = get_leaky_paywall_settings();
-		$mode     = leaky_paywall_get_current_mode();
-		$site     = leaky_paywall_get_current_site();
+		$renewal_email = LP_Emails::instance()->get_email( 'renewal_reminder' );
 
-		if ('on' === $settings['renewal_reminder_email']) {
+		if ( ! $renewal_email || ! $renewal_email->is_enabled() ) {
 			return;
 		}
 
-		// do not send an email if the body of the email is empty.
-		if (!$settings['renewal_reminder_email_body']) {
+		if ( empty( $renewal_email->body ) ) {
 			return;
 		}
+
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
 
 		leaky_paywall_log(current_time('Y-m-d'), 'process renewal reminder');
 
 		$start_date = time(); // now
-		$end_date = strtotime('+' . absint($settings['renewal_reminder_days_before']) . ' day'); // x days in the future
+		$end_date = strtotime('+' . absint( $renewal_email->days_before ) . ' day'); // x days in the future
 
 		$args = array(
 			'number'     => 99,
@@ -2719,6 +2650,62 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 	}
 	add_action( 'leaky_paywall_process_expiration_check', 'leaky_paywall_process_expiration_check' );
+
+
+	/**
+	 * One-time migration to move email settings from the monolithic LP settings
+	 * array to per-email wp_option keys.
+	 *
+	 * Converts the inverted checkbox logic ('on' = disabled) to standard
+	 * 'yes'/'no' values.
+	 *
+	 * @since 4.23.0
+	 */
+	function lp_maybe_migrate_email_settings() {
+
+		if ( get_option( 'lp_email_settings_migrated' ) ) {
+			return;
+		}
+
+		$settings = get_option( 'issuem-leaky-paywall' );
+
+		if ( ! $settings ) {
+			update_option( 'lp_email_settings_migrated', '1' );
+			return;
+		}
+
+		// New Subscriber Email.
+		// Old inverted logic: 'on' = disabled, 'off' = enabled.
+		$new_sub = array(
+			'enabled' => ( isset( $settings['new_subscriber_email'] ) && 'on' === $settings['new_subscriber_email'] ) ? 'no' : 'yes',
+			'subject' => isset( $settings['new_email_subject'] ) ? $settings['new_email_subject'] : '',
+			'body'    => isset( $settings['new_email_body'] ) ? $settings['new_email_body'] : '',
+		);
+		update_option( 'leaky_paywall_email_new_subscriber_settings', $new_sub );
+
+		// Admin New Subscriber Email.
+		$admin_new = array(
+			'enabled'    => ( isset( $settings['new_subscriber_admin_email'] ) && 'on' === $settings['new_subscriber_admin_email'] ) ? 'no' : 'yes',
+			'subject'    => isset( $settings['admin_new_subscriber_email_subject'] ) ? $settings['admin_new_subscriber_email_subject'] : '',
+			'body'       => '',
+			'recipients' => isset( $settings['admin_new_subscriber_email_recipients'] ) ? $settings['admin_new_subscriber_email_recipients'] : get_option( 'admin_email' ),
+		);
+		update_option( 'leaky_paywall_email_admin_new_subscriber_settings', $admin_new );
+
+		// Renewal Reminder Email.
+		$renewal = array(
+			'enabled'     => ( isset( $settings['renewal_reminder_email'] ) && 'on' === $settings['renewal_reminder_email'] ) ? 'no' : 'yes',
+			'subject'     => isset( $settings['renewal_reminder_email_subject'] ) ? $settings['renewal_reminder_email_subject'] : '',
+			'body'        => isset( $settings['renewal_reminder_email_body'] ) ? $settings['renewal_reminder_email_body'] : '',
+			'days_before' => isset( $settings['renewal_reminder_days_before'] ) ? $settings['renewal_reminder_days_before'] : '7',
+		);
+		update_option( 'leaky_paywall_email_renewal_reminder_settings', $renewal );
+
+		update_option( 'lp_email_settings_migrated', '1' );
+
+		leaky_paywall_log( 'Email settings migrated to per-email options', 'migration' );
+	}
+	add_action( 'admin_init', 'lp_maybe_migrate_email_settings', 5 );
 
 
 	/**

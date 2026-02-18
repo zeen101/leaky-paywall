@@ -90,6 +90,13 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/subscriber.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/functions.php';
 
+		// Email classes.
+		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email-new-subscriber.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email-admin-new-subscriber.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email-renewal-reminder.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-emails.php';
+
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/settings/settings.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/insights.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding.php';

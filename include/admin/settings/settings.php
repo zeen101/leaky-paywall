@@ -1193,126 +1193,21 @@ class Leaky_Paywall_Settings
 		<?php do_action('leaky_paywall_after_payments_settings', $settings);
 	}
 
-	public function output_emails_settings($current_section)
-	{
+	public function output_emails_settings( $current_section ) {
 
-		$settings = $this->get_settings();
+		$emails_manager = LP_Emails::instance();
 
-		do_action('leaky_paywall_before_email_settings'); ?>
+		if ( 'general' === $current_section || empty( $current_section ) ) {
 
-			<h2><?php esc_html_e('Email Settings', 'leaky-paywall'); ?></h2>
+			do_action( 'leaky_paywall_before_email_settings' );
 
-			<table id="leaky_paywall_administrator_options" class="form-table">
+			$emails_manager->output_email_list( $this->get_settings() );
 
-				<tr>
-					<th><?php esc_html_e('Site Name', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="site_name" class="regular-text" name="site_name" value="<?php echo esc_attr($settings['site_name']); ?>" /></td>
-				</tr>
+			do_action( 'leaky_paywall_after_email_settings' );
 
-				<tr>
-					<th><?php esc_html_e('From Name', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="from_name" class="regular-text" name="from_name" value="<?php echo esc_attr($settings['from_name']); ?>" /></td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('From Email', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="from_email" class="regular-text" name="from_email" value="<?php echo esc_attr($settings['from_email']); ?>" /></td>
-				</tr>
-
-			</table>
-
-			<h2><?php esc_html_e('Admin New Subscriber Email', 'leaky-paywall'); ?></h2>
-
-			<table id="leaky_paywall_administrator_options" class="form-table">
-
-				<tr>
-					<th><?php esc_html_e('Disable New Subscriber Notifications', 'leaky-paywall'); ?></th>
-					<td><input type="checkbox" id="new_subscriber_admin_email" name="new_subscriber_admin_email" <?php checked('on', $settings['new_subscriber_admin_email']); ?> /> <?php esc_html_e('Disable the email sent to an admin when a new subscriber is added to Leaky Paywall', 'leaky-paywall'); ?></td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('Subject', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="admin_new_subscriber_email_subject" class="regular-text" name="admin_new_subscriber_email_subject" value="<?php echo esc_attr($settings['admin_new_subscriber_email_subject']); ?>" />
-						<p class="description"><?php esc_html_e('The subject line for this email.', 'leaky-paywall'); ?></p>
-					</td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('Recipient(s)', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="admin_new_subscriber_email_recipients" class="regular-text" name="admin_new_subscriber_email_recipients" value="<?php echo esc_attr($settings['admin_new_subscriber_email_recipients']); ?>" />
-						<p class="description"><?php esc_html_e('Enter recipients (comma separated) for this email.', 'leaky-paywall'); ?></p>
-					</td>
-				</tr>
-
-			</table>
-
-			<h2><?php esc_html_e('New Subscriber Email', 'leaky-paywall'); ?></h2>
-
-			<table id="leaky_paywall_new_subscriber_email_options" class="form-table">
-
-				<tr>
-					<th><?php esc_html_e('Disable New Subscriber Email', 'leaky-paywall'); ?></th>
-					<td><input type="checkbox" id="new_subscriber_email" name="new_subscriber_email" <?php checked('on', $settings['new_subscriber_email']); ?> /> Disable the new subscriber email sent to a subscriber</td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('Subject', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="new_email_subject" class="regular-text" name="new_email_subject" value="<?php echo esc_attr($settings['new_email_subject']); ?>" />
-						<p class="description"><?php esc_html_e('The subject line for the email sent to new subscribers.', 'leaky-paywall'); ?></p>
-					</td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('Body', 'leaky-paywall'); ?></th>
-					<td>
-						<?php wp_editor(stripslashes($settings['new_email_body']), 'new_email_body'); ?>
-						<p class="description"><?php esc_html_e('The email message that is sent to new subscribers. HTML is allowed.', 'leaky-paywall'); ?></p>
-						<p class="description"><?php esc_html_e('Available template tags:', 'leaky-paywall'); ?> <br>
-							%blogname%, %sitename%, %username%, %useremail%, %password%, %firstname%, %lastname%, %displayname%</p>
-					</td>
-				</tr>
-
-			</table>
-
-			<h2><?php esc_html_e('Renewal Reminder Email (for non-recurring subscribers)', 'leaky-paywall'); ?></h2>
-
-			<table id="leaky_paywall_renewal_reminder_email_options" class="form-table">
-
-				<tr>
-					<th><?php esc_html_e('Disable Renewal Reminder Email', 'leaky-paywall'); ?></th>
-					<td><input type="checkbox" id="renewal_reminder_email" name="renewal_reminder_email" <?php checked('on', $settings['renewal_reminder_email']); ?> /> Disable the renewal reminder email sent to a non-recurring subscriber</td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('Subject', 'leaky-paywall'); ?></th>
-					<td><input type="text" id="renewal_reminder_email_subject" class="regular-text" name="renewal_reminder_email_subject" value="<?php echo esc_attr($settings['renewal_reminder_email_subject']); ?>" />
-
-					</td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('Body', 'leaky-paywall'); ?></th>
-					<td>
-						<?php wp_editor(stripslashes($settings['renewal_reminder_email_body']), 'renewal_reminder_email_body'); ?>
-						<p class="description"><?php esc_html_e('The email message that is sent to remind non-recurring subscribers to renew their subscription.', 'leaky-paywall'); ?></p>
-						<p class="description"><?php esc_html_e('Available template tags:', 'leaky-paywall'); ?> <br>
-							%blogname%, %sitename%, %username%, %password%, %firstname%, %lastname%, %displayname%</p>
-					</td>
-				</tr>
-
-				<tr>
-					<th><?php esc_html_e('When to Send Reminder', 'leaky-paywall'); ?></th>
-					<td>
-						<input type="number" value="<?php echo esc_attr($settings['renewal_reminder_days_before']); ?>" name="renewal_reminder_days_before" />
-						<p class="description"><?php esc_html_e('Days in advance of a non-recurring subscriber\'s expiration date to remind them to renew.', 'leaky-paywall'); ?></p>
-					</td>
-				</tr>
-
-			</table>
-
-			<?php do_action('leaky_paywall_after_email_settings'); ?>
-
-		<?php
+		} else {
+			$emails_manager->output_email_settings( $current_section );
+		}
 	}
 
 	public function output_licenses_settings($current_section)
@@ -1382,7 +1277,7 @@ class Leaky_Paywall_Settings
 			'payments' => array(
 				'general'
 			),
-			'emails' => array(),
+			'emails' => array( 'general' ),
 			'licenses' => array(),
 			'help' => array()
 		));
@@ -1673,65 +1568,8 @@ class Leaky_Paywall_Settings
 			}
 		}
 
-		if ('emails' === $current_tab) {
-
-			if (!empty($_POST['site_name'])) {
-				$settings['site_name'] = sanitize_text_field(wp_unslash($_POST['site_name']));
-			}
-
-			if (!empty($_POST['from_name'])) {
-				$settings['from_name'] = sanitize_text_field(wp_unslash($_POST['from_name']));
-			}
-
-			if (!empty($_POST['from_email'])) {
-				$settings['from_email'] = sanitize_text_field(wp_unslash($_POST['from_email']));
-			}
-
-			if (!empty($_POST['new_subscriber_email'])) {
-				$settings['new_subscriber_email'] = sanitize_text_field(wp_unslash($_POST['new_subscriber_email']));
-			} else {
-				$settings['new_subscriber_email'] = 'off';
-			}
-
-			if (isset($_POST['new_email_subject'])) {
-				$settings['new_email_subject'] = sanitize_text_field(wp_unslash($_POST['new_email_subject']));
-			}
-
-			if (isset($_POST['new_email_body'])) {
-				$settings['new_email_body'] = wp_kses_post(wp_unslash($_POST['new_email_body']));
-			}
-
-			if (!empty($_POST['renewal_reminder_email'])) {
-				$settings['renewal_reminder_email'] = sanitize_text_field(wp_unslash($_POST['renewal_reminder_email']));
-			} else {
-				$settings['renewal_reminder_email'] = 'off';
-			}
-
-			if (isset($_POST['renewal_reminder_email_subject'])) {
-				$settings['renewal_reminder_email_subject'] = sanitize_text_field(wp_unslash($_POST['renewal_reminder_email_subject']));
-			}
-
-			if (isset($_POST['renewal_reminder_email_body'])) {
-				$settings['renewal_reminder_email_body'] = wp_kses_post(wp_unslash($_POST['renewal_reminder_email_body']));
-			}
-
-			if (!empty($_POST['renewal_reminder_days_before'])) {
-				$settings['renewal_reminder_days_before'] = sanitize_text_field(wp_unslash($_POST['renewal_reminder_days_before']));
-			}
-
-			if (!empty($_POST['new_subscriber_admin_email'])) {
-				$settings['new_subscriber_admin_email'] = sanitize_text_field(wp_unslash($_POST['new_subscriber_admin_email']));
-			} else {
-				$settings['new_subscriber_admin_email'] = 'off';
-			}
-
-			if (isset($_POST['admin_new_subscriber_email_subject'])) {
-				$settings['admin_new_subscriber_email_subject'] = sanitize_text_field(wp_unslash($_POST['admin_new_subscriber_email_subject']));
-			}
-
-			if (isset($_POST['admin_new_subscriber_email_recipients'])) {
-				$settings['admin_new_subscriber_email_recipients'] = sanitize_text_field(wp_unslash($_POST['admin_new_subscriber_email_recipients']));
-			}
+		if ( 'emails' === $current_tab ) {
+			LP_Emails::instance()->process_save( $current_section );
 		}
 
 		if ('restrictions' === $current_tab) {
