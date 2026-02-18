@@ -435,6 +435,58 @@ function leaky_paywall_set_subscriber_status( $user_id, $new_status, $source = '
 	return true;
 }
 
+/**
+ * Set a subscriber's level ID through a central function that fires transition hooks.
+ *
+ * @since 4.23.0
+ *
+ * @param int    $user_id      WordPress user ID.
+ * @param string $new_level_id The new level ID.
+ * @param string $source       Optional. What triggered the change (e.g. 'stripe_webhook', 'admin', 'registration').
+ * @return bool  True if level was changed, false if it was already the same.
+ */
+function leaky_paywall_set_subscriber_level( $user_id, $new_level_id, $source = '' ) {
+
+	$mode     = leaky_paywall_get_current_mode();
+	$site     = leaky_paywall_get_current_site();
+	$meta_key = '_issuem_leaky_paywall_' . $mode . '_level_id' . $site;
+
+	$old_level_id = get_user_meta( $user_id, $meta_key, true );
+
+	// No change — skip hooks and DB write.
+	if ( (string) $old_level_id === (string) $new_level_id ) {
+		return false;
+	}
+
+	update_user_meta( $user_id, $meta_key, $new_level_id );
+
+	/**
+	 * Fires on every level change.
+	 *
+	 * @since 4.23.0
+	 *
+	 * @param string $new_level_id The new level ID.
+	 * @param string $old_level_id The previous level ID (empty string for new subscribers).
+	 * @param int    $user_id      WordPress user ID.
+	 * @param string $source       What triggered the change.
+	 */
+	do_action( 'leaky_paywall_level_transition', $new_level_id, $old_level_id, $user_id, $source );
+
+	/**
+	 * Fires for a specific level transition, e.g. leaky_paywall_level_0_to_1.
+	 *
+	 * @since 4.23.0
+	 *
+	 * @param int    $user_id WordPress user ID.
+	 * @param string $source  What triggered the change.
+	 */
+	if ( '' !== $old_level_id ) {
+		do_action( 'leaky_paywall_level_' . $old_level_id . '_to_' . $new_level_id, $user_id, $source );
+	}
+
+	return true;
+}
+
 if (!function_exists('leaky_paywall_user_has_access')) {
 
 	/**
@@ -906,7 +958,16 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 				continue;
 			}
 
+			// Level ID is handled separately via leaky_paywall_set_subscriber_level().
+			if ( 'level_id' === $key ) {
+				continue;
+			}
+
 			update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value);
+		}
+
+		if ( isset( $meta['level_id'] ) ) {
+			leaky_paywall_set_subscriber_level( $user_id, $meta['level_id'], 'registration' );
 		}
 
 		do_action('leaky_paywall_new_subscriber', $user_id, $email, $meta, $customer_id, $meta_args, $user_data);
@@ -980,7 +1041,17 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 		do_action('leaky_paywall_before_update_subscriber', $user_id, $current_level_id, $meta);
 
 		foreach ($meta as $key => $value) {
+
+			// Level ID is handled separately via leaky_paywall_set_subscriber_level().
+			if ( 'level_id' === $key ) {
+				continue;
+			}
+
 			update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value);
+		}
+
+		if ( isset( $meta['level_id'] ) ) {
+			leaky_paywall_set_subscriber_level( $user_id, $meta['level_id'], 'subscriber_update' );
 		}
 
 		$user_id = wp_update_user(

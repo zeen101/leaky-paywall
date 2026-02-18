@@ -575,7 +575,7 @@ class Leaky_Paywall {
 							}
 
 							if ( isset( $_POST['leaky-paywall-subscriber-level-id'] ) ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-level-id'] ) ) );
+								leaky_paywall_set_subscriber_level( $user->ID, sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-level-id'] ) ), 'admin' );
 							}
 
 							if ( isset( $_POST['leaky-paywall-subscriber-notes'] ) ) {

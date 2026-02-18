@@ -62,7 +62,7 @@ function lp_update_subscriber_meta( $key, $value, $user_id ) {
             update_user_meta($user_id, '_leaky_paywall_subscriber_notes', $value);
             break;
         case 'level_id':
-            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, $value);
+            leaky_paywall_set_subscriber_level( $user_id, $value, 'admin' );
             break;
         case 'expires':
             update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $value);
