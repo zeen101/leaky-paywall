@@ -39,6 +39,13 @@ class Leaky_Paywall_Restrictions {
 	public $is_rest;
 
 	/**
+	 * The nag type being displayed (subscribe, upgrade, or targeted:{post_id}).
+	 *
+	 * @var string
+	 */
+	private $nag_type = 'subscribe';
+
+	/**
 	 * Constructor
 	 *
 	 * @param integer $post_id The post id.
@@ -553,6 +560,11 @@ class Leaky_Paywall_Restrictions {
 		$message     = $this->the_content_paywall_message();
 		$new_content = $this->get_nag_excerpt( $content ) . $message;
 
+		// Record the nag impression.
+		if ( $this->post_id ) {
+			LP_Nag_Impressions::record( $this->post_id, $this->nag_type );
+		}
+
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content, $this->post_id );
 	}
 
@@ -578,19 +590,34 @@ class Leaky_Paywall_Restrictions {
 	 */
 	public function the_content_paywall_message() {
 		$settings = get_leaky_paywall_settings();
-		$text     = '';
 
 		$show_upgrade_message = get_post_meta( $this->post_id, '_issuem_leaky_paywall_show_upgrade_message', true );
 
 		$message = '<div class="leaky_paywall_message_wrap"><div id="leaky_paywall_message">';
 
 		if ( ! is_user_logged_in() && 'on' != $show_upgrade_message ) {
-			$text .= $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			$text           = $this->replace_variables( stripslashes( $settings['subscribe_login_message'] ) );
+			$this->nag_type = 'subscribe';
 		} else {
-			$text .= $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
+			$text           = $this->replace_variables( stripslashes( $settings['subscribe_upgrade_message'] ) );
+			$this->nag_type = 'upgrade';
 		}
 
 		$message .= apply_filters( 'leaky_paywall_nag_message_text', $text, $this->post_id );
+
+		/**
+		 * Filter the resolved nag type for impression tracking.
+		 *
+		 * Allows other plugins (e.g. Targeted Subscribe Messages) to report
+		 * which specific message was shown.
+		 *
+		 * @since 4.23.0
+		 *
+		 * @param string $nag_type The nag type (subscribe, upgrade, or targeted:{post_id}).
+		 * @param int    $post_id  The restricted post ID.
+		 */
+		$this->nag_type = apply_filters( 'leaky_paywall_nag_type', $this->nag_type, $this->post_id );
+
 		$message .= '</div></div>';
 
 		return do_shortcode( $message );
