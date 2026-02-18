@@ -541,6 +541,45 @@ class Leaky_Paywall_Admin_Subscriber
 							</div>
 						</div>
 
+						<!-- Status History Section -->
+						<div class="postbox">
+							<h2 class="hndle ui-sortable-handle"><span><?php esc_html_e('Status History', 'leaky-paywall'); ?></span></h2>
+							<div class="inside">
+								<?php
+								$status_log = leaky_paywall_get_status_log($user->ID);
+
+								if (!empty($status_log)) {
+									// Show newest first.
+									$status_log = array_reverse($status_log);
+								?>
+									<table class="wp-list-table widefat fixed striped">
+										<thead>
+											<tr>
+												<th><?php esc_html_e('Date', 'leaky-paywall'); ?></th>
+												<th><?php esc_html_e('Change', 'leaky-paywall'); ?></th>
+												<th><?php esc_html_e('Source', 'leaky-paywall'); ?></th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php foreach ($status_log as $entry) { ?>
+												<tr>
+													<td><?php echo esc_html(date_i18n('M j, Y g:i a', $entry['date'])); ?></td>
+													<td>
+														<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($entry['from']); ?>"><?php echo esc_html(lp_get_status_label($entry['from'])); ?></span>
+														&rarr;
+														<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($entry['to']); ?>"><?php echo esc_html(lp_get_status_label($entry['to'])); ?></span>
+													</td>
+													<td><?php echo esc_html(lp_get_source_label($entry['source'])); ?></td>
+												</tr>
+											<?php } ?>
+										</tbody>
+									</table>
+								<?php } else { ?>
+									<p><?php esc_html_e('No status changes recorded yet.', 'leaky-paywall'); ?></p>
+								<?php } ?>
+							</div>
+						</div>
+
 					</div>
 
 				</div>

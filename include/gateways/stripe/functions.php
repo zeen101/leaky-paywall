@@ -589,15 +589,15 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			}
 
 			if ( $subscription->status == 'active' && ! empty( $subscription->cancel_at_period_end ) ) {
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel');
+				leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
 			} elseif ( $subscription->status == 'active' ) {
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_sync' );
 			} elseif ( $subscription->status == 'trialing' ) {
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'trial');
+				leaky_paywall_set_subscriber_status( $user->ID, 'trial', 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired');
+				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_sync' );
 			} elseif ( in_array( $subscription->status, array( 'past_due', 'incomplete_expired', 'unpaid' ), true ) ) {
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_sync' );
 			}
 		}
 

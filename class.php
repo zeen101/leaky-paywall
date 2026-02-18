@@ -543,7 +543,7 @@ class Leaky_Paywall {
 								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires );
 							}
 							if ( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true ) !== $status ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, $status );
+								leaky_paywall_set_subscriber_status( $user->ID, $status, 'registration' );
 							}
 							if ( get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true ) !== $payment_gateway ) {
 								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, $payment_gateway );

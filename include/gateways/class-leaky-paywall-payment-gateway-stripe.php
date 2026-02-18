@@ -261,7 +261,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		switch ($stripe_event->type) {
 
 			case 'charge.succeeded':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 
 				$transaction_id = leaky_paywall_get_transaction_id_from_email($user->user_email);
 
@@ -275,17 +275,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					leaky_paywall_set_payment_transaction_id($transaction_id, $stripe_object->id);
 				}
 
-
-
 				break;
 			case 'charge.failed':
 			case 'payment_intent.payment_failed':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 				do_action('leaky_paywall_failed_payment', $user);
 				break;
 			case 'charge.refunded':
 				// Deactivate the user.
-				update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 
 				// Record the refund as a negative-amount transaction.
 				$charge_id            = $stripe_object->id;
@@ -322,11 +320,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'invoice.updated':
 				break;
 			case 'customer.deleted':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired');
+				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_webhook' );
 				break;
 
 			case 'invoice.payment_succeeded':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 
 				if ($stripe_object->subscription !== null ) {
 					// get the subscription and sync expiration date
@@ -353,27 +351,27 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				break;
 			case 'invoice.paid':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 				break;
 
 			case 'invoice.payment_failed':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 				do_action('leaky_paywall_failed_payment', $user);
 				break;
 
 			case 'customer.subscription.updated':
 
 				if ('past_due' == $stripe_object->status) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+					leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 				}
 
 				if ('incomplete_expired' == $stripe_object->status) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+					leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 				}
 
 				// cancel_at_period_end: user keeps access until period ends.
 				if ( ! empty( $stripe_object->cancel_at_period_end ) ) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel');
+					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_webhook' );
 					do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
 				}
 
@@ -382,11 +380,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'customer.subscription.created':
 				$expires = date_i18n('Y-m-d 23:59:59', $stripe_object->current_period_end);
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 				break;
 
 			case 'customer.subscription.deleted':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired');
+				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_webhook' );
 
 				if ( ! empty( $stripe_object->current_period_end ) ) {
 					$expires = date_i18n('Y-m-d 23:59:59', $stripe_object->current_period_end);
@@ -396,11 +394,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'payment_intent.canceled':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 				break;
 
 			case 'payment_intent.succeeded':
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'active');
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 				break;
 
 			default:

@@ -461,9 +461,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								$expires = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
 
 								if ( ! empty( $expires ) && '0000-00-00 00:00:00' !== $expires && strtotime( $expires ) > time() ) {
-									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel' );
+									leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'paypal_webhook' );
 								} else {
-									update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
+									leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'paypal_webhook' );
 								}
 
 								do_action( 'leaky_paywall_cancelled_subscriber', $user, 'paypal' );
@@ -481,7 +481,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								}
 							}
 							if (!empty($user) && 0 !== $user->ID) {
-								update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated');
+								leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'paypal_webhook' );
 							}
 						}
 						return true; // We don't need to process anymore.
@@ -496,7 +496,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								}
 							}
 							if ( ! empty( $user ) && 0 !== $user->ID ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
+								leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'paypal_webhook' );
 							}
 						}
 						return true; // We don't need to process anymore.
@@ -511,7 +511,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								}
 							}
 							if ( ! empty( $user ) && 0 !== $user->ID ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'deactivated' );
+								leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'paypal_webhook' );
 								do_action( 'leaky_paywall_failed_payment', $user );
 							}
 						}
@@ -527,7 +527,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								}
 							}
 							if ( ! empty( $user ) && 0 !== $user->ID ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'suspended' );
+								leaky_paywall_set_subscriber_status( $user->ID, 'suspended', 'paypal_webhook' );
 							}
 						} elseif ( isset( $_REQUEST['recurring_payment_id'] ) ) { // subscr_payment.
 							$user = get_leaky_paywall_subscriber_by_subscriber_id( $args['recurring_payment_id'], $mode );
@@ -538,7 +538,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 								}
 							}
 							if ( ! empty( $user ) && 0 !== $user->ID ) {
-								update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'suspended' );
+								leaky_paywall_set_subscriber_status( $user->ID, 'suspended', 'paypal_webhook' );
 							}
 						}
 						return true; // We don't need to process anymore.

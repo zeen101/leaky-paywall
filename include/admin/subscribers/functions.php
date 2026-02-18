@@ -71,7 +71,7 @@ function lp_update_subscriber_meta( $key, $value, $user_id ) {
             update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, $value);
             break;
         case 'payment_status':
-            update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, $value);
+            leaky_paywall_set_subscriber_status( $user_id, $value, 'admin' );
             break;
         case 'payment_gateway':
             update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, $value);
@@ -206,6 +206,75 @@ function lp_get_status_label( $status ) {
 	);
 
 	return isset( $labels[ $status ] ) ? $labels[ $status ] : ucfirst( str_replace( '_', ' ', $status ) );
+}
+
+/**
+ * Log a status transition to user meta.
+ *
+ * Hooked to leaky_paywall_status_transition.
+ *
+ * @since 4.23.0
+ *
+ * @param string $new_status The new status.
+ * @param string $old_status The previous status.
+ * @param int    $user_id    WordPress user ID.
+ * @param string $source     What triggered the change.
+ */
+function leaky_paywall_log_status_transition( $new_status, $old_status, $user_id, $source = '' ) {
+	$log = get_user_meta( $user_id, '_leaky_paywall_status_log', true );
+
+	if ( ! is_array( $log ) ) {
+		$log = array();
+	}
+
+	$log[] = array(
+		'from'   => $old_status,
+		'to'     => $new_status,
+		'source' => $source,
+		'date'   => current_time( 'timestamp' ),
+	);
+
+	// Keep only the last 50 entries.
+	if ( count( $log ) > 50 ) {
+		$log = array_slice( $log, -50 );
+	}
+
+	update_user_meta( $user_id, '_leaky_paywall_status_log', $log );
+}
+add_action( 'leaky_paywall_status_transition', 'leaky_paywall_log_status_transition', 10, 4 );
+
+/**
+ * Get the status transition log for a user.
+ *
+ * @since 4.23.0
+ *
+ * @param int $user_id WordPress user ID.
+ * @return array
+ */
+function leaky_paywall_get_status_log( $user_id ) {
+	$log = get_user_meta( $user_id, '_leaky_paywall_status_log', true );
+	return is_array( $log ) ? $log : array();
+}
+
+/**
+ * Return a human-readable label for a status transition source.
+ *
+ * @since 4.23.0
+ * @param string $source The raw source value.
+ * @return string
+ */
+function lp_get_source_label( $source ) {
+	$labels = array(
+		'stripe_webhook' => 'Stripe Webhook',
+		'stripe_sync'    => 'Stripe Sync',
+		'paypal_webhook' => 'PayPal IPN',
+		'admin'          => 'Admin',
+		'cron'           => 'Cron',
+		'migration'      => 'Migration',
+		'registration'   => 'Registration',
+	);
+
+	return isset( $labels[ $source ] ) ? $labels[ $source ] : ucfirst( str_replace( '_', ' ', $source ) );
 }
 
 function leaky_paywall_get_all_transactions_by_email( $email )

@@ -351,6 +351,90 @@ function leaky_paywall_access_statuses() {
 	return apply_filters( 'leaky_paywall_access_statuses', array( 'active', 'pending_cancel', 'trial' ) );
 }
 
+/**
+ * Set a subscriber's payment status and fire transition hooks.
+ *
+ * All status changes should go through this function so that
+ * plugins and integrations can react via the action hooks.
+ *
+ * Fires:
+ *  - leaky_paywall_status_transition( $new_status, $old_status, $user_id )           — on every change
+ *  - leaky_paywall_status_{$old_status}_to_{$new_status}( $user_id )                 — specific transition
+ *  - leaky_paywall_status_gained_access( $new_status, $user_id )                     — when moving to an access status
+ *  - leaky_paywall_status_lost_access( $new_status, $old_status, $user_id )          — when losing access
+ *
+ * @since 4.23.0
+ *
+ * @param int    $user_id    WordPress user ID.
+ * @param string $new_status The new payment status.
+ * @param string $source     Optional. What triggered the change (e.g. 'stripe_webhook', 'admin', 'cron').
+ * @return bool  True if status was changed, false if it was already the same.
+ */
+function leaky_paywall_set_subscriber_status( $user_id, $new_status, $source = '' ) {
+
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+	$meta_key = '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site;
+
+	$old_status = get_user_meta( $user_id, $meta_key, true );
+
+	// No change — skip hooks and DB write.
+	if ( $old_status === $new_status ) {
+		return false;
+	}
+
+	update_user_meta( $user_id, $meta_key, $new_status );
+
+	/**
+	 * Fires on every status change.
+	 *
+	 * @param string $new_status The new payment status.
+	 * @param string $old_status The previous payment status.
+	 * @param int    $user_id    WordPress user ID.
+	 * @param string $source     What triggered the change.
+	 */
+	do_action( 'leaky_paywall_status_transition', $new_status, $old_status, $user_id, $source );
+
+	/**
+	 * Fires for a specific transition, e.g. leaky_paywall_status_active_to_expired.
+	 *
+	 * @param int    $user_id WordPress user ID.
+	 * @param string $source  What triggered the change.
+	 */
+	if ( $old_status ) {
+		do_action( 'leaky_paywall_status_' . $old_status . '_to_' . $new_status, $user_id, $source );
+	}
+
+	$access_statuses = leaky_paywall_access_statuses();
+	$had_access      = in_array( $old_status, $access_statuses, true );
+	$has_access      = in_array( $new_status, $access_statuses, true );
+
+	if ( ! $had_access && $has_access ) {
+		/**
+		 * Fires when a subscriber gains access.
+		 *
+		 * @param string $new_status The new payment status.
+		 * @param int    $user_id    WordPress user ID.
+		 * @param string $source     What triggered the change.
+		 */
+		do_action( 'leaky_paywall_status_gained_access', $new_status, $user_id, $source );
+	}
+
+	if ( $had_access && ! $has_access ) {
+		/**
+		 * Fires when a subscriber loses access.
+		 *
+		 * @param string $new_status The new payment status.
+		 * @param string $old_status The previous payment status.
+		 * @param int    $user_id    WordPress user ID.
+		 * @param string $source     What triggered the change.
+		 */
+		do_action( 'leaky_paywall_status_lost_access', $new_status, $old_status, $user_id, $source );
+	}
+
+	return true;
+}
+
 if (!function_exists('leaky_paywall_user_has_access')) {
 
 	/**
@@ -2546,13 +2630,8 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 
 		foreach ( $users as $user ) {
-			$current_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
-
-			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
-
-			leaky_paywall_log( $user->user_email, 'cron: expired subscriber (was: ' . $current_status . ')' );
-
-			do_action( 'leaky_paywall_cron_expired_subscriber', $user, $current_status );
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'cron' );
+			do_action( 'leaky_paywall_cron_expired_subscriber', $user );
 		}
 	}
 	add_action( 'leaky_paywall_process_expiration_check', 'leaky_paywall_process_expiration_check' );
@@ -2576,13 +2655,15 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			return;
 		}
 
-		$mode = leaky_paywall_get_current_mode();
-		$site = leaky_paywall_get_current_site();
-		$now  = gmdate( 'Y-m-d H:i:s' );
+		$mode      = leaky_paywall_get_current_mode();
+		$site      = leaky_paywall_get_current_site();
+		$now       = gmdate( 'Y-m-d H:i:s' );
+		$batch     = 100;
+		$processed = 0;
 
 		// 1. Canceled subscribers with future expiration → pending_cancel.
 		$users_to_pending = get_users( array(
-			'number'     => 500,
+			'number'     => $batch,
 			'meta_query' => array(
 				'relation' => 'AND',
 				array(
@@ -2605,13 +2686,13 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		) );
 
 		foreach ( $users_to_pending as $user ) {
-			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'pending_cancel' );
-			leaky_paywall_log( $user->user_email, 'migration: canceled -> pending_cancel' );
+			leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'migration' );
+			$processed++;
 		}
 
 		// 2. Active/trial subscribers with past expiration + no recurring plan → expired.
 		$users_to_expire = get_users( array(
-			'number'     => 500,
+			'number'     => $batch,
 			'meta_query' => array(
 				'relation' => 'AND',
 				array(
@@ -2642,13 +2723,13 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				continue;
 			}
 
-			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
-			leaky_paywall_log( $user->user_email, 'migration: ' . $old_status . ' -> expired' );
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'migration' );
+			$processed++;
 		}
 
 		// 3. Canceled subscribers with past or no expiration → expired.
 		$users_canceled_expired = get_users( array(
-			'number'     => 500,
+			'number'     => $batch,
 			'meta_query' => array(
 				'relation' => 'AND',
 				array(
@@ -2674,11 +2755,17 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		) );
 
 		foreach ( $users_canceled_expired as $user ) {
-			update_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, 'expired' );
-			leaky_paywall_log( $user->user_email, 'migration: canceled (past) -> expired' );
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'migration' );
+			$processed++;
 		}
 
-		update_option( $migration_key, true );
+		// Only mark complete when all batches are done.
+		if ( 0 === $processed ) {
+			update_option( $migration_key, true );
+			leaky_paywall_log( 'Status migration complete', 'migration' );
+		} else {
+			leaky_paywall_log( 'Migrated ' . $processed . ' subscribers, more may remain', 'migration' );
+		}
 	}
 	add_action( 'admin_init', 'leaky_paywall_migrate_subscriber_statuses' );
 
