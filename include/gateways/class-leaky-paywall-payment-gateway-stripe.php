@@ -355,14 +355,14 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'invoice.payment_failed':
-				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
+				leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_webhook' );
 				do_action('leaky_paywall_failed_payment', $user);
 				break;
 
 			case 'customer.subscription.updated':
 
 				if ('past_due' == $stripe_object->status) {
-					leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
+					leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_webhook' );
 				}
 
 				if ('incomplete_expired' == $stripe_object->status) {

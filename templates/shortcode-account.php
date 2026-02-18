@@ -136,6 +136,8 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 			$status_name = __( 'Expired', 'leaky-paywall' );
 		} elseif ( 'pending_cancel' === $payment_status ) {
 			$status_name = __( 'Pending Cancel', 'leaky-paywall' );
+		} elseif ( 'past_due' === $payment_status ) {
+			$status_name = __( 'Past Due', 'leaky-paywall' );
 		} else {
 			$status_name = ucfirst( $payment_status );
 		}
@@ -162,6 +164,10 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 			$expires_label = __( 'Expired on', 'leaky-paywall' );
 		}
 
+		if ( 'past_due' === $payment_status ) {
+			$expires_label = __( 'Recurs on', 'leaky-paywall' );
+		}
+
 		$paid       = leaky_paywall_has_user_paid( $user->user_email, $site );
 		$expiration = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_expires' . $site, true );
 		$cancel_url     = '';
@@ -169,6 +175,8 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expiration ) {
 			$cancel_text = '';
+		} elseif ( 'past_due' === $payment_status ) {
+			$cancel_text = sprintf( esc_attr__( 'Your recent payment failed. Please <a href="%s">update your payment method</a> to keep your subscription active.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		} elseif ( 'pending_cancel' == $payment_status ) {
 			$cancel_text = sprintf( esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		} elseif ( strcasecmp( 'active', $payment_status ) == 0 && $plan && 'Canceled' !== $plan ) {

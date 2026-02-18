@@ -252,6 +252,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 					'active'         => 'Active',
 					'pending_cancel' => 'Pending Cancel',
 					'trial'          => 'Trial',
+					'past_due'       => 'Past Due',
 					'canceled'       => 'Canceled',
 					'expired'        => 'Expired',
 					'deactivated'    => 'Deactivated',

@@ -348,7 +348,7 @@ if (!function_exists('get_leaky_paywall_email_from_login_hash')) {
  * @return array
  */
 function leaky_paywall_access_statuses() {
-	return apply_filters( 'leaky_paywall_access_statuses', array( 'active', 'pending_cancel', 'trial' ) );
+	return apply_filters( 'leaky_paywall_access_statuses', array( 'active', 'pending_cancel', 'trial', 'past_due' ) );
 }
 
 /**
@@ -2669,8 +2669,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$mode = leaky_paywall_get_current_mode();
 		$site = leaky_paywall_get_current_site();
 
-		$access_statuses = leaky_paywall_access_statuses();
-		$expires_key     = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
+		// Exclude past_due — Stripe is still retrying payment, so let the webhook resolve it.
+		$cron_statuses = array_diff( leaky_paywall_access_statuses(), array( 'past_due' ) );
+		$cron_statuses = array_values( $cron_statuses );
+		$expires_key   = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
 		$args = array(
 			'number'     => 200,
@@ -2678,7 +2680,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'relation' => 'AND',
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
-					'value'   => $access_statuses,
+					'value'   => $cron_statuses,
 					'compare' => 'IN',
 				),
 				array(

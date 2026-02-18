@@ -246,6 +246,7 @@ class Leaky_Paywall_Admin_Subscriber
 							<option value="active"><?php esc_html_e('Active', 'leaky-paywall'); ?></option>
 							<option value="pending_cancel"><?php esc_html_e('Pending Cancel', 'leaky-paywall'); ?></option>
 							<option value="trial"><?php esc_html_e('Trial', 'leaky-paywall'); ?></option>
+							<option value="past_due"><?php esc_html_e('Past Due', 'leaky-paywall'); ?></option>
 							<option value="canceled"><?php esc_html_e('Canceled', 'leaky-paywall'); ?></option>
 							<option value="expired"><?php esc_html_e('Expired', 'leaky-paywall'); ?></option>
 							<option value="deactivated"><?php esc_html_e('Deactivated', 'leaky-paywall'); ?></option>
@@ -401,6 +402,7 @@ class Leaky_Paywall_Admin_Subscriber
 												<option value="active" <?php selected($payment_status, 'active'); ?>><?php esc_html_e('Active', 'leaky-paywall'); ?></option>
 												<option value="pending_cancel" <?php selected($payment_status, 'pending_cancel'); ?>><?php esc_html_e('Pending Cancel', 'leaky-paywall'); ?></option>
 												<option value="trial" <?php selected($payment_status, 'trial'); ?>><?php esc_html_e('Trial', 'leaky-paywall'); ?></option>
+												<option value="past_due" <?php selected($payment_status, 'past_due'); ?>><?php esc_html_e('Past Due', 'leaky-paywall'); ?></option>
 												<option value="canceled" <?php selected($payment_status, 'canceled'); ?>><?php esc_html_e('Canceled', 'leaky-paywall'); ?></option>
 												<option value="expired" <?php selected($payment_status, 'expired'); ?>><?php esc_html_e('Expired', 'leaky-paywall'); ?></option>
 												<option value="deactivated" <?php selected($payment_status, 'deactivated'); ?>><?php esc_html_e('Deactivated', 'leaky-paywall'); ?></option>

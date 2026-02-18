@@ -596,7 +596,9 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'trial', 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_sync' );
-			} elseif ( in_array( $subscription->status, array( 'past_due', 'incomplete_expired', 'unpaid' ), true ) ) {
+			} elseif ( 'past_due' === $subscription->status ) {
+				leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_sync' );
+			} elseif ( in_array( $subscription->status, array( 'incomplete_expired', 'unpaid' ), true ) ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_sync' );
 			}
 		}
