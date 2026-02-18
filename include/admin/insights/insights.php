@@ -63,8 +63,8 @@ class Leaky_Paywall_Insights
 			case 'content':
 				$this->content_insights();
 				break;
-			case 'impressions':
-				$this->impressions_insights();
+			case 'paywall':
+				$this->paywall_insights();
 				break;
 			default:
 				// do nothing
@@ -294,7 +294,7 @@ class Leaky_Paywall_Insights
 <?php
 	}
 
-	public function impressions_insights()
+	public function paywall_insights()
 	{
 		if ( isset( $_POST['lp_insights_filter_date_field'] ) && wp_verify_nonce( sanitize_key( $_POST['lp_insights_filter_date_field'] ), 'lp_insights_filter_date' ) ) {
 			$period = isset( $_POST['filter-date-range'] ) ? sanitize_text_field( $_POST['filter-date-range'] ) : '30 days';
@@ -308,7 +308,7 @@ class Leaky_Paywall_Insights
 
 		?>
 
-		<h3><?php esc_html_e( 'Nag Impressions', 'leaky-paywall' ); ?></h3>
+		<h3><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></h3>
 
 		<p>
 		<form id="leaky_paywall_insights_date_range_filter" method="POST">
@@ -328,22 +328,22 @@ class Leaky_Paywall_Insights
 		<div class="card-stats">
 			<div class="card"><span class="dashicons dashicons-visibility"></span>
 				<div class="card-content">
-					<div class="card-title"><?php esc_html_e( 'Total Nag Impressions', 'leaky-paywall' ); ?></div>
+					<div class="card-title"><?php esc_html_e( 'Total Paywall Displays', 'leaky-paywall' ); ?></div>
 					<div class="card-amount"><?php echo esc_html( number_format( $total_impressions ) ); ?></div>
 				</div>
 			</div>
 		</div>
 
-		<h3><?php esc_html_e( 'Impressions by Nag Type', 'leaky-paywall' ); ?></h3>
+		<h3><?php esc_html_e( 'Displays by Type', 'leaky-paywall' ); ?></h3>
 
 		<?php if ( empty( $by_nag_type ) ) : ?>
-			<p><?php esc_html_e( 'No impression data found for selected time period.', 'leaky-paywall' ); ?></p>
+			<p><?php esc_html_e( 'No paywall display data found for selected time period.', 'leaky-paywall' ); ?></p>
 		<?php else : ?>
 			<table class="wp-list-table widefat fixed striped table-view-list">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Nag Type', 'leaky-paywall' ); ?></th>
-						<th><?php esc_html_e( 'Impressions', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Paywall Type', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Displays', 'leaky-paywall' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -357,17 +357,17 @@ class Leaky_Paywall_Insights
 			</table>
 		<?php endif; ?>
 
-		<h3><?php esc_html_e( 'Top Content by Nag Impressions', 'leaky-paywall' ); ?></h3>
-		<p><?php esc_html_e( 'Posts where the nag was shown most often, with conversion rates.', 'leaky-paywall' ); ?></p>
+		<h3><?php esc_html_e( 'Top Content by Paywall Displays', 'leaky-paywall' ); ?></h3>
+		<p><?php esc_html_e( 'Posts where the paywall was shown most often, with conversion rates.', 'leaky-paywall' ); ?></p>
 
 		<?php if ( empty( $top_posts ) ) : ?>
-			<p><?php esc_html_e( 'No impression data found for selected time period.', 'leaky-paywall' ); ?></p>
+			<p><?php esc_html_e( 'No paywall display data found for selected time period.', 'leaky-paywall' ); ?></p>
 		<?php else : ?>
 			<table class="wp-list-table widefat fixed striped table-view-list">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Content', 'leaky-paywall' ); ?></th>
-						<th><?php esc_html_e( 'Impressions', 'leaky-paywall' ); ?></th>
+						<th><?php esc_html_e( 'Displays', 'leaky-paywall' ); ?></th>
 						<th><?php esc_html_e( 'Conversions', 'leaky-paywall' ); ?></th>
 						<th><?php esc_html_e( 'Conversion Rate', 'leaky-paywall' ); ?></th>
 					</tr>
@@ -398,7 +398,7 @@ class Leaky_Paywall_Insights
 			'overview',
 			'subscriptions',
 			'content',
-			'impressions',
+			'paywall',
 		);
 
 		return apply_filters('leaky_paywall_insights_tabs', $tabs);

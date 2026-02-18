@@ -59,6 +59,12 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 			border-radius: 4px;
 			padding: 12px;
 			text-align: center;
+			text-decoration: none;
+			display: block;
+			transition: background 0.15s;
+		}
+		.lp-dash-stat:hover {
+			background: #e9ecef;
 		}
 		.lp-dash-stat-value {
 			font-size: 20px;
@@ -102,22 +108,22 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 	<h3 style="margin-top: 0;"><?php esc_html_e( 'Last 30 Days', 'leaky-paywall' ); ?></h3>
 
 	<div class="lp-dash-stats">
-		<div class="lp-dash-stat">
+		<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=lp_transaction' ) ); ?>" class="lp-dash-stat">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $revenue ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Revenue', 'leaky-paywall' ); ?></div>
-		</div>
-		<div class="lp-dash-stat">
+		</a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights' ) ); ?>" class="lp-dash-stat">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $new_paid_subs ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paid Subs', 'leaky-paywall' ); ?></div>
-		</div>
-		<div class="lp-dash-stat">
+		</a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights' ) ); ?>" class="lp-dash-stat">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $new_free_subs ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Free Subs', 'leaky-paywall' ); ?></div>
-		</div>
-		<div class="lp-dash-stat">
+		</a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights&tab=paywall' ) ); ?>" class="lp-dash-stat">
 			<div class="lp-dash-stat-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></div>
-		</div>
+		</a>
 	</div>
 
 	<?php if ( LP_Nag_Impressions::get_days_of_data() >= 30 ) : ?>
