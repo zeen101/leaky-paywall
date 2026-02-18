@@ -2599,6 +2599,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$site = leaky_paywall_get_current_site();
 
 		$access_statuses = leaky_paywall_access_statuses();
+		$expires_key     = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
 		$args = array(
 			'number'     => 200,
@@ -2610,14 +2611,24 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					'compare' => 'IN',
 				),
 				array(
-					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'key'     => $expires_key,
 					'value'   => gmdate( 'Y-m-d H:i:s' ),
 					'compare' => '<',
 					'type'    => 'DATETIME',
 				),
 				array(
-					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'key'     => $expires_key,
 					'value'   => '0000-00-00 00:00:00',
+					'compare' => '!=',
+				),
+				array(
+					'key'     => $expires_key,
+					'value'   => '0',
+					'compare' => '!=',
+				),
+				array(
+					'key'     => $expires_key,
+					'value'   => '',
 					'compare' => '!=',
 				),
 			),
@@ -2709,6 +2720,16 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
 					'value'   => '0000-00-00 00:00:00',
+					'compare' => '!=',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => '0',
+					'compare' => '!=',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_expires' . $site,
+					'value'   => '',
 					'compare' => '!=',
 				),
 			),
