@@ -248,6 +248,11 @@ class Leaky_Paywall {
 
 		if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix ) {
 			wp_enqueue_style( 'leaky_paywall_post_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', LEAKY_PAYWALL_VERSION );
+
+			$screen = get_current_screen();
+			if ( $screen && 'lp_transaction' === $screen->post_type ) {
+				wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
+			}
 		}
 
 	}

@@ -441,3 +441,167 @@ input[type="submit"].lp-inline-button {
   cursor: help;
   border-bottom: 1px dotted #999;
 }
+
+/* Transaction detail view */
+
+.lp-transaction-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.lp-transaction-header .lp-transaction-amount {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d2327;
+}
+
+.lp-transaction-header .lp-transaction-amount--refund {
+  color: #b32d2e;
+}
+
+.lp-transaction-refund-notice {
+  background: #fcf0f1;
+  border-left: 4px solid #b32d2e;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.lp-transaction-refund-notice a {
+  font-weight: 600;
+}
+
+.lp-transaction-section {
+  margin-bottom: 20px;
+}
+
+.lp-transaction-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #646970;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.lp-transaction-fields {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 6px 12px;
+  align-items: baseline;
+}
+
+.lp-transaction-fields .lp-field-label {
+  font-weight: 600;
+  color: #50575e;
+  font-size: 13px;
+}
+
+.lp-transaction-fields .lp-field-value {
+  color: #1d2327;
+  font-size: 13px;
+}
+
+.lp-transaction-extensions {
+  margin-top: 20px;
+}
+
+.lp-transaction-extensions h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #646970;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Sidebar meta box */
+
+.lp-transaction-sidebar .lp-sidebar-field {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+
+.lp-transaction-sidebar .lp-sidebar-field:last-child {
+  border-bottom: none;
+}
+
+.lp-transaction-sidebar .lp-sidebar-label {
+  color: #646970;
+  font-weight: 600;
+}
+
+.lp-transaction-sidebar .lp-sidebar-value {
+  color: #1d2327;
+  text-align: right;
+}
+
+.lp-transaction-sidebar .lp-sidebar-value a {
+  text-decoration: none;
+}
+
+.lp-transaction-sidebar .lp-sidebar-actions {
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.lp-transaction-sidebar .lp-sidebar-actions a {
+  display: block;
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+/* PayPal collapsible */
+
+.lp-transaction-paypal-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #50575e;
+  padding: 6px 0;
+}
+
+.lp-transaction-paypal-details pre {
+  background: #f6f7f7;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 12px;
+  max-height: 300px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Transaction-specific status badges */
+
+.lp-status-badge--complete {
+  background: #d4edda;
+  color: #155724;
+}
+
+.lp-status-badge--refund {
+  background: #fcf0f1;
+  color: #b32d2e;
+}
+
+.lp-status-badge--recurring {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.lp-status-badge--free {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.lp-status-badge--past_due {
+  background: #fff3cd;
+  color: #856404;
+}

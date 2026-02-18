@@ -72,176 +72,265 @@ class LP_Transaction_Post_Type
 	}
 
 	/**
-	 * Create meta box for transaction post type
+	 * Create meta boxes for transaction post type.
 	 */
 	public function meta_box_create()
 	{
-		add_meta_box('transaction_details', 'Transaction Details', array($this, 'transaction_details_func'), 'lp_transaction', 'normal', 'high');
+		add_meta_box( 'transaction_details', __( 'Transaction Details', 'leaky-paywall' ), array( $this, 'transaction_details_func' ), 'lp_transaction', 'normal', 'high' );
+		add_meta_box( 'transaction_sidebar', __( 'Transaction Info', 'leaky-paywall' ), array( $this, 'transaction_sidebar_func' ), 'lp_transaction', 'side', 'high' );
 	}
 
 	/**
-	 * Display the transaction details
+	 * Display the transaction details (main meta box).
 	 *
-	 * @param object $post The post object.
+	 * @param WP_Post $post The post object.
 	 */
-	public function transaction_details_func($post)
+	public function transaction_details_func( $post )
 	{
+		$level_id     = get_post_meta( $post->ID, '_level_id', true );
+		$level        = get_leaky_paywall_subscription_level( $level_id );
+		$first_name   = get_post_meta( $post->ID, '_first_name', true );
+		$last_name    = get_post_meta( $post->ID, '_last_name', true );
+		$email        = get_post_meta( $post->ID, '_email', true );
+		$price        = get_post_meta( $post->ID, '_price', true );
+		$is_recurring = get_post_meta( $post->ID, '_is_recurring', true );
+		$status       = get_post_meta( $post->ID, '_status', true );
+		$txn_status   = get_post_meta( $post->ID, '_transaction_status', true );
+		$nag_location = get_post_meta( $post->ID, '_nag_location_id', true );
+		$refund_for   = get_post_meta( $post->ID, '_refund_for', true );
 
-		$level_id = get_post_meta($post->ID, '_level_id', true);
-		$level    = get_leaky_paywall_subscription_level($level_id);
+		$is_refund    = 'refund' === $status;
+		$display_status = $txn_status ? ucfirst( $txn_status ) : __( 'Complete', 'leaky-paywall' );
 
-		$gateway        = get_post_meta($post->ID, '_gateway', true);
-		$gateway_txn_id = get_post_meta($post->ID, '_gateway_txn_id', true);
-		$nag_location = get_post_meta($post->ID, '_nag_location_id', true);
-
-		wp_nonce_field('lp_transaction_meta_box_nonce', 'meta_box_nonce');
-?>
-		<table class="form-table">
-			<tbody>
-
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_title">First Name </label>
-					</th>
-					<td>
-						<?php echo esc_attr(get_post_meta($post->ID, '_first_name', true)); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_description">Last Name </label>
-					</th>
-					<td>
-						<?php echo esc_attr(get_post_meta($post->ID, '_last_name', true)); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_description">Email </label>
-					</th>
-					<td>
-						<?php echo esc_attr(get_post_meta($post->ID, '_email', true)); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_description">Gateway</label>
-					</th>
-					<td>
-						<?php echo esc_attr($gateway); ?>
-					</td>
-				</tr>
-
-				<?php
-				if ($gateway_txn_id && 'stripe' === $gateway) {
-				?>
-					<tr valign="top">
-						<th scope="row">
-							<label for="apc_box1_description">Gateway Transaction ID</label>
-						</th>
-						<td>
-							<a target="_blank" href="https://dashboard.stripe.com/payments/<?php echo esc_attr($gateway_txn_id); ?>">
-								<?php echo esc_attr($gateway_txn_id); ?>
-							</a>
-						</td>
-					</tr>
-				<?php
-				}
-				?>
-
-				<?php if ($level) {
-					// will not exist for some purchases (i.e. pay per post)
-				?>
-					<tr valign="top">
-						<th scope="row">
-							<label for="apc_box1_description">Level</label>
-						</th>
-						<td>
-							<?php echo isset($level['label']) ? 'ID: ' . absint($level_id) . ' - ' . esc_html($level['label']) : ''; ?>
-						</td>
-					</tr>
-				<?php
-				} ?>
-
-
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_description">Price </label>
-					</th>
-					<td>
-						<?php echo esc_attr(get_post_meta($post->ID, '_price', true)); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_description">Currency </label>
-					</th>
-					<td>
-						<?php echo esc_attr(get_post_meta($post->ID, '_currency', true)); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<label for="apc_box1_description">Is Renewal Payment</label>
-					</th>
-					<td>
-						<?php echo get_post_meta($post->ID, '_is_recurring', true) ? 'yes' : 'no'; ?>
-					</td>
-				</tr>
-
-				<?php if ($nag_location) {
-				?>
-					<tr valign="top">
-						<th scope="row">
-							<label for="apc_box1_description">Nag Location</label>
-						</th>
-						<td>
-							<?php echo esc_url(get_the_permalink($nag_location)); ?>
-						</td>
-					</tr>
-				<?php
-				} ?>
-
-			</tbody>
-		</table>
-
-		<?php
-		if (get_post_meta($post->ID, '_paypal_request', true)) {
-			echo '<p><strong>Paypal Response</strong></p>';
-			echo '<pre>';
-			print_r(json_decode(get_post_meta($post->ID, '_paypal_request', true)));
-			echo '</pre>';
+		// Format amount.
+		if ( is_numeric( $price ) && $price > 0 ) {
+			$formatted_price = leaky_paywall_format_display_price( $price );
+		} elseif ( is_numeric( $price ) && $price < 0 ) {
+			$formatted_price = '-' . leaky_paywall_format_display_price( abs( $price ) );
+		} else {
+			$formatted_price = leaky_paywall_format_display_price( 0 );
 		}
+
+		// Status badge class.
+		if ( $is_refund ) {
+			$badge_class = 'lp-status-badge--refund';
+		} elseif ( in_array( strtolower( $display_status ), array( 'complete', 'completed' ), true ) ) {
+			$badge_class = 'lp-status-badge--complete';
+		} else {
+			$badge_class = 'lp-status-badge--' . sanitize_html_class( strtolower( $display_status ) );
+		}
+
+		wp_nonce_field( 'lp_transaction_meta_box_nonce', 'meta_box_nonce' );
 		?>
 
-		<?php
-		$refund_for = get_post_meta( $post->ID, '_refund_for', true );
-		if ( $refund_for ) {
+		<!-- Header: status + amount + payment type -->
+		<div class="lp-transaction-header">
+			<span class="lp-status-badge <?php echo esc_attr( $badge_class ); ?>">
+				<?php echo $is_refund ? esc_html__( 'Refund', 'leaky-paywall' ) : esc_html( $display_status ); ?>
+			</span>
+			<span class="lp-transaction-amount <?php echo $is_refund ? 'lp-transaction-amount--refund' : ''; ?>">
+				<?php echo esc_html( $formatted_price ); ?>
+			</span>
+			<?php if ( $is_recurring && ! $is_refund ) : ?>
+				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Recurring', 'leaky-paywall' ); ?></span>
+			<?php endif; ?>
+		</div>
+
+		<?php if ( $refund_for ) :
 			$original_email = get_post_meta( $refund_for, '_email', true );
 		?>
-			<table class="form-table">
-				<tbody>
-					<tr valign="top">
-						<th scope="row">
-							<label>Refund For</label>
-						</th>
-						<td>
-							<a href="<?php echo esc_url( admin_url( 'post.php?post=' . absint( $refund_for ) . '&action=edit' ) ); ?>">
-								Transaction #<?php echo absint( $refund_for ); ?>
-								<?php if ( $original_email ) { echo '(' . esc_html( $original_email ) . ')'; } ?>
+			<div class="lp-transaction-refund-notice">
+				<?php esc_html_e( 'Refund for', 'leaky-paywall' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'post.php?post=' . absint( $refund_for ) . '&action=edit' ) ); ?>">
+					<?php
+					printf(
+						/* translators: %d: transaction ID */
+						esc_html__( 'Transaction #%d', 'leaky-paywall' ),
+						absint( $refund_for )
+					);
+					if ( $original_email ) {
+						echo ' (' . esc_html( $original_email ) . ')';
+					}
+					?>
+				</a>
+			</div>
+		<?php endif; ?>
+
+		<!-- Customer section -->
+		<div class="lp-transaction-section">
+			<h3><?php esc_html_e( 'Customer', 'leaky-paywall' ); ?></h3>
+			<div class="lp-transaction-fields">
+				<?php
+				$full_name = trim( esc_html( $first_name ) . ' ' . esc_html( $last_name ) );
+				if ( $full_name ) :
+				?>
+					<span class="lp-field-label"><?php esc_html_e( 'Name', 'leaky-paywall' ); ?></span>
+					<span class="lp-field-value"><?php echo $full_name; ?></span>
+				<?php endif; ?>
+
+				<?php if ( $email ) : ?>
+					<span class="lp-field-label"><?php esc_html_e( 'Email', 'leaky-paywall' ); ?></span>
+					<span class="lp-field-value">
+						<a href="mailto:<?php echo esc_attr( $email ); ?>"><?php echo esc_html( $email ); ?></a>
+					</span>
+				<?php endif; ?>
+			</div>
+		</div>
+
+		<!-- Subscription section -->
+		<?php if ( $level || $nag_location ) : ?>
+			<div class="lp-transaction-section">
+				<h3><?php esc_html_e( 'Subscription', 'leaky-paywall' ); ?></h3>
+				<div class="lp-transaction-fields">
+					<?php if ( $level && isset( $level['label'] ) ) : ?>
+						<span class="lp-field-label"><?php esc_html_e( 'Level', 'leaky-paywall' ); ?></span>
+						<span class="lp-field-value">
+							<?php echo esc_html( $level['label'] ); ?>
+							<span style="color: #999;">(ID: <?php echo absint( $level_id ); ?>)</span>
+						</span>
+					<?php endif; ?>
+
+					<?php if ( $nag_location ) : ?>
+						<span class="lp-field-label"><?php esc_html_e( 'Nag Location', 'leaky-paywall' ); ?></span>
+						<span class="lp-field-value">
+							<a href="<?php echo esc_url( get_the_permalink( $nag_location ) ); ?>" target="_blank">
+								<?php echo esc_html( get_the_title( $nag_location ) ); ?>
 							</a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+						</span>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<!-- PayPal response (collapsible) -->
 		<?php
+		$paypal_request = get_post_meta( $post->ID, '_paypal_request', true );
+		if ( $paypal_request ) :
+			$paypal_data = json_decode( $paypal_request, true );
+		?>
+			<details class="lp-transaction-paypal-details">
+				<summary><?php esc_html_e( 'PayPal Response', 'leaky-paywall' ); ?></summary>
+				<pre><?php echo esc_html( wp_json_encode( $paypal_data, JSON_PRETTY_PRINT ) ); ?></pre>
+			</details>
+		<?php endif; ?>
+
+		<!-- Extension hook area -->
+		<div class="lp-transaction-extensions">
+			<?php do_action( 'leaky_paywall_after_transaction_meta_box', $post ); ?>
+		</div>
+
+		<?php
+	}
+
+	/**
+	 * Display the transaction sidebar meta box.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+	public function transaction_sidebar_func( $post )
+	{
+		$gateway        = get_post_meta( $post->ID, '_gateway', true );
+		$gateway_txn_id = get_post_meta( $post->ID, '_gateway_txn_id', true );
+		$email          = get_post_meta( $post->ID, '_email', true );
+		$is_recurring   = get_post_meta( $post->ID, '_is_recurring', true );
+		$status         = get_post_meta( $post->ID, '_status', true );
+		$mode           = leaky_paywall_get_current_mode();
+		$is_refund      = 'refund' === $status;
+
+		// Build gateway display name.
+		$gateway_names = array(
+			'stripe'          => __( 'Stripe', 'leaky-paywall' ),
+			'stripe_checkout' => __( 'Stripe Checkout', 'leaky-paywall' ),
+			'paypal_standard' => __( 'PayPal Standard', 'leaky-paywall' ),
+			'manual'          => __( 'Manual', 'leaky-paywall' ),
+			'free_registration' => __( 'Free Registration', 'leaky-paywall' ),
+		);
+		$gateway_display = isset( $gateway_names[ $gateway ] ) ? $gateway_names[ $gateway ] : ucwords( str_replace( '_', ' ', $gateway ) );
+
+		// Build gateway transaction URL.
+		$gateway_url = '';
+		if ( $gateway_txn_id ) {
+			if ( in_array( $gateway, array( 'stripe', 'stripe_checkout' ), true ) ) {
+				$stripe_base = 'test' === $mode ? 'https://dashboard.stripe.com/test/payments/' : 'https://dashboard.stripe.com/payments/';
+				$gateway_url = $stripe_base . $gateway_txn_id;
+			}
+
+			$gateway_url = apply_filters( 'leaky_paywall_transaction_gateway_url', $gateway_url, $gateway, $gateway_txn_id );
+		}
+
+		// Payment type.
+		if ( $is_refund ) {
+			$payment_type = __( 'Refund', 'leaky-paywall' );
+		} elseif ( $is_recurring ) {
+			$payment_type = __( 'Recurring', 'leaky-paywall' );
+		} else {
+			$payment_type = __( 'One Time', 'leaky-paywall' );
+		}
+
+		// Find subscriber.
+		$subscriber_url = '';
+		if ( $email ) {
+			$user = get_user_by( 'email', $email );
+			if ( $user ) {
+				$subscriber_url = admin_url( 'admin.php?page=leaky-paywall-subscribers&action=show&id=' . $user->ID );
+			}
 		}
 		?>
 
-		<?php do_action('leaky_paywall_after_transaction_meta_box', $post); ?>
+		<div class="lp-transaction-sidebar">
+			<div class="lp-sidebar-field">
+				<span class="lp-sidebar-label"><?php esc_html_e( 'Date', 'leaky-paywall' ); ?></span>
+				<span class="lp-sidebar-value"><?php echo esc_html( get_the_date( 'M d, Y g:i A', $post ) ); ?></span>
+			</div>
 
-<?php
+			<?php if ( $gateway ) : ?>
+				<div class="lp-sidebar-field">
+					<span class="lp-sidebar-label"><?php esc_html_e( 'Gateway', 'leaky-paywall' ); ?></span>
+					<span class="lp-sidebar-value"><?php echo esc_html( $gateway_display ); ?></span>
+				</div>
+			<?php endif; ?>
 
+			<?php if ( $gateway_txn_id ) : ?>
+				<div class="lp-sidebar-field">
+					<span class="lp-sidebar-label"><?php esc_html_e( 'Transaction ID', 'leaky-paywall' ); ?></span>
+					<span class="lp-sidebar-value">
+						<?php if ( $gateway_url ) : ?>
+							<a href="<?php echo esc_url( $gateway_url ); ?>" target="_blank">
+								<?php echo esc_html( substr( $gateway_txn_id, 0, 20 ) ); ?><?php echo strlen( $gateway_txn_id ) > 20 ? '&hellip;' : ''; ?>
+							</a>
+						<?php else : ?>
+							<?php echo esc_html( $gateway_txn_id ); ?>
+						<?php endif; ?>
+					</span>
+				</div>
+			<?php endif; ?>
+
+			<div class="lp-sidebar-field">
+				<span class="lp-sidebar-label"><?php esc_html_e( 'Payment Type', 'leaky-paywall' ); ?></span>
+				<span class="lp-sidebar-value"><?php echo esc_html( $payment_type ); ?></span>
+			</div>
+
+			<?php if ( $subscriber_url ) : ?>
+				<div class="lp-sidebar-actions">
+					<a href="<?php echo esc_url( $subscriber_url ); ?>">
+						<?php esc_html_e( 'View Subscriber', 'leaky-paywall' ); ?> &rarr;
+					</a>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $email ) : ?>
+				<?php
+				$all_transactions_url = admin_url( 'edit.php?post_type=lp_transaction&s=' . urlencode( $email ) );
+				?>
+				<div class="lp-sidebar-actions" style="padding-top: 0;">
+					<a href="<?php echo esc_url( $all_transactions_url ); ?>">
+						<?php esc_html_e( 'All Transactions for Customer', 'leaky-paywall' ); ?> &rarr;
+					</a>
+				</div>
+			<?php endif; ?>
+		</div>
+
+		<?php
 	}
 
 	/**
