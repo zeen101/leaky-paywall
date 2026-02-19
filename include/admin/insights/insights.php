@@ -476,85 +476,56 @@ class Leaky_Paywall_Insights
 	}
 
 	public function get_signup_paid_data( $period ) {
-		global $leaky_paywall;
 		$args_period = leaky_paywall_insights_get_formatted_period( $period );
 		$data = array();
 
-		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
-
-			$args = array(
-				'post_type'      => 'lp_transaction',
-				'order'          => 'DESC',
-				'posts_per_page' => 9999,
-				'date_query'     => array(
-					array(
-						'after'  => $args_period,
-						'column' => 'post_date',
-					),
+		$args = array(
+			'post_type'      => 'lp_transaction',
+			'order'          => 'DESC',
+			'posts_per_page' => 9999,
+			'date_query'     => array(
+				array(
+					'after'  => $args_period,
+					'column' => 'post_date',
 				),
-				'meta_query' => array(
-					'relation' => 'AND',
-					array(
-						'key'     => '_status',
-						'value'   => 'incomplete',
-						'compare' => 'NOT LIKE',
-					),
-					array(
-						'key'     => '_price',
-						'value'   => '0.00',
-						'compare' => '>',
-					),
-					array(
-						'key'     => '_is_recurring',
-						'value'   => false,
-						'compare' => '=',
-					),
-					array(
-						'key'     => '_rcpt_email',
-						'compare' => 'NOT EXISTS',
-					),
+			),
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_status',
+					'value'   => 'incomplete',
+					'compare' => 'NOT LIKE',
 				),
-			);
+				array(
+					'key'     => '_price',
+					'value'   => '0.00',
+					'compare' => '>',
+				),
+				array(
+					'key'     => '_is_recurring',
+					'value'   => false,
+					'compare' => '=',
+				),
+				array(
+					'key'     => '_rcpt_email',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
 
-			$transactions = get_posts( $args );
+		$transactions = get_posts( $args );
 
-			if ( ! empty( $transactions ) ) {
-				foreach ( $transactions as $transaction ) {
-					$price = get_post_meta( $transaction->ID, '_price', true );
+		if ( ! empty( $transactions ) ) {
+			foreach ( $transactions as $transaction ) {
+				$price = get_post_meta( $transaction->ID, '_price', true );
 
-					if ( '0.00' == $price ) {
-						continue;
-					}
-
-					$time = strtotime( $transaction->post_date );
-					$day  = date( 'M j', $time );
-					$data[ $day ][] = $transaction->post_title;
+				if ( '0.00' == $price ) {
+					continue;
 				}
-			}
-		} else {
 
-			$mysql_date_format = 'Y-m-d H:i:s';
-			$timezone          = new DateTimeZone( 'UTC' );
-			$datetime          = new DateTime( $args_period, $timezone );
-			$date_created      = $datetime->format( $mysql_date_format );
-
-			$args = [
-				'select' => '*',
-				'where'  => '
-				`payment_status` NOT LIKE "incomplete"
-			AND `price` > 0
-			AND `is_recurring` = 0
-			AND `date_created` > "' . $date_created . '"'
-			];
-
-			$transactions = LP_Transaction::query( $args );
-
-			if ( ! empty( $transactions ) ) {
-				foreach ( $transactions as $transaction ) {
-					$time = strtotime( $transaction->date_created );
-					$day  = date( 'M j', $time );
-					$data[ $day ][] = $transaction->user_id;
-				}
+				$time = strtotime( $transaction->post_date );
+				$day  = date( 'M j', $time );
+				$data[ $day ][] = $transaction->post_title;
 			}
 		}
 
@@ -562,70 +533,41 @@ class Leaky_Paywall_Insights
 	}
 
 	public function get_signup_free_data( $period ) {
-		global $leaky_paywall;
 		$args_period = leaky_paywall_insights_get_formatted_period( $period );
 		$data = array();
 
-		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
-
-			$args = array(
-				'post_type'      => 'lp_transaction',
-				'order'          => 'DESC',
-				'posts_per_page' => 9999,
-				'date_query'     => array(
-					array(
-						'after'  => $args_period,
-						'column' => 'post_date',
-					),
+		$args = array(
+			'post_type'      => 'lp_transaction',
+			'order'          => 'DESC',
+			'posts_per_page' => 9999,
+			'date_query'     => array(
+				array(
+					'after'  => $args_period,
+					'column' => 'post_date',
 				),
-				'meta_query' => array(
-					'relation' => 'AND',
-					array(
-						'key'     => '_status',
-						'value'   => 'incomplete',
-						'compare' => 'NOT LIKE',
-					),
-					array(
-						'key'     => '_price',
-						'value'   => '0',
-						'compare' => '=',
-					),
+			),
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_status',
+					'value'   => 'incomplete',
+					'compare' => 'NOT LIKE',
 				),
-			);
+				array(
+					'key'     => '_price',
+					'value'   => '0',
+					'compare' => '=',
+				),
+			),
+		);
 
-			$transactions = get_posts( $args );
+		$transactions = get_posts( $args );
 
-			if ( ! empty( $transactions ) ) {
-				foreach ( $transactions as $transaction ) {
-					$time = strtotime( $transaction->post_date );
-					$day  = date( 'M j', $time );
-					$data[ $day ][] = $transaction->post_title;
-				}
-			}
-		} else {
-
-			$mysql_date_format = 'Y-m-d H:i:s';
-			$timezone          = new DateTimeZone( 'UTC' );
-			$datetime          = new DateTime( $args_period, $timezone );
-			$date_created      = $datetime->format( $mysql_date_format );
-
-			$args = [
-				'select' => '*',
-				'where'  => '
-				`payment_status` NOT LIKE "incomplete"
-			AND `price` = 0
-			AND `is_recurring` = 0
-			AND `date_created` > "' . $date_created . '"'
-			];
-
-			$transactions = LP_Transaction::query( $args );
-
-			if ( ! empty( $transactions ) ) {
-				foreach ( $transactions as $transaction ) {
-					$time = strtotime( $transaction->date_created );
-					$day  = date( 'M j', $time );
-					$data[ $day ][] = $transaction->user_id;
-				}
+		if ( ! empty( $transactions ) ) {
+			foreach ( $transactions as $transaction ) {
+				$time = strtotime( $transaction->post_date );
+				$day  = date( 'M j', $time );
+				$data[ $day ][] = $transaction->post_title;
 			}
 		}
 
