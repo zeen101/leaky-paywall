@@ -99,7 +99,8 @@ function leaky_paywall_plugins_loaded() {
 
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/settings/settings.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/insights.php';
-		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/class-onboarding.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/tracking.php';
 
 		include LEAKY_PAYWALL_PATH . 'include/license-key.php';
 		include LEAKY_PAYWALL_PATH . 'include/error-tracking.php';
@@ -134,3 +135,21 @@ function leaky_paywall_plugins_loaded() {
 	}
 }
 add_action( 'plugins_loaded', 'leaky_paywall_plugins_loaded', 4815162342 ); // wait for the plugins to be loaded before init.
+
+/**
+ * Runs on plugin activation.
+ *
+ * Sets onboarding redirect flag and schedules tracking cron.
+ *
+ * @since 4.23.0
+ */
+function leaky_paywall_activate() {
+	update_option( 'leaky_paywall_onboarding_redirect', 1 );
+
+	update_option( 'leaky_paywall_onboarding_install_time', time() );
+
+	if ( get_option( 'leaky_paywall_tracking_allow' ) && ! wp_next_scheduled( 'leaky_paywall_tracking_send' ) ) {
+		wp_schedule_event( time(), 'weekly', 'leaky_paywall_tracking_send' );
+	}
+}
+register_activation_hook( __FILE__, 'leaky_paywall_activate' );
