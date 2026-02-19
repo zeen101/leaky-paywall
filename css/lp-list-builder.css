@@ -1,0 +1,211 @@
+
+ .Slider {
+     color: var(--lplb-text-color, #fff);
+     position: fixed;
+     width: 100%;
+     z-index: 9999;
+ }
+
+ .Slider--scrolled {
+     bottom: 0;
+     /* height: calc(100vh - 52px); */
+     height: 100vh;
+     overflow-x: hidden;
+ }
+
+ .Slider__InnerContainer {
+     -webkit-box-orient: vertical;
+     -webkit-box-direction: normal;
+     -webkit-box-align: center;
+     -ms-flex-align: center;
+     align-items: center;
+     background-color: var(--lplb-bg-color, #000);
+     display: -webkit-box;
+     display: -ms-flexbox;
+     display: flex;
+     -ms-flex-direction: column;
+     flex-direction: column;
+     gap: 16px;
+     height: calc(100vh - 350px);
+     padding: 105px 0;
+     position: absolute;
+     top: 100vh;
+     -webkit-transition: all 1s;
+     transition: all 1s;
+     width: 100%;
+
+ }
+
+ .Slider__InnerContainer--scrolled {
+     bottom: 0;
+     /* height: calc(100vh - 52px); */
+     height: 100vh;
+     top: 350px;
+ }
+
+ .Slider__ExpandedHeader {
+     font-size: 24px;
+     font-weight: 600;
+     letter-spacing: .1px;
+     line-height: 28px;
+     text-align: center;
+     color: var(--lplb-text-color, #fff);
+
+ }
+
+ .Slider__ExpandedSubHeader {
+     font-size: 16px;
+     font-weight: 400;
+     letter-spacing: .1px;
+     line-height: 22px;
+     text-align: center;
+     width: 523px;
+     margin-bottom: 15px;
+ }
+
+ .Slider .Form__Container {
+     background: var(--lplb-bg-color, #000);
+     width: 100vw;
+     max-width: 800px;
+ }
+
+ .Slider__InputRow {
+     margin-bottom: 20px;
+ }
+
+ .Slider__InputRow label {
+     color: var(--lplb-text-color, #fff);
+     font-weight: normal;
+ }
+
+ .Slider .Slider__EmailAddressField input {
+     width: 100%;
+     background: #fff;
+ }
+
+  .Slider .Slider__EmailAddressField input:focus {
+background: #fff;
+  }
+
+  .Slider .Slider__PasswordField input {
+    width: 100%;
+    background: #fff;
+ }
+
+ .Slider .Slider__ResetNewField input {
+    width: 100%;
+    background: #fff;
+ }
+
+ .Slider .Slider__PasswordField input:focus, .Slider .Slider__VerficationField input:focus, .Slider .Slider__ResetNewField input:focus {
+background: #fff;
+ }
+
+ .Slider .Slider__VerficationField input {
+width: 100%;
+    background: #fff;
+}
+
+@keyframes lp-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+  #lplb-portal .Slider__ExpandedButton {
+     display: block;
+     margin: 0 auto 40px;
+     min-width: 200px;
+     font-weight: bold;
+     letter-spacing: 1px;
+     background: var(--lplb-button-color, #E45637);
+     color: var(--lplb-button-text-color, #fff);
+ }
+
+ .lp-list-builder__spinner--inline {
+     display: inline-block;
+     width: 14px;
+     height: 14px;
+     margin-left: 6px;
+     border: 2px solid rgba(255, 255, 255, 0.4);
+     border-top-color: #fff;
+     border-radius: 50%;
+     animation: lp-spin 0.8s linear infinite;
+ }
+
+ .Slider__Policy {}
+
+ .Slider__Policy p {
+     font-size: small;
+     color: var(--lplb-text-color, #ddd);
+     opacity: 0.8;
+ }
+
+ .Slider__Policy p a {
+     color: var(--lplb-text-color, #ddd);
+     text-decoration: underline;
+ }
+
+ .Slider__UnAuthenticatedContainer {
+     -webkit-box-align: center;
+     -ms-flex-align: center;
+     -webkit-box-pack: center;
+     -ms-flex-pack: center;
+     align-items: center;
+     display: -webkit-box;
+     display: -ms-flexbox;
+     display: flex;
+     gap: 8px;
+     justify-content: center;
+     margin-left: auto;
+     margin-right: auto;
+     min-width: 650px;
+     padding-top: 10px;
+     width: 38%;
+ }
+
+ .Slider__FooterText {
+     text-align: center;
+ }
+
+ .Slider__FooterLink {
+     border-bottom: 2px solid var(--lplb-text-color, #fff);
+     color: var(--lplb-text-color, #fff);
+     font-size: 12px;
+     font-weight: 500;
+     letter-spacing: .14em;
+     line-height: 18px;
+     padding-bottom: 2px;
+     padding-top: 2px;
+     text-align: center;
+     text-transform: uppercase;
+ }
+
+ #lplb-mask, #lplb-portal {
+     display: none;
+ }
+
+ #lplb-mask.is-visible, #lplb-portal.is-visible {
+     display: block;
+ }
+
+ #lplb-mask {
+    position: fixed;
+    overflow: hidden;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.2) 20%, rgba(0, 0, 0, 0.8));
+    z-index: 500;
+ }
+
+ #lplb-portal {
+    min-height: 50vh;
+    position: absolute;
+    top: 100vh;
+    -webkit-transform: translateY(-50vh);
+    -ms-transform: translateY(-50vh);
+    transform: translateY(-50vh);
+    width: 100%;
+    z-index: 9998;
+ }
