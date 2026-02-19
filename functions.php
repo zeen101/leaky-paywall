@@ -1251,7 +1251,7 @@ if (!function_exists('leaky_paywall_subscriber_restrictions')) {
 						if (!$post_type_found) {
 							$merged_restrictions[$key] = $restriction;
 						} else {
-							if (-1 === $restriction['allowed_value']) { // -1 is unlimited, just use it.
+							if (-1 === $restriction['allowed_value'] || 'unlimited' === $restriction['allowed']) { // unlimited, just use it.
 								$merged_restrictions[$post_type_found_key] = $restriction;
 							} elseif ($merged_restrictions[$post_type_found_key]['allowed_value'] < $restriction['allowed_value']) {
 								$merged_restrictions[$post_type_found_key] = $restriction;
@@ -1432,7 +1432,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				array(
 					'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
 					'allowed'       => 'unlimited',
-					'allowed_value' => -1,
+					'allowed_value' => 0,
 				),
 			),
 			'deleted'                       => 0,
@@ -1583,7 +1583,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 							<th>Number Allowed</th>
 							<th>Post Type</th>
 							<th>Taxonomy <span style="font-weight: normal; font-size: 11px; color: #999;"> Category,tag,etc.</span></th>
-							<th>&nbsp;</th>
+							<th class="narrow-cell">&nbsp;</th>
 						</tr>
 
 						<?php
@@ -1616,7 +1616,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					}
 					?>
 
-					<p class="description"><?php esc_html_e('Access processed from top to bottom.', 'leaky-paywall'); ?></p>
+					<p class="description"><?php esc_html_e('Access processed from top to bottom. Set limit to 0 to block access.', 'leaky-paywall'); ?></p>
 				</td>
 			</tr>
 
@@ -1725,7 +1725,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			$default_select_post_type = array(
 				'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
 				'allowed'       => 'unlimited',
-				'allowed_value' => -1,
+				'allowed_value' => 0,
 				'site'          => 0,
 				'taxonomy'      => '',
 			);
@@ -1744,7 +1744,8 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			}
 
 			echo '<div class="allowed_value_div" style="' . esc_attr($allowed_value_input_style) . '">';
-			echo '<input type="number" class="allowed_value small-text" name="levels[' . esc_attr($row_key) . '][post_types][' . esc_attr($select_post_key) . '][allowed_value]" value="' . esc_attr($select_post_type['allowed_value']) . '" placeholder="' . esc_attr__('#', 'leaky-paywall') . '" />';
+			$allowed_value_output = max( 0, intval( $select_post_type['allowed_value'] ) );
+			echo '<input type="number" min="0" class="allowed_value small-text" name="levels[' . esc_attr($row_key) . '][post_types][' . esc_attr($select_post_key) . '][allowed_value]" value="' . esc_attr($allowed_value_output) . '" placeholder="' . esc_attr__('#', 'leaky-paywall') . '" />';
 			echo '</div></td>';
 
 			echo '<td><select class="select_level_post_type" name="levels[' . esc_attr($row_key) . '][post_types][' . esc_attr($select_post_key) . '][post_type]">';
@@ -1796,7 +1797,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			}
 			echo '</select></td>';
 
-			echo '<td><span class="delete-x delete-post-type-row">&times;</span></td>';
+			echo '<td class="narrow-cell"><span class="delete-x delete-post-type-row">&times;</span></td>';
 
 			echo '</tr>';
 		}
@@ -1911,17 +1912,19 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		echo '<td>';
 
+		$restriction_allowed_output = max( 0, intval( $restriction['allowed_value'] ) );
+
 		if ('on' === $settings['enable_combined_restrictions']) {
 			echo '<p class="allowed-number-helper-text" style="color: #555; font-size: 12px;">Using combined restrictions.</p>';
-			echo '<input style="display: none;" id="restriction-allowed-' . esc_attr($row_key) . '" type="number" class="small-text restriction-allowed-number-setting" name="restrictions[post_types][' . esc_attr($row_key) . '][allowed_value]" value="' . esc_attr($restriction['allowed_value']) . '" />';
+			echo '<input style="display: none;" id="restriction-allowed-' . esc_attr($row_key) . '" type="number" min="0" class="small-text restriction-allowed-number-setting" name="restrictions[post_types][' . esc_attr($row_key) . '][allowed_value]" value="' . esc_attr($restriction_allowed_output) . '" />';
 		} else {
 			echo '<p class="allowed-number-helper-text" style="color: #555; font-size: 12px; display: none;">Using combined restrictions.</p>';
-			echo '<input id="restriction-allowed-' . esc_attr($row_key) . '" type="number" class="small-text restriction-allowed-number-setting" name="restrictions[post_types][' . esc_attr($row_key) . '][allowed_value]" value="' . esc_attr($restriction['allowed_value']) . '" />';
+			echo '<input id="restriction-allowed-' . esc_attr($row_key) . '" type="number" min="0" class="small-text restriction-allowed-number-setting" name="restrictions[post_types][' . esc_attr($row_key) . '][allowed_value]" value="' . esc_attr($restriction_allowed_output) . '" />';
 		}
 
 		echo '</td>';
 
-		echo '<td><span class="delete-x delete-restriction-row">&times;</span></td>';
+		echo '<td class="narrow-cell"><span class="delete-x delete-restriction-row">&times;</span></td>';
 
 		echo '</tr>';
 	}

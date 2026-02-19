@@ -70,7 +70,6 @@ $leaky_paywall_settings(document).ready(function ($) {
         "row-key": row_key,
       };
       $.post(ajaxurl, data, function (response) {
-        console.log(response);
         $(
           "#issuem-leaky-paywall-subsciption-row-" +
             row_key +
@@ -112,7 +111,7 @@ $leaky_paywall_settings(document).ready(function ($) {
           $(".allowed_value", parent).val()
         );
         $(".allowed_value_div", parent).hide();
-        $(".allowed_value", parent).val("-1");
+        $(".allowed_value", parent).val("0");
       } else {
         $(".allowed_value", parent).val(
           $(".allowed_value", parent).data("prev-value")
@@ -173,7 +172,6 @@ $leaky_paywall_settings(document).ready(function ($) {
     let levelId = $(this).data('level-id');
 
     if (window.confirm("Are you sure you want to delete this level?")) {
-      console.log(levelId);
 
     } else {
       e.preventDefault();
@@ -186,7 +184,6 @@ $leaky_paywall_settings(document).ready(function ($) {
     ".leaky-paywall-restriction-post-type",
     function () {
       // replace taxonomy select with loader
-      console.log("here");
       var post_type = $(this).children("option:selected").val();
       var taxCell = $(this).parent().next();
       taxCell.append(

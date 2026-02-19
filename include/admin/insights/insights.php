@@ -278,7 +278,7 @@ class Leaky_Paywall_Insights
 		$all_tabs = $this->get_insights_tabs();
 
 	?>
-		<h2 class="nav-tab-wrapper" style="margin-bottom: 10px; margin-top: 20px;">
+		<h2 class="nav-tab-wrapper">
 
 			<?php foreach ($all_tabs as $tab) {
 

@@ -427,6 +427,9 @@ class Leaky_Paywall_REST_Restrictions {
 
 			$access_rules = $settings['levels'][ $level_id ]['post_types'];
 
+			// Pre-scan: does a taxonomy-specific rule on this level block this content?
+			$taxonomy_blocked = $this->has_taxonomy_specific_block( $access_rules, $content_post_type, $viewed_content );
+
 			foreach ( $access_rules as $access_rule ) {
 				// Skip if access rule doesn't match this post type.
 				if ( $access_rule['post_type'] !== $content_post_type ) {
@@ -444,7 +447,11 @@ class Leaky_Paywall_REST_Restrictions {
 
 					// Unlimited access to all content of this post type.
 					if ( 'unlimited' === $access_rule['allowed'] && 'all' === $access_taxonomy ) {
-						return true;
+						if ( ! $taxonomy_blocked ) {
+							return true;
+						}
+						// A specific taxonomy rule blocks this content — skip this catch-all.
+						break;
 					}
 
 					// Unlimited access to specific taxonomy.
@@ -478,13 +485,20 @@ class Leaky_Paywall_REST_Restrictions {
 
 					// Limited access to specific taxonomy.
 					if ( 'limited' === $access_rule['allowed'] && 'all' !== $access_taxonomy && $this->content_taxonomy_matches( $access_taxonomy ) ) {
-						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $access_taxonomy ) : 0;
+						$allowed_value = intval( $access_rule['allowed_value'] );
 
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						// 0 means no access to this taxonomy — block immediately.
+						if ( $allowed_value <= 0 ) {
 							$allows_access = false;
 						} else {
-							$this->update_content_viewed_by_user();
-							$allows_access = true;
+							$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $access_taxonomy ) : 0;
+
+							if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+								$allows_access = false;
+							} else {
+								$this->update_content_viewed_by_user();
+								$allows_access = true;
+							}
 						}
 					}
 
@@ -516,6 +530,60 @@ class Leaky_Paywall_REST_Restrictions {
 		}
 
 		return $allows_access;
+	}
+
+	/**
+	 * Check if any taxonomy-specific access rule on a level blocks the current post.
+	 *
+	 * Pre-scans all access rules for a given level to find "limited" rules targeting
+	 * a specific taxonomy. If the current post belongs to that taxonomy and the limit
+	 * has been reached (or is 0), the post is blocked — even if a catch-all
+	 * "unlimited + all" rule also exists on the same level.
+	 *
+	 * @since 4.23.0
+	 *
+	 * @param array  $access_rules     The level's post_types access rules.
+	 * @param string $content_post_type The current post's post type.
+	 * @param array  $viewed_content    Content already viewed by the user.
+	 * @return bool True if a taxonomy-specific rule blocks access.
+	 */
+	private function has_taxonomy_specific_block( $access_rules, $content_post_type, $viewed_content ) {
+
+		foreach ( $access_rules as $rule ) {
+
+			if ( $rule['post_type'] !== $content_post_type ) {
+				continue;
+			}
+
+			$taxonomy = isset( $rule['taxonomy'] ) ? $rule['taxonomy'] : 'all';
+
+			if ( 'all' === $taxonomy || 'limited' !== $rule['allowed'] ) {
+				continue;
+			}
+
+			if ( ! $this->content_taxonomy_matches( $taxonomy ) ) {
+				continue;
+			}
+
+			// Post is in this specifically-limited taxonomy.
+			$allowed_value = intval( $rule['allowed_value'] );
+
+			// 0 means complete block — no access regardless of view history.
+			if ( $allowed_value <= 0 ) {
+				return true;
+			}
+
+			// Check if view limit exceeded.
+			$number_viewed = isset( $viewed_content[ $content_post_type ] )
+				? $this->get_number_viewed_by_term( $taxonomy )
+				: 0;
+
+			if ( $number_viewed >= $allowed_value ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

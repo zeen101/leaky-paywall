@@ -605,3 +605,96 @@ input[type="submit"].lp-inline-button {
   background: #fff3cd;
   color: #856404;
 }
+
+.narrow-cell {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.toplevel_page_issuem-leaky-paywall #wpcontent {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers #wpcontent {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-insights #wpcontent {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-insights #wpbody-content {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-insights #wpwrap {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-insights .nav-tab-wrapper {
+  background: #fff;
+  margin-left: -20px;
+  margin-top: 0;
+  border: 0;
+}
+
+.leaky-paywall_page_leaky-paywall-insights .nav-tab {
+  background: #fff;
+    border-left: 0;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 2px solid #fff;
+    padding-bottom: 10px;
+}
+
+.leaky-paywall_page_leaky-paywall-insights .nav-tab:hover {
+  background: #fff;
+  color: #E45637;
+}
+
+.leaky-paywall_page_leaky-paywall-insights .nav-tab-active {
+  background: #fff;
+  border-bottom: 2px solid #E45637;
+}
+
+.lp-tab-wrap {
+  margin-left: -20px;
+    padding-left: 20px;
+    background: #fff;
+}
+
+.lp-tab-wrap .nav-tab-wrapper {
+  border: 0;
+}
+
+.lp-tab-wrap .nav-tab {
+  background: #fff;
+  border-left: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 2px solid #fff;
+  padding-bottom: 10px;
+}
+
+.lp-tab-wrap .nav-tab:hover {
+  background: #fff;
+  color: #E45637;
+}
+
+.lp-tab-wrap .nav-tab-active {
+  background: #fff;
+  border-bottom: 2px solid #E45637;
+}
+
+.toplevel_page_issuem-leaky-paywall #wpcontent .button-primary, .leaky-paywall_page_leaky-paywall-subscribers #wpcontent .button-primary {
+  background: #E45637;
+  border: 0;
+  border-radius: 0 12px 0 0 !important;
+  padding: 8px 26px;
+  font-size: 16px;
+  transition: all .2s ease-in-out;
+}
+
+.toplevel_page_issuem-leaky-paywall #wpcontent .button-primary:hover, .leaky-paywall_page_leaky-paywall-subscribers #wpcontent .button-primary:hover {
+  background: #333333;
+}
