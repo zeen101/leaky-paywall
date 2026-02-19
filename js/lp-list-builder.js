@@ -217,10 +217,20 @@
               return;
           }
 
-          document.documentElement.style.overflow = "hidden"; // <html>
-          document.body.style.overflow = "hidden";            // <body>
-          document.getElementById("lplb-mask")?.classList.add("is-visible");
-          document.getElementById("lplb-portal")?.classList.add("is-visible");
+          document.documentElement.style.overflow = "hidden";
+          document.body.style.overflow = "hidden";
+
+          var mask = document.getElementById("lplb-mask");
+          var portal = document.getElementById("lplb-portal");
+
+          if (mask) mask.classList.add("is-visible");
+          if (portal) portal.classList.add("is-visible");
+
+          // Trigger transitions on next frame so the browser registers the initial state first.
+          requestAnimationFrame(function() {
+              if (mask) mask.classList.add("is-active");
+              if (portal) portal.classList.add("is-active");
+          });
       });
 
 })();
