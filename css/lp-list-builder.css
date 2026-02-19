@@ -211,7 +211,7 @@ width: 100%;
 
  #lplb-portal {
     min-height: 50vh;
-    position: absolute;
+    position: fixed;
     top: 100vh;
     width: 100%;
     z-index: 9998;

@@ -176,9 +176,9 @@ class Leaky_Paywall_List_Builder_Settings
         $defaults = array(
             'enabled'                    => '',
             'level_id'                   => '0',
-            'heading'                    => '',
-            'subheading'                 => '',
-            'terms_and_conditions'       => '',
+            'heading'                    => 'Create a free account, or log in.',
+            'subheading'                 => 'Gain access to read this content, plus limited free content.',
+            'terms_and_conditions'       => 'Yes! I would like to receive new content and updates.',
             'background_color'           => '#000000',
             'text_color'                 => '#ffffff',
             'button_color'               => '#E45637',
