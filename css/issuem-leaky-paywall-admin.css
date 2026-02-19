@@ -698,3 +698,9 @@ input[type="submit"].lp-inline-button {
 .toplevel_page_issuem-leaky-paywall #wpcontent .button-primary:hover, .leaky-paywall_page_leaky-paywall-subscribers #wpcontent .button-primary:hover {
   background: #333333;
 }
+
+.lp-sub-details-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}

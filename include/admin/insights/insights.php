@@ -130,6 +130,12 @@ class Leaky_Paywall_Insights
 
 		<?php do_action('leaky_paywall_after_card_stats'); ?>
 
+		<?php
+		if ( ! class_exists( 'Leaky_Paywall_Multiple_Levels_Insights' ) ) {
+			$this->display_signup_chart( $period );
+		}
+		?>
+
 	<?php
 	}
 
@@ -402,5 +408,286 @@ class Leaky_Paywall_Insights
 		);
 
 		return apply_filters('leaky_paywall_insights_tabs', $tabs);
+	}
+
+	public function display_signup_chart( $period ) {
+		?>
+		<div id="leaky-paywall-insights-canvas-wrapper">
+			<canvas id="leaky-paywall-insights-signup-chart"></canvas>
+		</div>
+
+		<style>
+			#leaky-paywall-insights-canvas-wrapper {
+				position: relative;
+				width: 800px;
+				height: 40vh;
+				background: #fff;
+				padding: 20px;
+				border-radius: 5px;
+				border: 1px solid #eee;
+			}
+		</style>
+
+		<script>
+			const ctx = document.getElementById('leaky-paywall-insights-signup-chart');
+			const dataRealPaid = <?php echo wp_json_encode( $this->get_signup_paid_data( $period ) ); ?>;
+			const dataRealFree = <?php echo wp_json_encode( $this->get_signup_free_data( $period ) ); ?>;
+
+			new Chart(ctx, {
+				type: 'line',
+				options: {
+					animation: false,
+					plugins: {
+						legend: {
+							display: true
+						},
+						tooltip: {
+							enabled: true
+						}
+					},
+					scales: {
+						y: {
+							beginAtZero: true,
+							ticks: {
+								stepSize: 1
+							}
+						}
+					}
+				},
+				data: {
+					labels: dataRealPaid.map(row => row.day),
+					datasets: [{
+							label: 'New Paid Subscriber Signups',
+							data: dataRealPaid.map(row => row.count),
+							borderColor: '#38A65B',
+							backgroundColor: '#38A65B'
+						},
+						{
+							label: 'New Free Subscriber Signups',
+							data: dataRealFree.map(row => row.count),
+							borderColor: '#3178D1',
+							backgroundColor: '#3178D1'
+						}
+					]
+				}
+			});
+		</script>
+		<?php
+	}
+
+	public function get_signup_paid_data( $period ) {
+		global $leaky_paywall;
+		$args_period = leaky_paywall_insights_get_formatted_period( $period );
+		$data = array();
+
+		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
+
+			$args = array(
+				'post_type'      => 'lp_transaction',
+				'order'          => 'DESC',
+				'posts_per_page' => 9999,
+				'date_query'     => array(
+					array(
+						'after'  => $args_period,
+						'column' => 'post_date',
+					),
+				),
+				'meta_query' => array(
+					'relation' => 'AND',
+					array(
+						'key'     => '_status',
+						'value'   => 'incomplete',
+						'compare' => 'NOT LIKE',
+					),
+					array(
+						'key'     => '_price',
+						'value'   => '0.00',
+						'compare' => '>',
+					),
+					array(
+						'key'     => '_is_recurring',
+						'value'   => false,
+						'compare' => '=',
+					),
+					array(
+						'key'     => '_rcpt_email',
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			);
+
+			$transactions = get_posts( $args );
+
+			if ( ! empty( $transactions ) ) {
+				foreach ( $transactions as $transaction ) {
+					$price = get_post_meta( $transaction->ID, '_price', true );
+
+					if ( '0.00' == $price ) {
+						continue;
+					}
+
+					$time = strtotime( $transaction->post_date );
+					$day  = date( 'M j', $time );
+					$data[ $day ][] = $transaction->post_title;
+				}
+			}
+		} else {
+
+			$mysql_date_format = 'Y-m-d H:i:s';
+			$timezone          = new DateTimeZone( 'UTC' );
+			$datetime          = new DateTime( $args_period, $timezone );
+			$date_created      = $datetime->format( $mysql_date_format );
+
+			$args = [
+				'select' => '*',
+				'where'  => '
+				`payment_status` NOT LIKE "incomplete"
+			AND `price` > 0
+			AND `is_recurring` = 0
+			AND `date_created` > "' . $date_created . '"'
+			];
+
+			$transactions = LP_Transaction::query( $args );
+
+			if ( ! empty( $transactions ) ) {
+				foreach ( $transactions as $transaction ) {
+					$time = strtotime( $transaction->date_created );
+					$day  = date( 'M j', $time );
+					$data[ $day ][] = $transaction->user_id;
+				}
+			}
+		}
+
+		return $this->format_signup_data( $data, $period );
+	}
+
+	public function get_signup_free_data( $period ) {
+		global $leaky_paywall;
+		$args_period = leaky_paywall_insights_get_formatted_period( $period );
+		$data = array();
+
+		if ( version_compare( $leaky_paywall->get_db_version(), '1.0.6', '<' ) ) {
+
+			$args = array(
+				'post_type'      => 'lp_transaction',
+				'order'          => 'DESC',
+				'posts_per_page' => 9999,
+				'date_query'     => array(
+					array(
+						'after'  => $args_period,
+						'column' => 'post_date',
+					),
+				),
+				'meta_query' => array(
+					'relation' => 'AND',
+					array(
+						'key'     => '_status',
+						'value'   => 'incomplete',
+						'compare' => 'NOT LIKE',
+					),
+					array(
+						'key'     => '_price',
+						'value'   => '0',
+						'compare' => '=',
+					),
+				),
+			);
+
+			$transactions = get_posts( $args );
+
+			if ( ! empty( $transactions ) ) {
+				foreach ( $transactions as $transaction ) {
+					$time = strtotime( $transaction->post_date );
+					$day  = date( 'M j', $time );
+					$data[ $day ][] = $transaction->post_title;
+				}
+			}
+		} else {
+
+			$mysql_date_format = 'Y-m-d H:i:s';
+			$timezone          = new DateTimeZone( 'UTC' );
+			$datetime          = new DateTime( $args_period, $timezone );
+			$date_created      = $datetime->format( $mysql_date_format );
+
+			$args = [
+				'select' => '*',
+				'where'  => '
+				`payment_status` NOT LIKE "incomplete"
+			AND `price` = 0
+			AND `is_recurring` = 0
+			AND `date_created` > "' . $date_created . '"'
+			];
+
+			$transactions = LP_Transaction::query( $args );
+
+			if ( ! empty( $transactions ) ) {
+				foreach ( $transactions as $transaction ) {
+					$time = strtotime( $transaction->date_created );
+					$day  = date( 'M j', $time );
+					$data[ $day ][] = $transaction->user_id;
+				}
+			}
+		}
+
+		return $this->format_signup_data( $data, $period );
+	}
+
+	private function format_signup_data( $data, $period ) {
+		$formatted_data = array();
+
+		foreach ( $data as $day => $subs ) {
+			$formatted_data[] = array(
+				'day'   => $day,
+				'count' => count( $subs ),
+			);
+		}
+
+		$final_formatted_data = $this->starting_period_array( $period );
+
+		foreach ( $final_formatted_data as $i => $value ) {
+			foreach ( $formatted_data as $values ) {
+				if ( $value['day'] != $values['day'] ) {
+					continue;
+				}
+				$final_formatted_data[ $i ] = array(
+					'day'   => $values['day'],
+					'count' => $values['count'],
+				);
+			}
+		}
+
+		return $final_formatted_data;
+	}
+
+	private function starting_period_array( $period ) {
+		switch ( $period ) {
+			case '4 weeks':
+				$args_period = 29;
+				break;
+			case '7 days':
+				$args_period = 8;
+				break;
+			case '30 days':
+				$args_period = 31;
+				break;
+			case 'today':
+				$args_period = 2;
+				break;
+			case '3 months':
+				$args_period = 93;
+				break;
+			default:
+				$args_period = 31;
+				break;
+		}
+
+		$d = array();
+
+		for ( $i = 0; $i < $args_period; $i++ ) {
+			$day = date( 'M j', strtotime( '-' . $i . ' days' ) );
+			$d[] = array( 'day' => $day, 'count' => 0 );
+		}
+
+		return array_reverse( $d );
 	}
 }

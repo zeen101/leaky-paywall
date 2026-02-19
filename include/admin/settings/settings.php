@@ -789,11 +789,18 @@ class Leaky_Paywall_Settings
 
 				<?php do_action('leaky_paywall_after_subscription_levels', $last_key); ?>
 
-				<?php
-				if (!is_plugin_active('leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php')) {
-					echo '<h4 class="description">Want more levels? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-multiple-levels/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">multiple subscription levels</a> extension.</h4>';
-				}
+				<?php if ( ! isset( $_GET['level_id'] ) && ! class_exists( 'Leaky_Paywall_Multiple_Levels' ) ) : ?>
+					<script type="text/javascript">
+						var leaky_paywall_subscription_levels_row_key = <?php echo (int) $last_key; ?>;
+					</script>
+					<p id="add-subscription-row-wrap">
+						<input class="button-secondary" id="add-subscription-row" type="submit"
+							name="add_leaky_paywall_row"
+							value="<?php esc_attr_e( 'Add New Level', 'leaky-paywall' ); ?>" />
+					</p>
+				<?php endif; ?>
 
+				<?php
 				if (!is_plugin_active('leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php')) {
 					echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> extension.</h4>';
 				}

@@ -55,6 +55,34 @@ $leaky_paywall_settings(document).ready(function ($) {
     });
   });
 
+  // Add new subscription level
+  $("#leaky_paywall_subscription_level_options").on(
+    "click",
+    "input#add-subscription-row",
+    function (event) {
+      event.preventDefault();
+      var $btn = $(this);
+      $btn.prop("disabled", true);
+      $btn.after('<span class="spinner" style="visibility: visible; float: none; margin: 0 0 0 4px;"></span>');
+      var data = {
+        action: "issuem-leaky-paywall-add-new-subscription-row",
+        "row-key": ++leaky_paywall_subscription_levels_row_key,
+      };
+      $.post(ajaxurl, data, function (response) {
+        $btn.hide().next(".spinner").remove();
+        $("td#issuem-leaky-paywall-subscription-level-rows").append(
+          '<div style="display: none;" class="leaky-paywall-new-level">' +
+            response +
+            "</div>"
+        );
+        $("#issuem-leaky-paywall-subscription-level-rows")
+          .find(".leaky-paywall-new-level")
+          .slideDown("slow");
+      });
+    }
+  );
+
+  // Add new access option row within a level
   $("#leaky_paywall_subscription_level_options").on(
     "click",
     "input#add-subscription-row-post-type",

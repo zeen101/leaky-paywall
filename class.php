@@ -49,6 +49,7 @@ class Leaky_Paywall {
 		add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_notices', array( $this, 'multiple_levels_deactivation_notice' ) );
 
 		add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
 
@@ -214,9 +215,7 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-insights', array( $insights, 'insights_page' ) );
 
-		if ( !is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
-			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
-		}
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 
 	}
 
@@ -811,6 +810,17 @@ class Leaky_Paywall {
 			</div>
 		<?php
 
+	}
+
+	/**
+	 * Display admin notice when the standalone Multiple Levels plugin is still active.
+	 */
+	public function multiple_levels_deactivation_notice() {
+		if ( is_plugin_active( 'leaky-paywall-multiple-levels/leaky-paywall-multiple-levels.php' ) ) {
+			echo '<div class="notice notice-info is-dismissible">';
+			echo '<p><strong>Leaky Paywall:</strong> Multiple Levels is now built into Leaky Paywall. You can safely deactivate and delete the <em>Leaky Paywall - Multiple Levels</em> plugin.</p>';
+			echo '</div>';
+		}
 	}
 
 	/**
