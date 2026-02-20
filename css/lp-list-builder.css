@@ -226,3 +226,27 @@ width: 100%;
     -ms-transform: translateY(-50vh);
     transform: translateY(-50vh);
  }
+
+ @media (max-width: 768px) {
+
+    .Slider__InnerContainer {
+        padding: 60px 20px;
+    }
+
+    .Slider__ExpandedSubHeader {
+        width: auto;
+    }
+
+    .Slider .Form__Container {
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
+
+    .Slider__UnAuthenticatedContainer {
+        min-width: 0;
+        width: auto;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+ }

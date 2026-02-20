@@ -216,8 +216,6 @@ class Leaky_Paywall_REST_Restrictions {
 			);
 		}
 
-		do_action( 'leaky_paywall_is_restricted_content', $this->post_id );
-
 		$response_data = array(
 			'show_paywall'          => true,
 			'nag_content'           => $this->get_subscribe_nag(),
@@ -225,6 +223,8 @@ class Leaky_Paywall_REST_Restrictions {
 			'subscriber_level_ids'  => $this->get_level_ids(),
 			'nag_type'              => $this->nag_type,
 		);
+
+		do_action( 'leaky_paywall_is_restricted_content', $this->post_id, $this->nag_type );
 
 		// Record the nag impression.
 		LP_Nag_Impressions::record( $this->post_id, $this->nag_type );
