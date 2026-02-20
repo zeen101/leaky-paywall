@@ -67,7 +67,7 @@ function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 	$secret_key      = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
 
 	if ( ! $secret_key ) {
-		return '<p>Please enter Stripe API keys in <a href="' . admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=payments">your Leaky Paywall settings</a>.</p>';
+		return '<p>Please enter Stripe API keys in <a href="' . admin_url() . 'admin.php?page=leaky-paywall-settings&tab=payments">your Leaky Paywall settings</a>.</p>';
 	}
 
 	if ( ! empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {

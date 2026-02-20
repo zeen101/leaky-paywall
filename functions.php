@@ -1381,14 +1381,14 @@ function build_leaky_paywall_subscription_levels_row_summary($level, $row_key)
 	$nonce = wp_create_nonce('leaky-paywall-level-row-nonce');
 	$settings = get_leaky_paywall_settings();
 	$duration = $level['subscription_length_type'] == 'unlimited' ? 'Forever' : $level['interval_count'] . ' ' . $level['interval'];
-	$delete_link = admin_url() . 'admin.php?page=issuem-leaky-paywall&tab=subscriptions&delete_level_id=' . $row_key . '&_wpnonce=' . esc_attr($nonce);
+	$delete_link = admin_url() . 'admin.php?page=leaky-paywall-settings&tab=subscriptions&delete_level_id=' . $row_key . '&_wpnonce=' . esc_attr($nonce);
 	$page_for_register = $settings['page_for_register'] > 0 ? esc_url(get_page_link($settings['page_for_register']) . '?level_id=' . esc_attr($row_key)) : '';
 
 ?>
 	<tr>
 		<td><?php echo esc_html($row_key); ?></td>
 		<td><?php echo esc_html($level['label']); ?><br>
-			<div class="row-actions"><a href="<?php echo esc_url(admin_url()); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions&level_id=<?php echo absint($row_key); ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo esc_attr($row_key); ?>" href="<?php echo esc_url($delete_link); ?>">Delete</a></span></div>
+			<div class="row-actions"><a href="<?php echo esc_url(admin_url()); ?>admin.php?page=leaky-paywall-settings&tab=subscriptions&level_id=<?php echo absint($row_key); ?>">Edit</a> | <span class="delete"><a class="leaky-paywall-level-delete" data-level-id="<?php echo esc_attr($row_key); ?>" href="<?php echo esc_url($delete_link); ?>">Delete</a></span></div>
 		</td>
 		<td><?php echo esc_html($level['price']); ?></td>
 		<td><?php echo esc_html($duration); ?></td>
@@ -3992,7 +3992,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$settings_link .= '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
 
-		$settings_link .= '<a href="admin.php?page=issuem-leaky-paywall">' . __('Settings') . '</a>';
+		$settings_link .= '<a href="admin.php?page=leaky-paywall-settings">' . __('Settings') . '</a>';
 		array_unshift($links, $settings_link);
 		return $links;
 	}
@@ -4520,7 +4520,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'id'     => 'leaky-paywall-toolbar-settings',
 				'parent' => 'leaky-paywall-toolbar',
 				'title'  => 'Settings',
-				'href'   => admin_url() . 'admin.php?page=issuem-leaky-paywall',
+				'href'   => admin_url() . 'admin.php?page=leaky-paywall-settings',
 				'meta'   => array(
 					'title'  => __('Settings'),
 					'target' => '',

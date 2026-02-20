@@ -1,0 +1,72 @@
+.lp-dashboard-funnel {
+	background: #f0f6fc;
+	border-left: 4px solid #2271b1;
+	padding: 10px 14px;
+	margin-bottom: 2em;
+	font-size: 13px;
+	color: #1d2327;
+}
+
+.lp-dashboard-funnel strong {
+	font-size: 14px;
+}
+
+.lp-dashboard-columns {
+	display: flex;
+	gap: 2em;
+	margin-top: 2em;
+}
+
+.lp-dashboard-column {
+	flex: 1;
+	min-width: 0;
+}
+
+.lp-dashboard-column h3 {
+	margin-top: 0;
+}
+
+.lp-dashboard-quick-links {
+	display: flex;
+	gap: 8px;
+	padding-top: 16px;
+	border-top: 1px solid #f0f0f1;
+	margin-top: 2em;
+}
+
+.lp-dashboard-quick-links a {
+	text-decoration: none;
+}
+
+.lp-dashboard-quick-links span {
+	color: #dcdcde;
+}
+
+.lp-dashboard-charts {
+	display: flex;
+	gap: 2em;
+	margin-bottom: 2em;
+}
+
+.lp-dashboard-chart {
+	flex: 1;
+	min-width: 0;
+	background: #fff;
+	padding: 20px;
+	border-radius: 5px;
+	border: 1px solid #eee;
+}
+
+.lp-dashboard-chart h3 {
+	margin-top: 0;
+}
+
+.lp-dashboard-chart-wrap {
+	position: relative;
+	height: 280px;
+}
+
+#lp-wit-app .dashicons-visibility {
+	color: #8B5CF6;
+	background: #F3EEFF;
+}

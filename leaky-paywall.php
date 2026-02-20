@@ -102,6 +102,7 @@ function leaky_paywall_plugins_loaded() {
 
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/settings/settings.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/insights.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/dashboard/dashboard.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/class-onboarding.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/tracking.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/list-builder/class-lp-list-builder.php';

@@ -17,7 +17,7 @@ class Leaky_Paywall_Settings
 
 		if (isset($_GET['tab'])) {
 			$tab = sanitize_text_field(wp_unslash($_GET['tab']));
-		} elseif (isset($_GET['page']) && 'issuem-leaky-paywall' === $_GET['page']) {
+		} elseif (isset($_GET['page']) && 'leaky-paywall-settings' === $_GET['page']) {
 			$tab = 'general';
 		} else {
 			$tab = '';
@@ -170,7 +170,7 @@ class Leaky_Paywall_Settings
 				<?php foreach ($all_tabs as $tab) {
 
 					$class = $tab == $current_tab ? 'nav-tab-active' : '';
-					$admin_url = 'general' == $tab ? admin_url('admin.php?page=issuem-leaky-paywall') : admin_url('admin.php?page=issuem-leaky-paywall&tab=' . $tab);
+					$admin_url = 'general' == $tab ? admin_url('admin.php?page=leaky-paywall-settings') : admin_url('admin.php?page=leaky-paywall-settings&tab=' . $tab);
 
 				?>
 					<a href="<?php echo esc_url($admin_url); ?>" class="nav-tab <?php echo esc_attr($class); ?>"><?php echo esc_html(ucfirst($tab)); ?></a>
@@ -186,9 +186,9 @@ class Leaky_Paywall_Settings
 	{
 
 		if ($current_tab == 'general' || !$current_tab) {
-			$admin_url = admin_url('admin.php?page=issuem-leaky-paywall');
+			$admin_url = admin_url('admin.php?page=leaky-paywall-settings');
 		} else {
-			$admin_url = admin_url('admin.php?page=issuem-leaky-paywall&tab=' . $current_tab);
+			$admin_url = admin_url('admin.php?page=leaky-paywall-settings&tab=' . $current_tab);
 		}
 
 		?>
@@ -712,7 +712,7 @@ class Leaky_Paywall_Settings
 				$current_level = get_leaky_paywall_subscription_level(absint($_GET['level_id']));
 
 			?>
-				<h2><?php echo esc_html($current_level['label']); ?> <a href="<?php echo esc_url(admin_url()); ?>admin.php?page=issuem-leaky-paywall&tab=subscriptions">⤴</a><br><span style="color: #aaa; font-size: 14px; font-weight: normal;">ID: <?php echo absint($_GET['level_id']); ?></span></h2>
+				<h2><?php echo esc_html($current_level['label']); ?> <a href="<?php echo esc_url(admin_url()); ?>admin.php?page=leaky-paywall-settings&tab=subscriptions">⤴</a><br><span style="color: #aaa; font-size: 14px; font-weight: normal;">ID: <?php echo absint($_GET['level_id']); ?></span></h2>
 			<?php
 			} else {
 			?>

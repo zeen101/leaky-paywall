@@ -200,23 +200,27 @@ class Leaky_Paywall {
 	 */
 	public function admin_menu() {
 
-		$settings = new Leaky_Paywall_Settings();
-		$insights = new Leaky_Paywall_Insights();
+		$dashboard        = new Leaky_Paywall_Dashboard();
+		$settings         = new Leaky_Paywall_Settings();
+		$insights         = new Leaky_Paywall_Insights();
 		$admin_subscriber = new Leaky_Paywall_Admin_Subscriber();
 
+		$capability = apply_filters( 'manage_leaky_paywall_settings', 'manage_options' );
 		$admin_icon = $this->get_svg();
 
-		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ), $admin_icon );
+		add_menu_page( __( 'Leaky Paywall', 'leaky-paywall' ), __( 'Leaky Paywall', 'leaky-paywall' ), $capability, 'issuem-leaky-paywall', array( $dashboard, 'dashboard_page' ), $admin_icon );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'issuem-leaky-paywall', array( $settings, 'settings_page' ) );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Dashboard', 'leaky-paywall' ), __( 'Dashboard', 'leaky-paywall' ), $capability, 'issuem-leaky-paywall', array( $dashboard, 'dashboard_page' ) );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-subscribers', array($admin_subscriber, 'show_subscribers_page' ) );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Settings', 'leaky-paywall' ), __( 'Settings', 'leaky-paywall' ), $capability, 'leaky-paywall-settings', array( $settings, 'settings_page' ) );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'edit.php?post_type=lp_transaction' );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Subscribers', 'leaky-paywall' ), __( 'Subscribers', 'leaky-paywall' ), $capability, 'leaky-paywall-subscribers', array( $admin_subscriber, 'show_subscribers_page' ) );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-insights', array( $insights, 'insights_page' ) );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), $capability, 'edit.php?post_type=lp_transaction' );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ), 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), $capability, 'leaky-paywall-insights', array( $insights, 'insights_page' ) );
+
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), $capability, 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 
 	}
 
@@ -233,17 +237,22 @@ class Leaky_Paywall {
 		if (
 			'leaky-paywall_page_leaky-paywall-subscribers' === $hook_suffix
 			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-settings' === $hook_suffix
 			|| 'index.php' === $hook_suffix
-			|| 'leaky-paywall_page_leaky-paywall-upgrade' ===
-			$hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-upgrade' === $hook_suffix
 			|| 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
 			|| 'admin_page_leaky-paywall-setup' === $hook_suffix
 		) {
 			wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
-		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix ) {
+		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
+			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
 			wp_enqueue_style( 'leaky_paywall_admin_insights_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-admin-insights.css', '', LEAKY_PAYWALL_VERSION );
+		}
+
+		if ( 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
+			wp_enqueue_style( 'leaky_paywall_admin_dashboard_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-admin-dashboard.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
 		if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix ) {
@@ -274,7 +283,7 @@ class Leaky_Paywall {
 	 */
 	public function admin_wp_enqueue_scripts( $hook_suffix ) {
 
-		if ( 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
+		if ( 'leaky-paywall_page_leaky-paywall-settings' === $hook_suffix ) {
 			wp_enqueue_script( 'leaky_paywall_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
 
 			wp_localize_script(
@@ -296,7 +305,8 @@ class Leaky_Paywall {
 		}
 
 
-		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix ) {
+		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
+			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
 			wp_enqueue_script('leaky_paywall_chart_js', LEAKY_PAYWALL_URL . 'js/chart.min.js', array(), LEAKY_PAYWALL_VERSION, false);
 		}
 

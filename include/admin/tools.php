@@ -58,7 +58,7 @@ function leaky_paywall_handle_submit_debug_log() {
 		// Clear the debug log.
 		$lp_logs->clear_log_file();
 
-		wp_safe_redirect( admin_url( 'edit.php?page=issuem-leaky-paywall&tab=help' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-settings&tab=help' ) );
 		exit;
 
 	}

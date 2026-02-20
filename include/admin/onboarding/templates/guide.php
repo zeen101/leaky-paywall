@@ -9,7 +9,7 @@
 			<li>
 				<div>
 					<p>Configure your subscription levels, pricing, and content access rules...</p>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="button">Configure Settings</a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings' ) ); ?>" class="button">Configure Settings</a>
 				</div>
 			</li>
 		<?php } else { ?>
@@ -19,28 +19,28 @@
 		<li>
 			<div>
 				<p>Set up payment gateways to start accepting subscription payments</p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall&tab=payments' ) ); ?>" class="button">Configure Payment Methods</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=payments' ) ); ?>" class="button">Configure Payment Methods</a>
 			</div>
 		</li>
 
 		<li>
 			<div>
 				<p>Connect your Stripe account to process payments securely</p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall&tab=payments' ) ); ?>" class="button">Connect Stripe</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=payments' ) ); ?>" class="button">Connect Stripe</a>
 			</div>
 		</li>
 
 		<li>
 			<div>
 				<p>Create subscription levels with different access tiers</p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall&tab=subscriptions' ) ); ?>" class="button">Create Subscription Levels</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=subscriptions' ) ); ?>" class="button">Create Subscription Levels</a>
 			</div>
 		</li>
 
 		<li>
 			<div>
 				<p>Configure which content requires a subscription to access</p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall&tab=content' ) ); ?>" class="button">Set Content Restrictions</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=content' ) ); ?>" class="button">Set Content Restrictions</a>
 			</div>
 		</li>
 
@@ -48,7 +48,7 @@
 			<li>
 				<div>
 					<p>Customize the look of your subscription pages with your branding</p>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall&tab=display' ) ); ?>" class="button">Configure Branding</a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=display' ) ); ?>" class="button">Configure Branding</a>
 				</div>
 			</li>
 		<?php } else { ?>
@@ -58,7 +58,7 @@
 		<li>
 			<div>
 				<p>Set up email notifications for new subscriptions, renewals, and more</p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall&tab=emails' ) ); ?>" class="button">Configure Email Notifications</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=emails' ) ); ?>" class="button">Configure Email Notifications</a>
 			</div>
 		</li>
 

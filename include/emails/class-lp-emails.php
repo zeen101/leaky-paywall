@@ -150,7 +150,7 @@ class LP_Emails {
 	 * Render the email list table.
 	 */
 	private function output_email_table() {
-		$emails_url = admin_url( 'admin.php?page=issuem-leaky-paywall&tab=emails' );
+		$emails_url = admin_url( 'admin.php?page=leaky-paywall-settings&tab=emails' );
 		?>
 		<h2><?php esc_html_e( 'Email Notifications', 'leaky-paywall' ); ?></h2>
 
@@ -215,7 +215,7 @@ class LP_Emails {
 			return;
 		}
 
-		$back_url = admin_url( 'admin.php?page=issuem-leaky-paywall&tab=emails' );
+		$back_url = admin_url( 'admin.php?page=leaky-paywall-settings&tab=emails' );
 		?>
 		<p>
 			<a href="<?php echo esc_url( $back_url ); ?>">&larr; <?php esc_html_e( 'Back to all emails', 'leaky-paywall' ); ?></a>
