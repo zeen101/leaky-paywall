@@ -2712,22 +2712,36 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 
 	/**
+	 * Schedule the status migration to run in the background via Action Scheduler.
+	 *
+	 * @since 4.23.0
+	 * @since 4.24.0 Moved from admin_init to Action Scheduler for performance.
+	 */
+	function leaky_paywall_maybe_schedule_status_migration() {
+		if ( get_option( 'leaky_paywall_status_migration_v1' ) ) {
+			return;
+		}
+
+		if ( as_has_scheduled_action( 'leaky_paywall_run_status_migration_batch' ) ) {
+			return;
+		}
+
+		as_enqueue_async_action( 'leaky_paywall_run_status_migration_batch' );
+	}
+	add_action( 'admin_init', 'leaky_paywall_maybe_schedule_status_migration' );
+
+	/**
 	 * One-time migration to align existing subscriber statuses with the new
-	 * status-as-source-of-truth system.
+	 * status-as-source-of-truth system. Runs in the background via Action Scheduler.
 	 *
 	 * - canceled + future expiration → pending_cancel
 	 * - active/trial + past expiration + no recurring plan → expired
 	 * - canceled + past/no expiration → expired
 	 *
 	 * @since 4.23.0
+	 * @since 4.24.0 Runs as an async Action Scheduler batch instead of on admin_init.
 	 */
-	function leaky_paywall_migrate_subscriber_statuses() {
-
-		$migration_key = 'leaky_paywall_status_migration_v1';
-
-		if ( get_option( $migration_key ) ) {
-			return;
-		}
+	function leaky_paywall_run_status_migration_batch() {
 
 		$mode      = leaky_paywall_get_current_mode();
 		$site      = leaky_paywall_get_current_site();
@@ -2843,15 +2857,15 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			$processed++;
 		}
 
-		// Only mark complete when all batches are done.
 		if ( 0 === $processed ) {
-			update_option( $migration_key, true );
+			update_option( 'leaky_paywall_status_migration_v1', true );
 			leaky_paywall_log( 'Status migration complete', 'migration' );
 		} else {
-			leaky_paywall_log( 'Migrated ' . $processed . ' subscribers, more may remain', 'migration' );
+			leaky_paywall_log( 'Migrated ' . $processed . ' subscribers, scheduling next batch', 'migration' );
+			as_enqueue_async_action( 'leaky_paywall_run_status_migration_batch' );
 		}
 	}
-	add_action( 'admin_init', 'leaky_paywall_migrate_subscriber_statuses' );
+	add_action( 'leaky_paywall_run_status_migration_batch', 'leaky_paywall_run_status_migration_batch' );
 
 
 	/**

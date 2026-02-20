@@ -56,6 +56,9 @@ if ( ! defined( 'PAYPAL_NVP_API_LIVE_URL' ) ) {
 	define( 'PAYPAL_NVP_API_LIVE_URL', 'https://api-3t.paypal.com/nvp' );
 }
 
+// Load Action Scheduler for background processing.
+require_once LEAKY_PAYWALL_PATH . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+
 /**
  * Instantiate Pigeon Pack class, require helper files
  *
