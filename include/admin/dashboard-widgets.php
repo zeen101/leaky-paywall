@@ -225,21 +225,22 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 
 	<?php
 
-	$args = array(
-		'order'      => 'DESC',
-		'orderby'    => 'ID',
-		'number'     => 5,
-		'meta_query' => array(
+	$recent_txns = get_posts( array(
+		'post_type'      => 'lp_transaction',
+		'post_status'    => 'publish',
+		'posts_per_page' => 5,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+		'meta_query'     => array(
 			array(
-				'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
-				'compare' => 'EXISTS',
+				'key'     => '_transaction_status',
+				'value'   => 'complete',
 			),
 		),
-	);
+	) );
 
-	$users = get_users( $args );
-
-	if ( $users ) {
+	if ( $recent_txns ) {
+		$seen_emails = array();
 		?>
 		<table class="lp-dash-table">
 			<thead>
@@ -250,20 +251,24 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 				</tr>
 			</thead>
 			<tbody>
-			<?php foreach ( $users as $user ) :
-				$level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
-
-				if ( ! is_numeric( $level_id ) ) {
+			<?php foreach ( $recent_txns as $txn ) :
+				$email = get_post_meta( $txn->ID, '_email', true );
+				if ( ! $email || isset( $seen_emails[ $email ] ) ) {
 					continue;
 				}
-
+				$seen_emails[ $email ] = true;
+				$level_id = get_post_meta( $txn->ID, '_level_id', true );
 				$level_name = isset( $settings['levels'][ $level_id ]['label'] )
 					? stripslashes( $settings['levels'][ $level_id ]['label'] )
 					: '#' . $level_id;
+				$user = get_user_by( 'email', $email );
+				$user_link = $user
+					? admin_url( 'admin.php?page=leaky-paywall-subscribers&action=show&id=' . $user->ID )
+					: '';
 			?>
 				<tr>
-					<td><?php echo esc_html( gmdate( 'M j', strtotime( $user->user_registered ) ) ); ?></td>
-					<td><a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-subscribers&action=show&id=' . $user->ID ) ); ?>"><?php echo esc_html( $user->user_email ); ?></a></td>
+					<td><?php echo esc_html( gmdate( 'M j', strtotime( $txn->post_date ) ) ); ?></td>
+					<td><?php if ( $user_link ) : ?><a href="<?php echo esc_url( $user_link ); ?>"><?php echo esc_html( $email ); ?></a><?php else : echo esc_html( $email ); endif; ?></td>
 					<td><?php echo esc_html( $level_name ); ?></td>
 				</tr>
 			<?php endforeach; ?>
