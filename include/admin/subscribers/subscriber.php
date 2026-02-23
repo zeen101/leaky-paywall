@@ -176,13 +176,7 @@ class Leaky_Paywall_Admin_Subscriber
 	?>
 
 		<div class="add-new-sub-container" style="float: right; margin-bottom: 20px;">
-			<?php
-			$add_link    = add_query_arg([
-				'action' => 'add',
-			]);
-
-			?>
-			<a class="button button-primary" href="<?php echo esc_url($add_link); ?>">+ <?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></a>
+			<a class="button button-primary" href="#" id="lp-open-add-subscriber-modal">+ <?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></a>
 		</div>
 
 		<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
@@ -197,8 +191,193 @@ class Leaky_Paywall_Admin_Subscriber
 			<?php $subscriber_table->display(); ?>
 		</form>
 
+		<?php $this->add_subscriber_modal(); ?>
+
 	<?php
 
+	}
+
+	public function add_subscriber_modal()
+	{
+		$settings           = get_leaky_paywall_settings();
+		$date_format        = 'F j, Y';
+		$jquery_date_format = leaky_paywall_jquery_datepicker_format($date_format);
+		$payment_gateways   = leaky_paywall_payment_gateways();
+	?>
+		<div id="lp-add-subscriber-modal" class="lp-modal-overlay" style="display:none;">
+			<div class="lp-modal">
+				<div class="lp-modal-header">
+					<h2><?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></h2>
+					<button type="button" class="lp-modal-close" aria-label="<?php esc_attr_e('Close', 'leaky-paywall'); ?>">&times;</button>
+				</div>
+
+				<form id="lp-add-subscriber-form">
+					<div class="lp-modal-body">
+						<div class="lp-modal-field">
+							<label for="lp-modal-login"><?php esc_html_e('Username', 'leaky-paywall'); ?> <span class="required">*</span></label>
+							<input id="lp-modal-login" type="text" name="leaky-paywall-subscriber-login" required />
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-email"><?php esc_html_e('Email Address', 'leaky-paywall'); ?> <span class="required">*</span></label>
+							<input id="lp-modal-email" type="email" name="leaky-paywall-subscriber-email" placeholder="user@example.com" required />
+						</div>
+
+						<div class="lp-modal-field-row">
+							<div class="lp-modal-field">
+								<label for="lp-modal-first-name"><?php esc_html_e('First Name', 'leaky-paywall'); ?></label>
+								<input id="lp-modal-first-name" type="text" name="leaky-paywall-subscriber-first-name" />
+							</div>
+							<div class="lp-modal-field">
+								<label for="lp-modal-last-name"><?php esc_html_e('Last Name', 'leaky-paywall'); ?></label>
+								<input id="lp-modal-last-name" type="text" name="leaky-paywall-subscriber-last-name" />
+							</div>
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-price"><?php esc_html_e('Price Paid', 'leaky-paywall'); ?></label>
+							<input id="lp-modal-price" type="text" name="leaky-paywall-subscriber-price" placeholder="0.00" />
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-expires"><?php esc_html_e('Expires', 'leaky-paywall'); ?></label>
+							<input id="lp-modal-expires" type="text" name="leaky-paywall-subscriber-expires" class="datepicker" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" autocomplete="off" />
+							<input type="hidden" name="date_format" value="<?php echo esc_attr($jquery_date_format); ?>" />
+							<p class="lp-modal-field-hint"><?php esc_html_e('Enter 0 for never expires', 'leaky-paywall'); ?></p>
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-level"><?php esc_html_e('Subscription Level', 'leaky-paywall'); ?></label>
+							<select id="lp-modal-level" name="leaky-paywall-subscriber-level-id">
+								<?php foreach ($settings['levels'] as $key => $level) :
+									if (empty($level['label']) || !empty($level['deleted'])) {
+										continue;
+									}
+								?>
+									<option value="<?php echo esc_attr($key); ?>">ID: <?php echo esc_html($key); ?> - <?php echo esc_html(stripslashes($level['label'])); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-status"><?php esc_html_e('Payment Status', 'leaky-paywall'); ?></label>
+							<select id="lp-modal-status" name="leaky-paywall-subscriber-status">
+								<option value="active"><?php esc_html_e('Active', 'leaky-paywall'); ?></option>
+								<option value="pending_cancel"><?php esc_html_e('Pending Cancel', 'leaky-paywall'); ?></option>
+								<option value="trial"><?php esc_html_e('Trial', 'leaky-paywall'); ?></option>
+								<option value="past_due"><?php esc_html_e('Past Due', 'leaky-paywall'); ?></option>
+								<option value="canceled"><?php esc_html_e('Canceled', 'leaky-paywall'); ?></option>
+								<option value="expired"><?php esc_html_e('Expired', 'leaky-paywall'); ?></option>
+								<option value="deactivated"><?php esc_html_e('Deactivated', 'leaky-paywall'); ?></option>
+							</select>
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-gateway"><?php esc_html_e('Payment Method', 'leaky-paywall'); ?></label>
+							<select id="lp-modal-gateway" name="leaky-paywall-subscriber-payment-gateway">
+								<?php foreach ($payment_gateways as $key => $gateway) : ?>
+									<option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($gateway); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+
+						<div class="lp-modal-field">
+							<label for="lp-modal-subscriber-id"><?php esc_html_e('Subscriber ID', 'leaky-paywall'); ?></label>
+							<input id="lp-modal-subscriber-id" type="text" name="leaky-paywall-subscriber-id" />
+						</div>
+
+						<?php do_action('add_leaky_paywall_subscriber_form'); ?>
+					</div>
+
+					<div class="lp-modal-footer">
+						<div class="lp-modal-error" style="display:none;"></div>
+						<div class="lp-modal-footer-buttons">
+							<button type="button" class="button lp-modal-cancel"><?php esc_html_e('Cancel', 'leaky-paywall'); ?></button>
+							<button type="submit" class="button button-primary" id="lp-modal-submit"><?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></button>
+						</div>
+					</div>
+				</form>
+
+				<div class="lp-modal-success" style="display:none;">
+					<div class="lp-modal-success-icon">&#10003;</div>
+					<p class="lp-modal-success-message"></p>
+					<p class="lp-modal-success-link"></p>
+				</div>
+			</div>
+		</div>
+	<?php
+	}
+
+	public function ajax_add_subscriber()
+	{
+		if (!check_ajax_referer('leaky_paywall_admin_subscriber_add', 'nonce', false)) {
+			wp_send_json_error(array('message' => __('Security check failed.', 'leaky-paywall')));
+		}
+
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('You do not have permission to do this.', 'leaky-paywall')));
+		}
+
+		$login      = isset($_POST['login']) ? sanitize_text_field(wp_unslash($_POST['login'])) : '';
+		$email      = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+		$first_name = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
+		$last_name  = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
+
+		if (empty($login) || empty($email)) {
+			wp_send_json_error(array('message' => __('Username and email are required.', 'leaky-paywall')));
+		}
+
+		if (get_user_by('email', $email)) {
+			wp_send_json_error(array('message' => __('A user with that email address already exists.', 'leaky-paywall')));
+		}
+
+		$payment_gateway = isset($_POST['payment_gateway']) ? sanitize_text_field(wp_unslash($_POST['payment_gateway'])) : '';
+		$subscriber_id   = isset($_POST['subscriber_id']) ? sanitize_text_field(wp_unslash($_POST['subscriber_id'])) : '';
+
+		if (empty($_POST['expires'])) {
+			$expires = 0;
+		} else {
+			$expires = gmdate('Y-m-d 23:59:59', strtotime(trim(urldecode(sanitize_text_field(wp_unslash($_POST['expires']))))));
+		}
+
+		$meta = array(
+			'level_id'        => isset($_POST['level_id']) ? sanitize_text_field(wp_unslash($_POST['level_id'])) : '',
+			'subscriber_id'   => $subscriber_id,
+			'price'           => isset($_POST['price']) ? sanitize_text_field(wp_unslash($_POST['price'])) : '',
+			'description'     => __('Manual Addition', 'leaky-paywall'),
+			'expires'         => $expires,
+			'payment_gateway' => $payment_gateway,
+			'payment_status'  => isset($_POST['payment_status']) ? sanitize_text_field(wp_unslash($_POST['payment_status'])) : '',
+			'interval'        => 0,
+			'plan'            => '',
+			'site'            => leaky_paywall_get_current_site(),
+			'first_name'      => $first_name,
+			'last_name'       => $last_name,
+		);
+
+		$user_id = leaky_paywall_new_subscriber(null, $email, $subscriber_id, $meta, $login);
+
+		if (!is_wp_error($user_id) && $user_id) {
+			wp_update_user(array(
+				'ID'         => $user_id,
+				'first_name' => $first_name,
+				'last_name'  => $last_name,
+			));
+		}
+
+		if (is_wp_error($user_id)) {
+			wp_send_json_error(array('message' => $user_id->get_error_message()));
+		}
+
+		do_action('add_leaky_paywall_subscriber', $user_id);
+
+		$view_url = admin_url('admin.php?page=leaky-paywall-subscribers&action=show&id=' . $user_id);
+
+		wp_send_json_success(array(
+			'user_id' => $user_id,
+			'message' => __('Subscriber added successfully.', 'leaky-paywall'),
+			'url'     => $view_url,
+		));
 	}
 
 	public function add_subscriber_page()

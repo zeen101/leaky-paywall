@@ -68,8 +68,8 @@
 	border-left: 4px solid transparent;
 }
 
-.lp-stat-card--revenue   { border-left-color: #E26B2C; }
-.lp-stat-card--paid      { border-left-color: #38A65B; }
+.lp-stat-card--revenue   { border-left-color: #38A65B; }
+.lp-stat-card--paid      { border-left-color: #E26B2C; }
 .lp-stat-card--free      { border-left-color: #3178D1; }
 .lp-stat-card--paywalls  { border-left-color: #8B5CF6; }
 

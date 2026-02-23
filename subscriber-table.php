@@ -210,7 +210,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_html__( 'All WordPress Users' ) . '</option>';
 		echo '</select>';
 
-		submit_button( __( 'Apply' ), 'primary', false, false );
+		submit_button( __( 'Apply' ), 'secondary', false, false );
 		echo '</div>';
 	}
 

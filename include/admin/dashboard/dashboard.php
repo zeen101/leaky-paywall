@@ -393,14 +393,14 @@ class Leaky_Paywall_Dashboard {
 						{
 							label: '<?php echo esc_js( __( 'Paid', 'leaky-paywall' ) ); ?>',
 							data: signupPaid.map(function(r) { return r.count; }),
-							borderColor: '#38A65B',
-							backgroundColor: 'rgba(56, 166, 91, 0.08)',
+							borderColor: '#E26B2C',
+							backgroundColor: 'rgba(226, 107, 44, 0.08)',
 							fill: true,
 							tension: 0.3,
 							borderWidth: 2,
 							pointRadius: 0,
 							pointHoverRadius: 5,
-							pointHoverBackgroundColor: '#38A65B'
+							pointHoverBackgroundColor: '#E26B2C'
 						},
 						{
 							label: '<?php echo esc_js( __( 'Free', 'leaky-paywall' ) ); ?>',
@@ -454,14 +454,14 @@ class Leaky_Paywall_Dashboard {
 					datasets: [{
 						label: '<?php echo esc_js( __( 'Revenue', 'leaky-paywall' ) ); ?>',
 						data: revenueData.map(function(r) { return r.amount; }),
-						borderColor: '#E26B2C',
-						backgroundColor: 'rgba(226, 107, 44, 0.08)',
+						borderColor: '#38A65B',
+						backgroundColor: 'rgba(56, 166, 91, 0.08)',
 						fill: true,
 						tension: 0.3,
 						borderWidth: 2,
 						pointRadius: 0,
 						pointHoverRadius: 5,
-						pointHoverBackgroundColor: '#E26B2C'
+						pointHoverBackgroundColor: '#38A65B'
 					}]
 				}
 			});

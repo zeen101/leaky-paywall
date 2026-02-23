@@ -53,6 +53,7 @@ class Leaky_Paywall {
 
 
 		add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
+		add_action( 'wp_ajax_leaky_paywall_add_subscriber', array( $this, 'ajax_add_subscriber' ) );
 
 		add_action( 'wp', array( $this, 'process_content_restrictions' ) );
 		add_action( 'wp', array( $this, 'process_pdf_restrictions' ) );
@@ -222,6 +223,7 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), $capability, 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 
+
 	}
 
 
@@ -313,8 +315,9 @@ class Leaky_Paywall {
 			'leaky_paywall_subscribers_js',
 			'leaky_paywall_notice_ajax',
 			array(
-				'ajaxurl'       => admin_url( 'admin-ajax.php' ),
-				'lpNoticeNonce' => wp_create_nonce( 'leaky-paywall-notice-nonce' ),
+				'ajaxurl'              => admin_url( 'admin-ajax.php' ),
+				'lpNoticeNonce'        => wp_create_nonce( 'leaky-paywall-notice-nonce' ),
+				'addSubscriberNonce'   => wp_create_nonce( 'leaky_paywall_admin_subscriber_add' ),
 			)
 		);
 
@@ -941,6 +944,11 @@ class Leaky_Paywall {
 		update_user_meta( $current_user->ID, 'leaky_paywall_rss_item_notice_link', 1 );
 
 		exit;
+	}
+
+	public function ajax_add_subscriber() {
+		$admin_subscriber = new Leaky_Paywall_Admin_Subscriber();
+		$admin_subscriber->ajax_add_subscriber();
 	}
 
 	/**

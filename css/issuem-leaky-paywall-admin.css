@@ -795,3 +795,511 @@ input[type="submit"].lp-inline-button {
   flex-wrap: wrap;
   justify-content: space-between;
 }
+
+/* ========================================
+   Settings page — modern styling
+   ======================================== */
+
+.leaky-paywall_page_leaky-paywall-settings #wpcontent {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .wrap {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .postbox-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Section h2 headings */
+
+.leaky-paywall_page_leaky-paywall-settings .postbox-container h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #1d2327;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f1;
+  margin: 24px 0 16px;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .postbox-container h2:first-child {
+  margin-top: 0;
+}
+
+/* Form table styling */
+
+.leaky-paywall_page_leaky-paywall-settings .form-table,
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-table {
+  border-collapse: collapse;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .form-table tr,
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-table tr {
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .form-table tr:last-child,
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-table tr:last-child {
+  border-bottom: none;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .form-table th,
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-table th {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  vertical-align: top;
+  padding: 16px 10px 16px 0;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .form-table td,
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-table td {
+  padding: 12px 10px;
+  color: #1d2327;
+}
+
+/* Sections nav */
+
+.leaky-paywall_page_leaky-paywall-settings .lp-sections-wrap {
+  margin-left: -20px;
+  padding: 0 20px 12px;
+  border-bottom: 1px solid #f0f0f1;
+  margin-bottom: 24px;
+}
+
+/* Sidebar */
+
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-sidebar {
+  float: none !important;
+  width: 280px !important;
+  margin-top: 0 !important;
+  flex-shrink: 0;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-sidebar-widget {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 16px 20px;
+}
+
+.leaky-paywall_page_leaky-paywall-settings .leaky-paywall-sidebar-widget h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+/* Primary button */
+
+.leaky-paywall_page_leaky-paywall-settings #wpcontent .button-primary {
+  background: #E45637;
+  border: 0;
+  border-radius: 0 12px 0 0 !important;
+  padding: 8px 26px;
+  font-size: 16px;
+  transition: all .2s ease-in-out;
+}
+
+.leaky-paywall_page_leaky-paywall-settings #wpcontent .button-primary:hover {
+  background: #333333;
+}
+
+/* Success notice */
+
+.leaky-paywall_page_leaky-paywall-settings .updated {
+  border-left: 4px solid #38A65B;
+  border-radius: 0 6px 6px 0;
+  background: #ecfdf5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   Subscriber table — modern styling
+   ======================================== */
+
+/* White card wrapper */
+
+.leaky-paywall_page_leaky-paywall-subscribers .wrap > form#leaky-paywall-subscribers,
+.leaky-paywall_page_leaky-paywall-subscribers .wrap > .add-new-sub-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wrap > .add-new-sub-container {
+  float: none !important;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0 !important;
+  border-radius: 8px 8px 0 0;
+  box-shadow: none;
+  padding-bottom: 0;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wrap > form#leaky-paywall-subscribers {
+  border-radius: 0 0 8px 8px;
+  margin-top: 0;
+}
+
+/* Filter bar */
+
+.leaky-paywall_page_leaky-paywall-subscribers .tablenav.top {
+  padding-bottom: 16px;
+  margin-bottom: 0;
+  margin-top: 0;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .tablenav.top select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #1d2327;
+  min-height: 32px;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .tablenav.top .button {
+  border-radius: 4px;
+  min-height: 32px;
+}
+
+/* Search box */
+
+.leaky-paywall_page_leaky-paywall-subscribers .search-box input[type="search"] {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  min-height: 32px;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .search-box #search-submit {
+  border-radius: 4px;
+  min-height: 32px;
+}
+
+/* Table */
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table {
+  border: none;
+  border-spacing: 0;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table thead th,
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table thead td {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  border-bottom: 2px solid #f0f0f1;
+  padding: 10px;
+  background: none;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table thead th a {
+  color: #888;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table thead th a:hover {
+  color: #1d2327;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table thead .sorted a,
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table thead .sorted .sorting-indicators {
+  color: #1d2327;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tfoot th,
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tfoot td {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  border-top: 2px solid #f0f0f1;
+  border-bottom: none;
+  padding: 10px;
+  background: none;
+}
+
+/* Remove striped alternating rows */
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table.striped > tbody > :nth-child(odd) {
+  background: none;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tbody tr {
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tbody td {
+  padding: 12px 10px;
+  color: #1d2327;
+  vertical-align: middle;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table tbody th {
+  vertical-align: middle;
+}
+
+/* Row actions */
+
+.leaky-paywall_page_leaky-paywall-subscribers .wp-list-table .row-actions span {
+  color: #999;
+}
+
+/* Pagination */
+
+.leaky-paywall_page_leaky-paywall-subscribers .tablenav.bottom {
+  border-top: 1px solid #f0f0f1;
+  margin-top: 0;
+  padding-top: 12px;
+}
+
+.leaky-paywall_page_leaky-paywall-subscribers .tablenav-pages .displaying-num {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+}
+
+/* ========================================
+   Add Subscriber Modal
+   ======================================== */
+
+/* Overlay */
+
+.lp-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Card */
+
+.lp-modal {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Header */
+
+.lp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.lp-modal-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2327;
+  margin: 0;
+}
+
+.lp-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.lp-modal-close:hover {
+  color: #1d2327;
+}
+
+/* Body */
+
+.lp-modal-body {
+  padding: 24px;
+}
+
+/* Form fields */
+
+.lp-modal-field {
+  margin-bottom: 16px;
+}
+
+.lp-modal-field:last-child {
+  margin-bottom: 0;
+}
+
+.lp-modal-field-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.lp-modal-field-row .lp-modal-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.lp-modal-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.lp-modal-field label .required {
+  color: #b32d2e;
+}
+
+.lp-modal-field input[type="text"],
+.lp-modal-field input[type="email"],
+.lp-modal-field select {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #1d2327;
+  box-sizing: border-box;
+}
+
+.lp-modal-field input[type="text"]:focus,
+.lp-modal-field input[type="email"]:focus,
+.lp-modal-field select:focus {
+  border-color: #E45637;
+  outline: none;
+  box-shadow: 0 0 0 1px #E45637;
+}
+
+.lp-modal-field-hint {
+  font-size: 12px;
+  color: #999;
+  margin: 4px 0 0;
+}
+
+/* Error */
+
+.lp-modal-error {
+  border-left: 4px solid #b32d2e;
+  background: #fcf0f1;
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: #1d2327;
+  margin-bottom: 16px;
+}
+
+/* Footer */
+
+.lp-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f1;
+}
+
+.lp-modal-footer .lp-modal-error {
+  margin-bottom: 12px;
+}
+
+.lp-modal-footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.lp-modal-footer .button-primary {
+  background: #E45637;
+  border: 0;
+  border-radius: 0 12px 0 0 !important;
+  padding: 8px 26px;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+  transition: all .2s ease-in-out;
+}
+
+.lp-modal-footer .button-primary:hover {
+  background: #333;
+}
+
+.lp-modal-footer .button-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success */
+
+.lp-modal-success {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.lp-modal-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #d4edda;
+  color: #155724;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.lp-modal-success-message {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d2327;
+  margin: 0 0 8px;
+}
+
+.lp-modal-success-link a {
+  color: #2271b1;
+  text-decoration: none;
+}
+
+.lp-modal-success-link a:hover {
+  color: #135e96;
+}

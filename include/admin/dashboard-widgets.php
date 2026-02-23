@@ -69,8 +69,8 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		.lp-dash-stat:hover {
 			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 		}
-		.lp-dash-stat--revenue  { border-left-color: #E26B2C; }
-		.lp-dash-stat--paid     { border-left-color: #38A65B; }
+		.lp-dash-stat--revenue  { border-left-color: #38A65B; }
+		.lp-dash-stat--paid     { border-left-color: #E26B2C; }
 		.lp-dash-stat--free     { border-left-color: #3178D1; }
 		.lp-dash-stat--paywalls { border-left-color: #8B5CF6; }
 		.lp-dash-stat-value {

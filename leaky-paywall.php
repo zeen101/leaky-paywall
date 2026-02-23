@@ -74,6 +74,9 @@ function leaky_paywall_plugins_loaded() {
 
 	require_once 'class.php';
 
+	// Load license key class early so extension plugins can always use it.
+	include LEAKY_PAYWALL_PATH . 'include/license-key.php';
+
 	// Instantiate the Pigeon Pack class.
 	if ( class_exists( 'Leaky_Paywall' ) ) {
 
@@ -107,7 +110,6 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/tracking.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/list-builder/class-lp-list-builder.php';
 
-		include LEAKY_PAYWALL_PATH . 'include/license-key.php';
 		include LEAKY_PAYWALL_PATH . 'include/error-tracking.php';
 		include LEAKY_PAYWALL_PATH . 'include/registration-functions.php';
 		include LEAKY_PAYWALL_PATH . 'include/rest-functions.php';
