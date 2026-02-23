@@ -1,72 +1,217 @@
-.lp-dashboard-funnel {
-	background: #f0f6fc;
-	border-left: 4px solid #2271b1;
-	padding: 10px 14px;
-	margin-bottom: 2em;
-	font-size: 13px;
+/* =============================================
+   Leaky Paywall Dashboard — Modern Design
+   ============================================= */
+
+/* --- Layout Grid --- */
+.lp-dashboard {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+	max-width: 1200px;
+	margin-top: 20px;
+}
+
+.lp-dashboard-header {
+	grid-column: 1 / -1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.lp-dashboard-header h2 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
 	color: #1d2327;
 }
 
-.lp-dashboard-funnel strong {
-	font-size: 14px;
+.lp-dashboard-full {
+	grid-column: 1 / -1;
 }
 
-.lp-dashboard-columns {
-	display: flex;
-	gap: 2em;
-	margin-top: 2em;
-}
-
-.lp-dashboard-column {
-	flex: 1;
-	min-width: 0;
-}
-
-.lp-dashboard-column h3 {
-	margin-top: 0;
-}
-
-.lp-dashboard-quick-links {
-	display: flex;
-	gap: 8px;
-	padding-top: 16px;
-	border-top: 1px solid #f0f0f1;
-	margin-top: 2em;
-}
-
-.lp-dashboard-quick-links a {
-	text-decoration: none;
-}
-
-.lp-dashboard-quick-links span {
-	color: #dcdcde;
-}
-
-.lp-dashboard-charts {
-	display: flex;
-	gap: 2em;
-	margin-bottom: 2em;
-}
-
-.lp-dashboard-chart {
-	flex: 1;
-	min-width: 0;
+/* --- Period Selector --- */
+.lp-dashboard-period select {
+	padding: 6px 28px 6px 12px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	font-size: 13px;
+	color: #1d2327;
 	background: #fff;
-	padding: 20px;
-	border-radius: 5px;
-	border: 1px solid #eee;
+	cursor: pointer;
 }
 
+.lp-dashboard-period select:hover {
+	border-color: #bbb;
+}
+
+/* --- Card Base --- */
+.lp-card {
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+	padding: 24px;
+}
+
+/* --- Stat Cards --- */
+.lp-dashboard-stats {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 20px;
+}
+
+.lp-stat-card {
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+	padding: 24px;
+	border-left: 4px solid transparent;
+}
+
+.lp-stat-card--revenue   { border-left-color: #E26B2C; }
+.lp-stat-card--paid      { border-left-color: #38A65B; }
+.lp-stat-card--free      { border-left-color: #3178D1; }
+.lp-stat-card--paywalls  { border-left-color: #8B5CF6; }
+
+.lp-stat-label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #888;
+	margin-bottom: 8px;
+}
+
+.lp-stat-value {
+	font-size: 36px;
+	font-weight: 700;
+	line-height: 1.1;
+	color: #1d2327;
+}
+
+/* --- Funnel --- */
+.lp-dashboard-funnel {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr auto 1fr;
+	align-items: center;
+	gap: 0;
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+	padding: 0;
+	overflow: hidden;
+}
+
+.lp-funnel-step {
+	padding: 20px 24px;
+	text-align: center;
+}
+
+.lp-funnel-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: #1d2327;
+	line-height: 1.2;
+}
+
+.lp-funnel-label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #888;
+	margin-top: 4px;
+}
+
+.lp-funnel-arrow {
+	font-size: 24px;
+	color: #ccc;
+	line-height: 1;
+}
+
+/* --- Charts --- */
 .lp-dashboard-chart h3 {
-	margin-top: 0;
+	margin: 0 0 16px 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
 }
 
 .lp-dashboard-chart-wrap {
 	position: relative;
-	height: 280px;
+	height: 260px;
 }
 
-#lp-wit-app .dashicons-visibility {
-	color: #8B5CF6;
-	background: #F3EEFF;
+/* --- Tables --- */
+.lp-card h3 {
+	margin: 0 0 16px 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.lp-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.lp-table thead th {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #888;
+	padding: 0 0 10px 0;
+	border-bottom: 2px solid #f0f0f1;
+	text-align: left;
+}
+
+.lp-table tbody td {
+	padding: 10px 0;
+	border-bottom: 1px solid #f5f5f5;
+	font-size: 13px;
+	color: #1d2327;
+}
+
+.lp-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.lp-table a {
+	color: #2271b1;
+	text-decoration: none;
+}
+
+.lp-table a:hover {
+	color: #135e96;
+}
+
+/* --- Empty State --- */
+.lp-no-data {
+	font-size: 13px;
+	color: #999;
+	margin: 0;
+}
+
+/* --- Quick Links --- */
+.lp-dashboard-quick-links {
+	grid-column: 1 / -1;
+	display: flex;
+	gap: 8px;
+	padding-top: 8px;
+}
+
+.lp-dashboard-quick-links a {
+	text-decoration: none;
+	color: #2271b1;
+	font-size: 13px;
+}
+
+.lp-dashboard-quick-links a:hover {
+	color: #135e96;
+}
+
+.lp-dashboard-quick-links span {
+	color: #dcdcde;
 }
