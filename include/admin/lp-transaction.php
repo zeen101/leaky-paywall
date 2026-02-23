@@ -131,8 +131,12 @@ class LP_Transaction_Post_Type
 			<span class="lp-transaction-amount <?php echo $is_refund ? 'lp-transaction-amount--refund' : ''; ?>">
 				<?php echo esc_html( $formatted_price ); ?>
 			</span>
-			<?php if ( $is_recurring && ! $is_refund ) : ?>
-				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Recurring', 'leaky-paywall' ); ?></span>
+			<?php if ( ! $is_refund ) :
+				if ( $is_recurring ) : ?>
+				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Subscription Renewal', 'leaky-paywall' ); ?></span>
+				<?php elseif ( isset( $level['recurring'] ) && $level['recurring'] ) : ?>
+				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Initial Subscription Payment', 'leaky-paywall' ); ?></span>
+				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 
@@ -259,12 +263,34 @@ class LP_Transaction_Post_Type
 		}
 
 		// Payment type.
+		$level_id     = get_post_meta( $post->ID, '_level_id', true );
+		$level        = get_leaky_paywall_subscription_level( $level_id );
+
 		if ( $is_refund ) {
 			$payment_type = __( 'Refund', 'leaky-paywall' );
 		} elseif ( $is_recurring ) {
-			$payment_type = __( 'Recurring', 'leaky-paywall' );
+			$payment_type = __( 'Subscription Renewal', 'leaky-paywall' );
+		} elseif ( isset( $level['recurring'] ) && $level['recurring'] ) {
+			$payment_type = __( 'Initial Subscription Payment', 'leaky-paywall' );
 		} else {
 			$payment_type = __( 'One Time', 'leaky-paywall' );
+		}
+
+		// Stripe Customer ID — stored on transaction, fallback to user meta for older transactions.
+		$subscriber_id = get_post_meta( $post->ID, '_subscriber_id', true );
+		$site          = leaky_paywall_get_current_site();
+
+		if ( ! $subscriber_id && $email && in_array( $gateway, array( 'stripe', 'stripe_checkout' ), true ) ) {
+			$txn_user = get_user_by( 'email', $email );
+			if ( $txn_user ) {
+				$subscriber_id = get_user_meta( $txn_user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+			}
+		}
+
+		$stripe_customer_url = '';
+		if ( $subscriber_id && in_array( $gateway, array( 'stripe', 'stripe_checkout' ), true ) ) {
+			$stripe_base         = 'test' === $mode ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
+			$stripe_customer_url = $stripe_base . $subscriber_id;
 		}
 
 		// Find subscriber.
@@ -300,6 +326,21 @@ class LP_Transaction_Post_Type
 							</a>
 						<?php else : ?>
 							<?php echo esc_html( $gateway_txn_id ); ?>
+						<?php endif; ?>
+					</span>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $subscriber_id ) : ?>
+				<div class="lp-sidebar-field">
+					<span class="lp-sidebar-label"><?php esc_html_e( 'Customer ID', 'leaky-paywall' ); ?></span>
+					<span class="lp-sidebar-value">
+						<?php if ( $stripe_customer_url ) : ?>
+							<a href="<?php echo esc_url( $stripe_customer_url ); ?>" target="_blank">
+								<?php echo esc_html( $subscriber_id ); ?>
+							</a>
+						<?php else : ?>
+							<?php echo esc_html( $subscriber_id ); ?>
 						<?php endif; ?>
 					</span>
 				</div>
@@ -405,7 +446,9 @@ class LP_Transaction_Post_Type
 				if ('refund' === $status) {
 					echo '<span style="color: #b32d2e;">Refund</span>';
 				} elseif (get_post_meta($post_id, '_is_recurring', true)) {
-					echo 'Recurring';
+					echo 'Subscription Renewal';
+				} elseif (isset($level['recurring']) && $level['recurring']) {
+					echo 'Initial Subscription Payment';
 				} else {
 					echo 'One Time';
 				}

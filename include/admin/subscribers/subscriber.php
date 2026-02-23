@@ -303,13 +303,6 @@ class Leaky_Paywall_Admin_Subscriber
 		$plan = lp_get_subscriber_meta('plan', $user);
 		$payment_status = lp_get_subscriber_meta('payment_status', $user);
 		$payment_gateway = lp_get_subscriber_meta('payment_gateway', $user);
-		$has_access = leaky_paywall_user_has_access($user);
-
-		if ($has_access) {
-			$has_access = 'Yes';
-		} else {
-			$has_access = 'No';
-		}
 
 		$date_format        = 'F j, Y';
 		$jquery_date_format = leaky_paywall_jquery_datepicker_format($date_format);
@@ -321,341 +314,296 @@ class Leaky_Paywall_Admin_Subscriber
 		}
 
 	?>
-		<div class="wrap">
-			<p><a href="<?php echo esc_url(admin_url()); ?>admin.php?page=leaky-paywall-subscribers"><?php esc_html_e('All Subscribers', 'leaky-paywall'); ?> ⤴</a></p>
-			<h1 class="wp-heading-inline"><?php echo esc_html($user->user_email); ?></h1>
-			<hr class="wp-header-end">
+		<style>
+			.lp-sub-page { max-width: 1100px; margin-top: 10px; }
+			.lp-sub-back { display: inline-block; font-size: 13px; color: #2271b1; text-decoration: none; margin-bottom: 12px; }
+			.lp-sub-back:hover { color: #135e96; }
+			.lp-sub-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+			.lp-sub-header h1 { margin: 0; font-size: 20px; font-weight: 600; color: #1d2327; }
+			.lp-sub-header .lp-status-badge { font-size: 12px; }
+			.lp-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+			.lp-sub-card {
+				background: #fff;
+				border-radius: 8px;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+				padding: 24px;
+			}
+			.lp-sub-card h3 {
+				margin: 0 0 16px 0;
+				font-size: 14px;
+				font-weight: 600;
+				color: #1d2327;
+			}
+			.lp-sub-card--full { grid-column: 1 / -1; }
+			.lp-sub-field { margin-bottom: 16px; }
+			.lp-sub-field:last-child { margin-bottom: 0; }
+			.lp-sub-field label,
+			.lp-sub-field-label {
+				display: block;
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.4px;
+				color: #888;
+				margin-bottom: 5px;
+			}
+			.lp-sub-field input[type="text"],
+			.lp-sub-field input[type="email"],
+			.lp-sub-field textarea,
+			.lp-sub-field select {
+				width: 100%;
+				max-width: 100%;
+				box-sizing: border-box;
+			}
+			.lp-sub-field textarea { resize: vertical; }
+			.lp-sub-field .lp-sub-field-hint {
+				font-size: 12px;
+				color: #999;
+				margin-top: 4px;
+			}
+			.lp-sub-field-static {
+				font-size: 14px;
+				color: #1d2327;
+			}
+			.lp-sub-table {
+				width: 100%;
+				border-collapse: collapse;
+			}
+			.lp-sub-table thead th {
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.4px;
+				color: #888;
+				padding: 0 12px 10px 0;
+				border-bottom: 2px solid #f0f0f1;
+				text-align: left;
+			}
+			.lp-sub-table tbody td {
+				padding: 10px 12px 10px 0;
+				border-bottom: 1px solid #f5f5f5;
+				font-size: 13px;
+				color: #1d2327;
+			}
+			.lp-sub-table tbody tr:last-child td { border-bottom: none; }
+			.lp-sub-table a { color: #2271b1; text-decoration: none; }
+			.lp-sub-table a:hover { color: #135e96; }
+			.lp-sub-save { margin-top: 0; }
+			.lp-sub-empty { font-size: 13px; color: #999; margin: 0; }
+		</style>
+
+		<div class="lp-sub-page">
+
+			<a href="<?php echo esc_url(admin_url('admin.php?page=leaky-paywall-subscribers')); ?>" class="lp-sub-back">&larr; <?php esc_html_e('All Subscribers', 'leaky-paywall'); ?></a>
+
+			<div class="lp-sub-header">
+				<h1><?php echo esc_html($user->user_email); ?></h1>
+				<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($payment_status); ?>"><?php echo esc_html(ucwords(str_replace('_', ' ', $payment_status))); ?></span>
+			</div>
 
 			<form method="POST" action="" id="leaky-paywall-admin-subscriber-form">
 
 				<?php wp_nonce_field('leaky_paywall_admin_subscriber_update', 'leaky_paywall_admin_subscriber_update_nonce'); ?>
 
-				<!-- Subscriber Section -->
+				<div class="lp-sub-grid">
 
+					<!-- Subscriber Details -->
+					<div class="lp-sub-card">
+						<h3><?php esc_html_e('Subscriber Details', 'leaky-paywall'); ?></h3>
 
-
-				<div id="poststuff">
-					<div id="post-body" class="metabox-holder">
-
-						<div class="lp-sub-details-wrap">
-
-						<div>
-							<h2 class="hndle ui-sortable-handle"><span><?php esc_html_e('Subscriber Details', 'leaky-paywall'); ?></span></h2>
-							<div class="postbox">
-
-								<div class="inside">
-									<table class="form-table">
-										<tr>
-											<th><label for="first_name"><?php esc_html_e('First Name', 'leaky-paywall'); ?></label></th>
-											<td><input name="first_name" type="text" id="first_name" value="<?php echo esc_attr($user->first_name); ?>" class="regular-text"></td>
-										</tr>
-										<tr>
-											<th><label for="last_name"><?php esc_html_e('Last Name', 'leaky-paywall'); ?></label></th>
-											<td><input name="last_name" type="text" id="last_name" value="<?php echo esc_attr($user->last_name); ?>" class="regular-text"></td>
-										</tr>
-										<tr>
-											<th><label for="email"><?php esc_html_e('Email', 'leaky-paywall'); ?></label></th>
-											<td><input name="email" type="email" id="email" value="<?php echo esc_attr($user->user_email); ?>" class="regular-text"></td>
-										</tr>
-										<tr>
-											<th><label for="subscriber_notes"><?php esc_html_e('Notes', 'leaky-paywall'); ?></label></th>
-											<td><textarea name="subscriber_notes" id="subscriber_notes" class="large-text" rows="4"><?php echo esc_html($subscriber_notes); ?></textarea></td>
-										</tr>
-										<tr>
-											<th><label for="created"><?php esc_html_e('Created', 'leaky-paywall'); ?></label></th>
-											<td><?php echo esc_html(gmdate($date_format, strtotime($created))); ?></td>
-										</tr>
-										<tr>
-											<th><label for="has_access"><?php esc_html_e('Has Access', 'leaky-paywall'); ?></label></th>
-											<td><?php echo esc_html($has_access); ?></td>
-										</tr>
-										<tr>
-											<th><label for="password"><?php esc_html_e('Password', 'leaky-paywall'); ?></label></th>
-											<td>
-												<?php $edit_wp_link = admin_url() . 'user-edit.php?user_id=' . $user->ID; ?>
-												<a href="<?php echo esc_url($edit_wp_link); ?>"><?php esc_html_e('Edit on WP User Profile', 'leaky-paywall'); ?></a>
-											</td>
-										</tr>
-
-										<?php
-										if (is_multisite_premium()) {
-										?>
-											<tr>
-												<th><label for="site"><?php esc_html_e('Site', 'leaky-paywall'); ?></label></th>
-												<td><input name="site" type="text" id="site" value="<?php echo get_leaky_paywall_subscribers_site_id_by_subscriber_email($user->user_email); ?>" class="regular-text"></td>
-												</td>
-											</tr>
-										<?php
-										} ?>
-
-										<?php do_action('update_leaky_paywall_subscriber_form', $user->ID); ?>
-
-									</table>
-
-								</div>
-							</div>
-</div>
-						<div>
-							<!-- Subscription Details Section -->
-							<h2 class="hndle ui-sortable-handle"><span><?php esc_html_e('Subscription Details', 'leaky-paywall'); ?></span></h2>
-							<div class="postbox">
-
-								<div class="inside">
-									<table class="form-table">
-										<tr>
-											<th><label for="payment_status"><?php esc_html_e('Payment Status', 'leaky-paywall'); ?></label></th>
-											<td>
-												<select name="payment_status" id="payment_status">
-													<option value="active" <?php selected($payment_status, 'active'); ?>><?php esc_html_e('Active', 'leaky-paywall'); ?></option>
-													<option value="pending_cancel" <?php selected($payment_status, 'pending_cancel'); ?>><?php esc_html_e('Pending Cancel', 'leaky-paywall'); ?></option>
-													<option value="trial" <?php selected($payment_status, 'trial'); ?>><?php esc_html_e('Trial', 'leaky-paywall'); ?></option>
-													<option value="past_due" <?php selected($payment_status, 'past_due'); ?>><?php esc_html_e('Past Due', 'leaky-paywall'); ?></option>
-													<option value="canceled" <?php selected($payment_status, 'canceled'); ?>><?php esc_html_e('Canceled', 'leaky-paywall'); ?></option>
-													<option value="expired" <?php selected($payment_status, 'expired'); ?>><?php esc_html_e('Expired', 'leaky-paywall'); ?></option>
-													<option value="deactivated" <?php selected($payment_status, 'deactivated'); ?>><?php esc_html_e('Deactivated', 'leaky-paywall'); ?></option>
-												</select>
-											</td>
-										</tr>
-										<tr>
-											<th><label for="level_id"><?php esc_html_e('Level', 'leaky-paywall'); ?></label></th>
-											<td>
-												<select name="level_id" id="level_id">
-													<?php
-													foreach ($levels as $level) {
-														echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr($level['id']) . '">ID: ' . esc_html($level['id']) . ' - ' .  esc_html($level['label']) . '</option>';
-													}
-													?>
-												</select>
-											</td>
-										</tr>
-										<tr>
-											<th><label for="subscriber_id"><?php esc_html_e('Subscriber ID', 'leaky-paywall'); ?></label></th>
-											<td>
-												<input name="subscriber_id" type="text" id="subscriber_id" value="<?php echo esc_attr($subscriber_id); ?>" class="regular-text">
-												<?php
-												if (strpos($subscriber_id, 'cus_') !== false) {
-													echo '<br>';
-													$stripe_url = leaky_paywall_get_current_mode() == 'test' ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
-													echo '<a target="_blank" href="' . esc_url($stripe_url . $subscriber_id) . '">View in Stripe</a>';
-												}
-												?>
-											</td>
-										</tr>
-										<tr>
-											<th><label for="plan"><?php esc_html_e('Plan', 'leaky-paywall'); ?></label></th>
-											<?php
-											if (!$plan) {
-												$plan = 'Non-Recurring';
-											}
-											?>
-											<td>
-												<input name="plan" type="text" id="plan" value="<?php echo esc_attr($plan); ?>" class="regular-text">
-												<br><span style="color: #999;"><?php esc_html_e('Leave empty for Non-Recurring', 'leaky-paywall'); ?></span>
-											</td>
-										</tr>
-										<tr>
-											<th><label for="expires"><?php esc_html_e('Expires', 'leaky-paywall'); ?></label></th>
-											<td>
-												<input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr($expires); ?>" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
-												<input type="hidden" name="date_format" value="<?php echo esc_attr($jquery_date_format); ?>" />
-												<br><span style="color: #999;"><?php esc_html_e('Enter 0 for never expires', 'leaky-paywall'); ?></span>
-											</td>
-										</tr>
-										<tr>
-											<th>
-												<label for="payment-gateway" style="display:table-cell"><?php esc_html_e('Payment Method', 'leaky-paywall'); ?></label>
-											</th>
-											<td>
-												<?php $payment_gateways = leaky_paywall_payment_gateways(); ?>
-												<select name="payment_gateway">
-													<?php
-													foreach ($payment_gateways as $key => $gateway) {
-														echo '<option value="' . esc_attr($key) . '" ' . selected($key, $payment_gateway, false) . '>' . esc_html($gateway) . '</option>';
-													}
-													?>
-												</select>
-											</td>
-										</tr>
-
-										<?php do_action('update_leaky_paywall_subscription_form', $user->ID); ?>
-
-									</table>
-								</div>
-							</div>
-
-</div>
-
+						<div class="lp-sub-field">
+							<label for="first_name"><?php esc_html_e('First Name', 'leaky-paywall'); ?></label>
+							<input name="first_name" type="text" id="first_name" value="<?php echo esc_attr($user->first_name); ?>" class="regular-text">
+						</div>
+						<div class="lp-sub-field">
+							<label for="last_name"><?php esc_html_e('Last Name', 'leaky-paywall'); ?></label>
+							<input name="last_name" type="text" id="last_name" value="<?php echo esc_attr($user->last_name); ?>" class="regular-text">
+						</div>
+						<div class="lp-sub-field">
+							<label for="email"><?php esc_html_e('Email', 'leaky-paywall'); ?></label>
+							<input name="email" type="email" id="email" value="<?php echo esc_attr($user->user_email); ?>" class="regular-text">
+						</div>
+						<div class="lp-sub-field">
+							<label for="subscriber_notes"><?php esc_html_e('Notes', 'leaky-paywall'); ?></label>
+							<textarea name="subscriber_notes" id="subscriber_notes" rows="4"><?php echo esc_html($subscriber_notes); ?></textarea>
+						</div>
+						<div class="lp-sub-field">
+							<span class="lp-sub-field-label"><?php esc_html_e('Created', 'leaky-paywall'); ?></span>
+							<span class="lp-sub-field-static"><?php echo esc_html(gmdate($date_format, strtotime($created))); ?></span>
+						</div>
+						<div class="lp-sub-field">
+							<span class="lp-sub-field-label"><?php esc_html_e('Password', 'leaky-paywall'); ?></span>
+							<?php $edit_wp_link = admin_url('user-edit.php?user_id=' . $user->ID); ?>
+							<a href="<?php echo esc_url($edit_wp_link); ?>"><?php esc_html_e('Edit on WP User Profile', 'leaky-paywall'); ?></a>
 						</div>
 
-							<!-- Save Button -->
-							<p class="submit">
-								<input type="submit" name="save_subscriber" id="save_subscriber" class="button button-primary" value="Save Changes">
-							</p>
-
-							<!-- Transactions Section -->
-							<div class="postbox">
-								<h2 class="hndle ui-sortable-handle"><span><?php esc_html_e('Past Transactions', 'leaky-paywall'); ?></span></h2>
-								<div class="inside">
-									<table class="wp-list-table widefat fixed striped">
-										<thead>
-											<tr>
-												<th><?php esc_html_e('Date', 'leaky-paywall'); ?></th>
-												<th><?php esc_html_e('Description', 'leaky-paywall'); ?></th>
-												<th><?php esc_html_e('Amount', 'leaky-paywall'); ?></th>
-												<th><?php esc_html_e('Payment Type', 'leaky-paywall'); ?></th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php
-
-											if ($transactions) {
-												foreach ($transactions as $transaction) {
-
-													$level_id = get_post_meta($transaction->ID, '_level_id', true);
-													$level    = get_leaky_paywall_subscription_level($level_id);
-
-
-											?>
-													<tr>
-														<td>
-															<a href="<?php echo esc_url(admin_url()); ?>/post.php?post=<?php echo esc_attr($transaction->ID); ?>&action=edit"><?php echo esc_html(gmdate('M d, Y', strtotime($transaction->post_date))); ?></a>
-														</td>
-														<td>
-															<?php echo absint($level_id) . ' - ' . isset($level['label']) ? esc_html($level['label']) : ''; ?>
-														</td>
-														<td>
-															<?php echo esc_html(leaky_paywall_get_current_currency_symbol()) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?>
-														</td>
-														<td>
-															<?php
-															if (!isset($level['recurring'])) {
-																echo 'One-time payment';
-															} else {
-																echo get_post_meta($transaction->ID, '_is_recurring', true) ? 'Subscription Renewal' : 'Initial Subscription Payment';
-															}
-															?>
-
-														</td>
-													</tr>
-												<?php
-												}
-											} else {
-												?>
-												<tr>
-													<td colspan="4"><?php esc_html_e('No transactions found', 'leaky-paywall'); ?></td>
-												</tr>
-											<?php
-											}
-
-											?>
-
-										</tbody>
-									</table>
-								</div>
-							</div>
-
-							<!-- Status History Section -->
-							<div class="postbox">
-								<h2 class="hndle ui-sortable-handle"><span><?php esc_html_e('Status History', 'leaky-paywall'); ?></span></h2>
-								<div class="inside">
-									<?php
-									$status_log = leaky_paywall_get_status_log($user->ID);
-
-									if (!empty($status_log)) {
-										// Show newest first.
-										$status_log = array_reverse($status_log);
-									?>
-										<table class="wp-list-table widefat fixed striped">
-											<thead>
-												<tr>
-													<th><?php esc_html_e('Date', 'leaky-paywall'); ?></th>
-													<th><?php esc_html_e('Change', 'leaky-paywall'); ?></th>
-													<th><?php esc_html_e('Source', 'leaky-paywall'); ?></th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php foreach ($status_log as $entry) { ?>
-													<tr>
-														<td><?php echo esc_html(date_i18n('M j, Y g:i a', $entry['date'])); ?></td>
-														<td>
-															<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($entry['from']); ?>"><?php echo esc_html(lp_get_status_label($entry['from'])); ?></span>
-															&rarr;
-															<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($entry['to']); ?>"><?php echo esc_html(lp_get_status_label($entry['to'])); ?></span>
-														</td>
-														<td><?php echo esc_html(lp_get_source_label($entry['source'])); ?></td>
-													</tr>
-												<?php } ?>
-											</tbody>
-										</table>
-									<?php } else { ?>
-										<p><?php esc_html_e('No status changes recorded yet.', 'leaky-paywall'); ?></p>
-									<?php } ?>
-								</div>
-							</div>
-
+						<?php if (is_multisite_premium()) : ?>
+						<div class="lp-sub-field">
+							<label for="site"><?php esc_html_e('Site', 'leaky-paywall'); ?></label>
+							<input name="site" type="text" id="site" value="<?php echo esc_attr(get_leaky_paywall_subscribers_site_id_by_subscriber_email($user->user_email)); ?>" class="regular-text">
 						</div>
+						<?php endif; ?>
 
+						<?php do_action('update_leaky_paywall_subscriber_form', $user->ID); ?>
 					</div>
+
+					<!-- Subscription Details -->
+					<div class="lp-sub-card">
+						<h3><?php esc_html_e('Subscription Details', 'leaky-paywall'); ?></h3>
+
+						<div class="lp-sub-field">
+							<label for="payment_status"><?php esc_html_e('Payment Status', 'leaky-paywall'); ?></label>
+							<select name="payment_status" id="payment_status">
+								<option value="active" <?php selected($payment_status, 'active'); ?>><?php esc_html_e('Active', 'leaky-paywall'); ?></option>
+								<option value="pending_cancel" <?php selected($payment_status, 'pending_cancel'); ?>><?php esc_html_e('Pending Cancel', 'leaky-paywall'); ?></option>
+								<option value="trial" <?php selected($payment_status, 'trial'); ?>><?php esc_html_e('Trial', 'leaky-paywall'); ?></option>
+								<option value="past_due" <?php selected($payment_status, 'past_due'); ?>><?php esc_html_e('Past Due', 'leaky-paywall'); ?></option>
+								<option value="canceled" <?php selected($payment_status, 'canceled'); ?>><?php esc_html_e('Canceled', 'leaky-paywall'); ?></option>
+								<option value="expired" <?php selected($payment_status, 'expired'); ?>><?php esc_html_e('Expired', 'leaky-paywall'); ?></option>
+								<option value="deactivated" <?php selected($payment_status, 'deactivated'); ?>><?php esc_html_e('Deactivated', 'leaky-paywall'); ?></option>
+							</select>
+						</div>
+						<div class="lp-sub-field">
+							<label for="level_id"><?php esc_html_e('Level', 'leaky-paywall'); ?></label>
+							<select name="level_id" id="level_id">
+								<?php
+								foreach ($levels as $level) {
+									echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr($level['id']) . '">ID: ' . esc_html($level['id']) . ' - ' .  esc_html($level['label']) . '</option>';
+								}
+								?>
+							</select>
+						</div>
+						<div class="lp-sub-field">
+							<label for="subscriber_id"><?php esc_html_e('Subscriber ID', 'leaky-paywall'); ?></label>
+							<input name="subscriber_id" type="text" id="subscriber_id" value="<?php echo esc_attr($subscriber_id); ?>" class="regular-text">
+							<?php
+							if (strpos($subscriber_id, 'cus_') !== false) {
+								$stripe_url = leaky_paywall_get_current_mode() == 'test' ? 'https://dashboard.stripe.com/test/customers/' : 'https://dashboard.stripe.com/customers/';
+								echo '<div class="lp-sub-field-hint"><a target="_blank" href="' . esc_url($stripe_url . $subscriber_id) . '">View in Stripe &rarr;</a></div>';
+							}
+							?>
+						</div>
+						<div class="lp-sub-field">
+							<label for="plan"><?php esc_html_e('Plan', 'leaky-paywall'); ?></label>
+							<?php
+							if (!$plan) {
+								$plan = 'Non-Recurring';
+							}
+							?>
+							<input name="plan" type="text" id="plan" value="<?php echo esc_attr($plan); ?>" class="regular-text">
+							<div class="lp-sub-field-hint"><?php esc_html_e('Leave empty for Non-Recurring', 'leaky-paywall'); ?></div>
+						</div>
+						<div class="lp-sub-field">
+							<label for="leaky-paywall-subscriber-expires"><?php esc_html_e('Expires', 'leaky-paywall'); ?></label>
+							<input id="leaky-paywall-subscriber-expires" class="regular-text datepicker" type="text" value="<?php echo esc_attr($expires); ?>" placeholder="<?php echo esc_attr(gmdate($date_format, time())); ?>" name="leaky-paywall-subscriber-expires" autocomplete="off" />
+							<input type="hidden" name="date_format" value="<?php echo esc_attr($jquery_date_format); ?>" />
+							<div class="lp-sub-field-hint"><?php esc_html_e('Enter 0 for never expires', 'leaky-paywall'); ?></div>
+						</div>
+						<div class="lp-sub-field">
+							<label for="payment_gateway"><?php esc_html_e('Payment Method', 'leaky-paywall'); ?></label>
+							<?php $payment_gateways = leaky_paywall_payment_gateways(); ?>
+							<select name="payment_gateway">
+								<?php
+								foreach ($payment_gateways as $key => $gateway) {
+									echo '<option value="' . esc_attr($key) . '" ' . selected($key, $payment_gateway, false) . '>' . esc_html($gateway) . '</option>';
+								}
+								?>
+							</select>
+						</div>
+
+						<?php do_action('update_leaky_paywall_subscription_form', $user->ID); ?>
+					</div>
+
+				</div>
+
+				<!-- Save Button -->
+				<p class="submit lp-sub-save">
+					<input type="submit" name="save_subscriber" id="save_subscriber" class="button button-primary" value="<?php esc_attr_e('Save Changes', 'leaky-paywall'); ?>">
+				</p>
+
+				<!-- Transactions -->
+				<div class="lp-sub-grid">
+					<div class="lp-sub-card lp-sub-card--full">
+						<h3><?php esc_html_e('Past Transactions', 'leaky-paywall'); ?></h3>
+						<?php if ($transactions) : ?>
+						<table class="lp-sub-table">
+							<thead>
+								<tr>
+									<th><?php esc_html_e('Date', 'leaky-paywall'); ?></th>
+									<th><?php esc_html_e('Description', 'leaky-paywall'); ?></th>
+									<th><?php esc_html_e('Amount', 'leaky-paywall'); ?></th>
+									<th><?php esc_html_e('Payment Type', 'leaky-paywall'); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ($transactions as $transaction) :
+									$txn_level_id = get_post_meta($transaction->ID, '_level_id', true);
+									$txn_level    = get_leaky_paywall_subscription_level($txn_level_id);
+								?>
+								<tr>
+									<td><a href="<?php echo esc_url(admin_url('post.php?post=' . $transaction->ID . '&action=edit')); ?>"><?php echo esc_html(gmdate('M j, Y', strtotime($transaction->post_date))); ?></a></td>
+									<td><?php echo isset($txn_level['label']) ? esc_html($txn_level['label']) : esc_html('#' . $txn_level_id); ?></td>
+									<td><?php echo esc_html(leaky_paywall_get_current_currency_symbol()) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?></td>
+									<td>
+										<?php
+										if (!isset($txn_level['recurring'])) {
+											esc_html_e('One-time payment', 'leaky-paywall');
+										} else {
+											echo get_post_meta($transaction->ID, '_is_recurring', true) ? esc_html__('Subscription Renewal', 'leaky-paywall') : esc_html__('Initial Subscription Payment', 'leaky-paywall');
+										}
+										?>
+									</td>
+								</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+						<?php else : ?>
+							<p class="lp-sub-empty"><?php esc_html_e('No transactions found.', 'leaky-paywall'); ?></p>
+						<?php endif; ?>
+					</div>
+				</div>
+
+				<!-- Status History -->
+				<div class="lp-sub-grid">
+					<div class="lp-sub-card lp-sub-card--full">
+						<h3><?php esc_html_e('Status History', 'leaky-paywall'); ?></h3>
+						<?php
+						$status_log = leaky_paywall_get_status_log($user->ID);
+
+						if (!empty($status_log)) :
+							$status_log = array_reverse($status_log);
+						?>
+						<table class="lp-sub-table">
+							<thead>
+								<tr>
+									<th><?php esc_html_e('Date', 'leaky-paywall'); ?></th>
+									<th><?php esc_html_e('Change', 'leaky-paywall'); ?></th>
+									<th><?php esc_html_e('Source', 'leaky-paywall'); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ($status_log as $entry) : ?>
+								<tr>
+									<td><?php echo esc_html(date_i18n('M j, Y g:i a', $entry['date'])); ?></td>
+									<td>
+										<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($entry['from']); ?>"><?php echo esc_html(lp_get_status_label($entry['from'])); ?></span>
+										&rarr;
+										<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($entry['to']); ?>"><?php echo esc_html(lp_get_status_label($entry['to'])); ?></span>
+									</td>
+									<td><?php echo esc_html(lp_get_source_label($entry['source'])); ?></td>
+								</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+						<?php else : ?>
+							<p class="lp-sub-empty"><?php esc_html_e('No status changes recorded yet.', 'leaky-paywall'); ?></p>
+						<?php endif; ?>
+					</div>
+				</div>
 
 			</form>
 
 		</div>
-
-		<style>
-			.subscription-badge {
-				padding: 4px 8px;
-				border-radius: 4px;
-				font-weight: 600;
-				display: inline-block;
-				margin-bottom: 6px;
-				font-size: 12px;
-			}
-
-			.status-active {
-				background: #46b450;
-				color: #fff;
-			}
-
-			.status-trial {
-				background: #00a0d2;
-				color: #fff;
-			}
-
-			.status-warning {
-				background: #ffb900;
-				color: #000;
-			}
-
-			.status-failed {
-				background: #dc3232;
-				color: #fff;
-			}
-
-			.status-paused {
-				background: #999;
-				color: #fff;
-			}
-
-			.status-canceled {
-				background: #666;
-				color: #fff;
-			}
-
-			.status-ended {
-				background: #444;
-				color: #fff;
-			}
-
-			.status-pending {
-				background: #0073aa;
-				color: #fff;
-			}
-
-			.status-unknown {
-				background: #ccc;
-				color: #000;
-			}
-		</style>
 
 
 <?php

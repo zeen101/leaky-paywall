@@ -29,6 +29,8 @@ class LP_Transaction {
 
 	private $is_recurring;
 
+	private $subscriber_id;
+
 	/**
 	 * The constructor
 	 *
@@ -44,6 +46,7 @@ class LP_Transaction {
 		$this->level_id               = $args['level_id'];
 		$this->currency               = isset( $args['currency'] ) ? $args['currency'] : '';
 		$this->is_recurring           = isset( $args['is_recurring'] ) ? true : false;
+		$this->subscriber_id          = isset( $args['subscriber_id'] ) ? $args['subscriber_id'] : '';
 
 	}
 
@@ -75,6 +78,10 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
 		update_post_meta( $transaction_id, '_is_recurring', $this->is_recurring );
 		update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+
+		if ( $this->subscriber_id ) {
+			update_post_meta( $transaction_id, '_subscriber_id', $this->subscriber_id );
+		}
 
 		do_action( 'leaky_paywall_after_create_transaction', $transaction_id, $user );
 

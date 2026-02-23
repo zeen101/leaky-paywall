@@ -442,64 +442,118 @@ input[type="submit"].lp-inline-button {
   border-bottom: 1px dotted #999;
 }
 
-/* Transaction detail view */
+/* Transaction detail view — page-level */
+
+.post-type-lp_transaction #wpcontent {
+  background: #FEF2ED;
+}
+
+.post-type-lp_transaction #post-body-content,
+.post-type-lp_transaction #titlediv {
+  display: none;
+}
+
+.post-type-lp_transaction #submitdiv,
+.post-type-lp_transaction #slugdiv {
+  display: none;
+}
+
+.post-type-lp_transaction .postbox {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.post-type-lp_transaction .postbox .postbox-header {
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.post-type-lp_transaction .postbox .postbox-header h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d2327;
+}
+
+.post-type-lp_transaction .postbox .inside {
+  padding: 16px 20px 20px;
+}
+
+.post-type-lp_transaction #side-sortables .postbox .inside {
+  padding: 12px 16px 16px;
+}
+
+/* Transaction detail view — header */
 
 .lp-transaction-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 0;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  gap: 12px;
+  padding: 0 0 16px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #f0f0f1;
 }
 
 .lp-transaction-header .lp-transaction-amount {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   color: #1d2327;
+  line-height: 1.1;
 }
 
 .lp-transaction-header .lp-transaction-amount--refund {
   color: #b32d2e;
 }
 
+/* Transaction detail view — refund notice */
+
 .lp-transaction-refund-notice {
   background: #fcf0f1;
   border-left: 4px solid #b32d2e;
-  padding: 8px 12px;
-  margin-bottom: 16px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
 }
 
 .lp-transaction-refund-notice a {
   font-weight: 600;
 }
 
+/* Transaction detail view — sections */
+
 .lp-transaction-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.lp-transaction-section:last-child {
+  margin-bottom: 0;
 }
 
 .lp-transaction-section h3 {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  color: #646970;
+  color: #888;
   letter-spacing: 0.5px;
-  margin: 0 0 10px 0;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #f0f0f0;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f1;
 }
 
 .lp-transaction-fields {
   display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 6px 12px;
+  grid-template-columns: 120px 1fr;
+  gap: 8px 16px;
   align-items: baseline;
 }
 
 .lp-transaction-fields .lp-field-label {
+  font-size: 11px;
   font-weight: 600;
-  color: #50575e;
-  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #888;
 }
 
 .lp-transaction-fields .lp-field-value {
@@ -507,29 +561,43 @@ input[type="submit"].lp-inline-button {
   font-size: 13px;
 }
 
+.lp-transaction-fields .lp-field-value a {
+  color: #2271b1;
+  text-decoration: none;
+}
+
+.lp-transaction-fields .lp-field-value a:hover {
+  color: #135e96;
+}
+
 .lp-transaction-extensions {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .lp-transaction-extensions h3 {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  color: #646970;
+  color: #888;
   letter-spacing: 0.5px;
-  margin: 0 0 10px 0;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #f0f0f0;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f1;
 }
 
-/* Sidebar meta box */
+/* Transaction detail view — sidebar */
 
 .lp-transaction-sidebar .lp-sidebar-field {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f1;
   font-size: 13px;
+}
+
+.lp-transaction-sidebar .lp-sidebar-field:first-child {
+  padding-top: 0;
 }
 
 .lp-transaction-sidebar .lp-sidebar-field:last-child {
@@ -537,17 +605,26 @@ input[type="submit"].lp-inline-button {
 }
 
 .lp-transaction-sidebar .lp-sidebar-label {
-  color: #646970;
+  font-size: 11px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #888;
 }
 
 .lp-transaction-sidebar .lp-sidebar-value {
   color: #1d2327;
   text-align: right;
+  font-weight: 500;
 }
 
 .lp-transaction-sidebar .lp-sidebar-value a {
+  color: #2271b1;
   text-decoration: none;
+}
+
+.lp-transaction-sidebar .lp-sidebar-value a:hover {
+  color: #135e96;
 }
 
 .lp-transaction-sidebar .lp-sidebar-actions {
@@ -558,25 +635,39 @@ input[type="submit"].lp-inline-button {
 .lp-transaction-sidebar .lp-sidebar-actions a {
   display: block;
   text-decoration: none;
-  padding: 4px 0;
+  color: #2271b1;
+  padding: 6px 0;
+  font-size: 13px;
 }
 
-/* PayPal collapsible */
+.lp-transaction-sidebar .lp-sidebar-actions a:hover {
+  color: #135e96;
+}
+
+/* Transaction detail view — PayPal collapsible */
+
+.lp-transaction-paypal-details {
+  margin-top: 24px;
+}
 
 .lp-transaction-paypal-details summary {
   cursor: pointer;
+  font-size: 11px;
   font-weight: 600;
-  color: #50575e;
-  padding: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #888;
+  padding: 8px 0;
 }
 
 .lp-transaction-paypal-details pre {
-  background: #f6f7f7;
-  padding: 12px;
+  background: #f9f9f9;
+  padding: 14px;
   overflow-x: auto;
   font-size: 12px;
   max-height: 300px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #f0f0f1;
+  border-radius: 6px;
 }
 
 /* Transaction-specific status badges */

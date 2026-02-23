@@ -48,99 +48,180 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 
 	?>
 	<style>
+		#dashboard_widget .inside { padding: 0 12px 12px; }
 		.lp-dash-stats {
-			display: flex;
-			gap: 12px;
-			margin-bottom: 16px;
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 10px;
+			margin-bottom: 20px;
 		}
 		.lp-dash-stat {
-			flex: 1;
-			background: #f6f7f7;
-			border-radius: 4px;
-			padding: 12px;
+			background: #fff;
+			border: 1px solid #f0f0f1;
+			border-left: 3px solid transparent;
+			border-radius: 6px;
+			padding: 12px 10px;
 			text-align: center;
 			text-decoration: none;
 			display: block;
-			transition: background 0.15s;
+			transition: border-color 0.15s, box-shadow 0.15s;
 		}
 		.lp-dash-stat:hover {
-			background: #e9ecef;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 		}
+		.lp-dash-stat--revenue  { border-left-color: #E26B2C; }
+		.lp-dash-stat--paid     { border-left-color: #38A65B; }
+		.lp-dash-stat--free     { border-left-color: #3178D1; }
+		.lp-dash-stat--paywalls { border-left-color: #8B5CF6; }
 		.lp-dash-stat-value {
-			font-size: 20px;
-			font-weight: 600;
-			line-height: 1.3;
+			font-size: 22px;
+			font-weight: 700;
+			line-height: 1.2;
 			color: #1d2327;
 		}
 		.lp-dash-stat-label {
-			font-size: 11px;
-			color: #646970;
+			font-size: 10px;
+			font-weight: 600;
+			color: #888;
 			text-transform: uppercase;
-			letter-spacing: 0.5px;
-			margin-top: 2px;
+			letter-spacing: 0.4px;
+			margin-top: 4px;
 		}
 		.lp-dash-funnel {
-			background: #f0f6fc;
-			border-left: 4px solid #2271b1;
-			padding: 10px 14px;
-			margin-bottom: 16px;
+			display: grid;
+			grid-template-columns: 1fr auto 1fr auto 1fr;
+			align-items: center;
+			background: #f9f9f9;
+			border-radius: 6px;
+			padding: 0;
+			margin-bottom: 20px;
+			overflow: hidden;
+		}
+		.lp-dash-funnel-step {
+			padding: 10px 8px;
+			text-align: center;
+		}
+		.lp-dash-funnel-value {
+			font-size: 18px;
+			font-weight: 700;
+			color: #1d2327;
+			line-height: 1.2;
+		}
+		.lp-dash-funnel-label {
+			font-size: 10px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.4px;
+			color: #888;
+			margin-top: 2px;
+		}
+		.lp-dash-funnel-arrow {
+			font-size: 16px;
+			color: #ccc;
+			line-height: 1;
+		}
+		.lp-dash-section-title {
+			font-size: 13px;
+			font-weight: 600;
+			color: #1d2327;
+			margin: 0 0 10px 0;
+		}
+		.lp-dash-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 4px;
+		}
+		.lp-dash-table thead th {
+			font-size: 10px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.4px;
+			color: #888;
+			padding: 0 0 8px 0;
+			border-bottom: 2px solid #f0f0f1;
+			text-align: left;
+		}
+		.lp-dash-table tbody td {
+			padding: 8px 0;
+			border-bottom: 1px solid #f5f5f5;
 			font-size: 13px;
 			color: #1d2327;
 		}
-		.lp-dash-funnel strong {
-			font-size: 14px;
+		.lp-dash-table tbody tr:last-child td {
+			border-bottom: none;
+		}
+		.lp-dash-table a {
+			color: #2271b1;
+			text-decoration: none;
+		}
+		.lp-dash-table a:hover {
+			color: #135e96;
 		}
 		.lp-dash-links {
 			display: flex;
 			gap: 8px;
 			padding-top: 12px;
 			border-top: 1px solid #f0f0f1;
-			margin-top: 12px;
+			margin-top: 16px;
 		}
 		.lp-dash-links a {
 			text-decoration: none;
+			font-size: 13px;
 		}
 		.lp-dash-links span {
 			color: #dcdcde;
 		}
+		.lp-dash-period {
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: #888;
+			margin: 0 0 12px 0;
+		}
 	</style>
 
-	<h3 style="margin-top: 0;"><?php esc_html_e( 'Last 30 Days', 'leaky-paywall' ); ?></h3>
+	<p class="lp-dash-period"><?php esc_html_e( 'Last 30 Days', 'leaky-paywall' ); ?></p>
 
 	<div class="lp-dash-stats">
-		<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=lp_transaction' ) ); ?>" class="lp-dash-stat">
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--revenue">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $revenue ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Revenue', 'leaky-paywall' ); ?></div>
 		</a>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights' ) ); ?>" class="lp-dash-stat">
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--paid">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $new_paid_subs ); ?></div>
-			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paid Subs', 'leaky-paywall' ); ?></div>
+			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paid', 'leaky-paywall' ); ?></div>
 		</a>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights' ) ); ?>" class="lp-dash-stat">
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--free">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $new_free_subs ); ?></div>
-			<div class="lp-dash-stat-label"><?php esc_html_e( 'Free Subs', 'leaky-paywall' ); ?></div>
+			<div class="lp-dash-stat-label"><?php esc_html_e( 'Free', 'leaky-paywall' ); ?></div>
 		</a>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights&tab=paywall' ) ); ?>" class="lp-dash-stat">
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--paywalls">
 			<div class="lp-dash-stat-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
-			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></div>
+			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywalls', 'leaky-paywall' ); ?></div>
 		</a>
 	</div>
 
 	<?php if ( LP_Nag_Impressions::get_days_of_data() >= 30 ) : ?>
 	<div class="lp-dash-funnel">
-		<?php
-		printf(
-			/* translators: 1: paywalls displayed count, 2: conversions count, 3: conversion rate */
-			esc_html__( '%1$s paywalls displayed &rarr; %2$s conversions &rarr; %3$s conversion rate', 'leaky-paywall' ),
-			'<strong>' . esc_html( number_format( $impressions ) ) . '</strong>',
-			'<strong>' . esc_html( number_format( $total_new_subs ) ) . '</strong>',
-			'<strong>' . esc_html( $conversion_rate . '%' ) . '</strong>'
-		);
-		?>
+		<div class="lp-dash-funnel-step">
+			<div class="lp-dash-funnel-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
+			<div class="lp-dash-funnel-label"><?php esc_html_e( 'Displayed', 'leaky-paywall' ); ?></div>
+		</div>
+		<div class="lp-dash-funnel-arrow">&rarr;</div>
+		<div class="lp-dash-funnel-step">
+			<div class="lp-dash-funnel-value"><?php echo esc_html( number_format( $total_new_subs ) ); ?></div>
+			<div class="lp-dash-funnel-label"><?php esc_html_e( 'Conversions', 'leaky-paywall' ); ?></div>
+		</div>
+		<div class="lp-dash-funnel-arrow">&rarr;</div>
+		<div class="lp-dash-funnel-step">
+			<div class="lp-dash-funnel-value"><?php echo esc_html( $conversion_rate . '%' ); ?></div>
+			<div class="lp-dash-funnel-label"><?php esc_html_e( 'Rate', 'leaky-paywall' ); ?></div>
+		</div>
 	</div>
 	<?php endif; ?>
 
-	<h3><?php esc_html_e( 'Recent Subscribers', 'leaky-paywall' ); ?></h3>
+	<h4 class="lp-dash-section-title"><?php esc_html_e( 'Recent Subscribers', 'leaky-paywall' ); ?></h4>
 
 	<?php
 
@@ -160,7 +241,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 
 	if ( $users ) {
 		?>
-		<table class="widefat striped">
+		<table class="lp-dash-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Date', 'leaky-paywall' ); ?></th>
@@ -181,7 +262,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 					: '#' . $level_id;
 			?>
 				<tr>
-					<td><?php echo esc_html( gmdate( 'M d, Y', strtotime( $user->user_registered ) ) ); ?></td>
+					<td><?php echo esc_html( gmdate( 'M j', strtotime( $user->user_registered ) ) ); ?></td>
 					<td><a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-subscribers&action=show&id=' . $user->ID ) ); ?>"><?php echo esc_html( $user->user_email ); ?></a></td>
 					<td><?php echo esc_html( $level_name ); ?></td>
 				</tr>
@@ -190,14 +271,16 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		</table>
 		<?php
 	} else {
-		echo '<p>' . esc_html__( 'No subscribers found.', 'leaky-paywall' ) . '</p>';
+		echo '<p style="font-size: 13px; color: #999; margin: 0;">' . esc_html__( 'No subscribers found.', 'leaky-paywall' ) . '</p>';
 	}
 
 	?>
 	<div class="lp-dash-links">
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights' ) ); ?>"><?php esc_html_e( 'Insights', 'leaky-paywall' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>"><?php esc_html_e( 'Dashboard', 'leaky-paywall' ); ?></a>
 		<span>|</span>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-subscribers' ) ); ?>"><?php esc_html_e( 'Subscribers', 'leaky-paywall' ); ?></a>
+		<span>|</span>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-insights' ) ); ?>"><?php esc_html_e( 'Insights', 'leaky-paywall' ); ?></a>
 		<span>|</span>
 		<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=lp_transaction' ) ); ?>"><?php esc_html_e( 'Transactions', 'leaky-paywall' ); ?></a>
 	</div>
