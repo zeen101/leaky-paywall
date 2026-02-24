@@ -543,20 +543,24 @@ function leaky_paywall_process_user_registration_validation() {
 
 		$client_secret = leaky_paywall_create_stripe_subscription( $cu, $fields );
 
-		if ( $client_secret ) {
+		if ( 'subscription_updated' === $client_secret ) {
 			$return = array(
-				'success'     => 1,
-				'customer_id' => $cu->id,
-				'client_secret' => $client_secret
+				'success'              => 1,
+				'subscription_updated' => true,
+			);
+		} elseif ( $client_secret ) {
+			$return = array(
+				'success'       => 1,
+				'customer_id'   => $cu->id,
+				'client_secret' => $client_secret,
 			);
 		} else {
-
 			$errors['subscription_create'] = array(
-				'message' => __('Could not create subscription', 'leaky-paywall'),
+				'message' => __( 'Could not create subscription', 'leaky-paywall' ),
 			);
 
 			$return = array(
-				'errors'     => $errors
+				'errors' => $errors,
 			);
 		}
 		wp_send_json( $return );

@@ -570,6 +570,137 @@ function do_leaky_paywall_register_form($atts)
 
 	</div>
 
+	<?php
+	// Show subscription change notice with proration preview for logged-in subscribers.
+	if ( is_user_logged_in() ) {
+		$lp_current_user   = wp_get_current_user();
+		$lp_mode           = leaky_paywall_get_current_mode();
+		$lp_site           = leaky_paywall_get_current_site();
+		$lp_current_plan   = get_user_meta( $lp_current_user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_plan' . $lp_site, true );
+		$lp_current_status = get_user_meta( $lp_current_user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_status' . $lp_site, true );
+		$lp_subscriber_id  = get_user_meta( $lp_current_user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_subscriber_id' . $lp_site, true );
+		$lp_gateway        = get_user_meta( $lp_current_user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_gateway' . $lp_site, true );
+
+		if ( ! empty( $lp_current_plan ) && ! empty( $lp_subscriber_id )
+			&& in_array( $lp_current_status, array( 'active', 'trial' ), true )
+			&& in_array( $lp_gateway, array( 'stripe', 'stripe_checkout' ), true )
+			&& isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
+
+			$lp_current_level_id   = leaky_paywall_subscriber_current_level_id();
+			$lp_current_level      = get_leaky_paywall_subscription_level( $lp_current_level_id );
+			$lp_current_level_name = isset( $lp_current_level['label'] ) ? $lp_current_level['label'] : '';
+
+			// Get prorated cost and card on file from Stripe.
+			$lp_proration_message = '';
+			$lp_card_message      = '';
+			try {
+				$lp_stripe = leaky_paywall_initialize_stripe_api();
+				$lp_subscriptions = $lp_stripe->subscriptions->all(
+					array( 'customer' => $lp_subscriber_id, 'limit' => 1 ),
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				// Get card on file.
+				$lp_methods = $lp_stripe->paymentMethods->all(
+					array( 'customer' => $lp_subscriber_id, 'type' => 'card' ),
+					leaky_paywall_get_stripe_connect_params()
+				);
+				if ( ! empty( $lp_methods->data ) && isset( $lp_methods->data[0]->card ) ) {
+					$lp_card = $lp_methods->data[0]->card;
+					$lp_card_message = sprintf(
+						/* translators: %1$s: card brand, %2$s: last 4 digits */
+						__( 'Your %1$s ending in %2$s will be used for payment.', 'leaky-paywall' ),
+						'<strong>' . esc_html( ucwords( $lp_card->brand ) ) . '</strong>',
+						'<strong>' . esc_html( $lp_card->last4 ) . '</strong>'
+					);
+				}
+
+				if ( ! empty( $lp_subscriptions->data ) ) {
+					$lp_current_sub = $lp_subscriptions->data[0];
+
+					$lp_stripe_price = number_format( $level['price'], 2, '', '' );
+					$lp_plan_args = array(
+						'stripe_price' => $lp_stripe_price,
+						'currency'     => leaky_paywall_get_currency(),
+						'secret_key'   => leaky_paywall_get_stripe_secret_key(),
+					);
+					$lp_new_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $lp_plan_args );
+
+					if ( $lp_new_plan ) {
+						$lp_upcoming = $lp_stripe->invoices->upcoming(
+							array(
+								'customer'                          => $lp_subscriber_id,
+								'subscription'                      => $lp_current_sub->id,
+								'subscription_items'                => array(
+									array(
+										'id'   => $lp_current_sub->items->data[0]->id,
+										'plan' => $lp_new_plan->id,
+									),
+								),
+								'subscription_proration_behavior' => 'always_invoice',
+							),
+							leaky_paywall_get_stripe_connect_params()
+						);
+
+						$lp_proration_total = $lp_upcoming->amount_due;
+						$lp_currency_symbol = html_entity_decode( leaky_paywall_get_current_currency_symbol() );
+
+						if ( $lp_proration_total > 0 ) {
+							$lp_proration_message = sprintf(
+								/* translators: %s: prorated charge amount */
+								__( 'A prorated charge of %s will be applied immediately.', 'leaky-paywall' ),
+								'<strong>' . esc_html( $lp_currency_symbol . number_format( $lp_proration_total / 100, 2 ) ) . '</strong>'
+							);
+						} elseif ( $lp_proration_total < 0 ) {
+							$lp_proration_message = sprintf(
+								/* translators: %s: credit amount */
+								__( 'A credit of %s will be applied to your next billing cycle.', 'leaky-paywall' ),
+								'<strong>' . esc_html( $lp_currency_symbol . number_format( abs( $lp_proration_total ) / 100, 2 ) ) . '</strong>'
+							);
+						} else {
+							$lp_proration_message = __( 'No additional charges will apply.', 'leaky-paywall' );
+						}
+					}
+				}
+			} catch ( \Throwable $th ) {
+				leaky_paywall_log( $th->getMessage(), 'proration preview error' );
+			}
+			?>
+			<div class="leaky-paywall-subscription-change-notice" style="background: #FEF9E7; border-left: 4px solid #F0C929; padding: 12px 16px; margin-bottom: 20px; font-size: 14px;">
+				<p style="margin: 0 0 8px 0;">
+					<strong><?php esc_html_e( 'Subscription Change:', 'leaky-paywall' ); ?></strong>
+					<?php
+					printf(
+						/* translators: %1$s: current level name, %2$s: new level name */
+						esc_html__( 'You currently have an active %1$s subscription. Completing this form will change your subscription to %2$s.', 'leaky-paywall' ),
+						'<strong>' . esc_html( $lp_current_level_name ) . '</strong>',
+						'<strong>' . esc_html( $level['label'] ) . '</strong>'
+					);
+					if ( $lp_proration_message ) {
+						echo ' ' . wp_kses_post( $lp_proration_message );
+					}
+					?>
+				</p>
+				<?php if ( $lp_card_message ) : ?>
+				<p style="margin: 0; color: #666;">
+					<?php echo wp_kses_post( $lp_card_message ); ?>
+				</p>
+				<?php endif; ?>
+			</div>
+			<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				var label = '<?php echo esc_js( __( 'Change Subscription', 'leaky-paywall' ) ); ?>';
+				var nextBtn = document.getElementById('leaky-paywall-registration-next');
+				if (nextBtn) nextBtn.textContent = label;
+				var checkoutBtn = document.getElementById('checkout');
+				if (checkoutBtn) checkoutBtn.textContent = label;
+			});
+			</script>
+			<?php
+		}
+	}
+	?>
+
 	<?php do_action('leaky_paywall_before_registration_form', $level); ?>
 
 	<?php

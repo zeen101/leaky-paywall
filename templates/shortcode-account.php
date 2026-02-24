@@ -57,7 +57,14 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 
 					if ( $sub->status == 'active' || $sub->status == 'past_due' || $sub->status == 'trialing' ) {
 
-						leaky_paywall_log( $user->user_email, 'has a subscription, did not create a new subscription after card update' );
+						// Update the existing subscription to use the new payment source.
+						$stripe->subscriptions->update(
+							$sub->id,
+							array( 'default_source' => $cu->default_source ),
+							leaky_paywall_get_stripe_connect_params()
+						);
+
+						leaky_paywall_log( $user->user_email, 'updated subscription payment source after card update' );
 					} else {
 
 						// only create a new subscription if the subscriber does not have a current subscription
@@ -66,7 +73,8 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_t
 							array(
 								'customer' => $cu->id,
 								'items'    => array( array( 'plan' => $plan ) ),
-							)
+							),
+							leaky_paywall_get_stripe_connect_params()
 						);
 
 						leaky_paywall_log( $user->user_email, 'created new subscription after card update' );

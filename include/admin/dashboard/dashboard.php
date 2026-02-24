@@ -273,7 +273,7 @@ class Leaky_Paywall_Dashboard {
 				$recent_txns = get_posts( array(
 					'post_type'      => 'lp_transaction',
 					'post_status'    => 'publish',
-					'posts_per_page' => 10,
+					'posts_per_page' => 30,
 					'orderby'        => 'date',
 					'order'          => 'DESC',
 					'meta_query'     => array(
@@ -286,6 +286,7 @@ class Leaky_Paywall_Dashboard {
 
 				if ( $recent_txns ) :
 					$seen_emails = array();
+					$shown       = 0;
 				?>
 				<table class="lp-table">
 					<thead>
@@ -298,11 +299,22 @@ class Leaky_Paywall_Dashboard {
 					<tbody>
 					<?php
 					foreach ( $recent_txns as $txn ) :
+						if ( $shown >= 10 ) {
+							break;
+						}
+						// Skip renewals and refunds.
+						if ( get_post_meta( $txn->ID, '_is_recurring', true ) ) {
+							continue;
+						}
+						if ( 'refund' === get_post_meta( $txn->ID, '_status', true ) ) {
+							continue;
+						}
 						$email = get_post_meta( $txn->ID, '_email', true );
 						if ( ! $email || isset( $seen_emails[ $email ] ) ) {
 							continue;
 						}
 						$seen_emails[ $email ] = true;
+						$shown++;
 						$level_id = get_post_meta( $txn->ID, '_level_id', true );
 						$level_name = isset( $settings['levels'][ $level_id ]['label'] )
 							? stripslashes( $settings['levels'][ $level_id ]['label'] )
@@ -348,15 +360,15 @@ class Leaky_Paywall_Dashboard {
 		$currency_symbol  = esc_js( html_entity_decode( leaky_paywall_get_current_currency_symbol() ) );
 		?>
 		<div class="lp-card lp-dashboard-chart">
-			<h3><?php esc_html_e( 'New Signups', 'leaky-paywall' ); ?></h3>
-			<div class="lp-dashboard-chart-wrap">
-				<canvas id="lp-dashboard-signup-chart"></canvas>
-			</div>
-		</div>
-		<div class="lp-card lp-dashboard-chart">
 			<h3><?php esc_html_e( 'Revenue', 'leaky-paywall' ); ?></h3>
 			<div class="lp-dashboard-chart-wrap">
 				<canvas id="lp-dashboard-revenue-chart"></canvas>
+			</div>
+		</div>
+		<div class="lp-card lp-dashboard-chart">
+			<h3><?php esc_html_e( 'New Signups', 'leaky-paywall' ); ?></h3>
+			<div class="lp-dashboard-chart-wrap">
+				<canvas id="lp-dashboard-signup-chart"></canvas>
 			</div>
 		</div>
 

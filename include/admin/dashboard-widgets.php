@@ -228,7 +228,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 	$recent_txns = get_posts( array(
 		'post_type'      => 'lp_transaction',
 		'post_status'    => 'publish',
-		'posts_per_page' => 5,
+		'posts_per_page' => 20,
 		'orderby'        => 'date',
 		'order'          => 'DESC',
 		'meta_query'     => array(
@@ -241,6 +241,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 
 	if ( $recent_txns ) {
 		$seen_emails = array();
+		$shown       = 0;
 		?>
 		<table class="lp-dash-table">
 			<thead>
@@ -252,11 +253,22 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 			</thead>
 			<tbody>
 			<?php foreach ( $recent_txns as $txn ) :
+				if ( $shown >= 5 ) {
+					break;
+				}
+				// Skip renewals and refunds.
+				if ( get_post_meta( $txn->ID, '_is_recurring', true ) ) {
+					continue;
+				}
+				if ( 'refund' === get_post_meta( $txn->ID, '_status', true ) ) {
+					continue;
+				}
 				$email = get_post_meta( $txn->ID, '_email', true );
 				if ( ! $email || isset( $seen_emails[ $email ] ) ) {
 					continue;
 				}
 				$seen_emails[ $email ] = true;
+				$shown++;
 				$level_id = get_post_meta( $txn->ID, '_level_id', true );
 				$level_name = isset( $settings['levels'][ $level_id ]['label'] )
 					? stripslashes( $settings['levels'][ $level_id ]['label'] )

@@ -64,7 +64,11 @@
 
                 } else {
 
-                    if ( resp.session_id ) {
+                    if ( resp.subscription_updated ) {
+                        // Existing subscription was updated to new plan, submit form directly
+                        let form$ = jQuery('#leaky-paywall-payment-form');
+                        form$.get(0).submit();
+                    } else if ( resp.session_id ) {
                         // stripe checkout
                         stripe.redirectToCheckout({
                             sessionId: resp.session_id

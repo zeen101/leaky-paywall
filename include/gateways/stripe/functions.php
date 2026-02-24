@@ -343,8 +343,22 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
 			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), leaky_paywall_get_stripe_connect_params() );
 		} else {
-			leaky_paywall_errors()->add('subscription_exists', __('A subscription already exists for this user.', 'leaky-paywall'), 'register');
-			return false;
+			// Update existing subscription to new plan with immediate proration.
+			foreach ( $subscriptions->data as $existing_sub ) {
+				$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', array(
+					'plan'               => $plan_id,
+					'proration_behavior' => 'always_invoice',
+				), $level );
+
+				$sub = $stripe->subscriptions->update(
+					$existing_sub->id,
+					$update_args,
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				do_action( 'leaky_paywall_after_update_stripe_subscription', $cu, $sub, $level );
+			}
+			return 'subscription_updated';
 		}
 	} catch (\Throwable $th) {
 		leaky_paywall_log($th->getMessage(), 'stripe subscription - error 2');
