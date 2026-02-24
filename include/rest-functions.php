@@ -22,7 +22,8 @@ function meta_rest_api() {
 
 	if ( 'on' === $settings['enable_rest_api'] ) {
 		register_rest_field( 'user', 'leaky_paywall_meta', array(
-			'get_callback'      => 'lp_rest_get_post_meta',
+			'get_callback' => 'lp_rest_get_post_meta',
+			'schema'       => lp_rest_subscriber_meta_schema(),
 		) );
 	}
 
@@ -31,6 +32,13 @@ add_action( 'rest_api_init', 'meta_rest_api' );
 
 
 function lp_rest_get_post_meta( $user, $field_name, $request ) {
+
+	// Only return data if the requester is an admin or viewing their own profile.
+	$current_user_id = get_current_user_id();
+
+	if ( $current_user_id !== $user['id'] && ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
+		return null;
+	}
 
     $user_obj = get_user_by( 'id', $user['id'] );
 
@@ -59,4 +67,51 @@ function lp_rest_get_post_meta( $user, $field_name, $request ) {
     ];
 
     return apply_filters( 'leaky_paywall_rest_meta', $data, $user_obj );
+}
+
+
+function lp_rest_subscriber_meta_schema() {
+	return array(
+		'description' => __( 'Leaky Paywall subscriber data.', 'leaky-paywall' ),
+		'type'        => array( 'object', 'null' ),
+		'context'     => array( 'view', 'edit' ),
+		'properties'  => array(
+			'level_id'        => array(
+				'type'        => 'string',
+				'description' => __( 'Subscription level ID.', 'leaky-paywall' ),
+			),
+			'subscriber_id'   => array(
+				'type'        => 'string',
+				'description' => __( 'Payment gateway customer ID.', 'leaky-paywall' ),
+			),
+			'price'           => array(
+				'type'        => 'string',
+				'description' => __( 'Subscription price.', 'leaky-paywall' ),
+			),
+			'plan'            => array(
+				'type'        => 'string',
+				'description' => __( 'Payment gateway plan ID.', 'leaky-paywall' ),
+			),
+			'created'         => array(
+				'type'        => 'string',
+				'description' => __( 'Subscription creation date.', 'leaky-paywall' ),
+			),
+			'expires'         => array(
+				'type'        => 'string',
+				'description' => __( 'Subscription expiration date.', 'leaky-paywall' ),
+			),
+			'has_access'      => array(
+				'type'        => 'boolean',
+				'description' => __( 'Whether user has content access.', 'leaky-paywall' ),
+			),
+			'payment_gateway' => array(
+				'type'        => 'string',
+				'description' => __( 'Payment gateway slug.', 'leaky-paywall' ),
+			),
+			'payment_status'  => array(
+				'type'        => 'string',
+				'description' => __( 'Subscription payment status.', 'leaky-paywall' ),
+			),
+		),
+	);
 }

@@ -34,6 +34,9 @@ function lp_get_subscriber_meta( $key, $user = null ) {
         case 'payment_gateway':
             $value = str_replace( ' ', '_', strtolower( get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true) ) );
             break;
+        case 'price':
+            $value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true);
+            break;
 
 		default:
 			$value = '';
