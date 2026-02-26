@@ -486,13 +486,19 @@ class LP_Transaction_Post_Type
 		<?php
 
 		// Payment type filter.
+		$payment_type_options = array(
+			'paid'    => esc_html__('Paid', 'leaky-paywall'),
+			'free'    => esc_html__('Free', 'leaky-paywall'),
+			'refund'  => esc_html__('Refund', 'leaky-paywall'),
+			'renewal' => esc_html__('Renewal', 'leaky-paywall'),
+		);
+		$payment_type_options = apply_filters('leaky_paywall_transaction_payment_type_filters', $payment_type_options);
 		?>
 		<select name="lp_payment_type">
 			<option value=""><?php esc_html_e('All payment types', 'leaky-paywall'); ?></option>
-			<option value="paid" <?php selected($current_type, 'paid'); ?>><?php esc_html_e('Paid', 'leaky-paywall'); ?></option>
-			<option value="free" <?php selected($current_type, 'free'); ?>><?php esc_html_e('Free', 'leaky-paywall'); ?></option>
-			<option value="refund" <?php selected($current_type, 'refund'); ?>><?php esc_html_e('Refund', 'leaky-paywall'); ?></option>
-			<option value="renewal" <?php selected($current_type, 'renewal'); ?>><?php esc_html_e('Renewal', 'leaky-paywall'); ?></option>
+			<?php foreach ($payment_type_options as $value => $label) : ?>
+				<option value="<?php echo esc_attr($value); ?>" <?php selected($current_type, $value); ?>><?php echo esc_html($label); ?></option>
+			<?php endforeach; ?>
 		</select>
 		<?php
 
