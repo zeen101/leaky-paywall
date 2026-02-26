@@ -654,6 +654,10 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 
 	$user_data = get_post_meta($incomplete_id, '_user_data', true);
 	$field_data = get_post_meta($incomplete_id, '_field_data', true);
+
+	// Clean up incomplete user immediately to prevent the redirect handler from racing.
+	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+
 	$user = get_user_by('email', $user_data['email']);
 	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
 	$plan_id = '';
@@ -733,8 +737,6 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		}
 
 		do_action('leaky_paywall_after_stripe_checkout_completed', $subscriber_data);
-
-		leaky_paywall_cleanup_incomplete_user($user_data['email']);
 
 		// Send email notifications
 		leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
@@ -1121,13 +1123,14 @@ function leaky_paywall_connect_maybe_process_return()
 
 	if ( $onboarding_completed ) {
 
+		$base_url = apply_filters( 'leaky_paywall_app_url', 'https://app.leakypaywall.com' );
+
 		$lp_credentials_url = add_query_arg(
 			array(
-				'mode'         => leaky_paywall_get_current_mode(),
-				'account_id'             => $connected_account_id,
-				'customer_site_url' => rawurlencode(home_url()),
+				'api_key'    => $settings['lp_app_api_key'],
+				'account_id' => $connected_account_id,
 			),
-			'https://leakypaywall.com/?lp_gateway_connect_credentials=stripe_connect'
+			$base_url . '/api/v1/connect/credentials'
 		);
 
 		$response = wp_remote_get(esc_url_raw($lp_credentials_url), ['timeout' => 15]);
@@ -1150,14 +1153,11 @@ function leaky_paywall_connect_maybe_process_return()
 		}
 
 		if ( isset( $data->public_key ) ) {
-			// use mode
-			$array_key = leaky_paywall_get_current_mode() . '_publishable_key';
-			$settings[$array_key] = $data->public_key;
+			$settings['live_publishable_key'] = $data->public_key;
 		}
 
 		if ( isset( $data->secret_key ) ) {
-			$array_key = leaky_paywall_get_current_mode() . '_secret_key';
-			$settings[$array_key] = $data->secret_key;
+			$settings['live_secret_key'] = $data->secret_key;
 		}
 
 		update_leaky_paywall_settings($settings);
@@ -1165,19 +1165,51 @@ function leaky_paywall_connect_maybe_process_return()
 		delete_transient('lp_connect_state_' . get_current_user_id());
 	}
 
-	wp_safe_redirect(remove_query_arg(['connected_account_id', 'lp_connect_state']));
+	wp_safe_redirect(admin_url('admin.php?page=issuem-leaky-paywall&tab=payments'));
 	exit;
+}
+
+function leaky_paywall_ensure_app_api_key() {
+	$settings = get_leaky_paywall_settings();
+
+	if ( ! empty( $settings['lp_app_api_key'] ) ) {
+		return $settings['lp_app_api_key'];
+	}
+
+	$base_url = apply_filters( 'leaky_paywall_app_url', 'https://app.leakypaywall.com' );
+
+	$response = wp_remote_post(
+		$base_url . '/api/v1/register',
+		array(
+			'timeout' => 15,
+			'headers' => array( 'Content-Type' => 'application/json', 'Accept' => 'application/json' ),
+			'body'    => wp_json_encode( array( 'site_url' => home_url() ) ),
+		)
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return '';
+	}
+
+	$data = json_decode( wp_remote_retrieve_body( $response ) );
+
+	if ( isset( $data->api_key ) ) {
+		$settings['lp_app_api_key'] = sanitize_text_field( $data->api_key );
+		update_leaky_paywall_settings( $settings );
+		return $settings['lp_app_api_key'];
+	}
+
+	return '';
 }
 
 function leaky_paywall_get_stripe_connect_params() {
 
-	$params = [];
+	$params   = [];
 	$settings = get_leaky_paywall_settings();
 
-	if ( isset($settings['connected_account_id'])) {
-		if ($settings['connected_account_id']) {
-			$params['stripe_account'] = $settings['connected_account_id'];
-		}
+	if ( 'live' === leaky_paywall_get_current_mode()
+		&& ! empty( $settings['connected_account_id'] ) ) {
+		$params['stripe_account'] = $settings['connected_account_id'];
 	}
 
 	return apply_filters( 'leaky_paywall_stripe_connect_params', $params );
@@ -1187,7 +1219,7 @@ add_filter('leaky_paywall_payment_intent_params', 'leaky_paywall_connect_adjust_
 
 function leaky_paywall_connect_adjust_intent_params( $params, $level ) {
 	$settings = get_leaky_paywall_settings();
-	if ($settings['connected_account_id']) {
+	if ( 'live' === leaky_paywall_get_current_mode() && ! empty( $settings['connected_account_id'] ) ) {
 		$params['stripe_account'] = $settings['connected_account_id'];
 	}
 
@@ -1199,7 +1231,7 @@ add_filter('leaky_paywall_payment_intent_args', 'leaky_paywall_connect_adjust_in
 function leaky_paywall_connect_adjust_intent_args($args, $level)
 {
 	$settings = get_leaky_paywall_settings();
-	if ($settings['connected_account_id']) {
+	if ( 'live' === leaky_paywall_get_current_mode() && ! empty( $settings['connected_account_id'] ) ) {
 		$fee = round( $level['price'] * 0.1, 2 ) * 100;
 		$args['application_fee_amount'] = $fee;
 	}
@@ -1253,7 +1285,7 @@ add_filter('leaky_paywall_stripe_subscription_args', 'leaky_paywall_connect_adju
 function leaky_paywall_connect_adjust_subscription_args($subscription_array, $level, $fields) {
 	$settings = get_leaky_paywall_settings();
 
-	if ($settings['connected_account_id']) {
+	if ( 'live' === leaky_paywall_get_current_mode() && ! empty( $settings['connected_account_id'] ) ) {
 		$subscription_array['application_fee_percent'] = 10;
 	}
 
@@ -1272,22 +1304,18 @@ function leaky_paywall_stripe_disconnect() {
 		return;
 	}
 
-	/*
 	if (
 		! isset($_GET['_wpnonce']) ||
 		! wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'lp_stripe_disconnect_action' )
 	) {
 		return;
 	}
-		*/
 
 	$settings = get_leaky_paywall_settings();
 
 	$settings['connected_account_id'] = '';
 	$settings['live_secret_key'] = '';
 	$settings['live_publishable_key'] = '';
-	$settings['test_secret_key'] = '';
-	$settings['test_publishable_key'] = '';
 
 	foreach( $settings['payment_gateway'] as $key => $value ) {
 		if ( $value === 'stripe' ) {

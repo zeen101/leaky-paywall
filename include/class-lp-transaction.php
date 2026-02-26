@@ -56,6 +56,24 @@ class LP_Transaction {
 	public function create() {
 		$user = get_user_by( 'id', $this->user_id );
 
+		// Deduplication: prevent duplicate transactions from concurrent webhook + redirect handlers.
+		$existing = get_posts( array(
+			'post_type'      => 'lp_transaction',
+			'posts_per_page' => 1,
+			'post_status'    => 'publish',
+			'date_query'     => array(
+				array( 'after' => '60 seconds ago' ),
+			),
+			'meta_query'     => array(
+				array( 'key' => '_email', 'value' => $user->user_email ),
+				array( 'key' => '_level_id', 'value' => $this->level_id ),
+			),
+		) );
+
+		if ( ! empty( $existing ) ) {
+			return $existing[0]->ID;
+		}
+
 		$transaction = array(
 			'post_title'   => 'Transaction for ' . $user->user_email,
 			'post_content' => '',
