@@ -18,7 +18,7 @@ class LP_Email_New_Subscriber extends LP_Email {
 		$this->description     = __( 'Sent to the subscriber after they sign up.', 'leaky-paywall' );
 		$this->recipient_type  = 'subscriber';
 		$this->default_enabled = 'yes';
-		$this->default_subject = '';
+		$this->default_subject = __( 'Welcome to %sitename%', 'leaky-paywall' );
 		$this->default_body    = $this->get_default_body();
 		$this->template_tags   = array( '%blogname%', '%sitename%', '%username%', '%useremail%', '%password%', '%firstname%', '%lastname%', '%displayname%' );
 
@@ -74,30 +74,21 @@ class LP_Email_New_Subscriber extends LP_Email {
 	 * @return string
 	 */
 	private function get_default_body() {
-		return 'PLEASE EDIT THIS CONTENT - You can use simple html, including images.
+		return 'Welcome to %sitename%, %firstname%!
 
-			Thank you for subscribing to %sitename% and welcome to our community!
+Thank you for subscribing. Your account is now active and ready to use.
 
-			Your account is activated.
+<b>Your Login Details</b>
 
-			As a member you will gain more insight into the topics you care about, gain access to the latest articles, and you will gain a greater understanding of the events that are shaping our time. With a Digital Subscription, you also get our official Mobile App for FREE. Get the apps here: http://OurPublication.com/apps
+Username: %username%
+Password: %password%
 
-			<b>How to login:</b>
+You can log in anytime to access your subscription content and manage your account.
 
-			Go to: http://OurPublication.com/my-account/ (this is the "Page for Profile" setting in Leaky Paywall Settings)
-			Username: %username%
-			Password: %password%
+If you have any questions, simply reply to this email — we are happy to help.
 
-			Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication
+Thank you for your support!
 
-			TWEET: I just subscribed to Our Publication. Join up and be awesome! www.ourpublication.com
-
-			Facebook https://www.facebook.com/ourpublication/
-
-			Instagram https://www.instagram.com/ourpublication/
-
-			LinkedIn https://www.linkedin.com/groups/12345678
-
-			We love feedback… please help us make your publication better by emailing info@ourpublication.pub … and thanks again!';
+The %sitename% Team';
 	}
 }

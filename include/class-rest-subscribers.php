@@ -36,14 +36,23 @@ class Leaky_Paywall_REST_Subscribers {
 		}
 
 		// GET /subscribers — list subscribers (admin).
+		// POST /subscribers — create subscriber (admin).
 		register_rest_route(
 			self::NAMESPACE,
 			'/subscribers',
 			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'get_subscribers' ),
-				'permission_callback' => array( $this, 'admin_permissions_check' ),
-				'args'                => $this->get_collection_params(),
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'get_subscribers' ),
+					'permission_callback' => array( $this, 'admin_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'create_subscriber' ),
+					'permission_callback' => array( $this, 'admin_permissions_check' ),
+					'args'                => $this->get_create_params(),
+				),
 			)
 		);
 
@@ -119,6 +128,78 @@ class Leaky_Paywall_REST_Subscribers {
 			__( 'You must be logged in to access this resource.', 'leaky-paywall' ),
 			array( 'status' => 401 )
 		);
+	}
+
+	/**
+	 * POST /subscribers — create a new subscriber.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_subscriber( $request ) {
+
+		$email = $request->get_param( 'email' );
+
+		// Check if email already has a subscription.
+		$existing_user = get_user_by( 'email', $email );
+		if ( $existing_user ) {
+			$mode     = leaky_paywall_get_current_mode();
+			$site     = leaky_paywall_get_current_site();
+			$existing_level = get_user_meta( $existing_user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+
+			if ( '' !== $existing_level && false !== $existing_level ) {
+				return new WP_Error(
+					'rest_subscriber_exists',
+					__( 'A subscriber with this email already exists.', 'leaky-paywall' ),
+					array( 'status' => 409 )
+				);
+			}
+		}
+
+		$level_id = $request->get_param( 'level_id' );
+		$level    = get_leaky_paywall_subscription_level( $level_id );
+
+		if ( ! $level ) {
+			return new WP_Error(
+				'rest_invalid_level',
+				__( 'Invalid subscription level.', 'leaky-paywall' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$meta_args = array(
+			'level_id'       => $level_id,
+			'subscriber_id'  => $request->get_param( 'subscriber_id' ) ? $request->get_param( 'subscriber_id' ) : '',
+			'price'          => $level['price'],
+			'description'    => $level['label'],
+			'payment_gateway' => $request->get_param( 'payment_gateway' ) ? $request->get_param( 'payment_gateway' ) : 'manual',
+			'payment_status' => $request->get_param( 'payment_status' ) ? $request->get_param( 'payment_status' ) : 'active',
+			'plan'           => $request->get_param( 'plan' ) ? $request->get_param( 'plan' ) : '',
+			'interval'       => isset( $level['interval'] ) ? $level['interval'] : '',
+			'interval_count' => isset( $level['interval_count'] ) ? $level['interval_count'] : '',
+			'site'           => leaky_paywall_get_current_site(),
+			'first_name'     => $request->get_param( 'first_name' ) ? $request->get_param( 'first_name' ) : '',
+			'last_name'      => $request->get_param( 'last_name' ) ? $request->get_param( 'last_name' ) : '',
+		);
+
+		$user_id = leaky_paywall_new_subscriber( null, $email, $meta_args['subscriber_id'], $meta_args );
+
+		if ( ! $user_id ) {
+			return new WP_Error(
+				'rest_subscriber_create_failed',
+				__( 'Could not create subscriber.', 'leaky-paywall' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		do_action( 'leaky_paywall_rest_after_create_subscriber', $user_id, $request, $level );
+
+		$user               = get_user_by( 'id', $user_id );
+		$data               = $this->prepare_subscriber( $user );
+		$data['notes']      = lp_get_subscriber_meta( 'notes', $user );
+		$data['status_log'] = leaky_paywall_get_status_log( $user_id );
+
+		return new WP_REST_Response( $data, 201 );
 	}
 
 	/**
@@ -334,6 +415,62 @@ class Leaky_Paywall_REST_Subscribers {
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'search'   => array(
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+	}
+
+	/**
+	 * Parameters for the create subscriber endpoint.
+	 *
+	 * @return array
+	 */
+	private function get_create_params() {
+		return array(
+			'email'           => array(
+				'required'          => true,
+				'sanitize_callback' => 'sanitize_email',
+				'validate_callback' => function ( $param ) {
+					return is_email( $param );
+				},
+			),
+			'level_id'        => array(
+				'required'          => true,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'first_name'      => array(
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'last_name'       => array(
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'payment_status'  => array(
+				'required'          => false,
+				'default'           => 'active',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function ( $param ) {
+					$valid = array(
+						'active', 'pending_cancel', 'trial', 'trialing', 'past_due',
+						'unpaid', 'incomplete', 'incomplete_expired', 'paused',
+						'canceled', 'expired', 'pending_activation', 'renewal_due',
+						'on_hold', 'grace_period', 'deactivated',
+					);
+					return in_array( $param, $valid, true );
+				},
+			),
+			'payment_gateway' => array(
+				'required'          => false,
+				'default'           => 'manual',
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'subscriber_id'   => array(
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'plan'            => array(
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
 			),

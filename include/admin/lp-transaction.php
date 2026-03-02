@@ -27,6 +27,34 @@ class LP_Transaction_Post_Type
 		add_action('pre_get_posts', array($this, 'apply_filters'));
 		add_filter('manage_edit-lp_transaction_sortable_columns', array($this, 'sortable_columns'));
 		add_filter('months_dropdown_results', array($this, 'remove_months_dropdown'), 10, 2);
+
+		add_action('in_admin_header', array($this, 'render_list_header'));
+	}
+
+	/**
+	 * Render the LP branded header on the transactions list page.
+	 */
+	public function render_list_header()
+	{
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'edit-lp_transaction' !== $screen->id ) {
+			return;
+		}
+
+		?>
+		<div id="lp-header" class="lp-header">
+			<div id="lp-header-wrapper">
+				<span id="lp-header-branding">
+					<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>">
+				</span>
+				<span class="lp-header-page-title-wrap">
+					<span class="lp-header-separator">/</span>
+					<h1 class="lp-header-page-title"><?php esc_html_e( 'Transactions', 'leaky-paywall' ); ?></h1>
+				</span>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -410,47 +438,52 @@ class LP_Transaction_Post_Type
 		switch ($column) {
 
 			case 'email':
-				echo '<a href="' . esc_url(admin_url()) . '/post.php?post=' . absint($post_id) . '&action=edit">' . esc_html(get_post_meta($post_id, '_email', true)) . '</a>';
+				echo '<a href="' . esc_url(admin_url('post.php?post=' . absint($post_id) . '&action=edit')) . '">' . esc_html(get_post_meta($post_id, '_email', true)) . '</a>';
 				break;
 
 			case 'level':
-				echo isset($level['label']) ? '<span style="color: #aaa;">ID: ' . $level_id . ' - </span>' . esc_html($level['label']) : '';
+				if (isset($level['label'])) {
+					echo '<span class="lp-txn-level-id">ID: ' . esc_html($level_id) . ' - </span>' . esc_html($level['label']);
+				}
 				break;
 
 			case 'price':
 				$price = get_post_meta($post_id, '_price', true);
 
 				if (is_numeric($price)) {
-					$formatted = esc_attr(leaky_paywall_get_current_currency_symbol() . number_format($price, 2));
+					$formatted = esc_html(leaky_paywall_get_current_currency_symbol() . number_format($price, 2));
 					if ($price < 0) {
-						echo '<span style="color: #b32d2e;">' . $formatted . '</span>';
+						echo '<span class="lp-txn-price--negative">' . $formatted . '</span>';
 					} else {
 						echo $formatted;
 					}
 				} else {
-					echo esc_attr(leaky_paywall_get_current_currency_symbol() . $price);
+					echo esc_html(leaky_paywall_get_current_currency_symbol() . $price);
 				}
 
 				break;
 
 			case 'created':
-				echo get_the_date('M d, Y h:i:s A', $post_id);
+				echo esc_html(get_the_date('M d, Y', $post_id));
 				break;
 
 			case 'status':
-				echo get_post_meta($post_id, '_transaction_status', true) ? esc_attr(get_post_meta($post_id, '_transaction_status', true)) : 'Complete';
+				$txn_status = get_post_meta($post_id, '_transaction_status', true);
+				$display_status = $txn_status ? $txn_status : 'complete';
+				$badge_class = 'lp-status-badge--' . sanitize_html_class(strtolower($display_status));
+				echo '<span class="lp-status-badge ' . esc_attr($badge_class) . '">' . esc_html(ucfirst($display_status)) . '</span>';
 				break;
 
 			case 'type':
 				$status = get_post_meta($post_id, '_status', true);
 				if ('refund' === $status) {
-					echo '<span style="color: #b32d2e;">Refund</span>';
+					echo '<span class="lp-status-badge lp-status-badge--refund">' . esc_html__('Refund', 'leaky-paywall') . '</span>';
 				} elseif (get_post_meta($post_id, '_is_recurring', true)) {
-					echo 'Subscription Renewal';
+					echo '<span class="lp-txn-type--renewal">' . esc_html__('Subscription Renewal', 'leaky-paywall') . '</span>';
 				} elseif (isset($level['recurring']) && $level['recurring']) {
-					echo 'Initial Subscription Payment';
+					echo esc_html__('Initial Subscription Payment', 'leaky-paywall');
 				} else {
-					echo 'One Time';
+					echo esc_html__('One Time', 'leaky-paywall');
 				}
 				break;
 		}

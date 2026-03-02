@@ -1303,3 +1303,349 @@ input[type="submit"].lp-inline-button {
 .lp-modal-success-link a:hover {
   color: #135e96;
 }
+
+/* ========================================
+   Transaction list page — modern styling
+   ======================================== */
+
+/* Background */
+
+.post-type-lp_transaction.edit-php #wpcontent {
+  background: #FEF2ED;
+}
+
+/* Hide the default WP page title — LP header replaces it */
+
+.post-type-lp_transaction.edit-php .wrap > .wp-heading-inline,
+.post-type-lp_transaction.edit-php .wrap > .page-title-action {
+  display: none;
+}
+
+/* White card wrapper for table area */
+
+.post-type-lp_transaction.edit-php .wrap {
+  padding-top: 20px;
+}
+
+.post-type-lp_transaction.edit-php #posts-filter {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+}
+
+/* Filter bar */
+
+.post-type-lp_transaction.edit-php .tablenav.top {
+  padding-bottom: 16px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.post-type-lp_transaction.edit-php .tablenav.top select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #1d2327;
+  min-height: 32px;
+}
+
+.post-type-lp_transaction.edit-php .tablenav.top .button {
+  border-radius: 4px;
+  min-height: 32px;
+}
+
+/* Search box */
+
+.post-type-lp_transaction.edit-php .search-box input[type="search"] {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  min-height: 32px;
+}
+
+.post-type-lp_transaction.edit-php .search-box #post-search-input {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  min-height: 32px;
+}
+
+.post-type-lp_transaction.edit-php .search-box #search-submit {
+  border-radius: 4px;
+  min-height: 32px;
+}
+
+/* Table */
+
+.post-type-lp_transaction.edit-php .wp-list-table {
+  border: none;
+  border-spacing: 0;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table thead th,
+.post-type-lp_transaction.edit-php .wp-list-table thead td {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  border-bottom: 2px solid #f0f0f1;
+  padding: 10px;
+  background: none;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table thead th a {
+  color: #888;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table thead th a:hover {
+  color: #1d2327;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table thead .sorted a,
+.post-type-lp_transaction.edit-php .wp-list-table thead .sorted .sorting-indicators {
+  color: #1d2327;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table tfoot th,
+.post-type-lp_transaction.edit-php .wp-list-table tfoot td {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  border-top: 2px solid #f0f0f1;
+  border-bottom: none;
+  padding: 10px;
+  background: none;
+}
+
+/* Remove striped alternating rows */
+
+.post-type-lp_transaction.edit-php .wp-list-table.striped > tbody > :nth-child(odd) {
+  background: none;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table tbody tr {
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table tbody td {
+  padding: 12px 10px;
+  color: #1d2327;
+  vertical-align: middle;
+}
+
+.post-type-lp_transaction.edit-php .wp-list-table tbody th {
+  vertical-align: middle;
+}
+
+/* Row actions */
+
+.post-type-lp_transaction.edit-php .wp-list-table .row-actions span {
+  color: #999;
+}
+
+/* Pagination */
+
+.post-type-lp_transaction.edit-php .tablenav.bottom {
+  border-top: 1px solid #f0f0f1;
+  margin-top: 0;
+  padding-top: 12px;
+}
+
+.post-type-lp_transaction.edit-php .tablenav-pages .displaying-num {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+}
+
+/* Primary button */
+
+.post-type-lp_transaction.edit-php #wpcontent .button-primary {
+  background: #E45637;
+  border: 0;
+  border-radius: 0 12px 0 0 !important;
+  padding: 8px 26px;
+  font-size: 16px;
+  transition: all .2s ease-in-out;
+}
+
+.post-type-lp_transaction.edit-php #wpcontent .button-primary:hover {
+  background: #333333;
+}
+
+/* Column-specific styles */
+
+.lp-txn-level-id {
+  color: #999;
+  font-size: 12px;
+}
+
+.lp-txn-price--negative {
+  color: #b32d2e;
+  font-weight: 600;
+}
+
+.lp-txn-type--renewal {
+  color: #0c5460;
+  font-weight: 500;
+}
+
+/* Hide the "Add New Transaction" button */
+
+.post-type-lp_transaction.edit-php .wrap > a.page-title-action {
+  display: none;
+}
+
+/* ========================================
+   Tools page — modern styling
+   ======================================== */
+
+/* Background */
+
+.leaky-paywall_page_leaky-paywall-tools #wpcontent {
+  background: #FEF2ED;
+}
+
+/* White card */
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  max-width: 800px;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2327;
+  margin: 0 0 8px;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card p {
+  font-size: 14px;
+  color: #50575e;
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+/* Primary button */
+
+.leaky-paywall_page_leaky-paywall-tools #wpcontent .button-primary {
+  background: #E45637;
+  border: 0;
+  border-radius: 0 12px 0 0 !important;
+  padding: 8px 26px;
+  font-size: 16px;
+  transition: all .2s ease-in-out;
+}
+
+.leaky-paywall_page_leaky-paywall-tools #wpcontent .button-primary:hover {
+  background: #333333;
+}
+
+/* Export form table */
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table th {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  vertical-align: top;
+  padding: 16px 10px 16px 0;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table td {
+  padding: 12px 10px;
+  color: #1d2327;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table tr {
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table tr:last-child {
+  border-bottom: none;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table input[type="text"] {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #1d2327;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #1d2327;
+  min-height: 32px;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table input[type="text"]:focus,
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .form-table select:focus {
+  border-color: #E45637;
+  outline: none;
+  box-shadow: 0 0 0 1px #E45637;
+}
+
+#leaky-paywall-reporting-tool-message {
+  font-size: 14px;
+  color: #50575e;
+  font-style: italic;
+}
+
+/* Import form */
+
+.leaky-paywall_page_leaky-paywall-tools #leaky_paywall_upload_user_csv_button {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.leaky-paywall_page_leaky-paywall-tools #leaky_paywall_import_user_csv_file {
+  vertical-align: middle;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-import-instructions {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  border: 1px solid #f0f0f1;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-import-instructions p {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-import-instructions p:last-child {
+  margin-bottom: 0;
+}
+
+.leaky-paywall_page_leaky-paywall-tools .lp-tools-card .notice {
+  margin: 0 0 16px;
+}

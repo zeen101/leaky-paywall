@@ -4558,18 +4558,19 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$admin_bar->add_menu(
 			array(
-				'id'     => 'leaky-paywall-toolbar-insights',
+				'id'     => 'leaky-paywall-toolbar-tools',
 				'parent' => 'leaky-paywall-toolbar',
-				'title'  => 'Insights',
-				'href'   => admin_url() . 'admin.php?page=leaky-paywall-insights',
+				'title'  => 'Tools',
+				'href'   => admin_url( 'admin.php?page=leaky-paywall-tools' ),
 				'meta'   => array(
-					'title'  => __('Insights'),
+					'title'  => __('Tools'),
 					'target' => '',
 					'class'  => 'my_menu_item_class',
 				),
 			)
 		);
-	}
+
+		}
 	add_action('admin_bar_menu', 'leaky_paywall_add_toolbar_items', 100);
 
 	/**

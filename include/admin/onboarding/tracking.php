@@ -73,6 +73,17 @@ function leaky_paywall_tracking_send() {
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG && is_wp_error( $response ) ) {
 		error_log( 'Leaky Paywall tracking error: ' . $response->get_error_message() );
 	}
+
+	if ( ! is_wp_error( $response ) ) {
+		$body = json_decode( wp_remote_retrieve_body( $response ) );
+		if ( isset( $body->api_key ) ) {
+			$settings = get_leaky_paywall_settings();
+			if ( empty( $settings['lp_app_api_key'] ) || $settings['lp_app_api_key'] !== $body->api_key ) {
+				$settings['lp_app_api_key'] = sanitize_text_field( $body->api_key );
+				update_leaky_paywall_settings( $settings );
+			}
+		}
+	}
 }
 
 /**

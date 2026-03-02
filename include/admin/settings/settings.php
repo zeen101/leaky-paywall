@@ -487,6 +487,70 @@ class Leaky_Paywall_Settings
 
 			<?php endif; ?>
 
+			<?php if ($current_section == 'insights') : ?>
+
+				<h2><?php esc_html_e('Insights', 'leaky-paywall'); ?></h2>
+				<p><?php esc_html_e('Connect to Leaky Paywall Insights to track subscriber lifecycle events, content engagement, and payment activity.', 'leaky-paywall'); ?></p>
+
+				<table id="leaky_paywall_insights_settings" class="form-table leaky-paywall-settings-table">
+					<tr>
+						<th><?php esc_html_e('API Endpoint', 'leaky-paywall'); ?></th>
+						<td>
+							<code><?php echo esc_html(apply_filters('leaky_paywall_insights_api_url', 'https://insights.leakypaywall.com')); ?></code>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="insights_api_key"><?php esc_html_e('API Key', 'leaky-paywall'); ?></label></th>
+						<td>
+							<input type="text" id="insights_api_key" name="insights_api_key" value="<?php echo esc_attr($settings['insights_api_key']); ?>" class="regular-text" />
+							<p class="description"><?php printf(esc_html__('Your publication API key from Leaky Paywall Insights. %sDon\'t have one? Get started at insights.leakypaywall.com%s', 'leaky-paywall'), '<a href="https://insights.leakypaywall.com" target="_blank">', '</a>'); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e('Connection', 'leaky-paywall'); ?></th>
+						<td>
+							<button type="button" id="lp-test-insights-connection" class="button button-secondary" <?php echo empty($settings['insights_api_key']) ? 'disabled' : ''; ?>>
+								<?php esc_html_e('Test Connection', 'leaky-paywall'); ?>
+							</button>
+							<span id="lp-insights-connection-result"></span>
+							<?php wp_nonce_field('lp_test_insights', 'lp_test_insights_nonce'); ?>
+						</td>
+					</tr>
+				</table>
+
+				<script>
+				(function($) {
+					$('#lp-test-insights-connection').on('click', function() {
+						var $btn = $(this);
+						var $result = $('#lp-insights-connection-result');
+
+						$btn.prop('disabled', true);
+						$result.html('<span style="color:#888;"><?php echo esc_js(__('Testing...', 'leaky-paywall')); ?></span>');
+
+						$.post(ajaxurl, {
+							action: 'lp_test_insights_connection',
+							nonce: $('#lp_test_insights_nonce').val()
+						}, function(response) {
+							$btn.prop('disabled', false);
+							if (response.type === 'success') {
+								$result.html('<span style="color:#38A65B;font-weight:500;">' + response.message + '</span>');
+							} else {
+								$result.html('<span style="color:#D63638;font-weight:500;">' + response.message + '</span>');
+							}
+						}).fail(function() {
+							$btn.prop('disabled', false);
+							$result.html('<span style="color:#D63638;font-weight:500;"><?php echo esc_js(__('Request failed.', 'leaky-paywall')); ?></span>');
+						});
+					});
+
+					$('#insights_api_key').on('input', function() {
+						$('#lp-test-insights-connection').prop('disabled', !$(this).val().trim());
+					});
+				})(jQuery);
+				</script>
+
+			<?php endif; ?>
+
 
 		<?php
 
@@ -893,15 +957,14 @@ class Leaky_Paywall_Settings
 				if (in_array('stripe', $settings['payment_gateway'], true) || in_array('stripe_checkout', $settings['payment_gateway'], true)) {
 					ob_start();
 
-					$is_connect = false;
+					$has_connected_account = ! empty( $settings['connected_account_id'] );
+					$has_manual_live_keys  = ! $has_connected_account
+						&& ( ! empty( $settings['live_secret_key'] ) || ! empty( $settings['live_publishable_key'] ) );
 
-					if ($settings['connected_account_id']) {
-						$is_connect = true;
-					}
-
-					if (isset($_GET['show_stripe_connect'])) {
-						$is_connect = true;
-					}
+					// Show Connect row when: account is connected, or no live keys at all (new setup)
+					$show_connect_row    = $has_connected_account || ! $has_manual_live_keys;
+					// Show manual live key inputs only for legacy setups with manual keys
+					$show_live_key_inputs = $has_manual_live_keys;
 				?>
 
 					<table id="leaky_paywall_stripe_options" class="form-table">
@@ -909,41 +972,37 @@ class Leaky_Paywall_Settings
 						<tr>
 							<th colspan="2">
 								<h3><?php esc_html_e('Stripe Settings', 'leaky-paywall'); ?></h3>
-
-								<?php
-								if (!isset($settings['live_publishable_key']) || !$settings['live_publishable_key']) {
-								?>
-									<p>Looking for your Stripe keys? <a target="_blank" href="https://dashboard.stripe.com/account/apikeys">Click here.</a></p>
-								<?php
-								}
-								?>
-
 							</th>
 						</tr>
 
-						<tr <?php echo !$is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
+						<tr <?php echo ! $show_connect_row ? 'class="leaky_paywall_hidden"' : ''; ?>>
 							<th><?php esc_html_e('Connection Status', 'leaky-paywall'); ?></th>
 							<td>
 								<?php
 
-								if ($settings['connected_account_id']) {
+								if ( $has_connected_account ) {
 									$stripe = leaky_paywall_initialize_stripe_api();
 
 									try {
 										$account = $stripe->accounts->retrieve($settings['connected_account_id']);
 
-										echo '<div class="notice inline notice-success"><p><strong> ' . $account->settings->dashboard->display_name . '</strong><br>account id: ' . $settings['connected_account_id'] . '</p></div>';
-										echo '<p>Your Stripe account is connected in ' . leaky_paywall_get_current_mode() . ' mode. <a href="' . $this->get_disconnect_url() . '">Disconnect this account.</a></p>';
+										echo '<div class="notice inline notice-success"><p><strong>' . esc_html( $account->settings->dashboard->display_name ) . '</strong><br>account id: ' . esc_html( $settings['connected_account_id'] ) . '</p></div>';
+
+										if ( 'test' === leaky_paywall_get_current_mode() ) {
+											echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
+										} else {
+											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
+										}
 									} catch (\Throwable $th) {
 
 										leaky_paywall_log($th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id']);
 
-										echo '<div class="notice inline notice-success"><p>' . $settings['connected_account_id'] . ' You do not have access to the account, or it does not exist.' . '<br><a href="' . $this->get_connect_url() . '">Connect with Stripe</a></div>';
+										echo '<div class="notice inline notice-error"><p>' . esc_html( $settings['connected_account_id'] ) . ' ' . esc_html__( 'You do not have access to the account, or it does not exist.', 'leaky-paywall' ) . '<br><a href="' . esc_url( $this->get_connect_url() ) . '">' . esc_html__( 'Connect with Stripe', 'leaky-paywall' ) . '</a></p></div>';
 									}
 								} else {
 								?>
-									<a href="<?php echo $this->get_connect_url(); ?>">Connect with Stripe</a>
-									<p>Connect with Stripe for pay as you go pricing: 10% per-transaction fee + Stripe fees. Have questions about connecting with Stripe? See the documentation.</p>
+									<a href="<?php echo esc_url( $this->get_connect_url() ); ?>"><?php esc_html_e( 'Connect with Stripe', 'leaky-paywall' ); ?></a>
+									<p><?php esc_html_e( 'Connect your Stripe account when you are ready to accept live payments. 10% per-transaction fee + Stripe fees.', 'leaky-paywall' ); ?></p>
 								<?php
 								}
 
@@ -952,22 +1011,22 @@ class Leaky_Paywall_Settings
 							</td>
 						</tr>
 
-						<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
+						<tr <?php echo ! $show_live_key_inputs ? 'class="leaky_paywall_hidden"' : ''; ?>>
 							<th><?php esc_html_e('Live Publishable Key', 'leaky-paywall'); ?></th>
 							<td><input type="text" id="live_publishable_key" class="regular-text" name="live_publishable_key" value="<?php echo esc_attr($settings['live_publishable_key']); ?>" /></td>
 						</tr>
 
-						<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
+						<tr <?php echo ! $show_live_key_inputs ? 'class="leaky_paywall_hidden"' : ''; ?>>
 							<th><?php esc_html_e('Live Secret Key', 'leaky-paywall'); ?></th>
 							<td><input type="password" id="live_secret_key" class="regular-text" name="live_secret_key" value="<?php echo esc_attr($settings['live_secret_key']); ?>" /></td>
 						</tr>
 
-						<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
+						<tr>
 							<th><?php esc_html_e('Test Publishable Key', 'leaky-paywall'); ?></th>
 							<td><input type="text" id="test_publishable_key" class="regular-text" name="test_publishable_key" value="<?php echo esc_attr($settings['test_publishable_key']); ?>" /></td>
 						</tr>
 
-						<tr <?php echo $is_connect ? 'class="leaky_paywall_hidden"' : ''; ?>>
+						<tr>
 							<th><?php esc_html_e('Test Secret Key', 'leaky-paywall'); ?></th>
 							<td><input type="password" id="test_secret_key" class="regular-text" name="test_secret_key" value="<?php echo esc_attr($settings['test_secret_key']); ?>" /></td>
 						</tr>
@@ -1282,6 +1341,7 @@ class Leaky_Paywall_Settings
 				'general' => array(
 					'general',
 					'pages',
+					'insights',
 				),
 				'restrictions' => array(),
 				'subscriptions' => array(
@@ -1306,31 +1366,22 @@ class Leaky_Paywall_Settings
 		public function get_settings()
 		{
 
-			$default_email_body = 'PLEASE EDIT THIS CONTENT - You can use simple html, including images.
+			$default_email_body = 'Welcome to %sitename%, %firstname%!
 
-			Thank you for subscribing to %sitename% and welcome to our community!
+Thank you for subscribing. Your account is now active and ready to use.
 
-			Your account is activated.
+<b>Your Login Details</b>
 
-			As a member you will gain more insight into the topics you care about, gain access to the latest articles, and you will gain a greater understanding of the events that are shaping our time. With a Digital Subscription, you also get our official Mobile App for FREE. Get the apps here: http://OurPublication.com/apps
+Username: %username%
+Password: %password%
 
-			<b>How to login:</b>
+You can log in anytime to access your subscription content and manage your account.
 
-			Go to: http://OurPublication.com/my-account/ (this is the “Page for Profile” setting in Leaky Paywall Settings)
-			Username: %username%
-			Password: %password%
+If you have any questions, simply reply to this email — we are happy to help.
 
-			Use some social media to tell your friends that you are on the journey with us https://twitter.com/OurPublication
+Thank you for your support!
 
-			TWEET: I just subscribed to Our Publication. Join up and be awesome! www.ourpublication.com
-
-			Facebook https://www.facebook.com/ourpublication/
-
-			Instagram https://www.instagram.com/ourpublication/
-
-			LinkedIn https://www.linkedin.com/groups/12345678
-
-			We love feedback… please help us make your publication better by emailing info@ourpublication.pub … and thanks again!';
+The %sitename% Team';
 
 			$defaults = array(
 				'page_for_login'                        => 0, /* Site Specific */
@@ -1355,7 +1406,7 @@ class Leaky_Paywall_Settings
 				'from_name'                             => get_option('blogname'), /* Site Specific */
 				'from_email'                            => get_option('admin_email'), /* Site Specific */
 				'new_subscriber_email'                  => 'off',
-				'new_email_subject'                     => '',
+				'new_email_subject'                     => __( 'Welcome to %sitename%', 'leaky-paywall' ),
 				'new_email_body'                        => $default_email_body,
 				'renewal_reminder_email'                => 'on',
 				'renewal_reminder_email_subject'        => '',
@@ -1364,8 +1415,10 @@ class Leaky_Paywall_Settings
 				'new_subscriber_admin_email'            => 'off',
 				'admin_new_subscriber_email_subject'    => 'New subscription on ' . stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8')),
 				'admin_new_subscriber_email_recipients' => get_option('admin_email'),
-				'payment_gateway'                       => array('stripe_checkout'),
+				'payment_gateway'                       => array('stripe'),
 				'test_mode'                             => 'off',
+				'connected_account_id'                  => '',
+				'lp_app_api_key'                        => '',
 				'live_secret_key'                       => '',
 				'live_publishable_key'                  => '',
 				'test_secret_key'                       => '',
@@ -1399,13 +1452,14 @@ class Leaky_Paywall_Settings
 				'restrict_pdf_downloads'                => 'off',
 				'enable_combined_restrictions'          => 'off',
 				'combined_restrictions_total_allowed'   => '',
-				'enable_js_cookie_restrictions'         => 'off',
+				'enable_js_cookie_restrictions'         => 'on',
 				'js_restrictions_post_container'        => 'article .entry-content',
 				'js_restrictions_page_container'        => 'article .entry-content',
 				'lead_in_elements'                      => 2,
 				'bypass_paywall_restrictions'           => array('administrator'),
 				'post_tag_exceptions'                   => '',
 				'post_category_exceptions'              => '',
+				'insights_api_key'                      => '',
 				'restrictions'                          => array(
 					'post_types' => array(
 						'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
@@ -1415,9 +1469,9 @@ class Leaky_Paywall_Settings
 				),
 				'levels'                                => array(
 					'0' => array(
-						'label'                    => __('Digital Access', 'leaky-paywall'),
+						'label'                    => __('Free Registration', 'leaky-paywall'),
 						'price'                    => '0',
-						'subscription_length_type' => 'limited',
+						'subscription_length_type' => 'unlimited',
 						'interval_count'           => 1,
 						'interval'                 => 'month',
 						'recurring'                => 'off',
@@ -1578,6 +1632,13 @@ class Leaky_Paywall_Settings
 
 				if (isset($_POST['page_for_profile'])) {
 					$settings['page_for_profile'] = absint($_POST['page_for_profile']);
+				}
+			}
+
+			if ('general' == $current_tab && 'insights' == $current_section) {
+
+				if (isset($_POST['insights_api_key'])) {
+					$settings['insights_api_key'] = sanitize_text_field(wp_unslash($_POST['insights_api_key']));
 				}
 			}
 
@@ -2023,14 +2084,15 @@ class Leaky_Paywall_Settings
 
 		public function get_connect_url()
 		{
+			$api_key = leaky_paywall_ensure_app_api_key();
 
 			$state = wp_generate_password(32, false, false);
 			set_transient('lp_connect_state_' . get_current_user_id(), $state, 15 * MINUTE_IN_SECONDS);
 
 			$return_url = add_query_arg(
 				array(
-					'page'      => 'issuem-leaky-paywall',
-					'tab'       => 'payments',
+					'page'             => 'issuem-leaky-paywall',
+					'tab'              => 'payments',
 					'lp_connect_state' => $state,
 				),
 				admin_url('admin.php')
@@ -2038,27 +2100,26 @@ class Leaky_Paywall_Settings
 
 			$refresh_url = add_query_arg(
 				array(
-					'page'      => 'issuem-leaky-paywall',
-					'tab'       => 'payments',
-					'connect_refresh'   => 'true',
-					'lp_connect_state'  => $state,
+					'page'             => 'issuem-leaky-paywall',
+					'tab'              => 'payments',
+					'connect_refresh'  => 'true',
+					'lp_connect_state' => $state,
 				),
 				admin_url('admin.php')
 			);
 
-			$mode = leaky_paywall_get_current_mode();
+			$base_url = apply_filters('leaky_paywall_app_url', 'https://app.leakypaywall.com');
 
-			$stripe_connect_url = add_query_arg(
+			return add_query_arg(
 				array(
-					'live_mode'         => $mode == 'live' ? true : false,
-					'lp_connect_state'             => $state,
-					'customer_site_url' => esc_url_raw($return_url),
-					'customer_refresh_url' => esc_url_raw($refresh_url)
+					'api_key'              => $api_key,
+					'live_mode'            => 1,
+					'lp_connect_state'     => $state,
+					'customer_site_url'    => urlencode($return_url),
+					'customer_refresh_url' => urlencode($refresh_url),
 				),
-				'https://leakypaywall.com/?lp_gateway_connect_init=stripe_connect'
+				$base_url . '/api/v1/connect/init'
 			);
-
-			return $stripe_connect_url;
 		}
 
 		public function get_disconnect_url()

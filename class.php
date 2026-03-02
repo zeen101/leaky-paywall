@@ -49,8 +49,11 @@ class Leaky_Paywall {
 		add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_menu', array( $this, 'suppress_legacy_reporting_tool_menu' ), 999 );
+		add_action( 'admin_menu', array( $this, 'suppress_legacy_bulk_import_menu' ), 999 );
 		add_action( 'admin_notices', array( $this, 'multiple_levels_deactivation_notice' ) );
-
+		add_action( 'admin_notices', array( $this, 'reporting_tool_deactivation_notice' ) );
+		add_action( 'admin_notices', array( $this, 'bulk_import_deactivation_notice' ) );
 
 		add_action( 'wp_ajax_leaky_paywall_process_notice_link', array( $this, 'ajax_process_notice_link' ) );
 		add_action( 'wp_ajax_leaky_paywall_add_subscriber', array( $this, 'ajax_add_subscriber' ) );
@@ -219,7 +222,8 @@ class Leaky_Paywall {
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Transactions', 'leaky-paywall' ), __( 'Transactions', 'leaky-paywall' ), $capability, 'edit.php?post_type=lp_transaction' );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Insights', 'leaky-paywall' ), __( 'Insights', 'leaky-paywall' ), $capability, 'leaky-paywall-insights', array( $insights, 'insights_page' ) );
+		$tools = new Leaky_Paywall_Tools();
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Tools', 'leaky-paywall' ), __( 'Tools', 'leaky-paywall' ), $capability, 'leaky-paywall-tools', array( $tools, 'tools_page' ) );
 
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), $capability, 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 
@@ -243,6 +247,7 @@ class Leaky_Paywall {
 			|| 'index.php' === $hook_suffix
 			|| 'leaky-paywall_page_leaky-paywall-upgrade' === $hook_suffix
 			|| 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
+			|| 'leaky-paywall_page_leaky-paywall-tools' === $hook_suffix
 			|| 'admin_page_leaky-paywall-setup' === $hook_suffix
 		) {
 			wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
@@ -252,6 +257,10 @@ class Leaky_Paywall {
 			wp_enqueue_style( 'leaky_paywall_admin_insights_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-admin-insights.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
+		if ( 'leaky-paywall_page_leaky-paywall-tools' === $hook_suffix ) {
+			wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
+		}
+
 		if ( 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
 			wp_enqueue_style( 'leaky_paywall_admin_dashboard_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-admin-dashboard.css', '', LEAKY_PAYWALL_VERSION );
 		}
@@ -259,6 +268,13 @@ class Leaky_Paywall {
 		if ( 'post.php' === $hook_suffix || 'post-new.php' === $hook_suffix ) {
 			wp_enqueue_style( 'leaky_paywall_post_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-post.css', '', LEAKY_PAYWALL_VERSION );
 
+			$screen = get_current_screen();
+			if ( $screen && 'lp_transaction' === $screen->post_type ) {
+				wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
+			}
+		}
+
+		if ( 'edit.php' === $hook_suffix ) {
 			$screen = get_current_screen();
 			if ( $screen && 'lp_transaction' === $screen->post_type ) {
 				wp_enqueue_style( 'leaky_paywall_admin_style', LEAKY_PAYWALL_URL . 'css/issuem-leaky-paywall-admin.css', '', LEAKY_PAYWALL_VERSION );
@@ -305,6 +321,12 @@ class Leaky_Paywall {
 			wp_enqueue_style( 'leaky_paywall_admin_subscribers_style', LEAKY_PAYWALL_URL . 'css/leaky-paywall-subscribers.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
+
+		if ( 'leaky-paywall_page_leaky-paywall-tools' === $hook_suffix ) {
+			wp_enqueue_script( 'leaky_paywall_export_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-export.js', array( 'jquery', 'jquery-ui-datepicker' ), LEAKY_PAYWALL_VERSION, true );
+			wp_enqueue_media();
+			wp_enqueue_script( 'leaky_paywall_import_js', LEAKY_PAYWALL_URL . 'js/leaky-paywall-import.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
+		}
 
 		if ( 'leaky-paywall_page_leaky-paywall-insights' === $hook_suffix
 			|| 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
@@ -833,6 +855,46 @@ class Leaky_Paywall {
 			echo '<div class="notice notice-info is-dismissible">';
 			echo '<p><strong>Leaky Paywall:</strong> Multiple Levels is now built into Leaky Paywall. You can safely deactivate and delete the <em>Leaky Paywall - Multiple Levels</em> plugin.</p>';
 			echo '</div>';
+		}
+	}
+
+	/**
+	 * Display admin notice when the standalone Reporting Tool plugin is still active.
+	 */
+	public function reporting_tool_deactivation_notice() {
+		if ( is_plugin_active( 'leaky-paywall-reporting-tool/leaky-paywall-reporting-tool.php' ) ) {
+			echo '<div class="notice notice-info is-dismissible">';
+			echo '<p><strong>Leaky Paywall:</strong> The Reporting Tool is now built into Leaky Paywall under <strong>Tools &gt; Export</strong>. You can safely deactivate and delete the <em>Leaky Paywall - Reporting Tool</em> plugin.</p>';
+			echo '</div>';
+		}
+	}
+
+	/**
+	 * Remove the old Reporting Tool submenu when the plugin is still active.
+	 */
+	public function suppress_legacy_reporting_tool_menu() {
+		if ( is_plugin_active( 'leaky-paywall-reporting-tool/leaky-paywall-reporting-tool.php' ) ) {
+			remove_submenu_page( 'issuem-leaky-paywall', 'reporting-tool' );
+		}
+	}
+
+	/**
+	 * Display admin notice when the standalone Bulk Import plugin is still active.
+	 */
+	public function bulk_import_deactivation_notice() {
+		if ( is_plugin_active( 'leaky-paywall-bulk-import-subscribers/leaky-paywall-bulk-import-subscribers.php' ) ) {
+			echo '<div class="notice notice-info is-dismissible">';
+			echo '<p><strong>Leaky Paywall:</strong> Bulk Import is now built into Leaky Paywall under <strong>Tools &gt; Import</strong>. You can safely deactivate and delete the <em>Leaky Paywall - Bulk Import Subscribers</em> plugin.</p>';
+			echo '</div>';
+		}
+	}
+
+	/**
+	 * Remove the old Bulk Import submenu when the plugin is still active.
+	 */
+	public function suppress_legacy_bulk_import_menu() {
+		if ( is_plugin_active( 'leaky-paywall-bulk-import-subscribers/leaky-paywall-bulk-import-subscribers.php' ) ) {
+			remove_submenu_page( 'issuem-leaky-paywall', 'lp-bulk-import' );
 		}
 	}
 

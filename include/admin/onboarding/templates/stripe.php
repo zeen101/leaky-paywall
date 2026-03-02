@@ -13,7 +13,7 @@ $connect_url = $onboarding->get_connect_url();
 	</div>
 
 	<div class="leaky-paywall-onboarding--step--actions" style="margin-top: 40px;">
-		<p style="font-size:16px;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-setup&step=license' ) ); ?>" class="leaky-paywall-onboarding--continue">Skip this step</a></p>
+		<p style="font-size:16px;"><a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-setup&step=email' ) ); ?>" class="leaky-paywall-onboarding--continue">Skip this step</a></p>
 	</div>
 
 </div>

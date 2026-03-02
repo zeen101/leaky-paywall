@@ -55,6 +55,41 @@ class Leaky_Paywall_Dashboard {
 			</div>
 		</div>
 
+		<?php if ( isset( $_GET['lp_onboarding_complete'] ) ) : ?>
+		<div class="lp-onboarding-complete">
+			<h2><?php esc_html_e( 'Setup Complete!', 'leaky-paywall' ); ?></h2>
+			<p><?php esc_html_e( 'Your paywall is configured and ready to go. Here is your dashboard — it will populate as your site gets traffic and subscribers:', 'leaky-paywall' ); ?></p>
+			<ul>
+				<li><strong><?php esc_html_e( 'Revenue & Subscribers', 'leaky-paywall' ); ?></strong> — <?php esc_html_e( 'track paid and free signups over time', 'leaky-paywall' ); ?></li>
+				<li><strong><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></strong> — <?php esc_html_e( 'see how often your paywall appears and its conversion rate', 'leaky-paywall' ); ?></li>
+				<li><strong><?php esc_html_e( 'Top Converting Content', 'leaky-paywall' ); ?></strong> — <?php esc_html_e( 'discover which articles drive the most subscriptions', 'leaky-paywall' ); ?></li>
+			</ul>
+			<p><?php printf( esc_html__( 'You can fine-tune your subscription levels, restrictions, and payment settings anytime from %sSettings%s.', 'leaky-paywall' ), '<a href="' . esc_url( admin_url( 'admin.php?page=leaky-paywall-settings' ) ) . '">', '</a>' ); ?></p>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( empty( $settings['insights_api_key'] ) ) : ?>
+		<div class="lp-insights-callout">
+			<div class="lp-insights-callout--content">
+				<h3><?php esc_html_e( 'Connect to Leaky Paywall Insights', 'leaky-paywall' ); ?></h3>
+				<p><?php esc_html_e( 'Track subscriber events, content engagement, and payment activity in real time. Enter your API key to start collecting data.', 'leaky-paywall' ); ?></p>
+			</div>
+			<div class="lp-insights-callout--action">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=general&section=insights' ) ); ?>" class="button button-primary"><?php esc_html_e( 'Connect to Insights', 'leaky-paywall' ); ?></a>
+			</div>
+		</div>
+		<?php else : ?>
+		<div class="lp-insights-callout lp-insights-callout--connected">
+			<div class="lp-insights-callout--content">
+				<h3><?php esc_html_e( 'Leaky Paywall Insights', 'leaky-paywall' ); ?></h3>
+				<p><?php esc_html_e( 'Your site is connected. View detailed subscriber analytics, event timelines, and engagement reports on the Insights platform.', 'leaky-paywall' ); ?></p>
+			</div>
+			<div class="lp-insights-callout--action">
+				<a href="<?php echo esc_url( apply_filters( 'leaky_paywall_insights_api_url', 'https://insights.leakypaywall.com' ) ); ?>" class="button button-primary" target="_blank"><?php esc_html_e( 'View Insights', 'leaky-paywall' ); ?></a>
+			</div>
+		</div>
+		<?php endif; ?>
+
 		<div class="lp-dashboard">
 
 			<!-- Header row with period selector -->

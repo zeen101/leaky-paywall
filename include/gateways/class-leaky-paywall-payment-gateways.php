@@ -56,11 +56,6 @@ class Leaky_Paywall_Payment_Gateways {
 				'admin_label'   => __( 'Manual Payment (useful for testing payments or accepting checks)', 'leaky-paywall' ),
 				'class'         => 'Leaky_Paywall_Payment_Gateway_Manual'
 			),
-			'paypal_standard' => array(
-				'label'       => __( 'PayPal', 'leaky-paywall' ),
-				'admin_label' => __( 'PayPal Standard', 'leaky-paywall' ),
-				'class'       => __( 'Leaky_Paywall_Payment_Gateway_PayPal' ),
-			),
 			'stripe'          => array(
 				'label'       => __( 'Credit / Debit Card', 'leaky-paywall' ),
 				'admin_label' => __( 'Stripe (Credit / Debit Card)', 'leaky-paywall' ),
@@ -72,6 +67,19 @@ class Leaky_Paywall_Payment_Gateways {
 				'class'			=> 'Leaky_Paywall_Payment_Gateway_Stripe_Checkout'
 			)
 		);
+
+		// Only show PayPal Standard if the site already has it enabled.
+		$settings    = get_leaky_paywall_settings();
+		$saved       = isset( $settings['payment_gateway'] ) ? $settings['payment_gateway'] : array();
+		$paypal_on   = in_array( 'paypal_standard', $saved, true ) || in_array( 'paypal-standard', $saved, true );
+
+		if ( $paypal_on ) {
+			$gateways['paypal_standard'] = array(
+				'label'       => __( 'PayPal', 'leaky-paywall' ),
+				'admin_label' => __( 'PayPal Standard', 'leaky-paywall' ),
+				'class'       => 'Leaky_Paywall_Payment_Gateway_PayPal',
+			);
+		}
 
 		return apply_filters( 'leaky_paywall_payment_gateways', $gateways );
 	}
@@ -110,7 +118,11 @@ class Leaky_Paywall_Payment_Gateways {
 
 		if ( empty( $enabled ) ) {
 
-			$enabled['paypal_standard'] = __( 'PayPal Standard', 'leaky-paywall' );
+			$enabled['stripe'] = array(
+				'label'       => __( 'Credit / Debit Card', 'leaky-paywall' ),
+				'admin_label' => __( 'Stripe (Credit / Debit Card)', 'leaky-paywall' ),
+				'class'       => 'Leaky_Paywall_Payment_Gateway_Stripe',
+			);
 		}
 
 		return apply_filters( 'leaky_paywall_enabled_payment_gateways', $enabled, $this->available_gateways );

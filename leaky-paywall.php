@@ -92,6 +92,9 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-incomplete-user.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools/tools.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools/export.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools/import.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/functions.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/subscriber.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/functions.php';
@@ -109,6 +112,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/class-onboarding.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/tracking.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/list-builder/class-lp-list-builder.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/class-lp-event-tracking.php';
 
 		include LEAKY_PAYWALL_PATH . 'include/error-tracking.php';
 		include LEAKY_PAYWALL_PATH . 'include/registration-functions.php';

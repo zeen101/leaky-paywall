@@ -172,6 +172,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			'name'          => __( 'Name', 'leaky-paywall' ),
 			'level_id'      => __( 'Level', 'leaky-paywall' ),
 			'status'        => __( 'Status', 'leaky-paywall' ),
+			'created'       => __( 'Created', 'leaky-paywall' ),
 			'expires'       => __( 'Expires', 'leaky-paywall' ),
 		);
 		$users_columns = apply_filters( 'leaky_paywall_subscribers_columns', $users_columns );
@@ -458,20 +459,23 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 								$created = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_created', true );
 							}
 
+							// Fall back to WP user registration date.
+							if ( empty( $created ) ) {
+								$created = $user->user_registered;
+							}
+
 							$created = apply_filters( 'do_leaky_paywall_profile_shortcode_created_column', $created, $user, $mode, $site, $level_id );
 
 							$date_format = 'F j, Y';
 
 							if ( is_numeric( $created ) && (int)$created == $created ) {
-								// its a timestamp
 								$formatted_created = gmdate( $date_format, $created );
 							} else {
-								// its a date format
-								$formatted_created     = mysql2date( $date_format, $created );
+								$formatted_created = mysql2date( $date_format, $created );
 							}
 
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo esc_attr( $formatted_created );
+							echo esc_html( $formatted_created );
 							echo '</td>';
 							break;
 
@@ -489,18 +493,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							if ( empty( $expires ) || '0000-00-00 00:00:00' === $expires || 'Never' === $expires ) {
 								echo esc_html__( 'Never', 'leaky-paywall' );
 							} else {
-								$expires_ts   = strtotime( $expires );
-								$full_date    = date_i18n( 'F j, Y', $expires_ts );
-								$now          = current_time( 'timestamp' );
-								$diff         = $expires_ts - $now;
-
-								if ( $diff > 0 ) {
-									$relative = sprintf( __( 'in %s', 'leaky-paywall' ), human_time_diff( $now, $expires_ts ) );
-								} else {
-									$relative = sprintf( __( '%s ago', 'leaky-paywall' ), human_time_diff( $expires_ts, $now ) );
-								}
-
-								echo '<span title="' . esc_attr( $full_date ) . '" class="lp-relative-date">' . esc_html( $relative ) . '</span>';
+								echo esc_html( date_i18n( 'F j, Y', strtotime( $expires ) ) );
 							}
 
 							echo '</td>';

@@ -1,111 +1,272 @@
-/* Leaky Paywall Onboarding Styles */
+/* =============================================
+   Leaky Paywall Onboarding — Modern Design
+   ============================================= */
 
+/* --- Layout --- */
 #leaky-paywall-onboarding {
-	max-width: 900px;
+	max-width: 720px;
 	margin: 40px auto;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
-#leaky-paywall-onboarding h1 {
-	font-size: 36px;
-	text-align: center;
-	margin-bottom: 10px;
-	color: #1e1e1e;
-}
-
-#leaky-paywall-onboarding h2 {
-	font-size: 24px;
-	margin-top: 40px;
-	margin-bottom: 15px;
-	color: #1e1e1e;
-}
-
 .leaky-paywall-onboarding--logo {
 	text-align: center;
+	background: #1d2327;
+	padding: 20px;
+	border-radius: 8px;
+	margin-bottom: 24px;
 }
 
-.leaky-paywall-onboarding--tagline {
+/* --- Progress Bar --- */
+.lp-onboarding-progress {
+	margin-bottom: 32px;
+}
+
+.lp-onboarding-progress--bar {
+	height: 4px;
+	background: #e0e0e0;
+	border-radius: 2px;
+	overflow: hidden;
+	margin-bottom: 12px;
+}
+
+.lp-onboarding-progress--fill {
+	height: 100%;
+	background: #E45637;
+	border-radius: 2px;
+	transition: width 0.3s ease;
+}
+
+.lp-onboarding-progress--steps {
+	display: flex;
+	justify-content: space-between;
+}
+
+.lp-onboarding-progress--step {
+	font-size: 11px;
+	font-weight: 500;
+	color: #bbb;
+	letter-spacing: 0.3px;
+}
+
+.lp-onboarding-progress--step.is-current {
+	color: #E45637;
+	font-weight: 600;
+}
+
+.lp-onboarding-progress--step.is-complete {
+	color: #1d2327;
+}
+
+/* --- Error Banner --- */
+.lp-onboarding-error {
+	background: #D63638;
+	color: #fff;
+	padding: 8px 20px;
 	text-align: center;
-	font-size: 18px;
-	color: #666;
-	margin-bottom: 40px;
+	border-radius: 8px;
+	margin-bottom: 24px;
 }
 
+.lp-onboarding-error p {
+	margin: 0;
+	font-size: 14px;
+}
+
+/* --- Step Card --- */
 .leaky-paywall-onboarding--step {
 	background: #fff;
 	padding: 40px;
 	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+/* --- Typography --- */
+#leaky-paywall-onboarding h1 {
+	font-size: 28px;
+	font-weight: 600;
+	text-align: center;
+	margin: 0 0 8px 0;
+	color: #1d2327;
+}
+
+#leaky-paywall-onboarding h2 {
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0 0 8px 0;
+	color: #1d2327;
+}
+
+.leaky-paywall-onboarding--step > p,
+.leaky-paywall-onboarding--step > form > p {
+	font-size: 14px;
+	line-height: 1.6;
+	color: #50575e;
+	margin: 0 0 16px 0;
+}
+
+.leaky-paywall-onboarding--step > p a,
+.leaky-paywall-onboarding--step > form > p a {
+	color: #2271b1;
+	text-decoration: none;
+}
+
+.leaky-paywall-onboarding--step > p a:hover,
+.leaky-paywall-onboarding--step > form > p a:hover {
+	color: #135e96;
+	text-decoration: underline;
+}
+
+.leaky-paywall-onboarding--tagline {
+	text-align: center;
+	font-size: 15px;
+	color: #50575e;
+	margin: 0 0 32px 0;
+}
+
+.leaky-paywall-onboarding--step .description {
+	font-size: 13px;
+	color: #888;
+	margin-top: 8px;
+}
+
+/* --- Form Elements --- */
 .leaky-paywall-onboarding--step input[type="text"],
 .leaky-paywall-onboarding--step input[type="email"],
 .leaky-paywall-onboarding--step select {
 	width: 100%;
 	max-width: 500px;
-	padding: 10px;
-	font-size: 16px;
+	padding: 10px 12px;
+	font-size: 14px;
 	border: 1px solid #ddd;
-	border-radius: 4px;
+	border-radius: 6px;
+	color: #1d2327;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.leaky-paywall-onboarding--step input[type="text"]:focus,
+.leaky-paywall-onboarding--step input[type="email"]:focus,
+.leaky-paywall-onboarding--step select:focus {
+	border-color: #E45637;
+	box-shadow: 0 0 0 2px rgba(228, 86, 55, 0.12);
+	outline: none;
 }
 
 .leaky-paywall-onboarding--step label {
 	display: block;
-	margin-bottom: 5px;
+	margin-bottom: 6px;
 	font-weight: 500;
+	font-size: 13px;
+	color: #1d2327;
 }
 
+.leaky-paywall-onboarding--field {
+	margin-bottom: 20px;
+}
+
+.leaky-paywall-onboarding--field label {
+	font-size: 13px;
+	font-weight: 500;
+	margin-bottom: 6px;
+	color: #1d2327;
+}
+
+.leaky-paywall-onboarding--field input[type="number"] {
+	width: 80px;
+	padding: 10px;
+	font-size: 18px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	text-align: center;
+	color: #1d2327;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.leaky-paywall-onboarding--field input[type="number"]:focus {
+	border-color: #E45637;
+	box-shadow: 0 0 0 2px rgba(228, 86, 55, 0.12);
+	outline: none;
+}
+
+/* --- Textarea --- */
+.leaky-paywall-onboarding--step textarea.large-text {
+	width: 100%;
+	padding: 12px;
+	font-size: 13px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	color: #1d2327;
+	line-height: 1.6;
+	resize: vertical;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.leaky-paywall-onboarding--step textarea.large-text:focus {
+	border-color: #E45637;
+	box-shadow: 0 0 0 2px rgba(228, 86, 55, 0.12);
+	outline: none;
+}
+
+/* --- Checkbox --- */
+.leaky-paywall-onboarding--checkbox label {
+	display: inline-flex;
+	align-items: center;
+	font-size: 14px;
+	font-weight: 400;
+	cursor: pointer;
+	color: #1d2327;
+}
+
+.leaky-paywall-onboarding--checkbox input[type="checkbox"] {
+	margin-right: 10px;
+	width: 18px;
+	height: 18px;
+	accent-color: #E45637;
+}
+
+/* --- Actions --- */
 .leaky-paywall-onboarding--step--actions {
-	margin-top: 40px;
+	margin-top: 32px;
 	text-align: center;
 }
 
 .leaky-paywall-onboarding--step--actions .button-primary.large {
-	font-size: 18px;
-	padding: 12px 40px;
+	background: #E45637;
+	border-color: #C94829;
+	font-size: 15px;
+	font-weight: 500;
+	padding: 10px 36px;
 	height: auto;
+	border-radius: 6px;
+	transition: background 0.15s ease;
+}
+
+.leaky-paywall-onboarding--step--actions .button-primary.large:hover,
+.leaky-paywall-onboarding--step--actions .button-primary.large:focus {
+	background: #C94829;
+	border-color: #B03D22;
 }
 
 .leaky-paywall-onboarding--continue {
-	color: #666;
+	color: #888;
 	text-decoration: none;
+	font-size: 13px;
 }
 
 .leaky-paywall-onboarding--continue:hover {
-	color: #000;
+	color: #1d2327;
 	text-decoration: underline;
 }
 
-.leaky-paywall-onboarding--quote {
-	background: #f9f9f9;
-	padding: 30px;
-	margin: 30px 0;
-	border-left: 4px solid #E45637;
-	border-radius: 4px;
-}
-
-.leaky-paywall-onboarding--quote blockquote {
-	margin: 0;
-	font-size: 18px;
-	line-height: 1.6;
-	font-style: italic;
-}
-
-.leaky-paywall-onboarding--quote cite {
-	display: block;
-	margin-top: 15px;
-	font-style: normal;
-	font-weight: 600;
-	color: #E45637;
-}
-
+/* --- Publication Types --- */
 #leaky-paywall-onboarding--publication-types {
 	list-style: none;
-	margin: 0;
+	margin: 0 0 8px 0;
 	padding: 0;
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 15px;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
 }
 
 #leaky-paywall-onboarding--publication-types li {
@@ -115,214 +276,167 @@
 #leaky-paywall-onboarding--publication-types label {
 	display: flex;
 	align-items: center;
+	padding: 12px 16px;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
 	cursor: pointer;
+	font-size: 14px;
+	font-weight: 400;
+	color: #1d2327;
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+#leaky-paywall-onboarding--publication-types label:hover {
+	border-color: #bbb;
+	background: #fafafa;
 }
 
 #leaky-paywall-onboarding--publication-types input[type="checkbox"] {
-	margin-right: 8px;
+	margin-right: 10px;
 	margin-top: 0;
+	accent-color: #E45637;
 }
 
-/* Stripe Connect step */
-.leaky-paywall-onboarding--stripe-connect {
-	text-align: center;
-	padding: 30px 0;
+#leaky-paywall-onboarding--publication-types input[type="checkbox"]:checked + span,
+#leaky-paywall-onboarding--publication-types input[type="checkbox"]:checked ~ * {
+	color: #1d2327;
 }
 
-/* Upgrade section */
-#leaky-paywall-upgrade {
-	margin-top: 60px;
-	background: #fff;
-	border-radius: 8px;
-	overflow: hidden;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+#leaky-paywall-onboarding--publication-types li:has(input:checked) label {
+	border-color: #E45637;
+	background: rgba(228, 86, 55, 0.04);
 }
 
-#leaky-paywall-upgrade--header {
-	background: linear-gradient(135deg, #E45637 0%, #135e96 100%);
-	color: #fff;
-	padding: 40px;
-	text-align: center;
+/* --- Pages List Table --- */
+.leaky-paywall-onboarding--pages-list {
+	width: 100%;
+	max-width: 500px;
+	border-collapse: collapse;
+	margin: 20px 0;
 }
 
-#leaky-paywall-upgrade--header h2 {
-	color: #fff;
-	margin: 0 0 15px 0;
+.leaky-paywall-onboarding--pages-list td {
+	padding: 14px 16px;
+	border-bottom: 1px solid #f0f0f1;
+	font-size: 14px;
+	color: #1d2327;
 }
 
-#leaky-paywall-upgrade--header em {
-	color: #ffd700;
-	font-style: normal;
-}
-
-#leaky-paywall-upgrade--features {
-	padding: 40px;
-}
-
-#leaky-paywall-upgrade--features h3 {
-	font-size: 22px;
-	margin-bottom: 20px;
-}
-
-#leaky-paywall-upgrade--features ul {
-	list-style: none;
-	padding: 0;
-}
-
-#leaky-paywall-upgrade--features li {
-	padding: 15px 0;
-	border-bottom: 1px solid #eee;
-	font-size: 16px;
-}
-
-#leaky-paywall-upgrade--features li:last-child {
+.leaky-paywall-onboarding--pages-list tr:last-child td {
 	border-bottom: none;
 }
 
-#leaky-paywall-upgrade--cta {
-	background: #f9f9f9;
-	padding: 40px;
-	text-align: center;
-	border-top: 1px solid #eee;
-}
-
-#leaky-paywall-upgrade--cta ul {
-	list-style: none;
-	padding: 0;
-	margin: 30px 0 0 0;
-	display: flex;
-	justify-content: center;
-	gap: 40px;
-	flex-wrap: wrap;
-}
-
-#leaky-paywall-upgrade--cta li {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-#leaky-paywall-upgrade--cta .dashicons {
-	color: #E45637;
-	font-size: 24px;
-	width: 24px;
-	height: 24px;
-}
-
-/* Setup guide */
-#leaky-paywall-onboarding--guide ol {
-	list-style: none;
-	counter-reset: guide-counter;
-	padding: 0;
-	margin: 40px 0;
-}
-
-#leaky-paywall-onboarding--guide li {
-	counter-increment: guide-counter;
-	padding: 25px;
-	margin-bottom: 15px;
-	background: #f9f9f9;
-	border-left: 4px solid #E45637;
+.leaky-paywall-onboarding--pages-list code {
+	background: #f0f0f1;
+	padding: 3px 8px;
 	border-radius: 4px;
-	position: relative;
+	font-size: 12px;
+	color: #50575e;
 }
 
-#leaky-paywall-onboarding--guide li:before {
-	content: counter(guide-counter);
-	position: absolute;
-	left: -20px;
-	top: 50%;
-	transform: translateY(-50%);
-	background: #E45637;
-	color: #fff;
-	width: 36px;
-	height: 36px;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: bold;
-	font-size: 18px;
+/* --- Stripe Connect --- */
+.leaky-paywall-onboarding--stripe-connect {
+	text-align: center;
+	padding: 24px 0;
 }
 
-#leaky-paywall-onboarding--guide li.completed {
-	background: #e8f5e9;
-	border-left-color: #4caf50;
-	color: #2e7d32;
+/* --- Template Tags --- */
+.leaky-paywall-onboarding--template-tags {
+	background: #f9f9f9;
+	padding: 16px 20px;
+	border-radius: 6px;
+	margin-top: 20px;
+	border: 1px solid #f0f0f1;
 }
 
-#leaky-paywall-onboarding--guide li.completed:before {
-	content: "\2713";
-	background: #4caf50;
+.leaky-paywall-onboarding--template-tags p {
+	margin: 0 0 8px 0;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #888;
 }
 
-#leaky-paywall-onboarding--guide li div {
-	margin-left: 20px;
-}
-
-#leaky-paywall-onboarding--guide li p {
-	margin: 0 0 15px 0;
-	font-size: 16px;
-}
-
-/* Updates step */
-#leaky-paywall-onboarding--updates--fields {
-	display: flex;
-	gap: 20px;
-	max-width: 600px;
-}
-
-#leaky-paywall-onboarding--updates--fields label {
-	flex: 1;
-}
-
-#leaky-paywall-onboarding--updates ul {
+.leaky-paywall-onboarding--template-tags ul {
 	list-style: none;
 	padding: 0;
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 6px;
 }
 
-#leaky-paywall-onboarding--updates li {
-	padding: 10px 0;
+.leaky-paywall-onboarding--template-tags li {
+	font-size: 13px;
+	color: #50575e;
 }
 
-#leaky-paywall-onboarding--updates li a {
-	text-decoration: none;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 16px;
+.leaky-paywall-onboarding--template-tags code {
+	background: #e8e8e8;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 12px;
 }
 
-#leaky-paywall-onboarding--updates li a:hover {
-	text-decoration: underline;
+/* --- Quote --- */
+.leaky-paywall-onboarding--quote {
+	background: #f9f9f9;
+	padding: 24px;
+	margin: 24px 0;
+	border-left: 3px solid #E45637;
+	border-radius: 6px;
 }
 
-/* Error animation */
+.leaky-paywall-onboarding--quote blockquote {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.6;
+	font-style: italic;
+	color: #50575e;
+}
+
+.leaky-paywall-onboarding--quote cite {
+	display: block;
+	margin-top: 12px;
+	font-style: normal;
+	font-weight: 600;
+	font-size: 13px;
+	color: #E45637;
+}
+
+/* --- Error Animation --- */
 .leaky-paywall-onboarding--error {
-	animation: shake 0.5s;
+	animation: lp-shake 0.5s;
 }
 
-@keyframes shake {
+@keyframes lp-shake {
 	0%, 100% { transform: translateX(0); }
-	25% { transform: translateX(-10px); }
-	75% { transform: translateX(10px); }
+	25% { transform: translateX(-8px); }
+	75% { transform: translateX(8px); }
 }
 
+/* --- Responsive --- */
 @media (max-width: 768px) {
 	#leaky-paywall-onboarding {
-		padding: 0 20px;
+		padding: 0 16px;
 	}
 
 	.leaky-paywall-onboarding--step {
-		padding: 20px;
+		padding: 24px;
 	}
 
-	#leaky-paywall-onboarding--updates--fields {
-		flex-direction: column;
+	#leaky-paywall-onboarding--publication-types {
+		grid-template-columns: 1fr 1fr;
 	}
 
-	#leaky-paywall-upgrade--cta ul {
-		flex-direction: column;
-		gap: 15px;
+	.lp-onboarding-progress--steps {
+		display: none;
+	}
+}
+
+@media (max-width: 480px) {
+	#leaky-paywall-onboarding--publication-types {
+		grid-template-columns: 1fr;
 	}
 }

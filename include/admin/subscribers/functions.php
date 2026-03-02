@@ -37,6 +37,12 @@ function lp_get_subscriber_meta( $key, $user = null ) {
         case 'price':
             $value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_price' . $site, true);
             break;
+        case 'hash':
+            $value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_hash' . $site, true);
+            break;
+        case 'description':
+            $value = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_description' . $site, true);
+            break;
 
 		default:
 			$value = '';

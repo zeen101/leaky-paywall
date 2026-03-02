@@ -934,6 +934,10 @@ function do_leaky_paywall_subscriber_shortcode($atts, $content = null)
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
 
+	if (leaky_paywall_user_can_bypass_paywall_by_role($user)) {
+		return do_shortcode($content);
+	}
+
 	$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
 
 	if (!is_numeric($level_id)) {
@@ -994,12 +998,34 @@ function do_leaky_paywall_not_subscriber_shortcode($atts, $content = null)
 
 	$level_id = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
 
+
+	if (leaky_paywall_user_can_bypass_paywall_by_role($user)) {
+		return;
+	}
+
 	if (!is_numeric($level_id)) {
 		return do_shortcode( $content );
 	}
 
 	if (!leaky_paywall_user_has_access($user)) {
 		return do_shortcode( $content );
+	}
+
+	if (!empty($a['levels'])) {
+
+		$match            = false;
+		$shortcode_levels = explode(',', $a['levels']);
+
+		foreach ($shortcode_levels as $level) {
+			if ($level === $level_id) {
+				$match = true;
+				break;
+			}
+		}
+
+		if ($match) {
+			return do_shortcode($content);
+		}
 	}
 }
 
