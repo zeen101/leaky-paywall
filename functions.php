@@ -2604,7 +2604,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$site = leaky_paywall_get_current_site();
 
 		// Exclude past_due — Stripe is still retrying payment, so let the webhook resolve it.
-		$cron_statuses = array_diff( leaky_paywall_access_statuses(), array( 'past_due' ) );
+		// Exclude pending_cancel — the subscriber keeps access until period end;
+		// the gateway's subscription.deleted webhook handles the transition to expired.
+		$cron_statuses = array_diff( leaky_paywall_access_statuses(), array( 'past_due', 'pending_cancel' ) );
 		$cron_statuses = array_values( $cron_statuses );
 		$expires_key   = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
