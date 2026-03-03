@@ -2610,6 +2610,12 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$cron_statuses = array_values( $cron_statuses );
 		$expires_key   = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
+		// Grace period: don't expire until 24 hours after expiration.
+		// This gives payment gateways time to process renewals and send
+		// webhooks before the cron steps in (prevents the end-of-February
+		// race condition where Stripe invoices are pending but not yet paid).
+		$grace_cutoff = gmdate( 'Y-m-d H:i:s', strtotime( '-24 hours' ) );
+
 		$args = array(
 			'number'     => 200,
 			'meta_query' => array(
@@ -2621,7 +2627,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				),
 				array(
 					'key'     => $expires_key,
-					'value'   => gmdate( 'Y-m-d H:i:s' ),
+					'value'   => $grace_cutoff,
 					'compare' => '<',
 					'type'    => 'DATETIME',
 				),

@@ -847,6 +847,31 @@ function do_leaky_paywall_register_form($atts)
 				</div>
 			<?php } ?>
 
+			<?php
+			$tc_settings = get_leaky_paywall_settings();
+			if ( 'on' === $tc_settings['enable_terms_and_conditions'] ) :
+				$tc_text    = $tc_settings['terms_and_conditions_text'];
+				$tc_page_id = $tc_settings['page_for_terms'];
+
+				if ( $tc_page_id ) {
+					$tc_url  = get_permalink( $tc_page_id );
+					$tc_label = preg_replace(
+						'/\[(.+?)\]/',
+						'<a href="' . esc_url( $tc_url ) . '" target="_blank">$1</a>',
+						esc_html( $tc_text )
+					);
+				} else {
+					$tc_label = esc_html( preg_replace( '/\[(.+?)\]/', '$1', $tc_text ) );
+				}
+			?>
+				<div class="leaky-paywall-terms-and-conditions">
+					<label>
+						<input type="checkbox" name="terms_and_conditions" value="1" />
+						<?php echo wp_kses( $tc_label, array( 'a' => array( 'href' => array(), 'target' => array() ) ) ); ?>
+					</label>
+				</div>
+			<?php endif; ?>
+
 			<div class="leaky-paywall-checkout-button">
 				<button id="leaky-paywall-submit" type="submit"><?php echo esc_html(leaky_paywall_get_registration_checkout_button_text()); ?></button>
 			</div>

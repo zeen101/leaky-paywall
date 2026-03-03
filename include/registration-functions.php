@@ -657,6 +657,10 @@ function leaky_paywall_validate_user_data() {
 		$user['need_new']   = false;
 	}
 
+	if ( 'on' === $settings['enable_terms_and_conditions'] && empty( $_POST['terms_and_conditions'] ) ) {
+		leaky_paywall_errors()->add( 'terms_not_accepted', __( 'You must agree to the terms and conditions.', 'leaky-paywall' ), 'register' );
+	}
+
 	if ( isset( $_POST['payment_method'] ) && 'stripe' === $_POST['payment_method'] ) {
 		return apply_filters( 'leaky_paywall_user_registration_data', $user );
 	}

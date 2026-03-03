@@ -358,6 +358,34 @@ class Leaky_Paywall_Settings
 						<td><input type="checkbox" id="enable_rest_api" name="enable_rest_api" <?php checked('on', $settings['enable_rest_api']); ?> /> <?php esc_html_e('Enable the WP REST API for Leaky Paywall and add subscriber data to the User endpoint.', 'leaky-paywall'); ?></td>
 					</tr>
 
+					<tr class="general-options">
+						<th><?php esc_html_e('Terms and Conditions', 'leaky-paywall'); ?></th>
+						<td>
+							<input type="checkbox" id="enable_terms_and_conditions" name="enable_terms_and_conditions" <?php checked('on', $settings['enable_terms_and_conditions']); ?> /> <?php esc_html_e('Require subscribers to agree to your terms and conditions during registration.', 'leaky-paywall'); ?>
+
+							<div style="margin-top: 10px;">
+								<label for="terms_and_conditions_text"><?php esc_html_e('Checkbox Text', 'leaky-paywall'); ?></label><br>
+								<input type="text" id="terms_and_conditions_text" name="terms_and_conditions_text" class="regular-text" value="<?php echo esc_attr($settings['terms_and_conditions_text']); ?>" />
+								<p class="description"><?php esc_html_e('Wrap text in square brackets to create a link to the terms page. Example: I agree to the [terms and conditions]', 'leaky-paywall'); ?></p>
+							</div>
+
+							<div style="margin-top: 10px;">
+								<label for="page_for_terms"><?php esc_html_e('Terms Page', 'leaky-paywall'); ?></label><br>
+								<?php
+								wp_dropdown_pages(
+									array(
+										'name'              => 'page_for_terms',
+										'echo'              => 1,
+										'show_option_none'  => esc_attr__('&mdash; Select &mdash;'),
+										'option_none_value' => '0',
+										'selected'          => esc_attr($settings['page_for_terms']),
+									)
+								);
+								?>
+							</div>
+						</td>
+					</tr>
+
 
 				</table>
 
@@ -1460,6 +1488,9 @@ The %sitename% Team';
 				'post_tag_exceptions'                   => '',
 				'post_category_exceptions'              => '',
 				'insights_api_key'                      => '',
+				'enable_terms_and_conditions'           => 'off',
+				'terms_and_conditions_text'             => 'I agree to the [terms and conditions]',
+				'page_for_terms'                        => 0,
 				'restrictions'                          => array(
 					'post_types' => array(
 						'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
@@ -1609,6 +1640,20 @@ The %sitename% Team';
 					$settings['enable_rest_api'] = sanitize_text_field(wp_unslash($_POST['enable_rest_api']));
 				} else {
 					$settings['enable_rest_api'] = 'off';
+				}
+
+				if (!empty($_POST['enable_terms_and_conditions'])) {
+					$settings['enable_terms_and_conditions'] = sanitize_text_field(wp_unslash($_POST['enable_terms_and_conditions']));
+				} else {
+					$settings['enable_terms_and_conditions'] = 'off';
+				}
+
+				if (isset($_POST['terms_and_conditions_text'])) {
+					$settings['terms_and_conditions_text'] = sanitize_text_field(wp_unslash($_POST['terms_and_conditions_text']));
+				}
+
+				if (isset($_POST['page_for_terms'])) {
+					$settings['page_for_terms'] = absint($_POST['page_for_terms']);
 				}
 			}
 
