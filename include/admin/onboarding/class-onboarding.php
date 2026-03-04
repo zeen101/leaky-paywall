@@ -269,6 +269,27 @@ class Leaky_Paywall_Onboarding {
 
 			$settings['enable_js_cookie_restrictions'] = 'on';
 
+			if ( ! empty( $_POST['paid_level_price'] ) && floatval( $_POST['paid_level_price'] ) > 0 ) {
+				$settings['levels']['1'] = array(
+					'label'                    => ! empty( $_POST['paid_level_label'] ) ? sanitize_text_field( $_POST['paid_level_label'] ) : 'Digital Subscription',
+					'price'                    => sanitize_text_field( $_POST['paid_level_price'] ),
+					'subscription_length_type' => 'limited',
+					'interval_count'           => 1,
+					'interval'                 => isset( $_POST['paid_level_interval'] ) && in_array( $_POST['paid_level_interval'], array( 'month', 'year' ), true ) ? $_POST['paid_level_interval'] : 'month',
+					'recurring'                => 'off',
+					'plan_id'                  => array(),
+					'post_types'               => array(
+						array(
+							'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
+							'allowed'       => 'unlimited',
+							'allowed_value' => -1,
+						),
+					),
+					'deleted'                  => 0,
+					'site'                     => 'all',
+				);
+			}
+
 			update_leaky_paywall_settings( $settings );
 
 			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=stripe' ) );

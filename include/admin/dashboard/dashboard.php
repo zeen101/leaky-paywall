@@ -85,7 +85,7 @@ class Leaky_Paywall_Dashboard {
 				<p><?php esc_html_e( 'Your site is connected. View detailed subscriber analytics, event timelines, and engagement reports on the Insights platform.', 'leaky-paywall' ); ?></p>
 			</div>
 			<div class="lp-insights-callout--action">
-				<a href="<?php echo esc_url( apply_filters( 'leaky_paywall_insights_api_url', 'https://insights.leakypaywall.com' ) ); ?>" class="button button-primary" target="_blank"><?php esc_html_e( 'View Insights', 'leaky-paywall' ); ?></a>
+				<a href="<?php echo esc_url( apply_filters( 'leaky_paywall_insights_api_url', 'https://insights.leakypaywall.com' ) ); ?>" class="button button-primary" target="_blank"><?php esc_html_e( 'View More Insights', 'leaky-paywall' ); ?></a>
 			</div>
 		</div>
 		<?php endif; ?>

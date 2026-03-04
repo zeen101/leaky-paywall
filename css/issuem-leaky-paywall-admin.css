@@ -1314,6 +1314,12 @@ input[type="submit"].lp-inline-button {
   background: #FEF2ED;
 }
 
+.post-type-lp_transaction.edit-php .subsubsub {
+  margin-top: 10px;
+  margin-left: 10px;
+  display: none;
+}
+
 /* Hide the default WP page title — LP header replaces it */
 
 .post-type-lp_transaction.edit-php .wrap > .wp-heading-inline,
@@ -1324,7 +1330,7 @@ input[type="submit"].lp-inline-button {
 /* White card wrapper for table area */
 
 .post-type-lp_transaction.edit-php .wrap {
-  padding-top: 20px;
+  padding-top: 40px;
 }
 
 .post-type-lp_transaction.edit-php #posts-filter {

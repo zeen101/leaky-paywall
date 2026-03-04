@@ -3,7 +3,7 @@
 		<?php wp_nonce_field( 'leaky_paywall_onboarding_pages', 'leaky_paywall_onboarding_pages' ); ?>
 
 		<h2><?php esc_html_e( 'Create Required Pages', 'leaky-paywall' ); ?></h2>
-		<p><?php esc_html_e( 'Leaky Paywall needs a few pages for login, subscription, registration, and account management. We can create these for you automatically with the correct shortcodes.', 'leaky-paywall' ); ?></p>
+		<p><?php esc_html_e( 'Leaky Paywall needs a few pages for login, subscription, registration, and account management. We can create these for you automatically with the correct shortcodes. If a page already exists, it will be skipped.', 'leaky-paywall' ); ?></p>
 
 		<table class="leaky-paywall-onboarding--pages-list">
 			<tr>

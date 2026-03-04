@@ -23,14 +23,12 @@ $default_body    = $settings['new_email_body'];
 		<div class="leaky-paywall-onboarding--template-tags">
 			<p><strong><?php esc_html_e( 'Available template tags:', 'leaky-paywall' ); ?></strong></p>
 			<ul>
-				<li><code>%blogname%</code> — <?php esc_html_e( 'Site name', 'leaky-paywall' ); ?></li>
 				<li><code>%sitename%</code> — <?php esc_html_e( 'Site name', 'leaky-paywall' ); ?></li>
 				<li><code>%username%</code> — <?php esc_html_e( 'Subscriber username', 'leaky-paywall' ); ?></li>
 				<li><code>%useremail%</code> — <?php esc_html_e( 'Subscriber email', 'leaky-paywall' ); ?></li>
 				<li><code>%password%</code> — <?php esc_html_e( 'Subscriber password', 'leaky-paywall' ); ?></li>
 				<li><code>%firstname%</code> — <?php esc_html_e( 'First name', 'leaky-paywall' ); ?></li>
 				<li><code>%lastname%</code> — <?php esc_html_e( 'Last name', 'leaky-paywall' ); ?></li>
-				<li><code>%displayname%</code> — <?php esc_html_e( 'Display name', 'leaky-paywall' ); ?></li>
 			</ul>
 		</div>
 

@@ -242,6 +242,10 @@
 	transition: background 0.15s ease;
 }
 
+.leaky-paywall-onboarding--step--actions .button-primary.large .dashicons {
+	margin-top: 6px;
+}
+
 .leaky-paywall-onboarding--step--actions .button-primary.large:hover,
 .leaky-paywall-onboarding--step--actions .button-primary.large:focus {
 	background: #C94829;
@@ -307,6 +311,12 @@
 	background: rgba(228, 86, 55, 0.04);
 }
 
+#leaky-paywall-onboarding--tracking ul {
+	list-style: disc;
+	margin-left: 20px;
+	margin-bottom: 20px;
+}
+
 /* --- Pages List Table --- */
 .leaky-paywall-onboarding--pages-list {
 	width: 100%;
@@ -338,6 +348,10 @@
 .leaky-paywall-onboarding--stripe-connect {
 	text-align: center;
 	padding: 24px 0;
+}
+
+#leaky-paywall-onboarding--stripe .button-primary.large .dashicons {
+	margin-top: 4px;
 }
 
 /* --- Template Tags --- */
