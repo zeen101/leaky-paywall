@@ -1392,7 +1392,7 @@ function build_leaky_paywall_subscription_levels_row_summary($level, $row_key)
 		</td>
 		<td><?php echo esc_html($level['price']); ?></td>
 		<td><?php echo esc_html($duration); ?></td>
-		<td><?php echo isset($level['recurring']) ? 'recurring' : 'one time'; ?></td>
+		<td><?php echo ! empty( $level['recurring'] ) && 'on' === $level['recurring'] ? 'recurring' : 'one time'; ?></td>
 		<td><?php echo $page_for_register; ?></td>
 	</tr>
 
@@ -1483,7 +1483,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					<label for="level-description-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Subscribe Card Description', 'leaky-paywall'); ?></label>
 				</th>
 				<td>
-					<textarea id="level-description-<?php echo esc_attr($row_key); ?>" name="levels[<?php echo esc_attr($row_key); ?>][description]" class="large-text"><?php echo wp_kses_post(stripslashes($level['description'])); ?></textarea>
+					<textarea id="level-description-<?php echo esc_attr($row_key); ?>" name="levels[<?php echo esc_attr($row_key); ?>][description]" class="large-text"><?php echo wp_kses_post(stripslashes($level['description'] ?? '')); ?></textarea>
 					<p class="description"><?php esc_html_e('If entered, this will replace the auto-generated access description on the subscribe cards. HTML allowed.', 'leaky-paywall'); ?></p>
 				</td>
 			</tr>
@@ -1493,7 +1493,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					<label for="level-registration-form-description-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Registration Form Description', 'leaky-paywall'); ?></label>
 				</th>
 				<td>
-					<textarea id="level-registration-form-description-<?php echo esc_attr($row_key); ?>" name="levels[<?php echo esc_attr($row_key); ?>][registration_form_description]" class="large-text"><?php echo wp_kses_post(stripslashes($level['registration_form_description'])); ?></textarea>
+					<textarea id="level-registration-form-description-<?php echo esc_attr($row_key); ?>" name="levels[<?php echo esc_attr($row_key); ?>][registration_form_description]" class="large-text"><?php echo wp_kses_post(stripslashes($level['registration_form_description'] ?? '')); ?></textarea>
 					<p class="description"><?php esc_html_e('If entered, this will replace the auto-generated content access description on the registration form. HTML allowed.', 'leaky-paywall'); ?></p>
 				</td>
 			</tr>
@@ -1506,8 +1506,8 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 						<label for="level-recurring-<?php echo esc_attr($row_key); ?>"><?php esc_html_e('Recurring', 'leaky-paywall'); ?></label>
 					</th>
 					<td>
-						<input id="level-recurring-<?php echo esc_attr($row_key); ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo esc_attr($row_key); ?>][recurring]" value="on" <?php echo checked('on', $level['recurring'], false); ?> /> Enable recurring payments<br>
-						<span style="color: #999; font-size: 11px;" class="recurring-help <?php echo checked('on', $level['recurring'], false) ? '' : 'hidden'; ?>">Webhooks must be setup in your payment gateway account for recurring payments to work properly. <a target="_blank" href="https://docs.leakypaywall.com/article/120-leaky-paywall-recurring-payments">See documentation here.</a></span>
+						<input id="level-recurring-<?php echo esc_attr($row_key); ?>" class="stripe-recurring" type="checkbox" name="levels[<?php echo esc_attr($row_key); ?>][recurring]" value="on" <?php echo checked('on', $level['recurring'] ?? '', false); ?> /> Enable recurring payments<br>
+						<span style="color: #999; font-size: 11px;" class="recurring-help <?php echo checked('on', $level['recurring'] ?? '', false) ? '' : 'hidden'; ?>">Webhooks must be setup in your payment gateway account for recurring payments to work properly. <a target="_blank" href="https://docs.leakypaywall.com/article/120-leaky-paywall-recurring-payments">See documentation here.</a></span>
 
 						<?php
 
@@ -1813,7 +1813,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		function build_leaky_paywall_subscription_row_post_type_ajax()
 		{
 
-			if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+			if (!wp_verify_nonce(sanitize_key($_POST['nonce']), 'leaky-paywall-js-nonce')) {
 				die(esc_html__('Failed Security Check', 'leaky-paywall'));
 			}
 
@@ -1937,7 +1937,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_get_restriction_row_post_type_taxonomies()
 	{
 
-		if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+		if (!wp_verify_nonce(sanitize_key($_POST['nonce']), 'leaky-paywall-js-nonce')) {
 			die(esc_html__('Failed Security Check', 'leaky-paywall'));
 		}
 
@@ -1999,7 +1999,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		function build_leaky_paywall_default_restriction_row_ajax()
 		{
 
-			if (!wp_verify_nonce(sanitize_text_field($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+			if (!wp_verify_nonce(sanitize_key($_POST['nonce']), 'leaky-paywall-js-nonce')) {
 				die(esc_html__('Failed Security Check', 'leaky-paywall'));
 			}
 
@@ -4677,7 +4677,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			return;
 		}
 
-		if (!wp_verify_nonce(sanitize_text_field($_GET['nonce']), 'leaky-paywall-admin-notice-nonce')) {
+		if (!wp_verify_nonce(sanitize_key($_GET['nonce']), 'leaky-paywall-admin-notice-nonce')) {
 			return;
 		}
 

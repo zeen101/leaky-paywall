@@ -517,8 +517,8 @@ class Leaky_Paywall_Settings
 
 			<?php if ($current_section == 'insights') : ?>
 
-				<h2><?php esc_html_e('Insights', 'leaky-paywall'); ?></h2>
-				<p><?php esc_html_e('Connect to Leaky Paywall Insights to track subscriber lifecycle events, content engagement, and payment activity.', 'leaky-paywall'); ?></p>
+				<h2><?php esc_html_e('Subscriber Insights', 'leaky-paywall'); ?></h2>
+				<p><?php esc_html_e('Connect to Subscriber Insights to track subscriber lifecycle events, content engagement, and payment activity.', 'leaky-paywall'); ?></p>
 
 				<table id="leaky_paywall_insights_settings" class="form-table leaky-paywall-settings-table">
 					<tr>
@@ -1590,6 +1590,10 @@ The %sitename% Team';
 		{
 
 			if (!isset($_POST['update_leaky_paywall_settings'])) {
+				return false;
+			}
+
+			if ( ! current_user_can( 'manage_options' ) ) {
 				return false;
 			}
 

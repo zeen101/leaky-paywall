@@ -165,3 +165,8 @@ function leaky_paywall_activate() {
 	}
 }
 register_activation_hook( __FILE__, 'leaky_paywall_activate' );
+
+function leaky_paywall_deactivate() {
+	wp_clear_scheduled_hook( 'leaky_paywall_tracking_send' );
+}
+register_deactivation_hook( __FILE__, 'leaky_paywall_deactivate' );

@@ -163,7 +163,7 @@ function leaky_paywall_process_apple_pay() {
 
 	if (
 		! isset( $_POST['register_nonce'] )
-		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['register_nonce'] ) ), 'lp_register_nonce' )
+		|| ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['register_nonce'] ) ), 'lp_register_nonce' )
 	) {
 		wp_send_json(
 			array(
@@ -228,7 +228,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 
 	if (
 		! isset( $fields['leaky_paywall_register_nonce'] )
-		|| ! wp_verify_nonce( sanitize_text_field( $fields['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+		|| ! wp_verify_nonce( sanitize_key( $fields['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
 	) {
 		wp_send_json(
 			array(
@@ -1035,7 +1035,7 @@ function leaky_paywall_maybe_generate_stripe_customer_portal() {
 
 		! isset( $_POST['stripe_customer_portal_field'] )
 
-		|| ! wp_verify_nonce( sanitize_text_field( $_POST['stripe_customer_portal_field'] ), 'stripe_customer_portal_submit' )
+		|| ! wp_verify_nonce( sanitize_key( $_POST['stripe_customer_portal_field'] ), 'stripe_customer_portal_submit' )
 
 	) {
 
@@ -1078,8 +1078,13 @@ function leaky_paywall_connect_maybe_process_refresh()
 		return;
 	}
 
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
 	if ('true' == $_GET['connect_refresh']) {
-		wp_redirect($this->get_connect_url());
+		// Redirect to the payments tab so the admin can re-initiate Stripe Connect.
+		wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-settings&tab=payments' ) );
 		exit;
 	}
 }
@@ -1244,7 +1249,7 @@ add_filter('leaky_paywall_process_stripe_payment_customer_params', 'leaky_paywal
 function leaky_paywall_connect_adjust_customer_params($params, $fields) {
 
 	$settings = get_leaky_paywall_settings();
-	if ($settings['connected_account_id']) {
+	if ( ! empty( $settings['connected_account_id'] ) ) {
 		$params['stripe_account'] = $settings['connected_account_id'];
 	}
 	return $params;
@@ -1306,7 +1311,7 @@ function leaky_paywall_stripe_disconnect() {
 
 	if (
 		! isset($_GET['_wpnonce']) ||
-		! wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'lp_stripe_disconnect_action' )
+		! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'lp_stripe_disconnect_action' )
 	) {
 		return;
 	}
@@ -1329,6 +1334,10 @@ function leaky_paywall_manually_process_incomplete_user()
 {
 
 	if (!isset($_GET['lp_iu_email'])) {
+		return;
+	}
+
+	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
 

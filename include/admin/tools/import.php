@@ -27,7 +27,7 @@ class Leaky_Paywall_Import {
 		}
 
 		if ( ! isset( $_POST['leaky_paywall_bulk_add_subscribers'] )
-			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['leaky_paywall_bulk_add_subscribers'] ) ), 'bulk_add_subscribers' )
+			|| ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_bulk_add_subscribers'] ) ), 'bulk_add_subscribers' )
 		) {
 			return;
 		}

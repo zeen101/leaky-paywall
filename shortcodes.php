@@ -551,7 +551,7 @@ function do_leaky_paywall_register_form($atts)
 						$i++;
 					}
 				} else {
-					$content_access_description = stripslashes($level['registration_form_description']);
+					$content_access_description = stripslashes($level['registration_form_description'] ?? '');
 				}
 
 				echo wp_kses_post(apply_filters('leaky_paywall_content_access_description', $content_access_description, $level, $level_id));
