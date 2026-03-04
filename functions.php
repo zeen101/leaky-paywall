@@ -2129,7 +2129,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 						$results .= '<div class="leaky_paywall_subscription_allowed_content">';
 
-						if (!empty($level['post_types'] && !$level['description'])) {
+						if (!empty($level['post_types']) && empty($level['description'])) {
 							foreach ($level['post_types'] as $post_type) {
 
 								if (isset($post_type['taxonomy'])) {

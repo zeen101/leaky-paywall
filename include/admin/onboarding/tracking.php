@@ -138,6 +138,27 @@ function leaky_paywall_tracking_collect_data() {
 		$data[] = array( 'key' => 'lp_addons', 'value' => implode( ', ', $lp_addons ) );
 	}
 
+	// Admin email.
+	$data[] = array( 'key' => 'admin_email', 'value' => get_option( 'admin_email' ) );
+
+	// Subscription level count.
+	$levels = leaky_paywall_get_levels();
+	$data[] = array( 'key' => 'level_count', 'value' => (string) count( $levels ) );
+
+	// Total registered users.
+	$user_counts = count_users();
+	$data[] = array( 'key' => 'total_users', 'value' => (string) $user_counts['total_users'] );
+
+	// Transaction count.
+	$transaction_counts = wp_count_posts( 'lp_transaction' );
+	$data[] = array( 'key' => 'transaction_count', 'value' => (string) ( $transaction_counts->publish ?? 0 ) );
+
+	// Active payment gateways.
+	$settings = get_leaky_paywall_settings();
+	if ( ! empty( $settings['payment_gateway'] ) && is_array( $settings['payment_gateway'] ) ) {
+		$data[] = array( 'key' => 'payment_gateways', 'value' => implode( ', ', $settings['payment_gateway'] ) );
+	}
+
 	return $data;
 }
 

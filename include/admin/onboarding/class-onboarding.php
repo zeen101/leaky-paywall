@@ -176,6 +176,9 @@ class Leaky_Paywall_Onboarding {
 
 			update_option( 'leaky_paywall_tracking_allow', 1, false );
 
+			// Send tracking data immediately so publication types reach the app right away.
+			leaky_paywall_tracking_send();
+
 			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=pages' ) );
 			exit;
 		}
@@ -329,7 +332,7 @@ class Leaky_Paywall_Onboarding {
 
 		$return_url = add_query_arg(
 			array(
-				'page'             => 'issuem-leaky-paywall',
+				'page'             => 'leaky-paywall-settings',
 				'tab'              => 'payments',
 				'lp_connect_state' => $state,
 			),
@@ -338,7 +341,7 @@ class Leaky_Paywall_Onboarding {
 
 		$refresh_url = add_query_arg(
 			array(
-				'page'             => 'issuem-leaky-paywall',
+				'page'             => 'leaky-paywall-settings',
 				'tab'              => 'payments',
 				'connect_refresh'  => 'true',
 				'lp_connect_state' => $state,

@@ -894,7 +894,7 @@ class Leaky_Paywall_Settings
 
 				<?php
 				if (!is_plugin_active('leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php')) {
-					echo '<h4 class="description">Want recurring payments? Get our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-recurring-payments/?utm_medium=plugin&utm_source=subscriptions_tab&utm_campaign=settings">recurring payments</a> extension.</h4>';
+					echo '<h4 class="description">Want recurring payments? <a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=recurring&utm_campaign=settings">Upgrade to a paid Leaky Paywall plan. </a></h4>';
 				}
 
 				?>
@@ -915,7 +915,13 @@ class Leaky_Paywall_Settings
 
 			$settings = $this->get_settings();
 
-			do_action('leaky_paywall_before_payments_settings'); ?>
+			if ( isset( $_GET['lp_stripe_disconnected'] ) ) { ?>
+				<div class="notice notice-success is-dismissible">
+					<p><?php esc_html_e( 'Stripe has been disconnected.', 'leaky-paywall' ); ?></p>
+				</div>
+			<?php } ?>
+
+			<?php do_action('leaky_paywall_before_payments_settings'); ?>
 
 			<h2><?php esc_html_e('Payment Gateway Settings', 'leaky-paywall'); ?></h2>
 
@@ -1017,9 +1023,9 @@ class Leaky_Paywall_Settings
 										echo '<div class="notice inline notice-success"><p><strong>' . esc_html( $account->settings->dashboard->display_name ) . '</strong><br>account id: ' . esc_html( $settings['connected_account_id'] ) . '</p></div>';
 
 										if ( 'test' === leaky_paywall_get_current_mode() ) {
-											echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
+											echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '" onclick="return confirm(\'' . esc_js( __( 'Are you sure you want to disconnect your Stripe account?', 'leaky-paywall' ) ) . '\');">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
 										} else {
-											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
+											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '" onclick="return confirm(\'' . esc_js( __( 'Are you sure you want to disconnect your Stripe account?', 'leaky-paywall' ) ) . '\');">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
 										}
 									} catch (\Throwable $th) {
 
@@ -1315,9 +1321,12 @@ class Leaky_Paywall_Settings
 
 			do_action('leaky_paywall_before_licenses_settings'); ?>
 
-				<p>Enter your extension license keys here to receive updates for purchased extensions. If your license key has expired, <a href="https://leakypaywall.com/my-account/#tabs-2">please login to your account to renew your license</a>.</p>
-
-				<h2><a target="_blank" href="https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings">Find out more about our extensions</a></h2>
+				<p><?php printf(
+					/* translators: 1: account URL, 2: extensions URL */
+					__( 'Enter your extension license keys here to receive updates. If your license has expired, <a href="%1$s">login to renew</a>. <a href="%2$s" target="_blank">Browse all extensions</a>.', 'leaky-paywall' ),
+					'https://leakypaywall.com/my-account/#tabs-2',
+					'https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings'
+				); ?></p>
 
 				<?php wp_nonce_field('verify', 'leaky_paywall_license_wpnonce'); ?>
 
@@ -2136,7 +2145,7 @@ The %sitename% Team';
 
 			$return_url = add_query_arg(
 				array(
-					'page'             => 'issuem-leaky-paywall',
+					'page'             => 'leaky-paywall-settings',
 					'tab'              => 'payments',
 					'lp_connect_state' => $state,
 				),
@@ -2145,7 +2154,7 @@ The %sitename% Team';
 
 			$refresh_url = add_query_arg(
 				array(
-					'page'             => 'issuem-leaky-paywall',
+					'page'             => 'leaky-paywall-settings',
 					'tab'              => 'payments',
 					'connect_refresh'  => 'true',
 					'lp_connect_state' => $state,
@@ -2171,7 +2180,7 @@ The %sitename% Team';
 		{
 			$url = add_query_arg(
 				array(
-					'page'      => 'issuem-leaky-paywall',
+					'page'      => 'leaky-paywall-settings',
 					'tab'       => 'payments',
 					'action' 	=> 'lp_stripe_disconnect'
 				),

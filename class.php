@@ -906,32 +906,27 @@ class Leaky_Paywall {
 	public function upgrade_page() {
 		?>
 			<div id="leaky-paywall-upgrade-page-wrapper">
-				<div class="header">
-					<a href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
+				<div class="lp-upgrade-header">
+					<img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo.png'; ?>" width="200" alt="Leaky Paywall">
 				</div>
-				<div class="content">
-
-					<h2>Upgrade to Leaky Paywall Pro</h2>
-					<p class="description">
-						Gain access to our proven subscription building system and 40+ Leaky Paywall extensions when you upgrade
+				<div class="lp-upgrade-card">
+					<h2><?php esc_html_e( 'Upgrade to Leaky Paywall Pro', 'leaky-paywall' ); ?></h2>
+					<p class="lp-upgrade-tagline">
+						<?php esc_html_e( 'Gain access to our proven subscription building system and 40+ Leaky Paywall extensions when you upgrade.', 'leaky-paywall' ); ?>
 					</p>
 					<ul>
-						<li>Personal setup meeting and priority support</li>
-						<li>One-on-one strategic support meeting</li>
-						<li>Free-to-paid subscription plans, donations, pay per article, timewall, and flipbook access</li>
-						<li>Add smart on-site subscriber level targeting for your promotions</li>
-						<li>Group and corporate access plans</li>
-						<li>Paywall hardening to stop incognito browsing</li>
-						<li>Integrations with CRMs, circulation software, and payment gateways</li>
-						<li>Sell single purchase access to multiple websites</li>
+						<li><?php esc_html_e( 'Personal setup meeting and priority support', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'One-on-one strategic support meeting', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Free-to-paid subscription plans, donations, pay per article, timewall, and flipbook access', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Add smart on-site subscriber level targeting for your promotions', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Group and corporate access plans', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Paywall hardening to stop incognito browsing', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Integrations with CRMs, circulation software, and payment gateways', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Sell single purchase access to multiple websites', 'leaky-paywall' ); ?></li>
 					</ul>
-
 					<p>
-						<a class="button" target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings">Upgrade Now</a>
+						<a class="lp-upgrade-button" target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><?php esc_html_e( 'Upgrade Now', 'leaky-paywall' ); ?></a>
 					</p>
-				</div>
-				<div class="logo">
-					<a href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=upgrade&utm_campaign=settings"><img src="<?php echo esc_url( LEAKY_PAYWALL_URL ) . '/images/leaky-paywall-logo-wh.png'; ?>"></a>
 				</div>
 			</div>
 

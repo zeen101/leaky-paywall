@@ -96,56 +96,36 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 
 			$settings = $this->get_settings();
 
+			if ( false !== $settings['license_status'] && 'valid' == $settings['license_status'] ) {
+				$badge_class = 'lp-status-badge--active';
+				$badge_label = __( 'Active', 'leaky-paywall' );
+			} elseif ( 'invalid' == $settings['license_status'] ) {
+				$badge_class = 'lp-status-badge--expired';
+				$badge_label = __( 'Invalid', 'leaky-paywall' );
+			} else {
+				$badge_class = 'lp-status-badge--canceled';
+				$badge_label = __( 'Not Activated', 'leaky-paywall' );
+			}
+
 			?>
-			<div id="modules" class="postbox">
+			<div class="lp-license-card">
+				<div class="lp-license-card__header">
+					<span class="lp-license-card__name"><?php echo esc_html( $this->plugin_name ); ?></span>
+					<span class="lp-status-badge <?php echo esc_attr( $badge_class ); ?>"><?php echo esc_html( $badge_label ); ?></span>
+				</div>
+				<div class="lp-license-card__body">
+					<input type="text" id="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_key" class="regular-text" name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_key" value="<?php echo esc_attr( $settings['license_key'] ); ?>" />
 
-				<h3 style="margin-left: 10px;" class="hndle"><span><?php echo esc_html( $this->plugin_name, $this->plugin_slug ); ?></span></h3>
-
-				<div class="inside">
-					
-					<table id="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_key" class="form-table">
-						<tr>
-							<th rowspan="1"> 
-								<?php esc_attr_e( 'License Key', 'leaky-paywall' ); ?>
-							</th>
-	
-							<td>
-								<input type="text" id="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_key" class="regular-text" name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_key" value="<?php echo esc_attr( $settings['license_key'] ); ?>" />
-							
-								<?php
-								if ( false !== $settings['license_status']
-										&& 'valid' == $settings['license_status'] ) {
-														   // license is active.
-									?>
-											<span style="color:green;"><?php esc_html_e( 'active' ); ?></span>
-											<input type="submit" class="button-secondary" 
-												name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_deactivate" 
-												value="<?php esc_attr_e( 'Deactivate License', 'leaky-paywall' ); ?>"/>
-
-									<?php
-								} elseif ( 'invalid' == $settings['license_status'] ) {
-										// license is invalid.
-									?>
-											<span style="color:red;"><?php esc_html_e( 'invalid' ); ?></span>
-											<input type="submit" class="button-secondary" 
-												name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_activate" 
-												value="<?php esc_attr_e( 'Activate License', 'leaky-paywall' ); ?>"/>
-
-									<?php
-								} else {
-										// license hasn't been entered yet.
-										$plug_slug = $this->plugin_prefix;
-									?>
-											<input type="submit" class="button-secondary" 
-												name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_activate" 
-												value="<?php esc_attr_e( 'Activate License', $plug_slug ); ?>"/>
-
-								<?php } ?>
-								
-							</td>
-						</tr>
-					</table>
-				</div>	
+					<?php if ( false !== $settings['license_status'] && 'valid' == $settings['license_status'] ) : ?>
+						<input type="submit" class="button-secondary"
+							name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_deactivate"
+							value="<?php esc_attr_e( 'Deactivate License', 'leaky-paywall' ); ?>"/>
+					<?php else : ?>
+						<input type="submit" class="button-secondary"
+							name="<?php echo esc_attr( $this->plugin_prefix ); ?>_license_activate"
+							value="<?php esc_attr_e( 'Activate License', 'leaky-paywall' ); ?>"/>
+					<?php endif; ?>
+				</div>
 			</div>
 			<?php
 		}

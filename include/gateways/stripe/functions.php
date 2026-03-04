@@ -1165,7 +1165,7 @@ function leaky_paywall_connect_maybe_process_return()
 		delete_transient('lp_connect_state_' . get_current_user_id());
 	}
 
-	wp_safe_redirect(admin_url('admin.php?page=issuem-leaky-paywall&tab=payments'));
+	wp_safe_redirect(admin_url('admin.php?page=leaky-paywall-settings&tab=payments'));
 	exit;
 }
 
@@ -1317,14 +1317,10 @@ function leaky_paywall_stripe_disconnect() {
 	$settings['live_secret_key'] = '';
 	$settings['live_publishable_key'] = '';
 
-	foreach( $settings['payment_gateway'] as $key => $value ) {
-		if ( $value === 'stripe' ) {
-			unset( $settings['payment_gateway'][$key] );
-		}
-	}
-
 	update_leaky_paywall_settings( $settings );
 
+	wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-settings&tab=payments&lp_stripe_disconnected=1' ) );
+	exit;
 }
 
 add_action('admin_init', 'leaky_paywall_manually_process_incomplete_user');

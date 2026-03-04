@@ -529,7 +529,7 @@ function do_leaky_paywall_register_form($atts)
 				$content_access_description = '';
 				$i                          = 0;
 
-				if (isset($level['post_types']) && !empty($level['post_types'] && !$level['registration_form_description'])) {
+				if (!empty($level['post_types']) && empty($level['registration_form_description'])) {
 					foreach ($level['post_types'] as $type) {
 						if ($i > 0) {
 							$content_access_description .= ', ';
