@@ -1095,6 +1095,38 @@ function leaky_paywall_is_pro() {
 }
 
 /**
+ * Check if the current visitor is a search engine bot
+ *
+ * @since 5.0
+ *
+ * @return bool
+ */
+function leaky_paywall_is_search_engine_bot() {
+	$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) ) : '';
+
+	if ( empty( $user_agent ) ) {
+		return false;
+	}
+
+	$bots = apply_filters( 'leaky_paywall_search_engine_bots', array(
+		'googlebot',
+		'bingbot',
+		'slurp',
+		'duckduckbot',
+		'baiduspider',
+		'yandexbot',
+	) );
+
+	foreach ( $bots as $bot ) {
+		if ( strpos( $user_agent, $bot ) !== false ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Get all valid and active Leaky Paywall levels
  *
  * @since 4.9.0

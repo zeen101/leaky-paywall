@@ -175,6 +175,12 @@ class Leaky_Paywall_Restrictions {
 			return false;
 		}
 
+		// Allow search engine bots to bypass the paywall for indexing.
+		$settings = get_leaky_paywall_settings();
+		if ( ! empty( $settings['search_engine_bot_bypass'] ) && 'on' === $settings['search_engine_bot_bypass'] && leaky_paywall_is_search_engine_bot() ) {
+			return false;
+		}
+
 		// allow access by capability for more fine grain control.
 		if ( current_user_can( apply_filters( 'leaky_paywall_current_user_can_view_all_content', 'manage_options' ) ) ) {
 			return false;
@@ -1101,5 +1107,43 @@ class Leaky_Paywall_Restrictions {
 		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 
 		return apply_filters( 'leaky_paywall_expiration_time', $expiration );
+	}
+
+	/**
+	 * Check if a post would be restricted by LP rules, independent of current user/bot.
+	 *
+	 * Used for schema markup output — answers "would a normal visitor be restricted?"
+	 * without checking role bypass, capability, or bot bypass.
+	 *
+	 * @since 5.0
+	 *
+	 * @return bool
+	 */
+	public function post_is_restricted_by_rules() {
+		if ( ! is_singular() ) {
+			return false;
+		}
+
+		if ( $this->is_unblockable_content() ) {
+			return false;
+		}
+
+		if ( $this->content_matches_restriction_exceptions() ) {
+			return false;
+		}
+
+		if ( $this->visibility_allows_access() ) {
+			return false;
+		}
+
+		if ( $this->visibility_restricts_access() ) {
+			return true;
+		}
+
+		if ( $this->content_restricted_by_settings() ) {
+			return true;
+		}
+
+		return false;
 	}
 }

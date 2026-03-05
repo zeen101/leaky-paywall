@@ -762,6 +762,23 @@ class Leaky_Paywall_Settings
 					</td>
 				</tr>
 
+				<tr class="restriction-options">
+					<th><?php esc_html_e( 'Search Engine Bot Bypass', 'leaky-paywall' ); ?></th>
+					<td>
+						<input type="checkbox" id="search_engine_bot_bypass" name="search_engine_bot_bypass" <?php checked( 'on', $settings['search_engine_bot_bypass'] ); ?> />
+						<?php esc_html_e( 'Allow search engine bots (Google, Bing, etc.) to bypass the paywall so content can be indexed.', 'leaky-paywall' ); ?>
+					</td>
+				</tr>
+
+				<tr class="restriction-options">
+					<th><?php esc_html_e( 'Paywall Schema Markup', 'leaky-paywall' ); ?></th>
+					<td>
+						<input type="checkbox" id="paywall_schema_markup" name="paywall_schema_markup" <?php checked( 'on', $settings['paywall_schema_markup'] ); ?> />
+						<?php esc_html_e( 'Add structured data (JSON-LD) to restricted pages so search engines identify content as paywalled.', 'leaky-paywall' ); ?>
+						<p class="description"><?php printf( esc_html__( 'Outputs %s per Google\'s paywalled content guidelines.', 'leaky-paywall' ), '<code>isAccessibleForFree: false</code>' ); ?></p>
+					</td>
+				</tr>
+
 				<tr class="restriction-exceptions">
 					<th><?php esc_html_e('Restriction Exceptions', 'leaky-paywall'); ?></th>
 					<td>
@@ -1532,6 +1549,8 @@ The %sitename% Team';
 				'js_restrictions_post_container'        => 'article .entry-content',
 				'js_restrictions_page_container'        => 'article .entry-content',
 				'lead_in_elements'                      => 2,
+				'search_engine_bot_bypass'              => 'off',
+				'paywall_schema_markup'                => 'off',
 				'bypass_paywall_restrictions'           => array('administrator'),
 				'post_tag_exceptions'                   => '',
 				'post_category_exceptions'              => '',
@@ -1789,6 +1808,9 @@ The %sitename% Team';
 				} else {
 					$settings['enable_js_cookie_restrictions'] = 'off';
 				}
+
+				$settings['search_engine_bot_bypass'] = ! empty( $_POST['search_engine_bot_bypass'] ) ? 'on' : 'off';
+				$settings['paywall_schema_markup']    = ! empty( $_POST['paywall_schema_markup'] ) ? 'on' : 'off';
 
 				if (!empty($_POST['bypass_paywall_restrictions'])) {
 					$settings['bypass_paywall_restrictions']   = array_map('sanitize_text_field', wp_unslash($_POST['bypass_paywall_restrictions']));

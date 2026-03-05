@@ -61,6 +61,7 @@ class Leaky_Paywall {
 		add_action( 'wp', array( $this, 'process_content_restrictions' ) );
 		add_action( 'wp', array( $this, 'process_pdf_restrictions' ) );
 		add_action( 'rest_api_init', array( $this, 'process_rest_content_restrictions' ) );
+		add_action( 'wp_head', array( $this, 'output_paywall_schema' ) );
 
 		add_filter( 'issuem_pdf_attachment_url', array( $this, 'restrict_pdf_attachment_url' ), 10, 2 );
 	}
@@ -111,6 +112,43 @@ class Leaky_Paywall {
 			$restrictions = new Leaky_Paywall_Restrictions();
 			$restrictions->pdf_access();
 		}
+	}
+
+	/**
+	 * Output JSON-LD schema markup for paywalled content
+	 *
+	 * @since 5.0
+	 */
+	public function output_paywall_schema() {
+		if ( ! is_singular() ) {
+			return;
+		}
+
+		$settings = get_leaky_paywall_settings();
+
+		if ( empty( $settings['paywall_schema_markup'] ) || 'on' !== $settings['paywall_schema_markup'] ) {
+			return;
+		}
+
+		$restrictions = new Leaky_Paywall_Restrictions( get_the_ID() );
+
+		if ( ! $restrictions->post_is_restricted_by_rules() ) {
+			return;
+		}
+
+		$schema = array(
+			'@context'            => 'https://schema.org',
+			'@type'               => apply_filters( 'leaky_paywall_schema_type', 'Article', get_the_ID() ),
+			'headline'            => get_the_title(),
+			'isAccessibleForFree' => false,
+			'hasPart'             => array(
+				'@type'               => 'WebPageElement',
+				'isAccessibleForFree' => false,
+				'cssSelector'         => apply_filters( 'leaky_paywall_schema_css_selector', '.entry-content' ),
+			),
+		);
+
+		echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 	}
 
 	/**
@@ -445,7 +483,7 @@ class Leaky_Paywall {
 
 		if ( $gateways->is_gateway_enabled( 'stripe' ) || $gateways->is_gateway_enabled('stripe_checkout') ) {
 
-			wp_enqueue_script('leaky_paywall_stripe_registration', LEAKY_PAYWALL_URL . 'js/stripe-registration.js', array('jquery'), LEAKY_PAYWALL_VERSION, true);
+			wp_enqueue_script('leaky_paywall_stripe_registration', LEAKY_PAYWALL_URL . 'js/stripe-registration.js', array('jquery', 'stripe'), LEAKY_PAYWALL_VERSION, true);
 
 			wp_localize_script(
 				'leaky_paywall_stripe_registration',
