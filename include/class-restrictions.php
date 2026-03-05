@@ -54,8 +54,6 @@ class Leaky_Paywall_Restrictions {
 		$this->post_id = $post_id ? $post_id : get_the_ID();
 		$this->is_ajax = false;
 		$this->is_rest = false;
-
-		add_action( 'wp_footer', array( $this, 'hide_initial_content_display' ) );
 	}
 
 	/**
@@ -1103,28 +1101,5 @@ class Leaky_Paywall_Restrictions {
 		$expiration = time() + ( $settings['cookie_expiration'] * $multiplier );
 
 		return apply_filters( 'leaky_paywall_expiration_time', $expiration );
-	}
-
-	/**
-	 * Hide initial content display for Alternative Restriction Handling
-	 */
-	public function hide_initial_content_display() {
-		$settings = get_leaky_paywall_settings();
-
-		if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
-			$container_setting = $settings['js_restrictions_post_container'];
-			$containers        = explode( ',', $container_setting );
-
-			echo '<style>';
-			foreach ( $containers as $container ) {
-				?>
-				.single <?php echo esc_attr( $container ); ?> {
-				display: none;
-				}
-				<?php
-			}
-
-			echo '</style>';
-		}
 	}
 }

@@ -107,7 +107,7 @@ class Leaky_Paywall_Settings
 						}
 					</style>
 
-					<?php if (!wp_script_is('leaky_paywall_multiple_levels_js', 'enqueued')) {
+					<?php if ( ! leaky_paywall_is_pro() ) {
 					?>
 						<div class="leaky-paywall-sidebar-widget">
 							<h3>Upgrade to Pro</h3>
@@ -893,8 +893,9 @@ class Leaky_Paywall_Settings
 				<?php endif; ?>
 
 				<?php
-				if (!is_plugin_active('leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php')) {
-					echo '<h4 class="description">Want recurring payments? <a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=recurring&utm_campaign=settings">Upgrade to a paid Leaky Paywall plan. </a></h4>';
+
+				if ( ! is_plugin_active( 'leaky-paywall-recurring-payments/leaky-paywall-recurring-payments.php' ) ) {
+					$this->output_pro_upgrade_modal();
 				}
 
 				?>
@@ -904,6 +905,44 @@ class Leaky_Paywall_Settings
 			<?php do_action('leaky_paywall_after_subscriptions_settings'); ?>
 
 		<?php
+		}
+
+		public function output_pro_upgrade_modal() {
+			?>
+			<div id="lp-pro-modal-overlay" class="lp-pro-modal-overlay" style="display:none;">
+				<div class="lp-pro-modal">
+					<button type="button" class="lp-pro-modal__close" aria-label="<?php esc_attr_e( 'Close', 'leaky-paywall' ); ?>">&times;</button>
+					<h2><?php esc_html_e( 'Unlock Recurring Payments', 'leaky-paywall' ); ?></h2>
+					<p><?php esc_html_e( 'Automatically charge subscribers on a recurring basis so you never miss a renewal. Recurring payments work with Stripe.', 'leaky-paywall' ); ?></p>
+					<ul>
+						<li><?php esc_html_e( 'Automatic subscription renewals', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Reduce involuntary churn', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Stripe Customer Portal support', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e( 'Subscribers can manage their own billing', 'leaky-paywall' ); ?></li>
+					</ul>
+					<a class="button button-primary button-hero" target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=recurring_modal&utm_campaign=settings"><?php esc_html_e( 'Upgrade to Pro', 'leaky-paywall' ); ?></a>
+				</div>
+			</div>
+			<script>
+			(function(){
+				document.querySelectorAll('.lp-pro-feature-toggle input[disabled], .lp-pro-feature-link, .lp-pro-badge').forEach(function(el){
+					el.addEventListener('click', function(e){
+						e.preventDefault();
+						document.getElementById('lp-pro-modal-overlay').style.display = 'flex';
+					});
+				});
+				var overlay = document.getElementById('lp-pro-modal-overlay');
+				if ( overlay ) {
+					overlay.addEventListener('click', function(e){
+						if ( e.target === overlay ) overlay.style.display = 'none';
+					});
+					overlay.querySelector('.lp-pro-modal__close').addEventListener('click', function(){
+						overlay.style.display = 'none';
+					});
+				}
+			})();
+			</script>
+			<?php
 		}
 
 		public function output_payments_settings($current_section)
@@ -958,7 +997,7 @@ class Leaky_Paywall_Settings
 						<?php
 						}
 						?>
-						<p class="description">Need a different gateway? Take payments with our <a target="_blank" href="https://leakypaywall.com/downloads/leaky-paywall-woocommerce/">WooCommerce integration</a> using any Woo supported gateway. <a target="_blank" href="https://leakypaywall.com/contact/">Get in touch</a> about our integrations with HubSpot, ZOHO, Pipedrive, fulfillment services and other providers.</p>
+
 					</td>
 				</tr>
 

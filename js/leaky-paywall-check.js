@@ -228,7 +228,7 @@
 				container.innerHTML = '';
 			} else {
 				container.innerHTML = leadIn + nagContent;
-				container.style.display = 'block';
+				container.style.visibility = 'visible';
 			}
 		});
 	}
@@ -242,7 +242,7 @@
 		var containers = getContentContainers(postId);
 
 		containers.forEach(function (container) {
-			container.style.display = 'block';
+			container.style.visibility = 'visible';
 		});
 	}
 

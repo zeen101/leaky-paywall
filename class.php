@@ -403,6 +403,19 @@ class Leaky_Paywall {
 					'lead_in_elements' => $lead_in_elements,
 				)
 			);
+
+			// Hide content before JS restriction check to prevent CLS.
+			$container = is_page() ? $page_container : $post_container;
+			$selectors = array_filter( array_map( 'trim', explode( ',', $container ) ) );
+			$hide_css  = '';
+
+			foreach ( $selectors as $selector ) {
+				$hide_css .= '.single ' . $selector . ' { visibility: hidden; }';
+			}
+
+			wp_register_style( 'leaky-paywall-restrictions', false );
+			wp_enqueue_style( 'leaky-paywall-restrictions' );
+			wp_add_inline_style( 'leaky-paywall-restrictions', $hide_css );
 		}
 
 		wp_enqueue_script( 'zeen101_micromodal', LEAKY_PAYWALL_URL . 'js/micromodal.min.js', array('jquery'), LEAKY_PAYWALL_VERSION, true);

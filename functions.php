@@ -1071,6 +1071,30 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 
 
 /**
+ * Check if any Leaky Paywall add-on has a valid, active license.
+ *
+ * @since 5.0
+ *
+ * @return bool
+ */
+function leaky_paywall_is_pro() {
+
+	if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
+		return false;
+	}
+
+	foreach ( Leaky_Paywall_License_Key::get_registered_slugs() as $slug ) {
+		$settings = get_option( $slug );
+
+		if ( ! empty( $settings['license_status'] ) && 'valid' === $settings['license_status'] ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Get all valid and active Leaky Paywall levels
  *
  * @since 4.9.0
@@ -1528,6 +1552,24 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 						?>
 
+					</td>
+				</tr>
+			<?php
+			} else {
+			?>
+				<tr>
+					<th>
+						<label><?php esc_html_e('Recurring', 'leaky-paywall'); ?></label>
+					</th>
+					<td>
+						<label class="lp-pro-feature-toggle">
+							<input type="checkbox" disabled />
+							<?php esc_html_e( 'Enable recurring payments', 'leaky-paywall' ); ?>
+							<span class="lp-pro-badge"><?php esc_html_e( 'Pro', 'leaky-paywall' ); ?></span>
+						</label>
+						<p class="description">
+							<a href="#" class="lp-pro-feature-link"><?php esc_html_e( 'Upgrade to Pro to enable recurring subscription payments.', 'leaky-paywall' ); ?></a>
+						</p>
 					</td>
 				</tr>
 			<?php
@@ -3998,7 +4040,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	{
 		$settings_link = '';
 
-		$settings_link .= '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
+		if ( ! leaky_paywall_is_pro() ) {
+			$settings_link .= '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
+		}
 
 		$settings_link .= '<a href="admin.php?page=leaky-paywall-settings">' . __('Settings') . '</a>';
 		array_unshift($links, $settings_link);

@@ -71,11 +71,11 @@ class Leaky_Paywall_Dashboard {
 		<?php if ( empty( $settings['insights_api_key'] ) ) : ?>
 		<div class="lp-insights-callout">
 			<div class="lp-insights-callout--content">
-				<h3><?php esc_html_e( 'Connect to Leaky Paywall Insights', 'leaky-paywall' ); ?></h3>
+				<h3><?php esc_html_e( 'Connect to Subscriber Insights', 'leaky-paywall' ); ?></h3>
 				<p><?php esc_html_e( 'Track subscriber events, content engagement, and payment activity in real time. Enter your API key to start collecting data.', 'leaky-paywall' ); ?></p>
 			</div>
 			<div class="lp-insights-callout--action">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=general&section=insights' ) ); ?>" class="button button-primary"><?php esc_html_e( 'Connect to Insights', 'leaky-paywall' ); ?></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-settings&tab=general&section=insights' ) ); ?>" class="button button-primary"><?php esc_html_e( 'Connect to Subscriber Insights', 'leaky-paywall' ); ?></a>
 			</div>
 		</div>
 		<?php else : ?>
@@ -149,61 +149,30 @@ class Leaky_Paywall_Dashboard {
 
 			<!-- Top Converting Content -->
 			<?php
-			$top_paid_content = $this->get_top_converting_content( $period, 'paid' );
-			$top_free_content = $this->get_top_converting_content( $period, 'free' );
+			$is_pro           = leaky_paywall_is_pro();
+			$content_limit    = $is_pro ? 10 : 3;
+			$top_paid_content = $this->get_top_converting_content( $period, 'paid', $content_limit );
+			$top_free_content = $this->get_top_converting_content( $period, 'free', $content_limit );
 			?>
-			<div class="lp-card">
-				<h3><?php esc_html_e( 'Top Content — Paid Conversions', 'leaky-paywall' ); ?></h3>
-				<?php if ( ! empty( $top_paid_content ) ) : ?>
-				<table class="lp-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Content', 'leaky-paywall' ); ?></th>
-							<th style="text-align: right;"><?php esc_html_e( 'Conversions', 'leaky-paywall' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $top_paid_content as $item ) : ?>
-						<tr>
-							<td><a href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['title'] ); ?></a></td>
-							<td style="text-align: right;"><?php echo absint( $item['count'] ); ?></td>
-						</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-				<?php else : ?>
-					<p class="lp-no-data"><?php esc_html_e( 'No conversion data for this period.', 'leaky-paywall' ); ?></p>
-				<?php endif; ?>
-			</div>
 
-			<div class="lp-card">
-				<h3><?php esc_html_e( 'Top Content — Free Conversions', 'leaky-paywall' ); ?></h3>
-				<?php if ( ! empty( $top_free_content ) ) : ?>
-				<table class="lp-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Content', 'leaky-paywall' ); ?></th>
-							<th style="text-align: right;"><?php esc_html_e( 'Conversions', 'leaky-paywall' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $top_free_content as $item ) : ?>
-						<tr>
-							<td><a href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['title'] ); ?></a></td>
-							<td style="text-align: right;"><?php echo absint( $item['count'] ); ?></td>
-						</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-				<?php else : ?>
-					<p class="lp-no-data"><?php esc_html_e( 'No conversion data for this period.', 'leaky-paywall' ); ?></p>
-				<?php endif; ?>
-			</div>
+			<?php $this->render_top_content_card(
+				__( 'Top Content — Paid Conversions', 'leaky-paywall' ),
+				$top_paid_content,
+				$is_pro,
+				array( 'Content', 'Conversions' )
+			); ?>
+
+			<?php $this->render_top_content_card(
+				__( 'Top Content — Free Conversions', 'leaky-paywall' ),
+				$top_free_content,
+				$is_pro,
+				array( 'Content', 'Conversions' )
+			); ?>
 
 			<!-- Paywall Insights -->
 			<?php
 			$by_nag_type = LP_Nag_Impressions::get_impressions_by_nag_type( $period );
-			$top_posts   = LP_Nag_Impressions::get_top_posts_with_conversions( $period, 3 );
+			$top_posts   = LP_Nag_Impressions::get_top_posts_with_conversions( $period, $is_pro ? 10 : 3 );
 			?>
 			<div class="lp-card">
 				<h3><?php esc_html_e( 'Paywall Displays by Type', 'leaky-paywall' ); ?></h3>
@@ -229,38 +198,7 @@ class Leaky_Paywall_Dashboard {
 				<?php endif; ?>
 			</div>
 
-			<div class="lp-card">
-				<h3><?php esc_html_e( 'Top Content by Paywall Displays', 'leaky-paywall' ); ?></h3>
-				<?php if ( ! empty( $top_posts ) ) : ?>
-				<table class="lp-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Content', 'leaky-paywall' ); ?></th>
-							<th style="text-align: right;"><?php esc_html_e( 'Displays', 'leaky-paywall' ); ?></th>
-							<th style="text-align: right;"><?php esc_html_e( 'Conv.', 'leaky-paywall' ); ?></th>
-							<th style="text-align: right;"><?php esc_html_e( 'Rate', 'leaky-paywall' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $top_posts as $row ) :
-							$title = get_the_title( $row->post_id );
-							if ( ! $title ) {
-								$title = __( '(Untitled)', 'leaky-paywall' );
-							}
-						?>
-						<tr>
-							<td><a href="<?php echo esc_url( get_the_permalink( $row->post_id ) ); ?>"><?php echo esc_html( $title ); ?></a></td>
-							<td style="text-align: right;"><?php echo esc_html( number_format( $row->impressions ) ); ?></td>
-							<td style="text-align: right;"><?php echo esc_html( number_format( $row->conversions ) ); ?></td>
-							<td style="text-align: right;"><?php echo esc_html( $row->rate . '%' ); ?></td>
-						</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-				<?php else : ?>
-					<p class="lp-no-data"><?php esc_html_e( 'No paywall display data for this period.', 'leaky-paywall' ); ?></p>
-				<?php endif; ?>
-			</div>
+			<?php $this->render_top_posts_card( $top_posts, $is_pro ); ?>
 
 			<!-- Active Subscriptions by Level -->
 			<div class="lp-card">
@@ -384,6 +322,12 @@ class Leaky_Paywall_Dashboard {
 			</div>
 
 		</div>
+
+		<?php
+		if ( ! $is_pro ) {
+			$this->output_dashboard_pro_modal();
+		}
+		?>
 
 		<?php
 	}
@@ -597,12 +541,13 @@ class Leaky_Paywall_Dashboard {
 		return $days;
 	}
 
-	private function get_top_converting_content( $period, $type = 'paid' ) {
+	private function get_top_converting_content( $period, $type = 'paid', $limit = 3 ) {
 		global $wpdb;
 
 		$args_period = leaky_paywall_insights_get_formatted_period( $period );
 		$after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
 		$price_cond  = 'paid' === $type ? '> 0' : '= 0';
+		$limit       = absint( $limit );
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
@@ -621,7 +566,7 @@ class Leaky_Paywall_Dashboard {
 				 AND pm_nag.meta_value != ''
 				 GROUP BY pm_nag.meta_value
 				 ORDER BY total DESC
-				 LIMIT 3",
+				 LIMIT {$limit}",
 				$after_date
 			)
 		);
@@ -647,5 +592,134 @@ class Leaky_Paywall_Dashboard {
 		}
 
 		return $content;
+	}
+
+	private function render_top_content_card( $title, $items, $is_pro, $columns ) {
+		?>
+		<div class="lp-card">
+			<h3><?php echo esc_html( $title ); ?></h3>
+			<?php if ( ! empty( $items ) ) : ?>
+				<table class="lp-table">
+					<thead>
+						<tr>
+							<th><?php echo esc_html( $columns[0] ); ?></th>
+							<th style="text-align: right;"><?php echo esc_html( $columns[1] ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $items as $i => $item ) : ?>
+						<tr<?php echo ( ! $is_pro && $i >= 1 ) ? ' class="lp-pro-blurred-row"' : ''; ?>>
+							<td><a href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['title'] ); ?></a></td>
+							<td style="text-align: right;"><?php echo absint( $item['count'] ); ?></td>
+						</tr>
+						<?php endforeach; ?>
+						<?php if ( ! $is_pro ) : ?>
+						<tr class="lp-pro-unlock-row">
+							<td colspan="2">
+								<a href="#" class="lp-dashboard-pro-trigger">
+									<span class="dashicons dashicons-lock"></span> <?php esc_html_e( 'Upgrade to Pro for full data', 'leaky-paywall' ); ?>
+								</a>
+							</td>
+						</tr>
+						<?php endif; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p class="lp-no-data"><?php esc_html_e( 'No conversion data for this period.', 'leaky-paywall' ); ?></p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	private function output_dashboard_pro_modal() {
+		?>
+		<div id="lp-dashboard-pro-modal" class="lp-pro-modal-overlay" style="display:none;">
+			<div class="lp-pro-modal">
+				<button type="button" class="lp-pro-modal__close" aria-label="<?php esc_attr_e( 'Close', 'leaky-paywall' ); ?>">&times;</button>
+				<h2><?php esc_html_e( 'Unlock Full Analytics', 'leaky-paywall' ); ?></h2>
+				<p><?php esc_html_e( 'See exactly which content drives revenue and where your paywall performs best.', 'leaky-paywall' ); ?></p>
+				<ul class="lp-pro-modal-benefits">
+					<li><?php esc_html_e( 'Full conversion data across all your content', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e( 'Identify your highest-converting articles', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e( 'Track paywall display performance by page', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e( 'Make data-driven decisions about your paywall strategy', 'leaky-paywall' ); ?></li>
+				</ul>
+				<a href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=dashboard_modal&utm_campaign=settings" class="button button-hero button-primary lp-pro-modal-cta" target="_blank">
+					<?php esc_html_e( 'Upgrade to Pro', 'leaky-paywall' ); ?>
+				</a>
+			</div>
+		</div>
+		<script>
+		(function() {
+			var modal = document.getElementById('lp-dashboard-pro-modal');
+			var triggers = document.querySelectorAll('.lp-dashboard-pro-trigger');
+			for (var i = 0; i < triggers.length; i++) {
+				triggers[i].addEventListener('click', function(e) {
+					e.preventDefault();
+					modal.style.display = 'flex';
+				});
+			}
+			modal.querySelector('.lp-pro-modal__close').addEventListener('click', function() {
+				modal.style.display = 'none';
+			});
+			modal.addEventListener('click', function(e) {
+				if (e.target === modal) {
+					modal.style.display = 'none';
+				}
+			});
+		})();
+		</script>
+		<?php
+	}
+
+	private function render_top_posts_card( $top_posts, $is_pro ) {
+		?>
+		<div class="lp-card">
+			<h3><?php esc_html_e( 'Top Content by Paywall Displays', 'leaky-paywall' ); ?></h3>
+			<?php if ( ! empty( $top_posts ) ) : ?>
+				<table class="lp-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Content', 'leaky-paywall' ); ?></th>
+							<th style="text-align: right;"><?php esc_html_e( 'Displays', 'leaky-paywall' ); ?></th>
+							<th style="text-align: right;"><?php esc_html_e( 'Conv.', 'leaky-paywall' ); ?></th>
+							<th style="text-align: right;"><?php esc_html_e( 'Rate', 'leaky-paywall' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+						$i = 0;
+						foreach ( $top_posts as $row ) :
+							$title = get_the_title( $row->post_id );
+							if ( ! $title ) {
+								$title = __( '(Untitled)', 'leaky-paywall' );
+							}
+						?>
+						<tr<?php echo ( ! $is_pro && $i >= 1 ) ? ' class="lp-pro-blurred-row"' : ''; ?>>
+							<td><a href="<?php echo esc_url( get_the_permalink( $row->post_id ) ); ?>"><?php echo esc_html( $title ); ?></a></td>
+							<td style="text-align: right;"><?php echo esc_html( number_format( $row->impressions ) ); ?></td>
+							<td style="text-align: right;"><?php echo esc_html( number_format( $row->conversions ) ); ?></td>
+							<td style="text-align: right;"><?php echo esc_html( $row->rate . '%' ); ?></td>
+						</tr>
+						<?php
+							$i++;
+						endforeach;
+						?>
+						<?php if ( ! $is_pro ) : ?>
+						<tr class="lp-pro-unlock-row">
+							<td colspan="4">
+								<a href="#" class="lp-dashboard-pro-trigger">
+									<span class="dashicons dashicons-lock"></span> <?php esc_html_e( 'Upgrade to Pro for full data', 'leaky-paywall' ); ?>
+								</a>
+							</td>
+						</tr>
+						<?php endif; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p class="lp-no-data"><?php esc_html_e( 'No paywall display data for this period.', 'leaky-paywall' ); ?></p>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 }

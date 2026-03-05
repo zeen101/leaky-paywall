@@ -15,6 +15,13 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 	class Leaky_Paywall_License_Key {
 
 		/**
+		 * Registry of all add-on slugs.
+		 *
+		 * @var array<string>
+		 */
+		private static $registered_slugs = array();
+
+		/**
 		 * The plugin slug
 		 *
 		 * @var string
@@ -49,11 +56,24 @@ if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 			$this->plugin_name   = $plugin_name;
 			$this->plugin_prefix = str_replace( '-', '_', $plugin_slug );
 
+			self::$registered_slugs[] = $plugin_slug;
+
 			add_action( 'admin_init', array( $this, 'activate_license' ) );
 			add_action( 'admin_init', array( $this, 'deactivate_license' ) );
 
 			add_action( 'leaky_paywall_after_licenses_settings', array( $this, 'license_key_settings_div' ) );
 
+		}
+
+		/**
+		 * Get all registered add-on slugs.
+		 *
+		 * @since 5.0
+		 *
+		 * @return array<string>
+		 */
+		public static function get_registered_slugs() {
+			return self::$registered_slugs;
 		}
 
 		/**
