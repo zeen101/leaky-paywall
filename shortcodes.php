@@ -790,6 +790,31 @@ function do_leaky_paywall_register_form($atts)
 			<?php do_action('leaky_paywall_after_password_registration_field', $level_id, $level); ?>
 
 			<?php
+			$tc_settings = get_leaky_paywall_settings();
+			if ( 'on' === $tc_settings['enable_terms_and_conditions'] && 0 != $level['price'] && ! $one_page_form ) :
+				$tc_text    = $tc_settings['terms_and_conditions_text'];
+				$tc_page_id = $tc_settings['page_for_terms'];
+
+				if ( $tc_page_id ) {
+					$tc_url  = get_permalink( $tc_page_id );
+					$tc_label = preg_replace(
+						'/\[(.+?)\]/',
+						'<a href="' . esc_url( $tc_url ) . '" target="_blank">$1</a>',
+						esc_html( $tc_text )
+					);
+				} else {
+					$tc_label = esc_html( preg_replace( '/\[(.+?)\]/', '$1', $tc_text ) );
+				}
+			?>
+				<div class="leaky-paywall-terms-and-conditions">
+					<label>
+						<input type="checkbox" name="terms_and_conditions" value="1" />
+						<?php echo wp_kses( $tc_label, array( 'a' => array( 'href' => array(), 'target' => array() ) ) ); ?>
+					</label>
+				</div>
+			<?php endif; ?>
+
+			<?php
 			if (0 != $level['price'] && !$one_page_form) {
 			?>
 				<p>
@@ -848,8 +873,9 @@ function do_leaky_paywall_register_form($atts)
 			<?php } ?>
 
 			<?php
+			// Show terms here only for free levels or one-page forms (otherwise it's already in step 1).
 			$tc_settings = get_leaky_paywall_settings();
-			if ( 'on' === $tc_settings['enable_terms_and_conditions'] ) :
+			if ( 'on' === $tc_settings['enable_terms_and_conditions'] && ( 0 == $level['price'] || $one_page_form ) ) :
 				$tc_text    = $tc_settings['terms_and_conditions_text'];
 				$tc_page_id = $tc_settings['page_for_terms'];
 

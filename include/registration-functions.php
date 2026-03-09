@@ -294,6 +294,12 @@ function leaky_paywall_process_user_registration_validation() {
 		);
 	}
 
+	if ( 'on' === $settings['enable_terms_and_conditions'] && empty( $fields['terms_and_conditions'] ) ) {
+		$errors['terms_not_accepted'] = array(
+			'message' => __( 'You must agree to the terms and conditions.', 'leaky-paywall' ),
+		);
+	}
+
 	// allow 3rd party plugins to validate account setup data.
 	$errors = apply_filters( 'leaky_paywall_account_setup_validation', $errors, $fields );
 

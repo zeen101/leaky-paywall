@@ -8,7 +8,7 @@ Tags: paywall, subscriptions, subscriber, membership, metered paywall
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-The most flexible paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
+The subscription engine for news & niche publishers.
 
 == Description ==
 

@@ -69,7 +69,8 @@
      max-width: 800px;
  }
 
- .Slider__InputGroup {
+ .Slider__InputGroup,
+ .lp-list-builder-auth__form {
      max-width: 420px;
      margin: 0 auto;
  }
@@ -111,6 +112,15 @@
  .Slider .TextField input::placeholder {
      color: #999;
  }
+
+#lplb-portal .lp-list-builder__msg {
+    text-align: center;
+    font-style: italic;
+}
+
+.lp-inline-auth__success {
+    text-align: center;
+}
 
 @keyframes lp-spin {
     from { transform: rotate(0deg); }

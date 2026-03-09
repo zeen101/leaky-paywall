@@ -72,13 +72,13 @@ class LP_List_Builder
                             <form class="lp-list-builder__form" data-step="email">
                                 <div class="Slider__InputGroup">
                                     <div class="Slider__InputRow">
-                                        <label>Email Address</label>
+                                        <label><?php esc_html_e( 'Email Address', 'leaky-paywall' ); ?></label>
                                         <div class="TextField Slider__EmailAddressField">
-                                            <input type="email" name="email" value="" required autocomplete="email" placeholder="Enter your email" />
+                                            <input type="email" name="email" value="" required autocomplete="email" placeholder="<?php esc_attr_e( 'Enter your email', 'leaky-paywall' ); ?>" />
                                         </div>
                                     </div>
                                     <button type="submit" class="Slider__ExpandedButton" tabindex="0">
-                                        Continue
+                                        <?php esc_html_e( 'Continue', 'leaky-paywall' ); ?>
                                     </button>
                                     <div class="Slider__Policy">
                                         <p><?php echo esc_html($terms_and_conditions); ?></p>
@@ -107,7 +107,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    =>  false,
                 'error' => 'invalid_nonce',
-                'message'   => 'Invalid request.'
+                'message'   => __( 'Invalid request.', 'leaky-paywall' ),
             ], 403);
         }
 
@@ -117,7 +117,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    => false,
                 'error' => 'invalid_email',
-                'message' => 'Please enter a valid email address.'
+                'message' => __( 'Please enter a valid email address.', 'leaky-paywall' ),
             ], 400);
         }
 
@@ -129,8 +129,8 @@ class LP_List_Builder
                 'ok'    =>  true,
                 'step'  =>  'password',
                 'email' =>  $email,
-                'heading' => 'Welcome back',
-                'subheading' => 'Enter your password to log in.',
+                'heading' => __( 'Welcome back', 'leaky-paywall' ),
+                'subheading' => __( 'Enter your password to log in.', 'leaky-paywall' ),
                 'form_html' => self::render_password_step_form($email)
             ], 200);
         }
@@ -140,7 +140,7 @@ class LP_List_Builder
             'ok'    =>  true,
             'step'  => 'signup',
             'email' => $email,
-            'heading' => 'Create a password',
+            'heading' => __( 'Create a password', 'leaky-paywall' ),
             'subheading' => '',
             'form_html' => self::render_signup_step_form($email)
         ]);
@@ -155,7 +155,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    =>  false,
                 'error' => 'invalid_nonce',
-                'message'   => 'Invalid request.'
+                'message'   => __( 'Invalid request.', 'leaky-paywall' ),
             ], 403);
         }
 
@@ -167,7 +167,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    => false,
                 'error' => 'invalid_email',
-                'message' => 'Please enter a valid email address.',
+                'message' => __( 'Please enter a valid email address.', 'leaky-paywall' ),
             ], 400);
         }
 
@@ -175,7 +175,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    => false,
                 'error' => 'weak_password',
-                'message'   => 'Password must be at least 4 characters.'
+                'message'   => __( 'Password must be at least 4 characters.', 'leaky-paywall' ),
             ]);
         }
 
@@ -183,7 +183,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    => false,
                 'error' => 'email_exists',
-                'message'   => 'An account with that email already exists. Please sign in instead.',
+                'message'   => __( 'An account with that email already exists. Please sign in instead.', 'leaky-paywall' ),
             ], 409);
         }
 
@@ -258,7 +258,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    =>  false,
                 'error' => 'invalid_nonce',
-                'message'   => 'Invalid request.'
+                'message'   => __( 'Invalid request.', 'leaky-paywall' ),
             ], 403);
         }
 
@@ -270,7 +270,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok'    => false,
                 'error' => 'invalid_email',
-                'message' => 'Please enter a valid email address.'
+                'message' => __( 'Please enter a valid email address.', 'leaky-paywall' ),
             ], 400);
         }
 
@@ -280,7 +280,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok' => false,
                 'error' => 'no_user',
-                'message' => 'No account found for that email. Please create an account.',
+                'message' => __( 'No account found for that email. Please create an account.', 'leaky-paywall' ),
             ], 404);
         }
 
@@ -296,7 +296,7 @@ class LP_List_Builder
             return new WP_REST_Response([
                 'ok' => false,
                 'error' => 'invalid_credentials',
-                'message' => 'Incorrect email or password.',
+                'message' => __( 'Incorrect email or password.', 'leaky-paywall' ),
             ], 401);
         }
 
@@ -318,8 +318,8 @@ class LP_List_Builder
         $email_param = $request->get_param('email');
         $email = sanitize_email($email_param);
 
-        $heading = 'Check your email';
-        $subheading = 'If an account exists for that email, we sent a 6-digit verification code.';
+        $heading = __( 'Check your email', 'leaky-paywall' );
+        $subheading = __( 'If an account exists for that email, we sent a 6-digit verification code.', 'leaky-paywall' );
 
         $generic_ok = new WP_REST_Response([
             'ok'         => true,
@@ -339,14 +339,15 @@ class LP_List_Builder
             return $generic_ok;
         }
 
-        $subheading = sprintf('We sent a 6-digit code to %s (expires in 10 minutes).', $email);
+        /* translators: %s: email address */
+        $subheading = sprintf( __( 'We sent a 6-digit code to %s (expires in 10 minutes).', 'leaky-paywall' ), $email );
 
         $user_id = $user->ID;
 
         $state_key = $this->reset_state_key($user_id);
         $existing = get_transient($state_key);
         if (is_array($existing) && !empty($existing['sent_at']) && (time() - (int)$existing['sent_at'] < 30)) {
-            $subheading = 'Please wait a moment before requesting another code.';
+            $subheading = __( 'Please wait a moment before requesting another code.', 'leaky-paywall' );
             return new WP_REST_Response([
                 'ok'         => true,
                 'step'       => 'reset_code',
@@ -367,12 +368,14 @@ class LP_List_Builder
             'sent_at'   => time(),
         ], 10 * MINUTE_IN_SECONDS);
 
-        $subject = "Your Verification Code";
-        $message = "Your verification code is: {$code}\n\nThis code expires in 10 minutes.";
+        $subject = __( 'Your Verification Code', 'leaky-paywall' );
+        /* translators: %s: 6-digit verification code */
+        $message = sprintf( __( "Your verification code is: %s\n\nThis code expires in 10 minutes.", 'leaky-paywall' ), $code );
 
         wp_mail($email, $subject, $message);
 
-        $subheading = sprintf('We sent a 6-digit code to %s (expires in 10 minutes).', $email);
+        /* translators: %s: email address */
+        $subheading = sprintf( __( 'We sent a 6-digit code to %s (expires in 10 minutes).', 'leaky-paywall' ), $email );
 
         return new WP_REST_Response([
             'ok'         => true,
@@ -394,14 +397,14 @@ class LP_List_Builder
         if (empty($email) || !is_email($email) || strlen($code) !== 6) {
             return new WP_REST_Response([
                 'ok' => false,
-                'message' => 'Invalid code.',
+                'message' => __( 'Invalid code.', 'leaky-paywall' ),
             ], 400);
         }
 
         $user = get_user_by('email', $email);
 
         if (!($user instanceof WP_User)) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Invalid code.'], 400);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Invalid code.', 'leaky-paywall' )], 400);
         }
 
         $user_id = (int) $user->ID;
@@ -409,19 +412,19 @@ class LP_List_Builder
         $state = get_transient($state_key);
 
         if (!is_array($state) || empty($state['code_hash']) || empty($state['expires']) || time() > (int)$state['expires']) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Code expired. Please request a new one.'], 400);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Code expired. Please request a new one.', 'leaky-paywall' )], 400);
         }
 
         $attempts = (int)($state['attempts'] ?? 0);
         if ($attempts >= 8) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Too many attempts. Request a new code.'], 429);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Too many attempts. Request a new code.', 'leaky-paywall' )], 429);
         }
 
         $state['attempts'] = $attempts + 1;
         set_transient($state_key, $state, max(60, (int)$state['expires'] - time()));
 
         if (!wp_check_password($code, (string)$state['code_hash'], $user_id)) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Invalid code.'], 400);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Invalid code.', 'leaky-paywall' )], 400);
         }
 
         $token = wp_generate_password(32, false, false);
@@ -433,8 +436,8 @@ class LP_List_Builder
         // Clear the code state
         delete_transient($state_key);
 
-        $heading = 'Set a new password';
-        $subheading = 'Choose a new password for your account.';
+        $heading = __( 'Set a new password', 'leaky-paywall' );
+        $subheading = __( 'Choose a new password for your account.', 'leaky-paywall' );
 
         return new WP_REST_Response([
             'ok'         => true,
@@ -456,24 +459,24 @@ class LP_List_Builder
         $pass_param = $request->get_param('password');
         $password = (string) $pass_param;
 
-        if (empty($email) || !is_email($email) || empty($token) || strlen($password) < 8) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Invalid request.'], 400);
+        if (empty($email) || !is_email($email) || empty($token) || strlen($password) < 4) {
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Invalid request.', 'leaky-paywall' )], 400);
         }
 
         $user = get_user_by('email', $email);
         if (!($user instanceof WP_User)) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Invalid request.'], 400);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Invalid request.', 'leaky-paywall' )], 400);
         }
 
         $user_id = (int) $user->ID;
         $stored = get_transient($this->reset_token_key($user_id));
 
         if (!is_array($stored) || empty($stored['token']) || empty($stored['expires']) || time() > (int)$stored['expires']) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Reset session expired. Please request a new code.'], 400);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Reset session expired. Please request a new code.', 'leaky-paywall' )], 400);
         }
 
         if (!hash_equals((string)$stored['token'], $token)) {
-            return new WP_REST_Response(['ok' => false, 'message' => 'Invalid reset session.'], 400);
+            return new WP_REST_Response(['ok' => false, 'message' => __( 'Invalid reset session.', 'leaky-paywall' )], 400);
         }
 
         wp_set_password($password, $user_id);
@@ -483,10 +486,10 @@ class LP_List_Builder
 
         delete_transient($this->reset_token_key($user_id));
 
-        $heading = 'All set';
-        $subheading = 'Your password has been updated.';
+        $heading = __( 'All set', 'leaky-paywall' );
+        $subheading = __( 'Your password has been updated.', 'leaky-paywall' );
 
-        $success_html = '<div class="lp-inline-auth__success" aria-live="polite"><p><strong>Password updated.</strong></p><p>You can continue.</p></div>';
+        $success_html = '<div class="lp-inline-auth__success" aria-live="polite"><p><strong>' . esc_html__( 'Password updated.', 'leaky-paywall' ) . '</strong></p><p>' . esc_html__( 'You can continue.', 'leaky-paywall' ) . '</p></div>';
 
         return new WP_REST_Response([
             'ok'         => true,
@@ -527,24 +530,24 @@ class LP_List_Builder
         <form class="lp-list-builder-auth__form" data-step="password">
 
             <div class="Slider__InputRow">
-                <label>Email Address</label>
+                <label><?php esc_html_e( 'Email Address', 'leaky-paywall' ); ?></label>
                 <div class="TextField Slider__EmailAddressField">
                     <input type="email" name="email" required autocomplete="email" value="<?php echo esc_attr($email); ?>" />
                 </div>
             </div>
 
             <div class="Slider__InputRow">
-                <label>Password</label>
+                <label><?php esc_html_e( 'Password', 'leaky-paywall' ); ?></label>
                 <div class="TextField Slider__PasswordField">
                     <input type="password" name="password" required autocomplete="current-password" />
                 </div>
             </div>
 
             <p class="lp-list-builder__subtle">
-                <a href="#" data-action="forgot-password">Forgot your password?</a>
+                <a href="#" data-action="forgot-password"><?php esc_html_e( 'Forgot your password?', 'leaky-paywall' ); ?></a>
             </p>
 
-            <button type="submit">Log in</button>
+            <button type="submit"><?php esc_html_e( 'Log in', 'leaky-paywall' ); ?></button>
         </form>
 
     <?php
@@ -557,22 +560,22 @@ class LP_List_Builder
 
         <form class="lp-list-builder-auth__form" data-step="signup">
             <div class="Slider__InputRow">
-                <label>Email Address</label>
+                <label><?php esc_html_e( 'Email Address', 'leaky-paywall' ); ?></label>
                 <div class="TextField Slider__EmailAddressField">
                     <input type="email" name="email" required autocomplete="email" value="<?php echo esc_attr($email); ?>" />
                 </div>
             </div>
 
             <div class="Slider__InputRow">
-                <label>Password</label>
+                <label><?php esc_html_e( 'Password', 'leaky-paywall' ); ?></label>
                 <div class="TextField Slider__PasswordField">
                     <input type="password" name="password" required autocomplete="new-password" minlength="4" />
                 </div>
             </div>
 
-            <p>By creating an acccount, you agree to the Terms of Sale, Terms of Service, and Privacy Policy.</p>
+            <p><?php esc_html_e( 'By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy.', 'leaky-paywall' ); ?></p>
 
-            <button type="submit">Create account</button>
+            <button type="submit"><?php esc_html_e( 'Create account', 'leaky-paywall' ); ?></button>
 
         </form>
 
@@ -590,7 +593,7 @@ class LP_List_Builder
 
             <div class="Slider__InputRow">
                 <label>
-                    Verification code
+                    <?php esc_html_e( 'Verification code', 'leaky-paywall' ); ?>
                 </label>
                 <div class="TextField Slider__VerficationField">
                     <input type="text"
@@ -603,7 +606,7 @@ class LP_List_Builder
                 </div>
             </div>
 
-            <button type="submit">Verify code</button>
+            <button type="submit"><?php esc_html_e( 'Verify code', 'leaky-paywall' ); ?></button>
 
         </form>
 
@@ -620,18 +623,18 @@ class LP_List_Builder
 
             <div class="Slider__InputRow">
                 <label>
-                    New password
+                    <?php esc_html_e( 'New password', 'leaky-paywall' ); ?>
                 </label>
                 <div class="TextField Slider__ResetNewField">
                     <input type="password"
                         name="password"
-                        minlength="8"
+                        minlength="4"
                         required
                         autocomplete="new-password" />
                 </div>
             </div>
 
-            <button type="submit">Set new password</button>
+            <button type="submit"><?php esc_html_e( 'Set new password', 'leaky-paywall' ); ?></button>
         </form>
 <?php
         return (string) ob_get_clean();

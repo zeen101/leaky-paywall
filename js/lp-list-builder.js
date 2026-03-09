@@ -26,6 +26,18 @@
       return data;
     }
 
+    function clearRestrictionData() {
+      try { localStorage.removeItem('lp_viewed_content'); } catch (e) {}
+
+      // Clear any LP restriction cookies.
+      document.cookie.split(';').forEach(function(c) {
+        var name = c.split('=')[0].trim();
+        if (name.indexOf('issuem_lp') === 0) {
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        }
+      });
+    }
+
     function showSuccessAndReload(form, message = "You're signed in!") {
       form.outerHTML = `
         <div class="lp-inline-auth__success">
@@ -33,6 +45,8 @@
           <p>${message}</p>
         </div>
       `;
+
+      clearRestrictionData();
 
       setTimeout(() => {
         window.location.reload();
@@ -63,7 +77,6 @@
 
     function mount(container) {
 
-      console.log('mount init');
       const msgEl = qs(container, '.lp-list-builder__msg');
 
       container.addEventListener("click", async (e) => {
@@ -138,7 +151,7 @@
               current_url: window.location.href.split("#")[0],
             });
 
-            showSuccessAndReload(form, "Your account has been created.");
+            showSuccessAndReload(form, "Your account has been created. Unlocking content...");
 
             return;
           }
@@ -181,36 +194,23 @@
 
         } catch (err) {
           msgEl.textContent = err.message || "Something went wrong.";
+
+          var btn = form.querySelector('button[type="submit"]');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = btn.dataset.originalText || btn.textContent;
+          }
         }
       });
 
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        console.log('list builder init');
         document.querySelectorAll(".Form__Container").forEach(mount);
-
-        // const isLoggedIn = document.body.classList.contains("logged-in");
-        // const isSingle = document.body.classList.contains("single-post");
-
-        // if (!isLoggedIn) {
-
-        //   if (isSingle) {
-        //     document.documentElement.style.overflow = "hidden"; // <html>
-        //     document.body.style.overflow = "hidden";            // <body>
-        //     document.getElementById("lplb-mask")?.classList.add("is-visible");
-        //     document.getElementById("lplb-portal")?.classList.add("is-visible");
-        //   }
-
-        // }
-
-
-
     });
 
 
       document.addEventListener('leaky_paywall_shown', function(e) {
-          console.log('Paywall displayed for post:', e.detail.postId);
 
           // Only show the slider for the subscribe nag.
           if (e.detail.response.nag_type !== 'subscribe') {
