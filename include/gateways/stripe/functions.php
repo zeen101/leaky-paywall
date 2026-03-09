@@ -554,9 +554,9 @@ function leaky_paywall_get_stripe_amount( $amount ) {
 	if ( in_array( strtoupper( leaky_paywall_get_currency() ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
 		// Zero-Decimal Currencies.
 		// https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support .
-		$stripe_price = number_format( $amount, '0', '', '' );
+		$stripe_price = number_format( (float) $amount, '0', '', '' );
 	} else {
-		$stripe_price = number_format( $amount, '2', '', '' ); // no decimals.
+		$stripe_price = number_format( (float) $amount, '2', '', '' ); // no decimals.
 	}
 
 	return $stripe_price;

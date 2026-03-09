@@ -456,7 +456,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$settings = get_leaky_paywall_settings();
 
-		$stripe_price = number_format($level['price'], 2, '', '');
+		$stripe_price = number_format((float) $level['price'], 2, '', '');
 
 		$plan_args = array(
 			'stripe_price' => $stripe_price,

@@ -406,10 +406,10 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							if ( false === $level_id || empty( $settings['levels'][ $level_id ]['label'] ) ) {
 								$level_name = __( 'Undefined', 'leaky-paywall' );
 							} else {
-								$level_name = stripcslashes( $settings['levels'][ $level_id ]['label'] );
+								$level_name = stripslashes( $settings['levels'][ $level_id ]['label'] );
 							}
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo esc_html( $level_name ) . '<br><span style="color: #999;">ID: ' . $level_id . '</span>';
+							echo esc_html( $level_name ) . '<br><span style="color: #999;">ID: ' . esc_html( $level_id ) . '</span>';
 							echo '</td>';
 							break;
 

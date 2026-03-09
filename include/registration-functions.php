@@ -320,7 +320,7 @@ function leaky_paywall_process_user_registration_validation() {
 
 		$stripe = leaky_paywall_initialize_stripe_api();
 
-		$stripe_price = apply_filters( 'leaky_paywall_stripe_checkout_price', number_format( $level['price'], 2, '', '' ), $fields );
+		$stripe_price = apply_filters( 'leaky_paywall_stripe_checkout_price', number_format( (float) $level['price'], 2, '', '' ), $fields );
 		$stripe_currency = apply_filters( 'leaky_paywall_stripe_checkout_currency', leaky_paywall_get_currency(), $fields );
 
 		// create Stripe customer.

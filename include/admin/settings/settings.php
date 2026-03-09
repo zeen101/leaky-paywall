@@ -2080,15 +2080,15 @@ The %sitename% Team';
 			foreach ($level as $key => $value) {
 
 				if (in_array($key, $text_fields)) {
-					$levels[$level_id][$key] = sanitize_text_field(wp_unslash($value));
+					$level[$key] = sanitize_text_field(wp_unslash($value));
 				}
 
 				if (in_array($key, $textarea_fields)) {
-					$levels[$level_id][$key] = wp_kses_post(wp_unslash($value));
+					$level[$key] = wp_kses_post(wp_unslash($value));
 				}
 
 				if ('post_types' == $key) {
-					$levels[$level_id][$key] = $this->sanitize_level_post_types($value);
+					$level[$key] = $this->sanitize_level_post_types($value);
 				}
 			}
 

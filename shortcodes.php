@@ -618,7 +618,7 @@ function do_leaky_paywall_register_form($atts)
 				if ( ! empty( $lp_subscriptions->data ) ) {
 					$lp_current_sub = $lp_subscriptions->data[0];
 
-					$lp_stripe_price = number_format( $level['price'], 2, '', '' );
+					$lp_stripe_price = number_format( (float) $level['price'], 2, '', '' );
 					$lp_plan_args = array(
 						'stripe_price' => $lp_stripe_price,
 						'currency'     => leaky_paywall_get_currency(),
@@ -820,7 +820,7 @@ function do_leaky_paywall_register_form($atts)
 
 			<?php
 			if ($level['price'] > 0) {
-				$total_price = str_replace(',', '', number_format($level['price'], 2));
+				$total_price = str_replace(',', '', number_format((float) $level['price'], 2));
 			} else {
 				$total_price = 0;
 			}
@@ -1139,13 +1139,14 @@ function leaky_paywall_process_profile_edit()
 			}
 		}
 
-		$user_id = wp_update_user($args);
+		$userdata = get_userdata($user->ID);
+		$user_id  = wp_update_user($args);
 
 		if (is_wp_error($user_id)) {
 			throw new Exception($user_id->get_error_message());
 		} else {
 			$user = get_userdata($user_id);
-			do_action('leaky_paywall_after_profile_changes_saved', $user_id, $args, $user);
+			do_action('leaky_paywall_after_profile_changes_saved', $user_id, $args, $userdata);
 		}
 	} catch (Exception $e) {
 		$results = '<div class="leaky_paywall_message error"><p class="error">' . $e->getMessage() . '</p></div>';
