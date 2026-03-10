@@ -1173,6 +1173,10 @@ function leaky_paywall_process_profile_edit()
 		} else {
 			$user = get_userdata($user_id);
 			do_action('leaky_paywall_after_profile_changes_saved', $user_id, $args, $userdata);
+
+			if ( $userdata->user_email !== $args['user_email'] ) {
+				do_action( 'leaky_paywall_subscriber_email_changed', $user_id, $userdata->user_email, $args['user_email'] );
+			}
 		}
 	} catch (Exception $e) {
 		$results = '<div class="leaky_paywall_message error"><p class="error">' . $e->getMessage() . '</p></div>';

@@ -65,7 +65,12 @@ function lp_update_subscriber_meta( $key, $value, $user_id ) {
             wp_update_user(['ID' => $user_id, 'last_name' => $value]);
             break;
         case 'email':
+            $old_user = get_userdata( $user_id );
+            $old_email = $old_user ? $old_user->user_email : '';
             wp_update_user(['ID' => $user_id, 'user_email' => $value]);
+            if ( $old_email && $old_email !== $value ) {
+                do_action( 'leaky_paywall_subscriber_email_changed', $user_id, $old_email, $value );
+            }
             break;
         case 'subscriber_notes':
             update_user_meta($user_id, '_leaky_paywall_subscriber_notes', $value);

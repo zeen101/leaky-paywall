@@ -1195,6 +1195,52 @@ function leaky_paywall_connect_maybe_process_return()
 	exit;
 }
 
+/**
+ * Sync email change to Stripe customer.
+ *
+ * @since 5.0.1
+ *
+ * @param int    $user_id   WordPress user ID.
+ * @param string $old_email The previous email address.
+ * @param string $new_email The new email address.
+ */
+function leaky_paywall_stripe_sync_email_change( $user_id, $old_email, $new_email ) {
+
+	$user = get_userdata( $user_id );
+
+	if ( ! $user ) {
+		return;
+	}
+
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$gateway = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+
+	if ( false === stripos( $gateway, 'stripe' ) ) {
+		return;
+	}
+
+	$customer_id = get_user_meta( $user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+	if ( empty( $customer_id ) ) {
+		return;
+	}
+
+	try {
+		$stripe = leaky_paywall_initialize_stripe_api();
+		$stripe->customers->update(
+			$customer_id,
+			array( 'email' => $new_email ),
+			leaky_paywall_get_stripe_connect_params()
+		);
+		leaky_paywall_log( $new_email, 'stripe email sync: updated customer ' . $customer_id );
+	} catch ( \Exception $e ) {
+		leaky_paywall_log( $e->getMessage(), 'stripe email sync: error for customer ' . $customer_id );
+	}
+}
+add_action( 'leaky_paywall_subscriber_email_changed', 'leaky_paywall_stripe_sync_email_change', 10, 3 );
+
 function leaky_paywall_ensure_app_api_key() {
 	$settings = get_leaky_paywall_settings();
 
