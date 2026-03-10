@@ -725,7 +725,10 @@ class Leaky_Paywall_Admin_Subscriber
 									<td><?php echo esc_html(leaky_paywall_get_current_currency_symbol()) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?></td>
 									<td>
 										<?php
-										if (!isset($txn_level['recurring'])) {
+										$txn_status = get_post_meta($transaction->ID, '_status', true);
+										if ( 'refund' === $txn_status ) {
+											esc_html_e('Refund', 'leaky-paywall');
+										} elseif (!isset($txn_level['recurring'])) {
 											esc_html_e('One-time payment', 'leaky-paywall');
 										} else {
 											echo get_post_meta($transaction->ID, '_is_recurring', true) ? esc_html__('Subscription Renewal', 'leaky-paywall') : esc_html__('Initial Subscription Payment', 'leaky-paywall');

@@ -350,11 +350,22 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 					'proration_behavior' => 'always_invoice',
 				), $level );
 
+				$update_args['expand'] = array( 'latest_invoice' );
+
 				$sub = $stripe->subscriptions->update(
 					$existing_sub->id,
 					$update_args,
 					leaky_paywall_get_stripe_connect_params()
 				);
+
+				// Store the actual amount Stripe charged on the incomplete user.
+				if ( isset( $sub->latest_invoice->amount_paid ) ) {
+					$actual_price = $sub->latest_invoice->amount_paid / 100;
+					$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $fields['email_address'] );
+					if ( $incomplete_id ) {
+						update_post_meta( $incomplete_id, '_stripe_amount_paid', number_format( $actual_price, 2, '.', '' ) );
+					}
+				}
 
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $cu, $sub, $level );
 			}
@@ -840,6 +851,10 @@ function leaky_paywall_process_stripe_subscription_payment_element_webhook($stri
 		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $stripe_object->customer, $subscriber_data);
 	}
 
+	if ( ! $user_id ) {
+		return;
+	}
+
 	$subscriber_data['user_id'] = $user_id;
 
 	$transaction = new LP_Transaction($subscriber_data);
@@ -972,6 +987,10 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 		$user_id = leaky_paywall_update_subscriber(NULL, $user_data['email'], $pi->customer, $subscriber_data);
 	} else {
 		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $pi->customer, $subscriber_data);
+	}
+
+	if ( ! $user_id ) {
+		return;
 	}
 
 	$subscriber_data['user_id'] = $user_id;

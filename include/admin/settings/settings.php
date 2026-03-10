@@ -929,13 +929,14 @@ class Leaky_Paywall_Settings
 			<div id="lp-pro-modal-overlay" class="lp-pro-modal-overlay" style="display:none;">
 				<div class="lp-pro-modal">
 					<button type="button" class="lp-pro-modal__close" aria-label="<?php esc_attr_e( 'Close', 'leaky-paywall' ); ?>">&times;</button>
-					<h2><?php esc_html_e( 'Unlock Recurring Payments', 'leaky-paywall' ); ?></h2>
-					<p><?php esc_html_e( 'Automatically charge subscribers on a recurring basis so you never miss a renewal. Recurring payments work with Stripe.', 'leaky-paywall' ); ?></p>
+					<h2><?php esc_html_e('Go Pro. Get everything.', 'leaky-paywall' ); ?></h2>
+					<p><?php esc_html_e('Recurring payments are just the start. Pro gives you the full platform — every extension, every integration, and personal support from our team.
+', 'leaky-paywall' ); ?></p>
 					<ul>
-						<li><?php esc_html_e( 'Automatic subscription renewals', 'leaky-paywall' ); ?></li>
-						<li><?php esc_html_e( 'Reduce involuntary churn', 'leaky-paywall' ); ?></li>
-						<li><?php esc_html_e( 'Stripe Customer Portal support', 'leaky-paywall' ); ?></li>
-						<li><?php esc_html_e( 'Subscribers can manage their own billing', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e('50+ extensions: corporate subs, ad-free plans, gift subs, group access, and more', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e('Subscriber insights: identify free readers ready for a promo, catch subscribers at risk of churn, drill into individual behavior, and more', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e('CRM and circulation integrations: Mailchimp, HubSpot, Kit, Simplecirc, Omeda, Darwin CX, and more', 'leaky-paywall' ); ?></li>
+						<li><?php esc_html_e('1-on-1 onboarding and ongoing support', 'leaky-paywall' ); ?></li>
 					</ul>
 					<a class="button button-primary button-hero" target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=recurring_modal&utm_campaign=settings"><?php esc_html_e( 'Upgrade to Pro', 'leaky-paywall' ); ?></a>
 				</div>

@@ -636,13 +636,13 @@ class Leaky_Paywall_Dashboard {
 		<div id="lp-dashboard-pro-modal" class="lp-pro-modal-overlay" style="display:none;">
 			<div class="lp-pro-modal">
 				<button type="button" class="lp-pro-modal__close" aria-label="<?php esc_attr_e( 'Close', 'leaky-paywall' ); ?>">&times;</button>
-				<h2><?php esc_html_e( 'Unlock Full Analytics', 'leaky-paywall' ); ?></h2>
-				<p><?php esc_html_e( 'See exactly which content drives revenue and where your paywall performs best.', 'leaky-paywall' ); ?></p>
+				<h2><?php esc_html_e('Go Pro. Get everything.', 'leaky-paywall' ); ?></h2>
+				<p><?php esc_html_e('Full subscriber analytics are just the start. Pro gives you the full platform — every extension, every integration, and personal support from our team.', 'leaky-paywall' ); ?></p>
 				<ul class="lp-pro-modal-benefits">
-					<li><?php esc_html_e( 'Full conversion data across all your content', 'leaky-paywall' ); ?></li>
-					<li><?php esc_html_e( 'Identify your highest-converting articles', 'leaky-paywall' ); ?></li>
-					<li><?php esc_html_e( 'Track paywall display performance by page', 'leaky-paywall' ); ?></li>
-					<li><?php esc_html_e( 'Make data-driven decisions about your paywall strategy', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e('50+ extensions: corporate subs, ad-free plans, gift subs, group access, and more', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e('Subscriber insights: identify free readers ready for a promo, catch subscribers at risk of churn, drill into individual behavior, and more', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e('CRM and circulation integrations: Mailchimp, HubSpot, Kit, Simplecirc, Omeda, Darwin CX, and more', 'leaky-paywall' ); ?></li>
+					<li><?php esc_html_e('1-on-1 onboarding and ongoing support', 'leaky-paywall' ); ?></li>
 				</ul>
 				<a href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=dashboard_modal&utm_campaign=settings" class="button button-hero button-primary lp-pro-modal-cta" target="_blank">
 					<?php esc_html_e( 'Upgrade to Pro', 'leaky-paywall' ); ?>

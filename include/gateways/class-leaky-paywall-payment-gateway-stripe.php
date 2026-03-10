@@ -132,12 +132,16 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$payment_intent_id = isset($_POST['payment-intent-id']) ? sanitize_text_field(wp_unslash($_POST['payment-intent-id'])) : '';
 
+		// Use the actual Stripe amount if a subscription change stored it.
+		$stripe_amount = get_post_meta( $incomplete_user[0]->ID, '_stripe_amount_paid', true );
+		$price = $stripe_amount ? $stripe_amount : $this->level_price;
+
 		$gateway_data = array(
 			'level_id'               => $this->level_id,
 			'subscriber_id'          => $customer_id,
 			'subscriber_email'       => $this->email,
 			'existing_customer'      => $existing_customer,
-			'price'                  => $this->level_price,
+			'price'                  => $price,
 			'description'            => $this->level_name,
 			'payment_gateway'        => 'stripe',
 			'payment_status'         => 'active', // will deaactivate with payment_intent.failed webhook if needed.

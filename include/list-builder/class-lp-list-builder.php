@@ -547,7 +547,7 @@ class LP_List_Builder
                 <a href="#" data-action="forgot-password"><?php esc_html_e( 'Forgot your password?', 'leaky-paywall' ); ?></a>
             </p>
 
-            <button type="submit"><?php esc_html_e( 'Log in', 'leaky-paywall' ); ?></button>
+            <button type="submit" class="Slider__ExpandedButton"><?php esc_html_e( 'Log in', 'leaky-paywall' ); ?></button>
         </form>
 
     <?php
@@ -575,7 +575,7 @@ class LP_List_Builder
 
             <p><?php esc_html_e( 'By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy.', 'leaky-paywall' ); ?></p>
 
-            <button type="submit"><?php esc_html_e( 'Create account', 'leaky-paywall' ); ?></button>
+            <button type="submit" class="Slider__ExpandedButton"><?php esc_html_e( 'Create account', 'leaky-paywall' ); ?></button>
 
         </form>
 
@@ -606,7 +606,7 @@ class LP_List_Builder
                 </div>
             </div>
 
-            <button type="submit"><?php esc_html_e( 'Verify code', 'leaky-paywall' ); ?></button>
+            <button type="submit" class="Slider__ExpandedButton"><?php esc_html_e( 'Verify code', 'leaky-paywall' ); ?></button>
 
         </form>
 
@@ -634,7 +634,7 @@ class LP_List_Builder
                 </div>
             </div>
 
-            <button type="submit"><?php esc_html_e( 'Set new password', 'leaky-paywall' ); ?></button>
+            <button type="submit" class="Slider__ExpandedButton"><?php esc_html_e( 'Set new password', 'leaky-paywall' ); ?></button>
         </form>
 <?php
         return (string) ob_get_clean();

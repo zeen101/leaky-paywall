@@ -2498,6 +2498,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 */
 	function leaky_paywall_email_subscription_status( $user_id, $status = 'new', $args = '' ) {
 
+		if ( empty( $user_id ) ) {
+			return;
+		}
+
 		$password = '';
 		if ( ! empty( $args ) && is_array( $args ) ) {
 			$password = isset( $args['password'] ) ? $args['password'] : '';
@@ -2800,7 +2804,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 * @since 4.24.0 Moved from admin_init to Action Scheduler for performance.
 	 */
 	function leaky_paywall_maybe_schedule_status_migration() {
-		if ( get_option( 'leaky_paywall_status_migration_v1' ) ) {
+		if ( get_option( 'leaky_paywall_status_migration_v2' ) ) {
 			return;
 		}
 
@@ -2816,12 +2820,14 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 * One-time migration to align existing subscriber statuses with the new
 	 * status-as-source-of-truth system. Runs in the background via Action Scheduler.
 	 *
-	 * - canceled + future expiration → pending_cancel
-	 * - active/trial + past expiration + no recurring plan → expired
-	 * - canceled + past/no expiration → expired
+	 * 1. canceled Stripe subscribers → sync with Stripe for authoritative status
+	 * 2. canceled non-Stripe subscribers + future expiration → pending_cancel
+	 * 3. active/trial + past expiration + no recurring plan → expired
+	 * 4. remaining canceled non-Stripe subscribers + past/no expiration → expired
 	 *
 	 * @since 4.23.0
 	 * @since 4.24.0 Runs as an async Action Scheduler batch instead of on admin_init.
+	 * @since 4.25.0 Sync canceled Stripe subscribers with Stripe before migrating.
 	 */
 	function leaky_paywall_run_status_migration_batch() {
 
@@ -2831,7 +2837,36 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$batch     = 100;
 		$processed = 0;
 
-		// 1. Canceled subscribers with future expiration → pending_cancel.
+		// 1. Canceled Stripe subscribers → sync with Stripe for authoritative status.
+		// The LP expires meta may not reflect the actual Stripe subscription period end,
+		// so we check Stripe directly instead of relying on the local expires date.
+		$canceled_stripe_users = get_users( array(
+			'number'     => $batch,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'value'   => 'canceled',
+					'compare' => '=',
+				),
+				array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
+					'value'   => 'cus_',
+					'compare' => 'LIKE',
+				),
+			),
+		) );
+
+		foreach ( $canceled_stripe_users as $user ) {
+			if ( function_exists( 'leaky_paywall_sync_stripe_subscription' ) ) {
+				leaky_paywall_sync_stripe_subscription( $user );
+			} else {
+				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'migration' );
+			}
+			$processed++;
+		}
+
+		// 2. Canceled non-Stripe subscribers with future expiration → pending_cancel.
 		$users_to_pending = get_users( array(
 			'number'     => $batch,
 			'meta_query' => array(
@@ -2860,7 +2895,8 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			$processed++;
 		}
 
-		// 2. Active/trial subscribers with past expiration + no recurring plan → expired.
+		// 3. Active/trial subscribers with past expiration + no recurring plan → expired.
+		// Note: Active subscribers with a recurring plan are skipped — their subscription may still be valid.
 		$users_to_expire = get_users( array(
 			'number'     => $batch,
 			'meta_query' => array(
@@ -2907,7 +2943,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			$processed++;
 		}
 
-		// 3. Canceled subscribers with past or no expiration → expired.
+		// 4. Remaining canceled non-Stripe subscribers with past or no expiration → expired.
 		$users_canceled_expired = get_users( array(
 			'number'     => $batch,
 			'meta_query' => array(
@@ -2940,8 +2976,8 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 
 		if ( 0 === $processed ) {
-			update_option( 'leaky_paywall_status_migration_v1', true );
-			leaky_paywall_log( 'Status migration complete', 'migration' );
+			update_option( 'leaky_paywall_status_migration_v2', true );
+			leaky_paywall_log( 'Status migration v2 complete', 'migration' );
 		} else {
 			leaky_paywall_log( 'Migrated ' . $processed . ' subscribers, scheduling next batch', 'migration' );
 			as_enqueue_async_action( 'leaky_paywall_run_status_migration_batch' );
@@ -2994,9 +3030,11 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_filter_email_tags($message, $user_id, $display_name, $password)
 	{
 
-		$settings = get_leaky_paywall_settings();
-
 		$user = get_userdata($user_id);
+
+		if ( ! $user ) {
+			return $message;
+		}
 
 		$site_name = stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8'));
 

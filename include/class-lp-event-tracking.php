@@ -246,10 +246,7 @@ class LP_Event_Tracking {
 		);
 
 		$this->send_event( 'Registration', $subscriber_data, $properties );
-
-		if ( ! empty( $properties['amount'] ) && $properties['amount'] > 0 ) {
-			$this->send_event( 'Subscription Started', $subscriber_data, $properties );
-		}
+		$this->send_event( 'Subscription Started', $subscriber_data, $properties );
 	}
 
 	/**
