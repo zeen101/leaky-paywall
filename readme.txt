@@ -1,10 +1,10 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 6.9.0
+Tested up to: 6.9.2
 Requires PHP: 7.4
-Stable tag: 4.22.6
-Tags: paywall, subscriptions, subscriber, membership, metered paywall
+Stable tag: 5.0
+Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,36 +12,177 @@ The subscription engine for news & niche publishers.
 
 == Description ==
 
-[Leaky Paywall](https://leakypaywall.com/) is a subscription management platform built natively for WordPress. It lets publishers and developers implement a highly customizable subscription system for news, magazine, and content creators.
+[Leaky Paywall](https://leakypaywall.com/) is the most flexible **paywall and subscription plugin for WordPress**. Launch a metered paywall, grow your email list with a registration wall, and sell paid subscriptions — all while keeping full control of your subscriber data inside WordPress.
 
-Our open-source solution offers a suite of tools to nurture reader engagement, streamline subscription processes, and maximize revenue opportunities, all while ensuring compliance with SCA and GDPR regulations.
+Trusted by **800+ publishers worldwide**, including local newsrooms, niche magazines, B2B media companies, and independent content creators.
 
-Leaky Paywall flexibility presents an opportunity to tailor the subscription experience to fit the unique needs of each publisher.
+Leaky Paywall makes it easy to launch a subscription business without expensive enterprise software. Install the plugin, activate List Builder, and start building your audience in minutes.
 
-**Key features**
+= Launch a Paywall in Minutes =
 
-* Content restrictions include articles, categories/tags, custom post types, and multimedia content like PDFs, videos, and audio files
-* Customizable paywall settings (metered, dynamic, hybrid, hard, time-wall)
-* Customize access using our hooks and filters
-* Content indexed by search engines and socially shareable via metering or referrer source
-* Subscriber only newsletter capabilities
-* Group, IP address and corporate subscriptions
-* Donations
-* [UniPress](https://leakypaywall.com/unipress-apps/) iOS and Android mobile apps
+With Leaky Paywall you can:
+
+* Launch a **metered paywall**
+* Add **paid subscriptions with Stripe**
+* Capture reader emails with a **registration wall**
+* Restrict content anywhere on your site
+* Keep **full control of your subscriber data**
+
+Everything runs **natively inside WordPress** — no external platform required.
+
+= What's Included Free in Leaky Paywall =
+
+Leaky Paywall includes powerful tools to start building your audience and monetizing your content right away.
+
+== 🔓 List Builder — Registration Wall ==
+
+List Builder is a prebuilt **NYT-style registration wall** that turns anonymous readers into known subscribers.
+
+Instead of popups, readers are prompted to register or log in seamlessly to continue reading.
+
+* Activate in minutes — no design or development required
+* Combined login + registration flow modeled after major news publishers
+* Mobile-friendly and fully styled out of the box
+* Grow your email list faster than traditional newsletter popups
+* Export registered readers to your email platform or send via Zapier
+* Sync subscribers with CRM integrations available on paid plans
+
+== 💳 Multiple Subscription Levels ==
+
+Create as many subscription tiers as your business needs.
+
+* Free, premium, annual, or VIP subscription tiers
+* Unlimited levels with no upfront license cost
+* Powered by Stripe with Apple Pay and Google Pay support
+* Start free with **10% revenue share on paid subscriptions**
+* Upgrade anytime to reduce or remove the revenue share
+
+== 📈 Publisher Dashboard ==
+
+A dedicated dashboard inside WordPress gives you an instant view of your subscription business.
+
+See:
+
+* Revenue trends
+* New subscriber registrations
+* Paid subscription activity
+* Top performing content
+
+All directly inside your WordPress admin.
+
+== 🛡️ Flexible Paywall & Content Control ==
+
+Leaky Paywall supports multiple paywall models so you can monetize your content your way.
+
+* Metered paywalls
+* Hard paywalls
+* Dynamic and hybrid paywalls
+* Restrict content by post, category, tag, taxonomy, or post type
+* Restrict individual content blocks within articles
+* Customizable paywall messaging
+* Subscriber management tools
+* Stripe payment processing (Verified Stripe Partner)
+* REST API and developer hooks
+
+= Upgrade to Leaky Paywall Pro =
+
+As your subscription business grows, Leaky Paywall Pro unlocks powerful tools used by professional publishers.
+
+== Revenue & Monetization ==
+
+* **Reduce or remove the 10% revenue share**
+* Recurring subscriptions
+* Free trials and promotional coupons
+* Bulk, corporate, and group subscriptions
+* IP-based subscriptions for organizations
+
+== Data & Insights ==
+
+* **Subscriber Insights** — identify readers most likely to subscribe
+* Churn risk alerts
+* Top converting content reports
+* Subscriber behavior trends
 * Incognito browsing blocking
-* Registration wall for email list building
-* Multiple-website access via MultiPass
-* CRM integrations such as MailChimp, HubSpot, ZOHO, Campaign Monitor, Pipedrive, and Zapier
-* Circulation software integration such as simplecirc, Darwin, Omeda, PSA, PCS, MagHub, RunMags, Interlink
-* Payment gateways include Stripe (we are a [Stripe Verified Partner](https://stripe.com/partners/leaky-paywall)), Authorize.net, PayPal, Apple Pay, Google pay, WooCommerce, and 100s more
-* Insights provides actionable data from subscriber behavior
-* Leaky Paywall's ecosystem is further enriched with over [40 add-ons](https://leakypaywall.com/downloads/category/leaky-paywall-addons/), enabling functionalities like recurring payments, trial subscriptions, pay-per-post access, multiple subscription levels, premium archive access, and custom registration fields. For developers looking to extend the platform's capabilities, the add-on system provides a flexible way to meet the diverse needs of publishers.
 
-The platform is backed by extensive [documentation](https://docs.leakypaywall.com/), Zoom level support and a community of contributors on [GitHub](https://github.com/zeen101/leaky-paywall), encouraging ongoing development and innovation.
+== Integrations & Extensions ==
 
-This core plugin lets you set up 1 non-recurring subscription level with Stripe or PayPal integration. It also supports all of our [extensions](https://leakypaywall.com/downloads/category/leaky-paywall-addons/).
+Leaky Paywall integrates with the tools publishers already use.
 
-Learn more about [Leaky Paywall](https://leakypaywall.com/) or [grab a demo](https://leakypaywall.com/demo/). We would love to show you around.
+* Salesforce
+* HubSpot
+* Mailchimp
+* Zapier
+* simplecirc
+* Omeda
+* WooCommerce
+
+== Flowletter Newsletters ==
+
+Create and send newsletters directly inside WordPress with **Flowletter**.
+
+Subscribers are automatically logged in when clicking from your newsletter, eliminating paywall friction and improving conversion.
+
+Includes:
+
+* Email automation
+* Welcome sequences
+* Free and paid newsletter tiers
+* Subscriber segmentation
+
+== Mobile Apps with UniPress ==
+
+Launch native **iOS and Android apps** connected to your WordPress site.
+
+* WordPress content sync via API
+* Paywall restrictions honored
+* Push notifications
+* Easy subscriber login
+
+Leaky Paywall currently offers **50+ extensions** to expand your subscription business.
+
+== Support ==
+
+Paid plans include **priority support**, onboarding assistance, and dedicated publisher success guidance.
+
+[Upgrade to Leaky Paywall Pro](https://leakypaywall.com/upgrade-to-leaky-paywall-pro/)
+
+= Perfect For =
+
+Leaky Paywall is used by publishers of all sizes, including:
+
+* Local news organizations launching digital subscriptions
+* Niche magazines and membership publications
+* B2B publishers selling premium research
+* Independent writers monetizing their audience
+* Content creators building subscription communities
+
+Unlike hosted platforms like Substack or Ghost, **you retain full control of your subscriber data, content, and revenue inside WordPress.**
+
+= Why Publishers Choose Leaky Paywall =
+
+* **WordPress Native** — subscribers are stored as WordPress users
+* **Free to Start** — launch without upfront costs
+* **Flexible Monetization** — metered, hard, or hybrid paywalls
+* **Full Developer Control** — extensive hooks, filters, and APIs
+* **Trusted by 800+ publishers worldwide**
+
+Leaky Paywall is backed by extensive documentation and an active development community.
+
+= Get Started =
+
+Leaky Paywall is free.
+
+Install the plugin, activate List Builder, and start growing your audience today.
+
+Ready to unlock advanced tools and keep more of your subscription revenue?
+
+Upgrade to **Leaky Paywall Pro** for recurring subscriptions, deeper analytics, and powerful integrations.
+
+* Learn more at https://leakypaywall.com/
+* Documentation: https://docs.leakypaywall.com/
+* Publisher resources: https://publisherrevenue.com/
+* Paywall Podcast: https://leakypaywall.com/paywall-podcast/
+* YouTube: https://www.youtube.com/@leakypaywall
 
 == Installation ==
 
@@ -52,21 +193,68 @@ Learn more about [Leaky Paywall](https://leakypaywall.com/) or [grab a demo](htt
 
 = How does Leaky Paywall work? =
 
-The Leaky Paywall meter restricts by X number of free articles over a Y time period. days, weeks, months, years. There is a visibility setting on the post edit screen you can use to override the global meter setting. EG: make an article always free or always require a subscription
+The Leaky Paywall meter restricts by X number of free articles over a Y time period (days, weeks, months, years). There is a visibility setting on the post edit screen you can use to override the global meter setting — for example, make an article always free or always require a subscription.
+
+= What is List Builder? =
+
+List Builder is a prebuilt registration wall and login system modeled after the New York Times. It prompts readers to register with their email to continue reading, building your email list 20% faster than traditional popup newsletter prompts. Registration and login happen in the same seamless flow.
+
+= How does pricing work? =
+
+Leaky Paywall 5.0 is free to install and use. If you add paid subscription levels, the free plan includes a 10% revenue share on new paid subscriptions — you only pay when you make money. Upgrade to a paid plan at any time to reduce or completely remove the revenue share.
 
 = What payment gateways do you support? =
 
-We support Stripe and PayPal by default. CyberSource and ESP requires some setup, and other gateways can be integrated with our API. We highly recommend Stripe to give both you and your subscribers a state-of-the-art experience.
+We support Stripe by default and are a Stripe Verified Partner. Apple Pay, Google Pay, and other methods are supported through Stripe. Paid plans unlock hundreds of additional international payment gateways via WooCommerce integration.
 
-= What kind of subscriptions can I create with Leaky Paywall? =
+= What kind of subscriptions can I create? =
 
-You can sell daily, weekly, monthly, and annual subscriptions, both one time and recurring. You can also offer a free subscription in exchange for an email address.
+You can create multiple subscription tiers — free, premium, annual, VIP, and more. The free plugin supports one-time payments. Recurring payments, trials, and coupons are available on paid plans.
 
 = If I deactivate Leaky Paywall will I lose all my subscriber data? =
 
 You can deactivate Leaky Paywall at any time without losing any subscriber data. All subscribers are stored as WordPress users in your database.
 
 == Changelog ==
+
+= 5.0 =
+Major release introducing List Builder registration walls, a new Publisher Dashboard, onboarding improvements, deeper subscriber management tools, and expanded Stripe integration.
+
+== New ==
+* List Builder added to core plugin for inline authentication and registration flows
+* Multiple subscription levels restored to core functionality
+* New onboarding wizard for faster setup
+* New Publisher Dashboard with subscriber and revenue overview
+* New Tools page with Import, Export, and Debug Log utilities
+* Insights integration for tracking paywall impressions and nag statistics
+* New email administration interface
+* Subscription change flow added to the main registration form
+* New subscriber statuses: expired, pending_cancel, and past_due
+* Subscriber status transition logging and history on subscriber profiles
+* Stripe webhook refund handling
+* Transaction filtering (basic filters and date filters)
+* Ability to block content using `0` in access settings
+* Search engine bot bypass setting for SEO indexing
+* Paywall schema markup (JSON-LD) for restricted content
+* Terms and conditions settings
+* REST API endpoints for Leaky Paywall subscribers
+
+== Improved ==
+* Query performance improvements for Insights data
+* Content restriction checks moved to REST API
+* Updated WordPress dashboard widget with improved data display
+* Migration script updated to use Action Scheduler
+* Admin interface styling improvements (dashboard, transactions, subscribers, settings)
+* CLS (Cumulative Layout Shift) styling improvements
+* Stripe Connect setup flow with improved state verification
+* General code cleanup and uninstall cleanup
+
+== Fixed ==
+* Transaction deduplication checks
+* Missing `isset()` check for connected_account_id
+* Missing `isset()` check for amount_paid in Stripe object
+* Float precision issue in price handling
+* Translation string issues
 
 = 4.22.6 =
 * Add fix for low priority broken access control reported by patchstack
