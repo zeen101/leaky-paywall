@@ -1184,6 +1184,8 @@ function leaky_paywall_connect_maybe_process_return()
 			$settings['live_secret_key'] = $data->secret_key;
 		}
 
+		$settings['test_mode'] = 'off';
+
 		update_leaky_paywall_settings($settings);
 
 		delete_transient('lp_connect_state_' . get_current_user_id());

@@ -7,7 +7,7 @@ $connect_url = $onboarding->get_connect_url();
 	<h2>Connect Your Stripe Account (optional)</h2>
 	<p>Connect your Stripe account to start accepting payments. Stripe securely processes credit cards and deposits funds directly into your bank account.</p>
 	<p>With Leaky Paywall, a 10% revenue share is applied to payments. There are no setup fees, monthly fees, or hidden charges.</p>
-	<p>As your publication grows, you can <a target="_blank" href="https://leakypaywall.com/">upgrade to a paid Leaky Paywall plan</a> at any time to reduce or remove the revenue share.</p>
+	<p>As your publication grows, you can <a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=onboarding&utm_content=upgrade-to-pro&utm_campaign=lp">upgrade to a paid Leaky Paywall plan</a> at any time to reduce or remove the revenue share.</p>
 
 	<div class="leaky-paywall-onboarding--stripe-connect">
 		<p><a href="<?php echo esc_url($connect_url); ?>" class="button-primary large">Connect to Stripe <i class="dashicons dashicons-arrow-right-alt"></i></a></p>
