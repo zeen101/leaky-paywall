@@ -4178,6 +4178,35 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		if (in_array('subscriber', $user->roles, true)) {
 
+			$stripe_cancel_note = '';
+			$mode               = leaky_paywall_get_current_mode();
+			$site               = leaky_paywall_get_current_site();
+			$subscriber_id      = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+			if ( $subscriber_id && strpos( $subscriber_id, 'cus_' ) === 0 ) {
+				$stripe = leaky_paywall_initialize_stripe_api();
+				try {
+					$subs = $stripe->subscriptions->all(
+						array(
+							'customer' => $subscriber_id,
+							'status'   => 'all',
+						),
+						leaky_paywall_get_stripe_connect_params()
+					);
+					$cancelable = array( 'active', 'trialing', 'past_due', 'incomplete' );
+					foreach ( $subs->data as $sub ) {
+						if ( ! in_array( $sub->status, $cancelable, true ) ) {
+							continue;
+						}
+						$stripe->subscriptions->cancel( $sub->id, array(), leaky_paywall_get_stripe_connect_params() );
+						leaky_paywall_log( $user->user_email, 'Stripe subscription ' . $sub->id . ' cancelled on account deletion' );
+					}
+				} catch ( \Stripe\Exception\ApiErrorException $e ) {
+					$stripe_cancel_note = '<p><strong>Note:</strong> An error occurred while cancelling the Stripe subscription: ' . esc_html( $e->getMessage() ) . '</p>';
+					leaky_paywall_log( $user->user_email, 'Stripe cancellation error on account deletion: ' . $e->getMessage() );
+				}
+			}
+
 			wp_delete_user($user->ID);
 
 			do_action('leaky_paywall_after_user_deleted', $user);
@@ -4196,7 +4225,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			$headers[] = 'Reply-To: ' . $from_email;
 			$headers[] = 'Content-Type: text/html; charset=UTF-8';
 
-			$admin_message = '<p>The user ' . $user->user_email . ' has deleted their account.</p>';
+			$admin_message = '<p>The user ' . $user->user_email . ' has deleted their account.</p>' . $stripe_cancel_note;
 
 			/* Translators: %s - site name */
 			wp_mail($admin_emails, sprintf(esc_attr__('User Account Deleted on %s', 'leaky-paywall'), $site_name), $admin_message, $headers);
