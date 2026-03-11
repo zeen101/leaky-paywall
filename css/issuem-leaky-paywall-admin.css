@@ -1028,6 +1028,7 @@ input[type="submit"].lp-inline-button {
   font-size: 13px;
   color: #1d2327;
   min-height: 32px;
+  padding-right: 25px;
 }
 
 .leaky-paywall_page_leaky-paywall-subscribers .tablenav.top .button {
