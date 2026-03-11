@@ -144,10 +144,12 @@
           if (step == "signup") {
             const email = (fd.get("email") || "").toString().trim();
             const password = (fd.get("password") || "").toString();
+            const website = (fd.get("website") || "").toString();
 
-            const data = await postJson(LP_LIST_BUILDER.signupUrl, {
+            await postJson(LP_LIST_BUILDER.signupUrl, {
               email,
               password,
+              website,
               current_url: window.location.href.split("#")[0],
             });
 
@@ -160,7 +162,7 @@
             const email = (fd.get("email") || "").toString().trim();
             const password = (fd.get("password") || "").toString();
 
-            const data = await postJson(LP_LIST_BUILDER.loginUrl, {
+            await postJson(LP_LIST_BUILDER.loginUrl, {
               email,
               password,
               current_url: window.location.href.split("#")[0],
@@ -186,7 +188,7 @@
             const token = (fd.get("token") || "").toString();
             const password = (fd.get("password") || "").toString();
 
-            const data = await postJson(LP_LIST_BUILDER.pwResetConfirmUrl, { email, token, password });
+            await postJson(LP_LIST_BUILDER.pwResetConfirmUrl, { email, token, password });
 
             showSuccessAndReload(form, "Signing you in…");
             return;

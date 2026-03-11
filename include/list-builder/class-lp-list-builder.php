@@ -179,6 +179,23 @@ class LP_List_Builder
             ]);
         }
 
+        if ( ! empty( $request->get_param('website') ) ) {
+            return new WP_REST_Response([
+                'ok'      => false,
+                'error'   => 'honeypot',
+                'message' => __( 'Registration could not be completed.', 'leaky-paywall' ),
+            ], 400);
+        }
+
+        $validation_error = apply_filters( 'lp_list_builder_signup_validation', '', $request );
+        if ( ! empty( $validation_error ) ) {
+            return new WP_REST_Response([
+                'ok'      => false,
+                'error'   => 'validation_failed',
+                'message' => $validation_error,
+            ], 400);
+        }
+
         if (email_exists($email)) {
             return new WP_REST_Response([
                 'ok'    => false,
@@ -574,6 +591,10 @@ class LP_List_Builder
             </div>
 
             <p><?php esc_html_e( 'By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy.', 'leaky-paywall' ); ?></p>
+
+            <input name="website" type="text" value="" autocomplete="off" tabindex="-1" style="display:none !important; position:absolute; left:-9999px;" />
+
+            <?php do_action( 'lp_list_builder_signup_form_fields', $email ); ?>
 
             <button type="submit" class="Slider__ExpandedButton"><?php esc_html_e( 'Create account', 'leaky-paywall' ); ?></button>
 
