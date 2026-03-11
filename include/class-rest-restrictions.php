@@ -692,7 +692,7 @@ class Leaky_Paywall_REST_Restrictions {
 	public function get_subscribe_nag() {
 		$content     = get_the_content( null, false, $this->post_id );
 		$message     = $this->the_content_paywall_message();
-		$new_content = $this->get_nag_excerpt( $content ) . $message;
+		$new_content = $message;
 
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content, $this->post_id );
 	}
