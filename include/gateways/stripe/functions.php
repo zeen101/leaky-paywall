@@ -904,6 +904,22 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 		return;
 	}
 
+	// Deduplication: if the webhook already processed this payment, skip.
+	$recent_transaction = get_posts( array(
+		'post_type'      => 'lp_transaction',
+		'posts_per_page' => 1,
+		'post_status'    => 'publish',
+		'date_query'     => array( array( 'after' => '60 seconds ago' ) ),
+		'meta_query'     => array(
+			array( 'key' => '_subscriber_id', 'value' => $pi->customer ),
+		),
+	) );
+
+	if ( ! empty( $recent_transaction ) ) {
+		leaky_paywall_log( $pi->customer, 'stripe redirect handler skipped - already processed by webhook' );
+		return;
+	}
+
 	$incomplete_id = '';
 
 	try {
@@ -924,6 +940,10 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 
 	$user_data = get_post_meta($incomplete_id, '_user_data', true);
 	$field_data = get_post_meta($incomplete_id, '_field_data', true);
+
+	// Clean up incomplete user early to prevent the webhook handler from also processing.
+	leaky_paywall_cleanup_incomplete_user($cu->email);
+
 	$user = get_user_by('email', $user_data['email']);
 	$level = get_leaky_paywall_subscription_level($user_data['level_id']);
 	$plan_id = '';
@@ -1004,8 +1024,6 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 	if (isset($field_data['lp_nag_loc'])) {
 		update_post_meta($transaction_id, '_nag_location_id', $field_data['lp_nag_loc']);
 	}
-
-	leaky_paywall_cleanup_incomplete_user($user_data['email']);
 
 	leaky_paywall_email_subscription_status($user_id, $status, $subscriber_data);
 
