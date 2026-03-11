@@ -19,6 +19,29 @@ $plan          = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode .
 
 $stripe = leaky_paywall_initialize_stripe_api();
 
+if ( isset( $_POST['lp_update_billing_address_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['lp_update_billing_address_nonce'] ) ), 'lp_update_billing_address' ) && $subscriber_id ) {
+
+	$billing_address = array(
+		'name'        => isset( $_POST['lp_billing_name'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_name'] ) ) : '',
+		'line1'       => isset( $_POST['lp_billing_line1'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_line1'] ) ) : '',
+		'line2'       => isset( $_POST['lp_billing_line2'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_line2'] ) ) : '',
+		'city'        => isset( $_POST['lp_billing_city'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_city'] ) ) : '',
+		'state'       => isset( $_POST['lp_billing_state'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_state'] ) ) : '',
+		'postal_code' => isset( $_POST['lp_billing_postal_code'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_postal_code'] ) ) : '',
+		'country'     => isset( $_POST['lp_billing_country'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_POST['lp_billing_country'] ) ) ) : '',
+	);
+
+	update_user_meta( $user->ID, '_lp_billing_address', $billing_address );
+
+	try {
+		leaky_paywall_stripe_update_billing_address( $stripe, $subscriber_id, $billing_address );
+		$update_billing_address_success = __( 'Your billing address has been updated.', 'leaky-paywall' );
+	} catch ( \Stripe\Exception\ApiErrorException $e ) {
+		$body                          = $e->getJsonBody();
+		$update_billing_address_error  = $body['error']['message'];
+	}
+}
+
 if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['lp_update_card_form_field'] ) ), 'lp_update_card_form' ) && isset( $_POST['stripeToken'] ) && $subscriber_id ) {
 
 	$payment_status   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_status' . $site, true );
@@ -314,6 +337,70 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_k
 			case 'payment_info':
 
 				do_action('leaky_paywall_profile_your_payment_info_start');
+
+				if ( 'stripe' === $payment_gateway && 'on' === $settings['stripe_billing_address'] ) :
+
+					$billing_address = get_user_meta( $user->ID, '_lp_billing_address', true );
+					if ( ! is_array( $billing_address ) ) {
+						$billing_address = array();
+					}
+					$billing_address = wp_parse_args( $billing_address, array(
+						'name'        => '',
+						'line1'       => '',
+						'line2'       => '',
+						'city'        => '',
+						'state'       => '',
+						'postal_code' => '',
+						'country'     => '',
+					) );
+
+					?>
+					<h2 class="leaky-paywall-account-page-title"><?php esc_html_e( 'Billing Address', 'leaky-paywall' ); ?></h2>
+
+					<?php if ( ! empty( $update_billing_address_success ) ) : ?>
+						<div class="leaky_paywall_message success"><p><?php echo esc_html( $update_billing_address_success ); ?></p></div>
+					<?php endif; ?>
+					<?php if ( ! empty( $update_billing_address_error ) ) : ?>
+						<div class="leaky_paywall_message error"><p><?php echo esc_html( $update_billing_address_error ); ?></p></div>
+					<?php endif; ?>
+
+					<form id="leaky-paywall-billing-address-form" action="<?php the_permalink(); ?>?action=payment_info" method="POST">
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-name"><?php esc_html_e( 'Name on Card', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-name" name="lp_billing_name" value="<?php echo esc_attr( $billing_address['name'] ); ?>" />
+						</p>
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-line1"><?php esc_html_e( 'Address Line 1', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-line1" name="lp_billing_line1" value="<?php echo esc_attr( $billing_address['line1'] ); ?>" />
+						</p>
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-line2"><?php esc_html_e( 'Address Line 2', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-line2" name="lp_billing_line2" value="<?php echo esc_attr( $billing_address['line2'] ); ?>" />
+						</p>
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-city"><?php esc_html_e( 'City', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-city" name="lp_billing_city" value="<?php echo esc_attr( $billing_address['city'] ); ?>" />
+						</p>
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-state"><?php esc_html_e( 'State / Province', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-state" name="lp_billing_state" value="<?php echo esc_attr( $billing_address['state'] ); ?>" />
+						</p>
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-postal-code"><?php esc_html_e( 'Postal Code', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-postal-code" name="lp_billing_postal_code" value="<?php echo esc_attr( $billing_address['postal_code'] ); ?>" />
+						</p>
+						<p class="form-row">
+							<label class="leaky-paywall-field-label" for="lp-billing-country"><?php esc_html_e( 'Country (2-letter code)', 'leaky-paywall' ); ?></label>
+							<input type="text" class="leaky-paywall-field-input" id="lp-billing-country" name="lp_billing_country" maxlength="2" value="<?php echo esc_attr( $billing_address['country'] ); ?>" placeholder="US" />
+						</p>
+						<?php wp_nonce_field( 'lp_update_billing_address', 'lp_update_billing_address_nonce' ); ?>
+						<p class="form-row">
+							<input type="submit" class="button button-primary" value="<?php esc_attr_e( 'Update Billing Address', 'leaky-paywall' ); ?>" />
+						</p>
+					</form>
+
+				<?php endif;
+
 				do_action('leaky_paywall_profile_your_subscription_end');
 
 			default:

@@ -1259,6 +1259,111 @@ function leaky_paywall_stripe_sync_email_change( $user_id, $old_email, $new_emai
 }
 add_action( 'leaky_paywall_subscriber_email_changed', 'leaky_paywall_stripe_sync_email_change', 10, 3 );
 
+/**
+ * Update billing address on both the Stripe customer and their default payment method.
+ *
+ * @param \Stripe\StripeClient $stripe
+ * @param string               $customer_id  Stripe customer ID.
+ * @param array                $billing      Keys: name, line1, line2, city, state, postal_code, country.
+ */
+function leaky_paywall_stripe_update_billing_address( $stripe, $customer_id, $billing ) {
+	$address = array(
+		'line1'       => $billing['line1'] ?? '',
+		'line2'       => $billing['line2'] ?? '',
+		'city'        => $billing['city'] ?? '',
+		'state'       => $billing['state'] ?? '',
+		'postal_code' => $billing['postal_code'] ?? '',
+		'country'     => $billing['country'] ?? '',
+	);
+	$name = $billing['name'] ?? '';
+
+	$update_args = array( 'address' => $address );
+	if ( $name ) {
+		$update_args['name'] = $name;
+	}
+	$stripe->customers->update( $customer_id, $update_args, leaky_paywall_get_stripe_connect_params() );
+
+	// Also update the billing details on all payment methods attached to the customer.
+	$billing_details = array( 'address' => $address );
+	if ( $name ) {
+		$billing_details['name'] = $name;
+	}
+
+	$payment_methods = $stripe->paymentMethods->all(
+		array( 'customer' => $customer_id ),
+		leaky_paywall_get_stripe_connect_params()
+	);
+
+	foreach ( $payment_methods->data as $pm ) {
+		$stripe->paymentMethods->update(
+			$pm->id,
+			array( 'billing_details' => $billing_details ),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	}
+}
+
+/**
+ * After registration, sync the billing address captured by Stripe's Address Element
+ * to the Stripe customer record and to user meta.
+ *
+ * @param array $subscriber_data
+ */
+function leaky_paywall_stripe_sync_billing_address( $subscriber_data ) {
+	$settings = get_leaky_paywall_settings();
+
+	if ( 'on' !== $settings['stripe_billing_address'] ) {
+		return;
+	}
+
+	if ( empty( $subscriber_data['payment_gateway'] ) || 'stripe' !== $subscriber_data['payment_gateway'] ) {
+		return;
+	}
+
+	$customer_id = isset( $subscriber_data['subscriber_id'] ) ? $subscriber_data['subscriber_id'] : '';
+	$user_id     = isset( $subscriber_data['user_id'] ) ? absint( $subscriber_data['user_id'] ) : 0;
+
+	if ( empty( $customer_id ) || empty( $user_id ) ) {
+		return;
+	}
+
+	$billing_name        = isset( $_POST['lp_billing_name'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_name'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$billing_line1       = isset( $_POST['lp_billing_line1'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_line1'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$billing_line2       = isset( $_POST['lp_billing_line2'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_line2'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$billing_city        = isset( $_POST['lp_billing_city'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_city'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$billing_state       = isset( $_POST['lp_billing_state'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_state'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$billing_postal_code = isset( $_POST['lp_billing_postal_code'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_postal_code'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$billing_country     = isset( $_POST['lp_billing_country'] ) ? sanitize_text_field( wp_unslash( $_POST['lp_billing_country'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+	if ( empty( $billing_line1 ) && empty( $billing_postal_code ) ) {
+		return;
+	}
+
+	$address = array(
+		'line1'       => $billing_line1,
+		'line2'       => $billing_line2,
+		'city'        => $billing_city,
+		'state'       => $billing_state,
+		'postal_code' => $billing_postal_code,
+		'country'     => $billing_country,
+	);
+
+	update_user_meta( $user_id, '_lp_billing_address', array_merge( array( 'name' => $billing_name ), $address ) );
+
+	try {
+		$stripe      = leaky_paywall_initialize_stripe_api();
+		$update_args = array( 'address' => $address );
+		if ( ! empty( $billing_name ) ) {
+			$update_args['name'] = $billing_name;
+		}
+		$stripe->customers->update( $customer_id, $update_args, leaky_paywall_get_stripe_connect_params() );
+		leaky_paywall_log( $customer_id, 'stripe billing address sync: updated customer' );
+	} catch ( \Exception $e ) {
+		leaky_paywall_log( $e->getMessage(), 'stripe billing address sync: error for customer ' . $customer_id );
+	}
+}
+add_action( 'leaky_paywall_after_process_registration', 'leaky_paywall_stripe_sync_billing_address', 10, 1 );
+
 function leaky_paywall_ensure_app_api_key() {
 	$settings = get_leaky_paywall_settings();
 

@@ -9,6 +9,7 @@
         }
 
         let elements;
+        let billingAddress = null;
 
         // Stripe Checkout
         $('#checkout').click(function(e) {
@@ -40,12 +41,8 @@
 
             $.post(leaky_paywall_stripe_registration_ajax.ajaxurl, data, function (resp) {
 
-                console.log('response:');
-                console.log(resp);
-
                 if (resp.errors) {
                     $.each(resp.errors, function (i, value) {
-                        console.log(value);
                         $("#leaky-paywall-registration-errors").append(
                         "<p class='leaky-paywall-registration-error'>" +
                             value.message +
@@ -114,21 +111,24 @@
             paymentElement.mount("#payment-element");
 
             if ( 'on' == leaky_paywall_stripe_registration_ajax.billing_address ) {
-                // Create and mount the Address Element in billing mode
                 const addressElement = elements.create("address", {
                     mode: "billing",
                 });
 
                 addressElement.mount("#address-element");
 
-                // this stores on the payment method, but not the customer.  Need to update the customer after payment with these billing address details
                 addressElement.on('change', (event) => {
-                    if (event.complete){
-                        // Extract potentially complete address
-                      //  const address = event.value.address;
+                    if (event.complete) {
+                        billingAddress = event.value;
+                        $('input[name="lp_billing_name"]').val(billingAddress.name || '');
+                        $('input[name="lp_billing_line1"]').val(billingAddress.address.line1 || '');
+                        $('input[name="lp_billing_line2"]').val(billingAddress.address.line2 || '');
+                        $('input[name="lp_billing_city"]').val(billingAddress.address.city || '');
+                        $('input[name="lp_billing_state"]').val(billingAddress.address.state || '');
+                        $('input[name="lp_billing_postal_code"]').val(billingAddress.address.postal_code || '');
+                        $('input[name="lp_billing_country"]').val(billingAddress.address.country || '');
                     }
                 });
-
             }
 
         }
@@ -157,8 +157,6 @@
 
         async function handleSubmit(e) {
             e.preventDefault();
-
-            console.log('lp form submit 1');
 
             let subButton = document.getElementById('leaky-paywall-submit');
             let emailAddress = $('input[name="email_address"]').val();
@@ -191,7 +189,6 @@
                     }
                     resetSubButton();
                 } else {
-                    console.log('submit form 1');
                     let form$ = jQuery('#leaky-paywall-payment-form');
                     form$.get(0).submit();
                 }
@@ -210,7 +207,6 @@
                 if (paymentIntent && paymentIntent.id) {
 
                     if ( paymentIntent.status == 'succeeded') {
-                        console.log('submit form 2');
                         let form$ = jQuery('#leaky-paywall-payment-form');
                         form$.get(0).submit();
                     } else {
@@ -229,9 +225,6 @@
                 }
             }
 
-            console.log('lp submit form after confirm payment');
-
-
             // This point will only be reached if there is an immediate error when
             // confirming the payment. Otherwise, your customer will be redirected to
             // your `return_url`. For some payment methods like iDEAL, your customer will
@@ -247,7 +240,6 @@
         function showMessage(messageText) {
             const messageContainer = document.querySelector("#payment-message");
 
-            console.log('error: ' + messageText);
             messageContainer.classList.remove("hidden");
             messageContainer.textContent = messageText;
 

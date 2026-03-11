@@ -512,6 +512,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					<div id="address-element">
 						<!-- Elements will create form elements here -->
 					</div>
+					<input type="hidden" name="lp_billing_name" value="" />
+					<input type="hidden" name="lp_billing_line1" value="" />
+					<input type="hidden" name="lp_billing_line2" value="" />
+					<input type="hidden" name="lp_billing_city" value="" />
+					<input type="hidden" name="lp_billing_state" value="" />
+					<input type="hidden" name="lp_billing_postal_code" value="" />
+					<input type="hidden" name="lp_billing_country" value="" />
 				</div>
 			<?php
 			} ?>
