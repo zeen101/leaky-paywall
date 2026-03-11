@@ -73,6 +73,12 @@ class LP_Event_Tracking {
 
 		// Login.
 		add_action( 'wp_login', array( $this, 'on_login' ), 10, 2 );
+
+		// UTM capture.
+		$settings = get_leaky_paywall_settings();
+		if ( 'on' === ( $settings['insights_enable_utm_capture'] ?? 'on' ) ) {
+			add_action( 'wp_footer', array( $this, 'output_utm_capture_script' ) );
+		}
 	}
 
 	// ──────────────────────────────────────────────────────────────────────
@@ -237,12 +243,15 @@ class LP_Event_Tracking {
 			return;
 		}
 
-		$properties = array(
-			'gateway'  => isset( $meta['payment_gateway'] ) ? $meta['payment_gateway'] : '',
-			'amount'   => isset( $meta['price'] ) ? (float) $meta['price'] : 0,
-			'currency' => $this->get_currency(),
-			'plan'     => $this->get_level_name( isset( $meta['level_id'] ) ? $meta['level_id'] : '' ),
-			'status'   => isset( $meta['payment_status'] ) ? $meta['payment_status'] : '',
+		$properties = array_merge(
+			array(
+				'gateway'  => isset( $meta['payment_gateway'] ) ? $meta['payment_gateway'] : '',
+				'amount'   => isset( $meta['price'] ) ? (float) $meta['price'] : 0,
+				'currency' => $this->get_currency(),
+				'plan'     => $this->get_level_name( isset( $meta['level_id'] ) ? $meta['level_id'] : '' ),
+				'status'   => isset( $meta['payment_status'] ) ? $meta['payment_status'] : '',
+			),
+			$this->get_utm_properties()
 		);
 
 		$this->send_event( 'Registration', $subscriber_data, $properties );
@@ -679,6 +688,58 @@ class LP_Event_Tracking {
 	 */
 	private function filter_empty_values( $value ) {
 		return '' !== $value && null !== $value;
+	}
+
+	/**
+	 * Output a small JS snippet in the footer that captures UTM params from the
+	 * current URL and stores them in a 30-day cookie (lp_utm). Existing cookie
+	 * values are only overwritten when new UTM params are present in the URL,
+	 * so the first-touch source that brought the visitor is preserved until conversion.
+	 */
+	public function output_utm_capture_script() {
+		?>
+		<script>
+		(function () {
+			var params = new URLSearchParams(window.location.search);
+			var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+			var data = {};
+			keys.forEach(function (k) { var v = params.get(k); if (v) { data[k] = v; } });
+			if (!Object.keys(data).length) { return; }
+			var expires = new Date();
+			expires.setDate(expires.getDate() + 30);
+			document.cookie = 'lp_utm=' + encodeURIComponent(JSON.stringify(data))
+				+ '; expires=' + expires.toUTCString() + '; path=/; SameSite=Lax';
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Read UTM parameters from the lp_utm cookie set by output_utm_capture_script().
+	 *
+	 * @return array<string, string> Sanitized UTM properties, or an empty array.
+	 */
+	private function get_utm_properties() {
+		if ( empty( $_COOKIE['lp_utm'] ) ) {
+			return array();
+		}
+
+		$decoded = json_decode( stripslashes( $_COOKIE['lp_utm'] ), true );
+
+		if ( ! is_array( $decoded ) ) {
+			return array();
+		}
+
+		$allowed  = array( 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content' );
+		$filtered = array();
+
+		foreach ( $allowed as $key ) {
+			if ( ! empty( $decoded[ $key ] ) ) {
+				$filtered[ $key ] = sanitize_text_field( $decoded[ $key ] );
+			}
+		}
+
+		return $filtered;
 	}
 
 	/**

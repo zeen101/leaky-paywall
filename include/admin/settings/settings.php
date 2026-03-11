@@ -535,6 +535,16 @@ class Leaky_Paywall_Settings
 						</td>
 					</tr>
 					<tr>
+						<th><label for="insights_enable_utm_capture"><?php esc_html_e('UTM Capture', 'leaky-paywall'); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" id="insights_enable_utm_capture" name="insights_enable_utm_capture" value="on" <?php checked('on', $settings['insights_enable_utm_capture']); ?> />
+								<?php esc_html_e('Capture UTM parameters from visitor URLs and include them with subscription events', 'leaky-paywall'); ?>
+							</label>
+							<p class="description"><?php esc_html_e('When enabled, a small JavaScript snippet will store UTM parameters (utm_source, utm_medium, etc.) in a 30-day cookie. These are sent to Insights when a subscriber converts.', 'leaky-paywall'); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th><?php esc_html_e('Connection', 'leaky-paywall'); ?></th>
 						<td>
 							<button type="button" id="lp-test-insights-connection" class="button button-secondary" <?php echo empty($settings['insights_api_key']) ? 'disabled' : ''; ?>>
@@ -1556,6 +1566,7 @@ The %sitename% Team';
 				'post_tag_exceptions'                   => '',
 				'post_category_exceptions'              => '',
 				'insights_api_key'                      => '',
+				'insights_enable_utm_capture'           => 'on',
 				'enable_terms_and_conditions'           => 'off',
 				'terms_and_conditions_text'             => 'I agree to the [terms and conditions]',
 				'page_for_terms'                        => 0,
@@ -1757,6 +1768,8 @@ The %sitename% Team';
 				if (isset($_POST['insights_api_key'])) {
 					$settings['insights_api_key'] = sanitize_text_field(wp_unslash($_POST['insights_api_key']));
 				}
+
+				$settings['insights_enable_utm_capture'] = isset($_POST['insights_enable_utm_capture']) ? 'on' : 'off';
 			}
 
 			if ('emails' === $current_tab) {
