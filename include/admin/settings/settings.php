@@ -1486,7 +1486,7 @@ The %sitename% Team';
 				'custom_excerpt_length'                 => '',
 				'login_method'                          => 'traditional', // default over passwordless.
 				'post_types'                            => ACTIVE_ISSUEM ? array('article') : array('post'), /* Site Specific */
-				'free_articles'                         => 2,
+				'free_articles'                         => 0,
 				'cookie_expiration'                     => 30,
 				'cookie_expiration_interval'            => 'day',
 				'subscribe_login_message'               => __('<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'leaky-paywall'),
@@ -1563,7 +1563,7 @@ The %sitename% Team';
 					'post_types' => array(
 						'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
 						'taxonomy'      => 'all',
-						'allowed_value' => 2,
+						'allowed_value' => 0,
 					),
 				),
 				'levels'                                => array(

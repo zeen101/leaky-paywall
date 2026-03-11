@@ -135,6 +135,14 @@ class Leaky_Paywall_List_Builder_Settings
 
         $settings['enabled'] = isset($_POST['lp_listbuilder_enabled']) ? 'on' : '';
 
+        if ( 'on' === $settings['enabled'] ) {
+            $lp_settings = get_leaky_paywall_settings();
+            if ( empty( $lp_settings['enable_js_cookie_restrictions'] ) || 'on' !== $lp_settings['enable_js_cookie_restrictions'] ) {
+                $lp_settings['enable_js_cookie_restrictions'] = 'on';
+                update_leaky_paywall_settings( $lp_settings );
+            }
+        }
+
         if (isset($_POST['lp_listbuilder_level_id'])) {
             $settings['level_id'] = absint($_POST['lp_listbuilder_level_id']);
         }
