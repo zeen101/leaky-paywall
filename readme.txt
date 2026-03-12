@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 6.9.2
+Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 5.0
+Stable tag: 5.0.1
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -229,6 +229,19 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.0.1 =
+
+= New =
+* List Builder: Upgrade modal for logged-in free subscribers who hit the paywall, with independent enable/disable toggle and customizable heading, subheading, and button text
+* List Builder: Auto-enables JavaScript cookie restrictions when List Builder is activated
+* List Builder: Support for reCAPTCHA and Turnstile add-ons on the signup form
+
+= Improved =
+* Stripe billing address updates now apply to all attached payment methods, not just the default
+
+= Fixed =
+* Stripe PaymentMethod billing details not updating when customer's default payment method was unset
 
 = 5.0 =
 Major release introducing List Builder registration walls, a new Publisher Dashboard, onboarding improvements, deeper subscriber management tools, and expanded Stripe integration.
