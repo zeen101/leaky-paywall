@@ -178,6 +178,14 @@
 	border-bottom: none;
 }
 
+.lp-table td:first-child,
+.lp-table th:first-child {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .lp-table a {
 	color: #2271b1;
 	text-decoration: none;

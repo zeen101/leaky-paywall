@@ -138,20 +138,23 @@
             const newForm = qs(container, `form[data-step="${data.step}"]`);
             const pw = newForm && qs(newForm, 'input[name="password"]');
             if (pw) pw.focus();
+
+            if (data.step === 'signup') {
+              document.dispatchEvent(new CustomEvent('lp_list_builder_signup_form_rendered', { detail: { form: newForm } }));
+            }
+
             return;
           }
 
           if (step == "signup") {
-            const email = (fd.get("email") || "").toString().trim();
-            const password = (fd.get("password") || "").toString();
-            const website = (fd.get("website") || "").toString();
+            const payload = Object.fromEntries(fd.entries());
+            payload.current_url = window.location.href.split("#")[0];
 
-            await postJson(LP_LIST_BUILDER.signupUrl, {
-              email,
-              password,
-              website,
-              current_url: window.location.href.split("#")[0],
-            });
+            if (typeof window.lpListBuilderPreSignup === 'function') {
+              await window.lpListBuilderPreSignup(payload);
+            }
+
+            await postJson(LP_LIST_BUILDER.signupUrl, payload);
 
             showSuccessAndReload(form, "Your account has been created. Unlocking content...");
 
@@ -214,9 +217,22 @@
 
       document.addEventListener('leaky_paywall_shown', function(e) {
 
-          // Only show the slider for the subscribe nag.
-          if (e.detail.response.nag_type !== 'subscribe') {
+          var nagType = e.detail.response.nag_type;
+
+          if (nagType !== 'subscribe' && nagType !== 'upgrade') {
               return;
+          }
+
+          var subscribePanel = document.getElementById('lplb-subscribe-panel');
+          var upgradePanel   = document.getElementById('lplb-upgrade-panel');
+
+          if (nagType === 'upgrade') {
+              if (!LP_LIST_BUILDER.upgradeEnabled) { return; }
+              if (subscribePanel) subscribePanel.style.display = 'none';
+              if (upgradePanel)   upgradePanel.style.display   = '';
+          } else {
+              if (subscribePanel) subscribePanel.style.display = '';
+              if (upgradePanel)   upgradePanel.style.display   = 'none';
           }
 
           document.documentElement.style.overflow = "hidden";

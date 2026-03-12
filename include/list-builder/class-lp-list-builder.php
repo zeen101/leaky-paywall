@@ -47,6 +47,13 @@ class LP_List_Builder
         $button_color = !empty($settings['button_color']) ? $settings['button_color'] : '#E45637';
         $button_text_color = !empty($settings['button_text_color']) ? $settings['button_text_color'] : '#ffffff';
 
+        $upgrade_heading = !empty($settings['upgrade_heading']) ? $settings['upgrade_heading'] : 'Upgrade your subscription';
+        $upgrade_subheading = !empty($settings['upgrade_subheading']) ? $settings['upgrade_subheading'] : 'Get full access to all content.';
+        $upgrade_button_text = !empty($settings['upgrade_button_text']) ? $settings['upgrade_button_text'] : 'Upgrade Now';
+
+        $lp_settings = get_leaky_paywall_settings();
+        $subscribe_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
+
 ?>
 
         <style>
@@ -64,7 +71,8 @@ class LP_List_Builder
         <div id="lplb-portal">
             <div class="Slider__Container">
                 <div class="Slider Slider--scrolled">
-                    <div class="Slider__InnerContainer Slider__InnerContainer--scrolled">
+
+                    <div id="lplb-subscribe-panel" class="Slider__InnerContainer Slider__InnerContainer--scrolled">
                         <h1 class="Slider__ExpandedHeader"><?php echo esc_html($heading); ?></h1>
                         <div class="Slider__ExpandedSubHeader"><?php echo esc_html($subheading); ?></div>
                         <div class="Form__Container" data-lp-list-builder>
@@ -90,8 +98,18 @@ class LP_List_Builder
 
                         </div>
                     </div>
-                </div>
 
+                    <div id="lplb-upgrade-panel" class="Slider__InnerContainer Slider__InnerContainer--scrolled" style="display:none;">
+                        <h1 class="Slider__ExpandedHeader"><?php echo esc_html($upgrade_heading); ?></h1>
+                        <div class="Slider__ExpandedSubHeader"><?php echo esc_html($upgrade_subheading); ?></div>
+                        <?php if ( $subscribe_url ) : ?>
+                            <a href="<?php echo esc_url($subscribe_url); ?>" class="Slider__ExpandedButton" style="display:inline-block;text-align:center;text-decoration:none;">
+                                <?php echo esc_html($upgrade_button_text); ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -674,6 +692,10 @@ class LP_List_Builder
             true
         );
 
+        $lb_settings = get_option('lp-listbuilder', []);
+        $lp_settings = get_leaky_paywall_settings();
+        $subscribe_page_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
+
         wp_localize_script('lp-list-builder', 'LP_LIST_BUILDER', [
             'flowUrl'   => esc_url_raw(rest_url('lp-list-builder/v1/flow')),
             'signupUrl' => esc_url_raw(rest_url('lp-list-builder/v1/signup')),
@@ -681,7 +703,9 @@ class LP_List_Builder
             'pwResetRequestUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/request')),
             'pwResetVerifyUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/verify')),
             'pwResetConfirmUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/confirm')),
-            'nonce'     => wp_create_nonce('wp_rest')
+            'nonce'            => wp_create_nonce('wp_rest'),
+            'subscribeUrl'     => esc_url_raw( $subscribe_page_url ),
+            'upgradeEnabled'   => ( ! empty( $lb_settings['upgrade_enabled'] ) && 'on' === $lb_settings['upgrade_enabled'] ),
         ]);
 
         wp_enqueue_script('lp-list-builder');

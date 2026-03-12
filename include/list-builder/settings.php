@@ -42,6 +42,10 @@ class Leaky_Paywall_List_Builder_Settings
         <h3 class="hndle"><span>List Builder</span></h3>
 
         <table id="lp_listbuilder_settings" class="form-table">
+
+            <tr>
+                <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Logged-Out Messaging', 'leaky-paywall' ); ?></h4></th>
+            </tr>
             <tr>
                 <th rowspan="1"> <?php _e('Enable', 'leaky-paywall'); ?></th>
                 <td>
@@ -115,6 +119,39 @@ class Leaky_Paywall_List_Builder_Settings
             </tr>
 
 
+            <tr>
+                <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Logged-In Subscriber Messaging', 'leaky-paywall' ); ?></h4></th>
+            </tr>
+
+            <tr>
+                <th><?php esc_html_e( 'Enable', 'leaky-paywall' ); ?></th>
+                <td>
+                    <input type="checkbox" id="lp_listbuilder_upgrade_enabled" name="lp_listbuilder_upgrade_enabled" value="on" <?php checked( $settings['upgrade_enabled'], 'on' ); ?> />
+                    <label for="lp_listbuilder_upgrade_enabled"><?php esc_html_e( 'Show upgrade modal for logged-in subscribers who hit the paywall', 'leaky-paywall' ); ?></label>
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php esc_html_e( 'Heading', 'leaky-paywall' ); ?></th>
+                <td>
+                    <input type="text" class="large-text" name="upgrade_heading" value="<?php echo esc_attr( $settings['upgrade_heading'] ); ?>" />
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php esc_html_e( 'Subheading', 'leaky-paywall' ); ?></th>
+                <td>
+                    <input type="text" class="large-text" name="upgrade_subheading" value="<?php echo esc_attr( $settings['upgrade_subheading'] ); ?>" />
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php esc_html_e( 'Button Text', 'leaky-paywall' ); ?></th>
+                <td>
+                    <input type="text" class="regular-text" name="upgrade_button_text" value="<?php echo esc_attr( $settings['upgrade_button_text'] ); ?>" />
+                </td>
+            </tr>
+
         </table>
 
 <?php
@@ -175,6 +212,20 @@ class Leaky_Paywall_List_Builder_Settings
             $settings['button_text_color'] = sanitize_hex_color($_POST['button_text_color']);
         }
 
+        $settings['upgrade_enabled'] = isset($_POST['lp_listbuilder_upgrade_enabled']) ? 'on' : '';
+
+        if (isset($_POST['upgrade_heading'])) {
+            $settings['upgrade_heading'] = sanitize_text_field(wp_unslash($_POST['upgrade_heading']));
+        }
+
+        if (isset($_POST['upgrade_subheading'])) {
+            $settings['upgrade_subheading'] = sanitize_text_field(wp_unslash($_POST['upgrade_subheading']));
+        }
+
+        if (isset($_POST['upgrade_button_text'])) {
+            $settings['upgrade_button_text'] = sanitize_text_field(wp_unslash($_POST['upgrade_button_text']));
+        }
+
         $this->update_settings($settings);
     }
 
@@ -191,6 +242,10 @@ class Leaky_Paywall_List_Builder_Settings
             'text_color'                 => '#ffffff',
             'button_color'               => '#E45637',
             'button_text_color'          => '#ffffff',
+            'upgrade_enabled'            => '',
+            'upgrade_heading'            => 'Upgrade your subscription',
+            'upgrade_subheading'         => 'Get full access to all content.',
+            'upgrade_button_text'        => 'Upgrade Now',
         );
 
         $settings = get_option('lp-listbuilder');
