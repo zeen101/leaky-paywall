@@ -90,34 +90,6 @@ class Leaky_Paywall_List_Builder_Settings
                 </td>
             </tr>
 
-            <tr>
-                <th rowspan="1"> <?php _e('Background Color', 'leaky-paywall'); ?></th>
-                <td>
-                    <input type="color" id="background_color" name="background_color" value="<?php echo esc_attr($settings['background_color']); ?>" />
-                </td>
-            </tr>
-
-            <tr>
-                <th rowspan="1"> <?php _e('Text Color', 'leaky-paywall'); ?></th>
-                <td>
-                    <input type="color" id="text_color" name="text_color" value="<?php echo esc_attr($settings['text_color']); ?>" />
-                </td>
-            </tr>
-
-            <tr>
-                <th rowspan="1"> <?php _e('Button Color', 'leaky-paywall'); ?></th>
-                <td>
-                    <input type="color" id="button_color" name="button_color" value="<?php echo esc_attr($settings['button_color']); ?>" />
-                </td>
-            </tr>
-
-            <tr>
-                <th rowspan="1"> <?php _e('Button Text Color', 'leaky-paywall'); ?></th>
-                <td>
-                    <input type="color" id="button_text_color" name="button_text_color" value="<?php echo esc_attr($settings['button_text_color']); ?>" />
-                </td>
-            </tr>
-
 
             <tr>
                 <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Logged-In Subscriber Messaging', 'leaky-paywall' ); ?></h4></th>
@@ -149,6 +121,39 @@ class Leaky_Paywall_List_Builder_Settings
                 <th><?php esc_html_e( 'Button Text', 'leaky-paywall' ); ?></th>
                 <td>
                     <input type="text" class="regular-text" name="upgrade_button_text" value="<?php echo esc_attr( $settings['upgrade_button_text'] ); ?>" />
+                </td>
+            </tr>
+
+
+            <tr>
+                <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Colors', 'leaky-paywall' ); ?></h4></th>
+            </tr>
+
+            <tr>
+                <th rowspan="1"> <?php _e('Background Color', 'leaky-paywall'); ?></th>
+                <td>
+                    <input type="color" id="background_color" name="background_color" value="<?php echo esc_attr($settings['background_color']); ?>" />
+                </td>
+            </tr>
+
+            <tr>
+                <th rowspan="1"> <?php _e('Text Color', 'leaky-paywall'); ?></th>
+                <td>
+                    <input type="color" id="text_color" name="text_color" value="<?php echo esc_attr($settings['text_color']); ?>" />
+                </td>
+            </tr>
+
+            <tr>
+                <th rowspan="1"> <?php _e('Button Color', 'leaky-paywall'); ?></th>
+                <td>
+                    <input type="color" id="button_color" name="button_color" value="<?php echo esc_attr($settings['button_color']); ?>" />
+                </td>
+            </tr>
+
+            <tr>
+                <th rowspan="1"> <?php _e('Button Text Color', 'leaky-paywall'); ?></th>
+                <td>
+                    <input type="color" id="button_text_color" name="button_text_color" value="<?php echo esc_attr($settings['button_text_color']); ?>" />
                 </td>
             </tr>
 
