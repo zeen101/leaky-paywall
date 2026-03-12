@@ -26,6 +26,17 @@
             validateUserData();
         });
 
+        // Intercept Enter key during step 1 (account setup) — prevents native form submission
+        // which would bypass AJAX validation and fail server-side with no payment intent.
+        document.querySelector("#leaky-paywall-payment-form") && document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", function(e) {
+            if ($(".leaky-paywall-form-account-setup-step").hasClass("active")) {
+                e.preventDefault();
+                $("#leaky-paywall-registration-next").text(leaky_paywall_stripe_registration_ajax.continue_text);
+                $("#leaky-paywall-registration-errors").html("");
+                validateUserData();
+            }
+        });
+
 
         function validateUserData() {
 
