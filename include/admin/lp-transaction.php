@@ -29,6 +29,22 @@ class LP_Transaction_Post_Type
 		add_filter('months_dropdown_results', array($this, 'remove_months_dropdown'), 10, 2);
 
 		add_action('in_admin_header', array($this, 'render_list_header'));
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'dequeue_yoast_ai_generator' ), 999 );
+	}
+
+	/**
+	 * Dequeue Yoast's AI generator script on the transaction edit screen.
+	 *
+	 * Yoast's AI_Generator_Integration enqueues ai-generator.js on any post.php
+	 * screen without checking post type, then crashes trying to read postType from
+	 * localized data that doesn't include non-public post types like lp_transaction.
+	 */
+	public function dequeue_yoast_ai_generator() {
+		$screen = get_current_screen();
+		if ( $screen && 'lp_transaction' === $screen->post_type ) {
+			wp_dequeue_script( 'yoast-seo-ai-generator' );
+		}
 	}
 
 	/**
