@@ -350,6 +350,17 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 					'proration_behavior' => 'always_invoice',
 				), $level );
 
+				// If the subscription was set to cancel at period end (pending_cancel),
+				// clear that flag so the plan switch doesn't inherit the cancellation intent.
+				if ( ! empty( $existing_sub->cancel_at_period_end ) ) {
+					$update_args['cancel_at_period_end'] = false;
+
+					$switching_user = get_user_by( 'email', $fields['email_address'] );
+					if ( $switching_user ) {
+						leaky_paywall_set_subscriber_status( $switching_user->ID, 'active', 'plan_switch' );
+					}
+				}
+
 				$update_args['expand'] = array( 'latest_invoice' );
 
 				$sub = $stripe->subscriptions->update(
