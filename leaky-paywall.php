@@ -140,9 +140,6 @@ function leaky_paywall_plugins_loaded() {
 			require_once LEAKY_PAYWALL_PATH . 'include/stripe/init.php';
 		}
 
-		// Internationalization.
-		load_plugin_textdomain( 'leaky-paywall', false, LEAKY_PAYWALL_REL_DIR . '/i18n/' );
-
 		do_action( 'leaky_paywall_plugins_loaded' );
 	}
 }
