@@ -236,6 +236,10 @@ class LP_Nag_Impressions {
 			return __( 'Upgrade', 'leaky-paywall' );
 		}
 
+		if ( 'list_builder' === $nag_type ) {
+			return __( 'List Builder', 'leaky-paywall' );
+		}
+
 		if ( 0 === strpos( $nag_type, 'targeted:' ) ) {
 			$message_id = (int) substr( $nag_type, 9 );
 			$title      = get_the_title( $message_id );
