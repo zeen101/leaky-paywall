@@ -696,7 +696,7 @@ class LP_List_Builder
         $lp_settings = get_leaky_paywall_settings();
         $subscribe_page_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
 
-        wp_localize_script('lp-list-builder', 'LP_LIST_BUILDER', [
+        wp_add_inline_script('lp-list-builder', 'var LP_LIST_BUILDER = ' . wp_json_encode([
             'flowUrl'   => esc_url_raw(rest_url('lp-list-builder/v1/flow')),
             'signupUrl' => esc_url_raw(rest_url('lp-list-builder/v1/signup')),
             'loginUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/login')),
@@ -706,7 +706,7 @@ class LP_List_Builder
             'nonce'            => wp_create_nonce('wp_rest'),
             'subscribeUrl'     => esc_url_raw( $subscribe_page_url ),
             'upgradeEnabled'   => ( ! empty( $lb_settings['upgrade_enabled'] ) && 'on' === $lb_settings['upgrade_enabled'] ),
-        ]);
+        ]) . ';', 'before');
 
         wp_enqueue_script('lp-list-builder');
     }
