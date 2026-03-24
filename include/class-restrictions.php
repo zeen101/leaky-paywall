@@ -632,8 +632,9 @@ class Leaky_Paywall_Restrictions {
 		$message     = $this->the_content_paywall_message();
 		$new_content = $this->get_nag_excerpt( $content ) . $message;
 
-		// Record the nag impression.
-		if ( $this->post_id ) {
+		// Record the nag impression (skip for REST content filter — the REST
+		// restrictions endpoint records its own impression).
+		if ( $this->post_id && ! $this->is_rest ) {
 			LP_Nag_Impressions::record( $this->post_id, $this->nag_type );
 		}
 
