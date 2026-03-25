@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.0.1\n"
+"Project-Id-Version: Leaky Paywall 5.0.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-03-12T03:13:03+00:00\n"
+"POT-Creation-Date: 2026-03-25T02:28:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -45,7 +45,7 @@ msgstr ""
 #. Translators: %s - site name
 #. Translators: %s: site name.
 #: class.php:206
-#: include/class-restrictions.php:984
+#: include/class-restrictions.php:985
 #, php-format
 msgid "back to %s"
 msgstr ""
@@ -70,7 +70,7 @@ msgstr ""
 #: class.php:261
 #: include/admin/dashboard-widgets.php:300
 #: include/admin/dashboard/dashboard.php:319
-#: include/admin/lp-transaction.php:53
+#: include/admin/lp-transaction.php:69
 msgid "Transactions"
 msgstr ""
 
@@ -354,7 +354,7 @@ msgstr ""
 
 #: functions.php:1190
 #: functions.php:2431
-#: include/admin/lp-transaction.php:278
+#: include/admin/lp-transaction.php:294
 #: include/admin/settings/settings.php:1582
 msgid "Free Registration"
 msgstr ""
@@ -557,7 +557,7 @@ msgstr ""
 #: functions.php:4303
 #: include/admin/dashboard-widgets.php:197
 #: include/admin/dashboard/dashboard.php:402
-#: include/admin/lp-transaction.php:524
+#: include/admin/lp-transaction.php:540
 msgid "Free"
 msgstr ""
 
@@ -570,17 +570,17 @@ msgid "Lost Password?"
 msgstr ""
 
 #: functions.php:2428
-#: include/admin/lp-transaction.php:277
+#: include/admin/lp-transaction.php:293
 msgid "Manual"
 msgstr ""
 
 #: functions.php:2429
-#: include/admin/lp-transaction.php:274
+#: include/admin/lp-transaction.php:290
 msgid "Stripe"
 msgstr ""
 
 #: functions.php:2430
-#: include/admin/lp-transaction.php:276
+#: include/admin/lp-transaction.php:292
 #: include/gateways/class-leaky-paywall-payment-gateways.php:79
 msgid "PayPal Standard"
 msgstr ""
@@ -1542,7 +1542,7 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:193
 #: include/admin/dashboard/dashboard.php:390
-#: include/admin/lp-transaction.php:523
+#: include/admin/lp-transaction.php:539
 msgid "Paid"
 msgstr ""
 
@@ -1572,7 +1572,7 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:249
 #: include/admin/dashboard/dashboard.php:267
-#: include/admin/lp-transaction.php:336
+#: include/admin/lp-transaction.php:352
 #: include/admin/subscribers/subscriber.php:711
 #: include/admin/subscribers/subscriber.php:761
 msgid "Date"
@@ -1580,7 +1580,7 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:250
 #: include/admin/dashboard/dashboard.php:268
-#: include/admin/lp-transaction.php:204
+#: include/admin/lp-transaction.php:220
 #: include/admin/onboarding/class-onboarding.php:94
 #: include/admin/subscribers/subscriber.php:602
 #: include/emails/class-lp-emails.php:161
@@ -1593,7 +1593,7 @@ msgstr ""
 #: include/admin/dashboard-widgets.php:251
 #: include/admin/dashboard/dashboard.php:224
 #: include/admin/dashboard/dashboard.php:269
-#: include/admin/lp-transaction.php:218
+#: include/admin/lp-transaction.php:234
 #: include/admin/subscribers/subscriber.php:646
 #: subscriber-table.php:173
 msgid "Level"
@@ -1822,14 +1822,14 @@ msgstr ""
 #: include/admin/insights/insights.php:98
 #: include/admin/insights/insights.php:243
 #: include/admin/insights/insights.php:324
-#: include/admin/lp-transaction.php:513
+#: include/admin/lp-transaction.php:529
 msgid "Last 7 days"
 msgstr ""
 
 #: include/admin/insights/insights.php:99
 #: include/admin/insights/insights.php:244
 #: include/admin/insights/insights.php:325
-#: include/admin/lp-transaction.php:514
+#: include/admin/lp-transaction.php:530
 msgid "Last 30 days"
 msgstr ""
 
@@ -1888,145 +1888,145 @@ msgstr ""
 msgid "Leaky Paywall Incomplete Users"
 msgstr ""
 
-#: include/admin/lp-transaction.php:85
+#: include/admin/lp-transaction.php:101
 msgid "Leaky Paywall Transactions"
 msgstr ""
 
-#: include/admin/lp-transaction.php:107
+#: include/admin/lp-transaction.php:123
 msgid "Transaction Details"
 msgstr ""
 
-#: include/admin/lp-transaction.php:108
+#: include/admin/lp-transaction.php:124
 msgid "Transaction Info"
 msgstr ""
 
-#: include/admin/lp-transaction.php:131
+#: include/admin/lp-transaction.php:147
 msgid "Complete"
 msgstr ""
 
-#: include/admin/lp-transaction.php:157
-#: include/admin/lp-transaction.php:298
-#: include/admin/lp-transaction.php:480
-#: include/admin/lp-transaction.php:525
+#: include/admin/lp-transaction.php:173
+#: include/admin/lp-transaction.php:314
+#: include/admin/lp-transaction.php:496
+#: include/admin/lp-transaction.php:541
 #: include/admin/subscribers/subscriber.php:730
 msgid "Refund"
 msgstr ""
 
-#: include/admin/lp-transaction.php:164
-#: include/admin/lp-transaction.php:300
-#: include/admin/lp-transaction.php:482
+#: include/admin/lp-transaction.php:180
+#: include/admin/lp-transaction.php:316
+#: include/admin/lp-transaction.php:498
 #: include/admin/subscribers/subscriber.php:734
 msgid "Subscription Renewal"
 msgstr ""
 
-#: include/admin/lp-transaction.php:166
-#: include/admin/lp-transaction.php:302
-#: include/admin/lp-transaction.php:484
+#: include/admin/lp-transaction.php:182
+#: include/admin/lp-transaction.php:318
+#: include/admin/lp-transaction.php:500
 #: include/admin/subscribers/subscriber.php:734
 msgid "Initial Subscription Payment"
 msgstr ""
 
-#: include/admin/lp-transaction.php:175
+#: include/admin/lp-transaction.php:191
 msgid "Refund for"
 msgstr ""
 
 #. translators: %d: transaction ID
-#: include/admin/lp-transaction.php:180
+#: include/admin/lp-transaction.php:196
 #, php-format
 msgid "Transaction #%d"
 msgstr ""
 
-#: include/admin/lp-transaction.php:193
+#: include/admin/lp-transaction.php:209
 msgid "Customer"
 msgstr ""
 
-#: include/admin/lp-transaction.php:199
+#: include/admin/lp-transaction.php:215
 #: subscriber-table.php:172
 #: templates/shortcode-account.php:237
 #: templates/shortcode-account.php:257
 msgid "Name"
 msgstr ""
 
-#: include/admin/lp-transaction.php:215
+#: include/admin/lp-transaction.php:231
 msgid "Subscription"
 msgstr ""
 
-#: include/admin/lp-transaction.php:226
+#: include/admin/lp-transaction.php:242
 msgid "Nag Location"
 msgstr ""
 
-#: include/admin/lp-transaction.php:244
+#: include/admin/lp-transaction.php:260
 msgid "PayPal Response"
 msgstr ""
 
-#: include/admin/lp-transaction.php:275
+#: include/admin/lp-transaction.php:291
 #: include/gateways/class-leaky-paywall-payment-gateways.php:65
 msgid "Stripe Checkout"
 msgstr ""
 
-#: include/admin/lp-transaction.php:304
-#: include/admin/lp-transaction.php:486
+#: include/admin/lp-transaction.php:320
+#: include/admin/lp-transaction.php:502
 msgid "One Time"
 msgstr ""
 
-#: include/admin/lp-transaction.php:342
+#: include/admin/lp-transaction.php:358
 msgid "Gateway"
 msgstr ""
 
-#: include/admin/lp-transaction.php:349
+#: include/admin/lp-transaction.php:365
 msgid "Transaction ID"
 msgstr ""
 
-#: include/admin/lp-transaction.php:364
+#: include/admin/lp-transaction.php:380
 msgid "Customer ID"
 msgstr ""
 
-#: include/admin/lp-transaction.php:378
+#: include/admin/lp-transaction.php:394
 #: include/admin/subscribers/subscriber.php:714
 msgid "Payment Type"
 msgstr ""
 
-#: include/admin/lp-transaction.php:385
+#: include/admin/lp-transaction.php:401
 msgid "View Subscriber"
 msgstr ""
 
-#: include/admin/lp-transaction.php:396
+#: include/admin/lp-transaction.php:412
 msgid "All Transactions for Customer"
 msgstr ""
 
-#: include/admin/lp-transaction.php:511
+#: include/admin/lp-transaction.php:527
 msgid "All dates"
 msgstr ""
 
-#: include/admin/lp-transaction.php:512
+#: include/admin/lp-transaction.php:528
 msgid "Today"
 msgstr ""
 
-#: include/admin/lp-transaction.php:515
+#: include/admin/lp-transaction.php:531
 msgid "This month"
 msgstr ""
 
-#: include/admin/lp-transaction.php:516
+#: include/admin/lp-transaction.php:532
 msgid "Last month"
 msgstr ""
 
-#: include/admin/lp-transaction.php:517
+#: include/admin/lp-transaction.php:533
 msgid "This year"
 msgstr ""
 
-#: include/admin/lp-transaction.php:526
+#: include/admin/lp-transaction.php:542
 msgid "Renewal"
 msgstr ""
 
-#: include/admin/lp-transaction.php:531
+#: include/admin/lp-transaction.php:547
 msgid "All payment types"
 msgstr ""
 
-#: include/admin/lp-transaction.php:545
+#: include/admin/lp-transaction.php:561
 msgid "All levels"
 msgstr ""
 
-#: include/admin/lp-transaction.php:566
+#: include/admin/lp-transaction.php:582
 msgid "All gateways"
 msgstr ""
 
@@ -2051,6 +2051,7 @@ msgid "Pages"
 msgstr ""
 
 #: include/admin/onboarding/class-onboarding.php:91
+#: include/class-lp-nag-impressions.php:240
 msgid "List Builder"
 msgstr ""
 
@@ -3231,12 +3232,12 @@ msgstr ""
 msgid "Unexpected response (HTTP %d)."
 msgstr ""
 
-#: include/class-lp-nag-impressions.php:244
+#: include/class-lp-nag-impressions.php:248
 #, php-format
 msgid "Targeted: %s"
 msgstr ""
 
-#: include/class-lp-nag-impressions.php:247
+#: include/class-lp-nag-impressions.php:251
 #, php-format
 msgid "Targeted: #%d"
 msgstr ""
@@ -3266,12 +3267,12 @@ msgstr ""
 msgid "Subscriber not found."
 msgstr ""
 
-#: include/class-restrictions.php:980
+#: include/class-restrictions.php:981
 msgid "Unauthorized PDF Download"
 msgstr ""
 
 #. translators: %1$ - Login url, %2$s - page for subscription
-#: include/class-restrictions.php:982
+#: include/class-restrictions.php:983
 #, php-format
 msgid "You must be logged in with a valid subscription to download Issue PDFs. Please <a href=\"%1$s\">log in</a> or <a href=\"%2$s\">subscribe</a>."
 msgstr ""
@@ -3451,23 +3452,23 @@ msgstr ""
 msgid "There was an error. Please try again."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1145
+#: include/gateways/stripe/functions.php:1156
 msgid "Insufficient permissions."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1152
+#: include/gateways/stripe/functions.php:1163
 msgid "Invalid or expired connect session."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1159
+#: include/gateways/stripe/functions.php:1170
 msgid "Invalid account id."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1188
+#: include/gateways/stripe/functions.php:1199
 msgid "Failed to retrieve credentials."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1194
+#: include/gateways/stripe/functions.php:1205
 msgid "Invalid credentials response."
 msgstr ""
 
