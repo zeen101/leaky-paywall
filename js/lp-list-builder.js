@@ -46,8 +46,6 @@
         </div>
       `;
 
-      clearRestrictionData();
-
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -156,6 +154,7 @@
 
             await postJson(LP_LIST_BUILDER.signupUrl, payload);
 
+            clearRestrictionData();
             showSuccessAndReload(form, "Your account has been created. Unlocking content...");
 
             return;
