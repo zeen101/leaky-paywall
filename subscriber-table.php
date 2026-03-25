@@ -146,7 +146,18 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		}
 
 		$wp_user_search = new WP_User_Query( $args );
-		$this->items    = $wp_user_search->get_results();
+		$results        = $wp_user_search->get_results();
+
+		// Deduplicate — meta joins can return the same user multiple times.
+		$seen = array();
+		$this->items = array();
+		foreach ( $results as $user ) {
+			$id = is_object( $user ) ? $user->ID : $user;
+			if ( ! isset( $seen[ $id ] ) ) {
+				$seen[ $id ]   = true;
+				$this->items[] = $user;
+			}
+		}
 
 		$this->set_pagination_args(
 			array(
