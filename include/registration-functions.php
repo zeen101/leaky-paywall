@@ -784,43 +784,66 @@ function leaky_paywall_card_form() {
 function leaky_paywall_card_form_full() {
 	?>
 
-	<div class="leaky-paywall-card-details leaky-paywall-card-form-full">
+	<style>
+		.lp-card-form { max-width: 480px; }
+		.lp-card-form fieldset { border: none; margin: 0 0 16px; padding: 0; }
+		.lp-card-form legend { font-size: 14px; font-weight: 600; color: #32325d; margin-bottom: 8px; padding: 0; }
+		.lp-card-form .lp-field-row { display: flex; gap: 12px; margin-bottom: 12px; }
+		.lp-card-form .lp-field { flex: 1; display: flex; flex-direction: column; }
+		.lp-card-form .lp-field--half { flex: 0 0 calc(50% - 6px); }
+		.lp-card-form .lp-field--third { flex: 0 0 calc(33.33% - 8px); }
+		.lp-card-form label { font-size: 12px; font-weight: 600; color: #6b7c93; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+		.lp-card-form input[type="text"],
+		.lp-card-form input[type="tel"],
+		.lp-card-form select { width: 100%; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 14px; color: #32325d; background: #fff; box-sizing: border-box; transition: border-color 0.15s; }
+		.lp-card-form input:focus,
+		.lp-card-form select:focus { border-color: #6772e5; outline: none; box-shadow: 0 0 0 1px rgba(103, 114, 229, 0.3); }
+		.lp-card-form .lp-field-row--expiry-cvc select { min-width: 0; }
+		.lp-card-form .lp-expiry-sep { align-self: flex-end; padding-bottom: 10px; color: #aab7c4; font-weight: 600; }
+	</style>
 
-		<h3>Billing Name</h3>
+	<div class="leaky-paywall-card-details leaky-paywall-card-form-full lp-card-form">
 
-		<p class="form-row card-first-name">
-			<label><?php esc_html_e( 'First Name', 'leaky-paywall' ); ?></label>
-			<input required type="text" size="20" name="card_first_name" class="card-first-name" />
-		</p>
+		<fieldset>
+			<legend><?php esc_html_e( 'Billing Name', 'leaky-paywall' ); ?></legend>
+			<div class="lp-field-row">
+				<div class="lp-field lp-field--half">
+					<label for="lp-card-first-name"><?php esc_html_e( 'First Name', 'leaky-paywall' ); ?></label>
+					<input required type="text" id="lp-card-first-name" name="card_first_name" class="card-first-name" placeholder="<?php esc_attr_e( 'Jane', 'leaky-paywall' ); ?>" />
+				</div>
+				<div class="lp-field lp-field--half">
+					<label for="lp-card-last-name"><?php esc_html_e( 'Last Name', 'leaky-paywall' ); ?></label>
+					<input required type="text" id="lp-card-last-name" name="card_last_name" class="card-last-name" placeholder="<?php esc_attr_e( 'Doe', 'leaky-paywall' ); ?>" />
+				</div>
+			</div>
+		</fieldset>
 
-		<p class="form-row card-last-name">
-			<label><?php esc_html_e( 'Last Name', 'leaky-paywall' ); ?></label>
-			<input required type="text" size="20" name="card_last_name" class="card-last-name" />
-		</p>
-
-		<h3>Billing Address</h3>
-
-		<p class="form-row billing-address">
-			<label><?php esc_html_e( 'Address', 'leaky-paywall' ); ?></label>
-			<input required type="text" size="20" name="card_address" class="card-address" />
-		</p>
-		<p class="form-row billing-city">
-			<label><?php esc_html_e( 'City', 'leaky-paywall' ); ?></label>
-			<input required type="text" size="20" name="card_city" class="card-city" />
-		</p>
-		<p class="form-row billing-state">
-			<label><?php esc_html_e( 'State or Providence', 'leaky-paywall' ); ?></label>
-			<input required type="text" size="20" name="card_state" class="card-state" />
-		</p>
-
-		<p class="form-row billing-zip">
-			<label><?php esc_html_e( 'Card ZIP or Postal Code', 'leaky-paywall' ); ?></label>
-			<input required type="text" size="10" name="card_zip" class="card-zip" />
-		</p>
-
-		<p class="form-row billing-country">
-			<label><?php esc_html_e( 'Country', 'leaky-paywall' ); ?></label>
-			<select name="card_country" class="card-country">
+		<fieldset>
+			<legend><?php esc_html_e( 'Billing Address', 'leaky-paywall' ); ?></legend>
+			<div class="lp-field-row">
+				<div class="lp-field">
+					<label for="lp-card-address"><?php esc_html_e( 'Address', 'leaky-paywall' ); ?></label>
+					<input required type="text" id="lp-card-address" name="card_address" class="card-address" />
+				</div>
+			</div>
+			<div class="lp-field-row">
+				<div class="lp-field">
+					<label for="lp-card-city"><?php esc_html_e( 'City', 'leaky-paywall' ); ?></label>
+					<input required type="text" id="lp-card-city" name="card_city" class="card-city" />
+				</div>
+				<div class="lp-field lp-field--third">
+					<label for="lp-card-state"><?php esc_html_e( 'State', 'leaky-paywall' ); ?></label>
+					<input required type="text" id="lp-card-state" name="card_state" class="card-state" />
+				</div>
+				<div class="lp-field lp-field--third">
+					<label for="lp-card-zip"><?php esc_html_e( 'ZIP', 'leaky-paywall' ); ?></label>
+					<input required type="text" id="lp-card-zip" name="card_zip" class="card-zip" />
+				</div>
+			</div>
+			<div class="lp-field-row">
+				<div class="lp-field">
+					<label for="lp-card-country"><?php esc_html_e( 'Country', 'leaky-paywall' ); ?></label>
+					<select id="lp-card-country" name="card_country" class="card-country">
 				<option value="">Country</option>
 				<option value="US">United States</option>
 				<option value="CA">Canada</option>
@@ -1068,36 +1091,47 @@ function leaky_paywall_card_form_full() {
 				<option value="ZM">Zambia</option>
 				<option value="ZW">Zimbabwe</option>
 			</select>
-		</p>
+					</select>
+				</div>
+			</div>
+		</fieldset>
 
-		<h3>Payment Method</h3>
+		<fieldset>
+			<legend><?php esc_html_e( 'Payment Method', 'leaky-paywall' ); ?></legend>
+			<div class="lp-field-row">
+				<div class="lp-field">
+					<label for="lp-card-number"><?php esc_html_e( 'Card Number', 'leaky-paywall' ); ?></label>
+					<input type="tel" id="lp-card-number" maxlength="20" name="card_num" class="card-num card-number" placeholder="1234 1234 1234 1234" autocomplete="cc-number" />
+				</div>
+			</div>
+			<div class="lp-field-row lp-field-row--expiry-cvc">
+				<div class="lp-field">
+					<label for="lp-exp-month"><?php esc_html_e( 'Expiry Month', 'leaky-paywall' ); ?></label>
+					<select id="lp-exp-month" name="exp_month" class="card-expiry-month" autocomplete="cc-exp-month">
+						<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+							<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( str_pad( $i, 2, '0', STR_PAD_LEFT ) ) . ' - ' . esc_html( leaky_paywall_get_month_name( $i ) ); ?></option>
+						<?php endfor; ?>
+					</select>
+				</div>
+				<span class="lp-expiry-sep">/</span>
+				<div class="lp-field">
+					<label for="lp-exp-year"><?php esc_html_e( 'Year', 'leaky-paywall' ); ?></label>
+					<select id="lp-exp-year" name="exp_year" class="card-expiry-year" autocomplete="cc-exp-year">
+						<?php
+						$year = gmdate( 'Y' );
+						for ( $i = $year; $i <= $year + 10; $i++ ) :
+							?>
+							<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></option>
+						<?php endfor; ?>
+					</select>
+				</div>
+				<div class="lp-field lp-field--third">
+					<label for="lp-cvc"><?php esc_html_e( 'CVC', 'leaky-paywall' ); ?></label>
+					<input type="tel" id="lp-cvc" maxlength="4" name="cvc" class="cvc" placeholder="123" autocomplete="cc-csc" />
+				</div>
+			</div>
+		</fieldset>
 
-		<p class="form-row">
-			<label><?php esc_html_e( 'Card Number', 'leaky-paywall' ); ?></label>
-			<input type="text" size="20" maxlength="20" name="card_num" class="card-num card-number" />
-		</p>
-		<p class="form-row">
-			<label><?php esc_html_e( 'Card CVC', 'leaky-paywall' ); ?></label>
-			<input type="text" size="4" maxlength="4" name="cvc" class="cvc" />
-		</p>
-
-		<p class="form-row">
-			<label><?php esc_html_e( 'Expiration (MM/YYYY)', 'leaky-paywall' ); ?></label>
-			<select name="exp_month" class="card-expiry-month">
-				<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
-					<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ) . ' - ' . esc_html( leaky_paywall_get_month_name( $i ) ); ?></option>
-				<?php endfor; ?>
-			</select>
-			<span class="expiry_separator"> / </span>
-			<select name="exp_year" class="card-expiry-year">
-				<?php
-				$year = gmdate( 'Y' );
-				for ( $i = $year; $i <= $year + 10; $i++ ) :
-					?>
-					<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></option>
-				<?php endfor; ?>
-			</select>
-		</p>
 	</div>
 	<?php
 

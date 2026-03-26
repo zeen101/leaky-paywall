@@ -608,7 +608,32 @@ class LP_List_Builder
                 </div>
             </div>
 
-            <p><?php esc_html_e( 'By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy.', 'leaky-paywall' ); ?></p>
+            <?php
+            $lp_settings     = get_leaky_paywall_settings();
+            $tc_enabled      = ! empty( $lp_settings['enable_terms_and_conditions'] ) && 'on' === $lp_settings['enable_terms_and_conditions'];
+            $signup_tc_text  = '';
+
+            if ( $tc_enabled && ! empty( $lp_settings['terms_and_conditions_text'] ) ) {
+                $tc_text    = $lp_settings['terms_and_conditions_text'];
+                $tc_page_id = ! empty( $lp_settings['page_for_terms'] ) ? $lp_settings['page_for_terms'] : 0;
+
+                if ( $tc_page_id ) {
+                    $tc_url         = get_permalink( $tc_page_id );
+                    $signup_tc_text = preg_replace(
+                        '/\[(.+?)\]/',
+                        '<a href="' . esc_url( $tc_url ) . '" target="_blank">$1</a>',
+                        esc_html( $tc_text )
+                    );
+                } else {
+                    $signup_tc_text = esc_html( preg_replace( '/\[(.+?)\]/', '$1', $tc_text ) );
+                }
+            } else {
+                $signup_tc_text = esc_html__( 'By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy.', 'leaky-paywall' );
+            }
+
+            $signup_tc_text = apply_filters( 'lp_list_builder_signup_terms_text', $signup_tc_text );
+            ?>
+            <p><?php echo wp_kses( $signup_tc_text, array( 'a' => array( 'href' => array(), 'target' => array() ) ) ); ?></p>
 
             <input name="website" type="text" value="" autocomplete="off" tabindex="-1" style="display:none !important; position:absolute; left:-9999px;" />
 
