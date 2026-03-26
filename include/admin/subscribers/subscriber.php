@@ -3,10 +3,50 @@
 class Leaky_Paywall_Admin_Subscriber
 {
 
+	/**
+	 * Stores the table instance created on the load hook for Screen Options.
+	 *
+	 * @var LP_Subscriber_List_Table|null
+	 */
+	private $list_table = null;
+
 	public function __construct()
 	{
 		add_action('admin_init', array($this, 'process_admin_subscriber_update'));
 		add_action('admin_init', array($this, 'process_admin_subscriber_add'));
+		add_action('load-leaky-paywall_page_leaky-paywall-subscribers', array($this, 'setup_screen_options'));
+		add_filter('set-screen-option', array($this, 'save_screen_option'), 10, 3);
+		add_filter('set_screen_option_lp_subscribers_per_page', array($this, 'save_screen_option'), 10, 3);
+	}
+
+	/**
+	 * Allow WordPress to save our custom per-page screen option.
+	 *
+	 * @param mixed  $status Screen option value (false to skip).
+	 * @param string $option Option name.
+	 * @param mixed  $value  Submitted value.
+	 * @return mixed
+	 */
+	public function save_screen_option( $status, $option, $value )
+	{
+		if ( 'lp_subscribers_per_page' === $option ) {
+			return absint( $value );
+		}
+		return $status;
+	}
+
+	/**
+	 * Instantiate the table on the page load hook so Screen Options registers correctly.
+	 */
+	public function setup_screen_options()
+	{
+		add_screen_option( 'per_page', array(
+			'label'   => __( 'Subscribers per page', 'leaky-paywall' ),
+			'default' => 20,
+			'option'  => 'lp_subscribers_per_page',
+		) );
+
+		$this->list_table = new LP_Subscriber_List_Table();
 	}
 
 	public function process_admin_subscriber_update()
@@ -164,7 +204,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 	public function show_subscribers_table()
 	{
-		$subscriber_table = new Leaky_Paywall_Subscriber_List_Table();
+		$subscriber_table = $this->list_table ? $this->list_table : new LP_Subscriber_List_Table();
 		$pagenum          = $subscriber_table->get_pagenum();
 		$subscriber_table->prepare_items();
 		$total_pages = $subscriber_table->get_pagination_arg('total_pages');
@@ -179,17 +219,72 @@ class Leaky_Paywall_Admin_Subscriber
 			<a class="button button-primary" href="#" id="lp-open-add-subscriber-modal">+ <?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></a>
 		</div>
 
-		<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
+		<style>
+			.lp-table-scroll-outer {
+				position: relative;
+				overflow: hidden;
+				clear: both;
+			}
+			.lp-table-scroll-outer::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				right: 0;
+				width: 50px;
+				height: 100%;
+				background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.12));
+				pointer-events: none;
+				transition: opacity 0.2s;
+			}
+			.lp-table-scroll-outer.lp-no-overflow::after,
+			.lp-table-scroll-outer.lp-scrolled-end::after {
+				opacity: 0;
+			}
+			.lp-table-scroll-wrap {
+				overflow-x: auto;
+				max-width: 100%;
+				clear: both;
+			}
+			.lp-table-scroll-wrap .wp-list-table {
+				min-width: 800px;
+			}
+		</style>
+
 		<form id="leaky-paywall-subscribers" method="get">
-			<!-- For plugins, we also need to ensure that the form posts back to our current page -->
 			<input type="hidden" name="page" value="<?php echo isset($_GET['page']) ? esc_attr(sanitize_text_field(wp_unslash($_GET['page']))) : ''; ?>" />
-			<!-- Now we can render the completed list table -->
 			<div class="tablenav top">
 				<?php $subscriber_table->user_views(); ?>
 				<?php $subscriber_table->search_box(__('Search Subscribers'), 'leaky-paywall'); ?>
 			</div>
 			<?php $subscriber_table->display(); ?>
 		</form>
+
+		<script>
+		(function(){
+			var table = document.querySelector('#leaky-paywall-subscribers .wp-list-table');
+			if (!table) return;
+
+			var outer = document.createElement('div');
+			outer.className = 'lp-table-scroll-outer';
+			var wrap = document.createElement('div');
+			wrap.className = 'lp-table-scroll-wrap';
+
+			table.parentNode.insertBefore(outer, table);
+			outer.appendChild(wrap);
+			wrap.appendChild(table);
+
+			function checkScroll() {
+				var hasOverflow = wrap.scrollWidth > wrap.clientWidth;
+				var atEnd = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 2;
+				outer.classList.toggle('lp-no-overflow', !hasOverflow);
+				outer.classList.toggle('lp-scrolled-end', hasOverflow && atEnd);
+			}
+
+			wrap.addEventListener('scroll', checkScroll);
+			window.addEventListener('resize', checkScroll);
+			checkScroll();
+		})();
+		</script>
 
 		<?php $this->add_subscriber_modal(); ?>
 

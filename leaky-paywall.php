@@ -96,6 +96,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools/export.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/tools/import.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/insights/functions.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/class-lp-subscriber-list-table.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/subscriber.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/subscribers/functions.php';
 
