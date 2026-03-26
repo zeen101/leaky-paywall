@@ -1054,11 +1054,14 @@ class Leaky_Paywall_Restrictions {
 	public function update_content_viewed_by_user() {
 		$viewed_content       = $this->get_content_viewed_by_user();
 		$restricted_post_type = get_post_type( $this->post_id );
-		$viewed_content[ $restricted_post_type ][ $this->post_id ] = $this->get_expiration_time();
+		$expiration_time      = $this->get_expiration_time();
+		$viewed_content[ $restricted_post_type ][ $this->post_id ] = $expiration_time;
 		$json_viewed_content                                       = json_encode( $viewed_content );
 
-		$cookie                              = setcookie( $this->get_cookie_name(), $json_viewed_content, $this->get_expiration_time(), '/' );
+		$cookie                              = setcookie( $this->get_cookie_name(), $json_viewed_content, $expiration_time, '/' );
 		$_COOKIE[ $this->get_cookie_name() ] = $json_viewed_content;
+
+		do_action( 'leaky_paywall_content_viewed', $this->post_id, $restricted_post_type, $expiration_time, $viewed_content );
 	}
 
 	/**
