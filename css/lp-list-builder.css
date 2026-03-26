@@ -6,6 +6,11 @@
      z-index: 9999;
  }
 
+ .Slider a {
+     color: var(--lplb-text-color, #fff);
+     text-decoration: underline;
+ }
+
  .Slider--scrolled {
      bottom: 0;
      /* height: calc(100vh - 52px); */
