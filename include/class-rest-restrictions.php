@@ -486,6 +486,7 @@ class Leaky_Paywall_REST_Restrictions {
 					// Limited access to specific taxonomy.
 					if ( 'limited' === $access_rule['allowed'] && 'all' !== $access_taxonomy && $this->content_taxonomy_matches( $access_taxonomy ) ) {
 						$allowed_value = intval( $access_rule['allowed_value'] );
+						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', $allowed_value, $level_id, $access_rule, $this->post_id );
 
 						// 0 means no access to this taxonomy — block immediately.
 						if ( $allowed_value <= 0 ) {
@@ -504,9 +505,10 @@ class Leaky_Paywall_REST_Restrictions {
 
 					// Limited access to all content of this post type.
 					if ( 'limited' === $access_rule['allowed'] && 'all' === $access_taxonomy ) {
+						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', intval( $access_rule['allowed_value'] ), $level_id, $access_rule, $this->post_id );
 						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction_taxonomy ) : 0;
 
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
@@ -516,9 +518,10 @@ class Leaky_Paywall_REST_Restrictions {
 
 					// Limited access matching specific taxonomy.
 					if ( 'limited' === $access_rule['allowed'] && $access_taxonomy === $restriction_taxonomy && $this->content_taxonomy_matches( $restriction_taxonomy ) ) {
+						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', intval( $access_rule['allowed_value'] ), $level_id, $access_rule, $this->post_id );
 						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction_taxonomy ) : 0;
 
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();

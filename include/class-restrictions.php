@@ -360,6 +360,7 @@ class Leaky_Paywall_Restrictions {
 					if ('limited' == $access_rule['allowed'] && 'all' != $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches($access_rule['taxonomy']) ) {
 
 						$allowed_value = intval( $access_rule['allowed_value'] );
+						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', $allowed_value, $level_id, $access_rule, $this->post_id );
 
 						// 0 means no access to this taxonomy — block immediately.
 						if ( $allowed_value <= 0 ) {
@@ -381,10 +382,11 @@ class Leaky_Paywall_Restrictions {
 
 					if ( 'limited' == $access_rule['allowed'] && 'all' == $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 
+						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', intval( $access_rule['allowed_value'] ), $level_id, $access_rule, $this->post_id );
 						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 
 						// max views reached so block the content.
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
@@ -394,11 +396,12 @@ class Leaky_Paywall_Restrictions {
 
 					if ( 'limited' == $access_rule['allowed'] && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 
+						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', intval( $access_rule['allowed_value'] ), $level_id, $access_rule, $this->post_id );
 						// this only needs to calculate for this term.
 						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 
 						// max views reached so block the content.
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $access_rule['allowed_value'] ) {
+						if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
 							$allows_access = false;
 						} else {
 							$this->update_content_viewed_by_user();
