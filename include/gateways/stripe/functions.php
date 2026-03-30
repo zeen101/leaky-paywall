@@ -331,7 +331,11 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		'expand' => ['latest_invoice.payment_intent'],
 	);
 
-// 	$subscription_params = apply_filters('leaky_paywall_stripe_subscription_params', [], $level, $fields);
+	$settings = get_leaky_paywall_settings();
+
+	if ( 'on' === $settings['stripe_automatic_tax'] ) {
+		$subscription_array['automatic_tax'] = array( 'enabled' => true );
+	}
 
 	try {
 		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
@@ -1374,6 +1378,96 @@ function leaky_paywall_stripe_sync_billing_address( $subscriber_data ) {
 	}
 }
 add_action( 'leaky_paywall_after_process_registration', 'leaky_paywall_stripe_sync_billing_address', 10, 1 );
+
+/**
+ * AJAX handler for Stripe Tax preview via Invoice Preview API.
+ *
+ * @since 5.1.0
+ */
+function leaky_paywall_stripe_tax_preview() {
+	check_ajax_referer( 'lp_tax_preview', 'nonce' );
+
+	$settings = get_leaky_paywall_settings();
+	$level_id = absint( $_POST['level_id'] );
+	$level    = get_leaky_paywall_subscription_level( $level_id );
+
+	if ( ! $level ) {
+		wp_send_json_error( 'Invalid level.' );
+	}
+
+	$address = array(
+		'line1'       => sanitize_text_field( wp_unslash( $_POST['line1'] ) ),
+		'city'        => sanitize_text_field( wp_unslash( $_POST['city'] ) ),
+		'state'       => sanitize_text_field( wp_unslash( $_POST['state'] ) ),
+		'postal_code' => sanitize_text_field( wp_unslash( $_POST['postal_code'] ) ),
+		'country'     => sanitize_text_field( wp_unslash( $_POST['country'] ) ),
+	);
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	$preview_args = array(
+		'automatic_tax'    => array( 'enabled' => true ),
+		'customer_details' => array(
+			'address'    => $address,
+			'tax_exempt' => 'none',
+		),
+	);
+
+	try {
+		if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
+			$stripe_price = number_format( (float) $level['price'], 2, '', '' );
+			$plan_args    = array(
+				'stripe_price' => $stripe_price,
+				'currency'     => leaky_paywall_get_currency(),
+				'secret_key'   => leaky_paywall_get_stripe_secret_key(),
+			);
+
+			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+
+			if ( ! $stripe_plan ) {
+				wp_send_json_error( 'Could not retrieve Stripe plan.' );
+			}
+
+			$preview_args['subscription_details'] = array(
+				'items' => array(
+					array( 'price' => $stripe_plan->id, 'quantity' => 1 ),
+				),
+			);
+		} else {
+			$stripe_price = number_format( (float) $level['price'], 2, '', '' );
+			$currency     = leaky_paywall_get_currency();
+			$tax_behavior = isset( $settings['stripe_tax_behavior'] ) ? $settings['stripe_tax_behavior'] : 'exclusive';
+
+			$preview_args['line_items'] = array(
+				array(
+					'amount'       => (int) $stripe_price,
+					'currency'     => $currency,
+					'quantity'     => 1,
+					'tax_behavior' => $tax_behavior,
+					'reference'    => $level['label'],
+				),
+			);
+		}
+
+		$preview = $stripe->invoices->createPreview(
+			$preview_args,
+			leaky_paywall_get_stripe_connect_params()
+		);
+
+		wp_send_json_success( array(
+			'subtotal' => $preview->subtotal,
+			'tax'      => $preview->tax,
+			'total'    => $preview->total,
+			'currency' => strtoupper( $preview->currency ),
+		) );
+
+	} catch ( \Exception $e ) {
+		leaky_paywall_log( $e->getMessage(), 'stripe tax preview error' );
+		wp_send_json_error( $e->getMessage() );
+	}
+}
+add_action( 'wp_ajax_nopriv_leaky_paywall_stripe_tax_preview', 'leaky_paywall_stripe_tax_preview' );
+add_action( 'wp_ajax_leaky_paywall_stripe_tax_preview', 'leaky_paywall_stripe_tax_preview' );
 
 function leaky_paywall_ensure_app_api_key() {
 	$settings = get_leaky_paywall_settings();

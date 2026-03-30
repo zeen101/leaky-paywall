@@ -495,7 +495,9 @@ class Leaky_Paywall {
 					'next_text' => esc_html__('Next', 'leaky-paywall'),
 					'billing_address' => $settings['stripe_billing_address'],
 					'redirect_url' => get_page_link($settings['page_for_profile']),
-					'client_id' => isset( $settings['connected_account_id'] ) ? $settings['connected_account_id'] : ''
+					'client_id' => isset( $settings['connected_account_id'] ) ? $settings['connected_account_id'] : '',
+					'automatic_tax_enabled' => ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) ? 'on' : 'off',
+					'tax_preview_nonce' => wp_create_nonce( 'lp_tax_preview' ),
 				)
 			);
 

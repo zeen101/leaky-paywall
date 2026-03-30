@@ -374,23 +374,15 @@ function leaky_paywall_process_user_registration_validation() {
 				);
 
 				if ( $settings['stripe_automatic_tax'] == 'on' ) {
-					// $stripe_session_args['automatic_tax'] = [ 'enabled' => true ];
-					$stripe_session_args['line_items'] = array(
-						array(
-							'price'    => $stripe_plan->id,
-							'quantity' => 1,
-							// 'tax_behavior' => $settings['stripe_tax_behavior'],
-						),
-					);
-
-				} else {
-					$stripe_session_args['line_items'] = array(
-						array(
-							'price'    => $stripe_plan->id,
-							'quantity' => 1,
-						),
-					);
+					$stripe_session_args['automatic_tax'] = array( 'enabled' => true );
 				}
+
+				$stripe_session_args['line_items'] = array(
+					array(
+						'price'    => $stripe_plan->id,
+						'quantity' => 1,
+					),
+				);
 
 				try {
 					$checkout_session = $stripe->checkout->sessions->create(

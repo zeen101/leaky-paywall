@@ -102,7 +102,6 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		$usersearch     = isset( $_REQUEST['s'] ) ? '*' . sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) . '*' : '';
 		$users_per_page = $this->get_items_per_page( 'lp_subscribers_per_page', 20 );
 		$paged          = $this->get_pagenum();
 
@@ -112,7 +111,6 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 		$args = array(
 			'number' => $users_per_page,
 			'offset' => ( $paged - 1 ) * $users_per_page,
-			'search' => $usersearch,
 		);
 
 		// Sorting.
@@ -129,8 +127,8 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			),
 		);
 
-		// Custom field search — search across multiple meta keys.
-		if ( isset( $_GET['custom_field_search'] ) && 'on' === $_GET['custom_field_search'] && ! empty( $_GET['s'] ) ) {
+		// Search across all fields — OR user table columns with meta fields.
+		if ( ! empty( $_GET['s'] ) ) {
 			$search_term = sanitize_text_field( wp_unslash( $_GET['s'] ) );
 
 			$args['meta_query'][] = array(
@@ -157,7 +155,9 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 				),
 			);
 
-			unset( $args['search'] );
+			// Also match name/email in the users table via pre_user_query filter.
+			$args['lp_search_term'] = $search_term;
+			add_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
 		}
 
 		// Level filter.
@@ -255,6 +255,40 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			'total_items' => $wp_user_search->get_total(),
 			'per_page'    => $users_per_page,
 		) );
+	}
+
+	/**
+	 * Modify WP_User_Query to OR user table columns (name, email) with meta conditions.
+	 *
+	 * @param WP_User_Query $query The user query object.
+	 */
+	public function modify_search_query( $query ) {
+		global $wpdb;
+
+		if ( empty( $query->query_vars['lp_search_term'] ) ) {
+			return;
+		}
+
+		$term = $query->query_vars['lp_search_term'];
+		$like = '%' . $wpdb->esc_like( $term ) . '%';
+
+		$user_search = $wpdb->prepare(
+			"({$wpdb->users}.user_login LIKE %s OR {$wpdb->users}.user_email LIKE %s OR {$wpdb->users}.display_name LIKE %s)",
+			$like,
+			$like,
+			$like
+		);
+
+		// Replace the closing meta paren to OR in the user table search.
+		// The meta_query generates: ... AND ( (meta conditions) ) ...
+		// We want: ... AND ( (meta conditions) OR (user table conditions) ) ...
+		$query->query_where = preg_replace(
+			'/(\)\s*)\)\s*$/',
+			"$1 OR {$user_search} ) ",
+			$query->query_where
+		);
+
+		remove_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
 	}
 
 	/**
@@ -538,7 +572,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Search box with "Search all fields" option.
+	 * Search box that searches across all fields.
 	 *
 	 * @param string $text     Submit button label.
 	 * @param string $input_id Input ID prefix.
@@ -550,7 +584,6 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 
 		$input_id     = $input_id . '-search-input';
 		$search_query = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : '';
-		$checked      = isset( $_GET['custom_field_search'] ) && 'on' === $_GET['custom_field_search'] ? 'checked' : '';
 
 		if ( ! empty( $_REQUEST['orderby'] ) ) {
 			echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) ) . '" />';
@@ -561,8 +594,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 		?>
 		<p class="search-box">
 			<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo esc_html( $text ); ?>:</label>
-			<label><input type="checkbox" name="custom_field_search" value="on" <?php echo $checked; ?>> <?php esc_html_e( 'Search all fields', 'leaky-paywall' ); ?></label><br>
-			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo esc_attr( $search_query ); ?>" />
+			<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo esc_attr( $search_query ); ?>" placeholder="<?php esc_attr_e( 'Search name, email, notes, subscriber ID...', 'leaky-paywall' ); ?>" />
 			<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
 		</p>
 		<?php

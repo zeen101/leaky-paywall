@@ -1157,34 +1157,38 @@ class Leaky_Paywall_Settings
 							<td><input type="password" id="live_signing_secret" class="regular-text" name="live_signing_secret" value="<?php echo esc_attr($settings['live_signing_secret']); ?>" /></td>
 						</tr>
 
-						<?php if (in_array('stripe_checkout', $settings['payment_gateway'])) {
-						?>
-							<tr>
+						<tr>
 								<th><?php esc_html_e('Automatic Tax', 'leaky-paywall'); ?></th>
 								<td>
 									<p><input type="checkbox" id="stripe_automatic_tax" name="stripe_automatic_tax" <?php checked('on', $settings['stripe_automatic_tax']); ?> />
-										<?php esc_html_e('Automatically calculate tax for Stripe Checkout transactions, only for one time payments.', 'leaky-paywall'); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate">Requires Stripe Tax activation</a></p>
+										<?php esc_html_e('Automatically calculate tax on subscriptions and one-time payments using Stripe Tax.', 'leaky-paywall'); ?><br><a target="_blank" href="https://dashboard.stripe.com/settings/tax/activate"><?php esc_html_e( 'Requires Stripe Tax activation', 'leaky-paywall' ); ?></a></p>
 								</td>
 							</tr>
 
-							<tr>
+							<tr class="lp-tax-behavior-row" <?php echo 'on' !== $settings['stripe_automatic_tax'] ? 'style="display: none;"' : ''; ?>>
 								<th><?php esc_html_e('Tax Behavior', 'leaky-paywall'); ?></th>
 								<td>
 									<select id="stripe_tax_behavior" name="stripe_tax_behavior">
 										<option <?php selected('exclusive', $settings['stripe_tax_behavior']); ?> value="exclusive">Exclusive</option>
 										<option <?php selected('inclusive', $settings['stripe_tax_behavior']); ?> value="inclusive">Inclusive</option>
 									</select>
-									<p class="description">When set to exclusive, it adds tax to the subtotal. If set to inclusive, the amount your buyer pays never changes (even if the tax rate varies).</p>
+									<p class="description"><?php esc_html_e( 'When set to exclusive, tax is added to the subtotal. If set to inclusive, the amount your buyer pays never changes (even if the tax rate varies). Applies to one-time payments only. For recurring subscriptions, tax behavior is set on the price in the Stripe Dashboard.', 'leaky-paywall' ); ?></p>
 								</td>
 							</tr>
-						<?php
-						} ?>
+							<script>
+								document.getElementById('stripe_automatic_tax').addEventListener('change', function() {
+									document.querySelector('.lp-tax-behavior-row').style.display = this.checked ? '' : 'none';
+									if (this.checked) {
+										document.getElementById('stripe_billing_address').checked = true;
+									}
+								});
+							</script>
 
 						<tr>
 							<th><?php esc_html_e('Billing Address', 'leaky-paywall'); ?></th>
 							<td>
 								<p><input type="checkbox" id="stripe_billing_address" name="stripe_billing_address" <?php checked('on', $settings['stripe_billing_address']); ?> />
-									<?php esc_html_e('Display Stripe billing fields on the registration form (optional).', 'leaky-paywall'); ?></p>
+									<?php esc_html_e('Display Stripe billing address fields on the registration form. Required when Automatic Tax is enabled.', 'leaky-paywall'); ?></p>
 							</td>
 						</tr>
 

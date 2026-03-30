@@ -194,7 +194,7 @@ class Leaky_Paywall_Insights
 
 			$results = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT lm.meta_value AS level_id, COUNT(*) AS total
+					"SELECT lm.meta_value AS level_id, COUNT(DISTINCT lm.user_id) AS total
 					 FROM {$wpdb->usermeta} lm
 					 INNER JOIN {$wpdb->usermeta} sm
 						 ON lm.user_id = sm.user_id

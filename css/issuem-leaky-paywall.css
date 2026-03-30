@@ -193,6 +193,36 @@
 	display: block;
 }
 
+/* Order Summary (Stripe Tax) */
+#lp-order-summary {
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	padding: 16px 20px;
+	margin-bottom: 20px;
+	background: #fafafa;
+}
+
+.lp-order-line {
+	display: flex;
+	justify-content: space-between;
+	padding: 6px 0;
+	font-size: 14px;
+	color: #32325d;
+}
+
+.lp-order-line.lp-order-total {
+	border-top: 1px solid #e0e0e0;
+	margin-top: 6px;
+	padding-top: 10px;
+	font-weight: 600;
+	font-size: 16px;
+}
+
+.lp-order-pending {
+	opacity: 0.5;
+	font-style: italic;
+}
+
 .leaky-paywall-payment-method-container {
 	margin-bottom: 20px;
 }

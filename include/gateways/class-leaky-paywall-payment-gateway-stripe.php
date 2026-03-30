@@ -496,6 +496,23 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 			?>
 
+			<?php if ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) : ?>
+			<div id="lp-order-summary" style="display: none;">
+				<div class="lp-order-line lp-order-subtotal">
+					<span><?php esc_html_e( 'Subtotal', 'leaky-paywall' ); ?></span>
+					<span id="lp-order-subtotal-amount"></span>
+				</div>
+				<div class="lp-order-line lp-order-tax">
+					<span><?php esc_html_e( 'Tax', 'leaky-paywall' ); ?></span>
+					<span id="lp-order-tax-amount"></span>
+				</div>
+				<div class="lp-order-line lp-order-total">
+					<span><?php esc_html_e( 'Total', 'leaky-paywall' ); ?></span>
+					<span id="lp-order-total-amount"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+
 			<div class="form-row">
 
 				<div id="payment-element">

@@ -138,6 +138,10 @@
                         $('input[name="lp_billing_state"]').val(billingAddress.address.state || '');
                         $('input[name="lp_billing_postal_code"]').val(billingAddress.address.postal_code || '');
                         $('input[name="lp_billing_country"]').val(billingAddress.address.country || '');
+
+                        if ( 'on' === leaky_paywall_stripe_registration_ajax.automatic_tax_enabled ) {
+                            fetchTaxPreview(billingAddress.address);
+                        }
                     }
                 });
             }
@@ -154,6 +158,10 @@
                 $(".leaky-paywall-form-account-setup-step").removeClass("active");
 
                 $(".leaky-paywall-registration-payment-container").slideDown();
+
+                if ( 'on' === leaky_paywall_stripe_registration_ajax.automatic_tax_enabled ) {
+                    showInitialOrderSummary();
+                }
             }, 500);
 
             $("html, body").animate(
@@ -163,6 +171,56 @@
                 1000
             );
 
+        }
+
+        function showInitialOrderSummary() {
+            var price = $('input[name="level_price"]').val();
+            var currency = $('input[name="currency"]').val() || 'USD';
+            var formatter = formatCurrency(currency);
+            var subtotal = Math.round(parseFloat(price) * 100);
+
+            $('#lp-order-subtotal-amount').text(formatter(subtotal));
+            $('#lp-order-tax-amount').text('—').addClass('lp-order-pending');
+            $('#lp-order-total-amount').text('—');
+            $('#lp-order-summary').slideDown();
+        }
+
+        function fetchTaxPreview(address) {
+            var levelId = $('input[name="level_id"]').val();
+
+            $('#lp-order-tax-amount').text('Calculating...').addClass('lp-order-pending');
+
+            $.post(leaky_paywall_stripe_registration_ajax.ajaxurl, {
+                action: 'leaky_paywall_stripe_tax_preview',
+                nonce: leaky_paywall_stripe_registration_ajax.tax_preview_nonce,
+                level_id: levelId,
+                line1: address.line1 || '',
+                city: address.city || '',
+                state: address.state || '',
+                postal_code: address.postal_code || '',
+                country: address.country || ''
+            }, function(response) {
+                if (response.success) {
+                    var data = response.data;
+                    var formatter = formatCurrency(data.currency);
+                    $('#lp-order-subtotal-amount').text(formatter(data.subtotal));
+                    $('#lp-order-tax-amount').text(formatter(data.tax)).removeClass('lp-order-pending');
+                    $('#lp-order-total-amount').text(formatter(data.total));
+                } else {
+                    $('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
+                }
+            }).fail(function() {
+                $('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
+            });
+        }
+
+        function formatCurrency(currency) {
+            return function(amountInCents) {
+                return new Intl.NumberFormat(undefined, {
+                    style: 'currency',
+                    currency: currency
+                }).format(amountInCents / 100);
+            };
         }
 
 
