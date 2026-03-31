@@ -503,6 +503,7 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 	 */
 	function leaky_paywall_user_has_access($user = null)
 	{
+		$explicit_user = null !== $user;
 
 		if (null === $user) {
 			$user = wp_get_current_user();
@@ -518,7 +519,10 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 
 		$has_access = in_array( $payment_status, leaky_paywall_access_statuses(), true );
 
-		if (!is_user_logged_in()) {
+		// Only apply the logged-in check when checking the current visitor.
+		// When a user object is explicitly provided (e.g. REST API lookup),
+		// skip this — the caller already identified the user.
+		if ( ! $explicit_user && ! is_user_logged_in() ) {
 			$has_access = false;
 		}
 
