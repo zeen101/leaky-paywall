@@ -373,7 +373,7 @@ function leaky_paywall_process_user_registration_validation() {
 					'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 				);
 
-				if ( $settings['stripe_automatic_tax'] == 'on' ) {
+				if ( 'on' === $settings['stripe_automatic_tax'] ) {
 					$stripe_session_args['automatic_tax'] = array( 'enabled' => true );
 				}
 
@@ -413,7 +413,7 @@ function leaky_paywall_process_user_registration_validation() {
 					'cancel_url'           => home_url() . '?lp_stripe_checkout_cancel=true',
 				);
 
-				if ( $settings['stripe_automatic_tax'] == 'on' ) {
+				if ( 'on' === $settings['stripe_automatic_tax'] ) {
 					$stripe_session_args['automatic_tax'] = array( 'enabled' => true );
 					$stripe_session_args['line_items'] = array(
 						array(
@@ -539,6 +539,18 @@ function leaky_paywall_process_user_registration_validation() {
 	// if recurring, create a pending subscription
 	if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 
+		// When automatic tax is enabled, defer subscription creation until the billing
+		// address is collected in step 2. The tax preview handler will create the subscription
+		// with automatic_tax enabled and return the client_secret.
+		if ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) {
+			$return = array(
+				'success'            => 1,
+				'customer_id'        => $cu->id,
+				'deferred_tax'       => true,
+			);
+			wp_send_json( $return );
+		}
+
 		$client_secret = leaky_paywall_create_stripe_subscription( $cu, $fields );
 
 		if ( 'subscription_updated' === $client_secret ) {
@@ -566,6 +578,18 @@ function leaky_paywall_process_user_registration_validation() {
 
 	// if not recurring, create a payment intent
 	$stripe_price = number_format( floatval( $level['price'] ), 2, '', '' );
+
+	// When automatic tax is enabled, defer payment intent creation until the billing
+	// address is collected in step 2. The tax preview handler will create the payment
+	// intent with the tax-inclusive amount.
+	if ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) {
+		$return = array(
+			'success'      => 1,
+			'customer_id'  => $cu->id,
+			'deferred_tax' => true,
+		);
+		wp_send_json( $return );
+	}
 
 	$intent_args = apply_filters(
 		'leaky_paywall_payment_intent_args',

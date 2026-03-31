@@ -994,6 +994,25 @@ function do_leaky_paywall_register_form($atts)
 				</div>
 			<?php endif; ?>
 
+			<?php
+			$lp_settings = get_leaky_paywall_settings();
+			if ( 'on' === $lp_settings['stripe_automatic_tax'] && 'on' === $lp_settings['stripe_billing_address'] ) : ?>
+			<div id="lp-order-summary" style="display: none;">
+				<div class="lp-order-line lp-order-subtotal">
+					<span><?php esc_html_e( 'Subtotal', 'leaky-paywall' ); ?></span>
+					<span id="lp-order-subtotal-amount"></span>
+				</div>
+				<div class="lp-order-line lp-order-tax">
+					<span><?php esc_html_e( 'Tax', 'leaky-paywall' ); ?></span>
+					<span id="lp-order-tax-amount"></span>
+				</div>
+				<div class="lp-order-line lp-order-total">
+					<span><?php esc_html_e( 'Total', 'leaky-paywall' ); ?></span>
+					<span id="lp-order-total-amount"></span>
+				</div>
+			</div>
+			<?php endif; ?>
+
 			<div class="leaky-paywall-checkout-button">
 				<button id="leaky-paywall-submit" type="submit"><?php echo esc_html(leaky_paywall_get_registration_checkout_button_text()); ?></button>
 			</div>

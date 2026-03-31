@@ -496,35 +496,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 			?>
 
-			<?php if ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) : ?>
-			<div id="lp-order-summary" style="display: none;">
-				<div class="lp-order-line lp-order-subtotal">
-					<span><?php esc_html_e( 'Subtotal', 'leaky-paywall' ); ?></span>
-					<span id="lp-order-subtotal-amount"></span>
-				</div>
-				<div class="lp-order-line lp-order-tax">
-					<span><?php esc_html_e( 'Tax', 'leaky-paywall' ); ?></span>
-					<span id="lp-order-tax-amount"></span>
-				</div>
-				<div class="lp-order-line lp-order-total">
-					<span><?php esc_html_e( 'Total', 'leaky-paywall' ); ?></span>
-					<span id="lp-order-total-amount"></span>
-				</div>
-			</div>
-			<?php endif; ?>
-
-			<div class="form-row">
-
-				<div id="payment-element">
-					<!--Stripe.js injects the Payment Element-->
-				</div>
-
-				<div id="payment-message" class="hidden" style="color: red; margin-top: 10px;"></div>
-			</div>
-
 			<?php if ('on' == $settings['stripe_billing_address']) {
 			?>
-				<div class="form-row" style="margin-top: 20px;">
+				<div class="form-row" style="margin-bottom: 20px;">
 					<label><?php esc_html_e('Billing Address', 'leaky-paywall'); ?></label>
 					<div id="address-element">
 						<!-- Elements will create form elements here -->
@@ -539,6 +513,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				</div>
 			<?php
 			} ?>
+
+			<div class="form-row">
+
+				<div id="payment-element">
+					<!--Stripe.js injects the Payment Element-->
+				</div>
+
+				<div id="payment-message" class="hidden" style="color: red; margin-top: 10px;"></div>
+			</div>
 
 
 

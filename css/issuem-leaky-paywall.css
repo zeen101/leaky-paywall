@@ -402,6 +402,12 @@
 	text-decoration: underline;
 }
 
+#leaky-paywall-submit:disabled, #leaky-paywall-registration-next:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
 #card-element {
 	margin-bottom: 20px;
 	background: #E7E9EB;

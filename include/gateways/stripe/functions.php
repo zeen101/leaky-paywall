@@ -331,12 +331,6 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		'expand' => ['latest_invoice.payment_intent'],
 	);
 
-	$settings = get_leaky_paywall_settings();
-
-	if ( 'on' === $settings['stripe_automatic_tax'] ) {
-		$subscription_array['automatic_tax'] = array( 'enabled' => true );
-	}
-
 	try {
 		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
 		leaky_paywall_log($cu, 'stripe subscription for ' . $customer_id);
@@ -1405,15 +1399,97 @@ function leaky_paywall_stripe_tax_preview() {
 
 	$stripe = leaky_paywall_initialize_stripe_api();
 
-	$preview_args = array(
-		'automatic_tax'    => array( 'enabled' => true ),
-		'customer_details' => array(
-			'address'    => $address,
-			'tax_exempt' => 'none',
-		),
-	);
+	if ( ! $stripe ) {
+		wp_send_json_error( 'Stripe API could not be initialized.' );
+	}
+
+	$customer_id   = isset( $_POST['customer_id'] ) ? sanitize_text_field( wp_unslash( $_POST['customer_id'] ) ) : '';
+	$client_secret = '';
+
+	// Update the Stripe customer's address so automatic_tax can resolve their location
+	// when the subscription or payment intent is created/confirmed.
+	if ( ! empty( $customer_id ) ) {
+		try {
+			$stripe->customers->update(
+				$customer_id,
+				array( 'address' => $address ),
+				leaky_paywall_get_stripe_connect_params()
+			);
+		} catch ( \Exception $e ) {
+			leaky_paywall_log( $e->getMessage(), 'stripe tax preview: could not update customer address' );
+			wp_send_json_error( 'Could not update billing address.' );
+		}
+
+		// Create the subscription now that the customer has an address.
+		// Subscription creation was deferred from step 1 so automatic_tax can resolve the location.
+		// Only create if one doesn't already exist (address may change multiple times).
+		if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
+			$existing_subs = $stripe->subscriptions->all(
+				array( 'customer' => $customer_id, 'status' => 'incomplete', 'limit' => 1 ),
+				leaky_paywall_get_stripe_connect_params()
+			);
+
+			if ( empty( $existing_subs->data ) ) {
+				try {
+					$stripe_price = number_format( (float) $level['price'], 2, '', '' );
+					$plan_args    = array(
+						'stripe_price' => $stripe_price,
+						'currency'     => leaky_paywall_get_currency(),
+						'secret_key'   => leaky_paywall_get_stripe_secret_key(),
+					);
+
+					$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+
+					if ( ! $stripe_plan ) {
+						wp_send_json_error( 'Could not retrieve Stripe plan.' );
+					}
+
+					$subscription = $stripe->subscriptions->create(
+						array(
+							'customer'         => $customer_id,
+							'items'            => array( array( 'plan' => $stripe_plan->id ) ),
+							'automatic_tax'    => array( 'enabled' => true ),
+							'payment_behavior' => 'default_incomplete',
+							'payment_settings' => array( 'save_default_payment_method' => 'on_subscription' ),
+							'expand'           => array( 'latest_invoice.payment_intent' ),
+						),
+						leaky_paywall_get_stripe_connect_params()
+					);
+
+					$client_secret = $subscription->latest_invoice->payment_intent->client_secret;
+				} catch ( \Exception $e ) {
+					leaky_paywall_log( $e->getMessage(), 'stripe tax preview: could not create subscription' );
+					wp_send_json_error( 'Could not create subscription.' );
+				}
+			} else {
+				// Subscription already exists — retrieve its client_secret for the payment form.
+				$existing_sub = $stripe->subscriptions->retrieve(
+					$existing_subs->data[0]->id,
+					array( 'expand' => array( 'latest_invoice.payment_intent' ) ),
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				if ( ! empty( $existing_sub->latest_invoice->payment_intent ) ) {
+					$client_secret = $existing_sub->latest_invoice->payment_intent->client_secret;
+				}
+			}
+		}
+	}
 
 	try {
+		$preview_args = array(
+			'automatic_tax' => array( 'enabled' => true ),
+		);
+
+		if ( ! empty( $customer_id ) ) {
+			$preview_args['customer'] = $customer_id;
+		} else {
+			$preview_args['customer_details'] = array(
+				'address'    => $address,
+				'tax_exempt' => 'none',
+			);
+		}
+
 		if ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 			$stripe_price = number_format( (float) $level['price'], 2, '', '' );
 			$plan_args    = array(
@@ -1428,38 +1504,105 @@ function leaky_paywall_stripe_tax_preview() {
 				wp_send_json_error( 'Could not retrieve Stripe plan.' );
 			}
 
-			$preview_args['subscription_details'] = array(
-				'items' => array(
-					array( 'price' => $stripe_plan->id, 'quantity' => 1 ),
-				),
+			$preview_args['subscription_items'] = array(
+				array( 'price' => $stripe_plan->id, 'quantity' => 1 ),
 			);
 		} else {
 			$stripe_price = number_format( (float) $level['price'], 2, '', '' );
 			$currency     = leaky_paywall_get_currency();
 			$tax_behavior = isset( $settings['stripe_tax_behavior'] ) ? $settings['stripe_tax_behavior'] : 'exclusive';
 
-			$preview_args['line_items'] = array(
+			$preview_args['invoice_items'] = array(
 				array(
 					'amount'       => (int) $stripe_price,
 					'currency'     => $currency,
-					'quantity'     => 1,
 					'tax_behavior' => $tax_behavior,
-					'reference'    => $level['label'],
+					'description'  => $level['label'],
 				),
 			);
 		}
 
-		$preview = $stripe->invoices->createPreview(
+		$preview = $stripe->invoices->upcoming(
 			$preview_args,
 			leaky_paywall_get_stripe_connect_params()
 		);
 
-		wp_send_json_success( array(
+		// For non-recurring levels, create an invoice with automatic_tax so Stripe
+		// records the tax breakdown. The invoice generates a payment intent we can confirm.
+		// Only create if one doesn't already exist (address may change multiple times).
+		if ( empty( $client_secret ) && ( ! isset( $level['recurring'] ) || 'on' !== $level['recurring'] ) && ! empty( $customer_id ) ) {
+
+			// Check for an existing open/draft invoice for this customer.
+			$existing_invoices = $stripe->invoices->all(
+				array( 'customer' => $customer_id, 'status' => 'open', 'limit' => 1 ),
+				leaky_paywall_get_stripe_connect_params()
+			);
+
+			if ( ! empty( $existing_invoices->data ) ) {
+				// Invoice already exists — return its payment intent client_secret.
+				$existing_invoice = $existing_invoices->data[0];
+				if ( ! empty( $existing_invoice->payment_intent ) ) {
+					$pi = $stripe->paymentIntents->retrieve(
+						$existing_invoice->payment_intent,
+						[],
+						leaky_paywall_get_stripe_connect_params()
+					);
+					$client_secret = $pi->client_secret;
+				}
+			} else {
+				$stripe_price = number_format( (float) $level['price'], 2, '', '' );
+				$currency     = leaky_paywall_get_currency();
+				$tax_behavior = isset( $settings['stripe_tax_behavior'] ) ? $settings['stripe_tax_behavior'] : 'exclusive';
+
+				// Create a draft invoice with automatic tax.
+				$invoice = $stripe->invoices->create(
+					array(
+						'customer'      => $customer_id,
+						'automatic_tax' => array( 'enabled' => true ),
+						'currency'      => $currency,
+						'description'   => $level['label'],
+					),
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				// Add a line item to the invoice.
+				$stripe->invoiceItems->create(
+					array(
+						'customer'     => $customer_id,
+						'invoice'      => $invoice->id,
+						'amount'       => (int) $stripe_price,
+						'currency'     => $currency,
+						'description'  => $level['label'],
+						'tax_behavior' => $tax_behavior,
+					),
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				// Finalize the invoice to generate the payment intent.
+				$finalized = $stripe->invoices->finalizeInvoice(
+					$invoice->id,
+					array( 'expand' => array( 'payment_intent' ) ),
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				if ( ! empty( $finalized->payment_intent ) ) {
+					$client_secret = $finalized->payment_intent->client_secret;
+				}
+			}
+		}
+
+		$response = array(
 			'subtotal' => $preview->subtotal,
 			'tax'      => $preview->tax,
 			'total'    => $preview->total,
 			'currency' => strtoupper( $preview->currency ),
-		) );
+		);
+
+		if ( ! empty( $client_secret ) ) {
+			$response['client_secret'] = $client_secret;
+		}
+
+		wp_send_json_success( $response );
 
 	} catch ( \Exception $e ) {
 		leaky_paywall_log( $e->getMessage(), 'stripe tax preview error' );

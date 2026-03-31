@@ -21,7 +21,7 @@
 
         // one time and recurring
         $("#leaky-paywall-registration-next").click(function () {
-            $(this).text(leaky_paywall_stripe_registration_ajax.continue_text);
+            $(this).text(leaky_paywall_stripe_registration_ajax.continue_text).prop('disabled', true);
             $("#leaky-paywall-registration-errors").html("");
             validateUserData();
         });
@@ -59,7 +59,7 @@
                             value.message +
                             "</p>"
                         );
-                        $("#leaky-paywall-registration-next").text( leaky_paywall_stripe_registration_ajax.next_text );
+                        $("#leaky-paywall-registration-next").text( leaky_paywall_stripe_registration_ajax.next_text ).prop('disabled', false);
                         $("#leaky-paywall-registration-errors").show();
 
                         $("html, body").animate(
@@ -92,6 +92,12 @@
                           // Handle form submission.
                         document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", handleSubmit);
 
+                    } else if (resp.deferred_tax) {
+                        // subscription with automatic tax — defer subscription creation until address is entered
+                        $("#stripe-customer-id").val(resp.customer_id);
+                        buildAddressOnly();
+                        showPaymentForm();
+
                     } else if (resp.customer_id) {
                         // subscription
                         $("#stripe-customer-id").val(resp.customer_id);
@@ -110,6 +116,40 @@
 
         }; // end validate user data
 
+        let addressElementMounted = false;
+
+        function mountAddressElement( elementsInstance ) {
+            const addressElement = elementsInstance.create("address", {
+                mode: "billing",
+            });
+
+            addressElement.mount("#address-element");
+            addressElementMounted = true;
+
+            addressElement.on('change', (event) => {
+                if (event.complete) {
+                    billingAddress = event.value;
+                    $('input[name="lp_billing_name"]').val(billingAddress.name || '');
+                    $('input[name="lp_billing_line1"]').val(billingAddress.address.line1 || '');
+                    $('input[name="lp_billing_line2"]').val(billingAddress.address.line2 || '');
+                    $('input[name="lp_billing_city"]').val(billingAddress.address.city || '');
+                    $('input[name="lp_billing_state"]').val(billingAddress.address.state || '');
+                    $('input[name="lp_billing_postal_code"]').val(billingAddress.address.postal_code || '');
+                    $('input[name="lp_billing_country"]').val(billingAddress.address.country || '');
+
+                    if ( 'on' === leaky_paywall_stripe_registration_ajax.automatic_tax_enabled ) {
+                        fetchTaxPreview(billingAddress.address);
+                    }
+                }
+            });
+        }
+
+        function buildAddressOnly() {
+            // For deferred tax flow: mount only the address element first, without a clientSecret.
+            var standaloneElements = stripe.elements();
+            mountAddressElement( standaloneElements );
+        }
+
         function buildPaymentForm( clientSecret ) {
 
             elements = stripe.elements({ clientSecret });
@@ -119,38 +159,21 @@
             };
 
             const paymentElement = elements.create("payment", paymentElementOptions);
+
+            // Temporarily lock scroll position while Stripe Element mounts to prevent layout shift.
+            var scrollPos = $(window).scrollTop();
             paymentElement.mount("#payment-element");
+            $(window).scrollTop(scrollPos);
 
-            if ( 'on' == leaky_paywall_stripe_registration_ajax.billing_address ) {
-                const addressElement = elements.create("address", {
-                    mode: "billing",
-                });
-
-                addressElement.mount("#address-element");
-
-                addressElement.on('change', (event) => {
-                    if (event.complete) {
-                        billingAddress = event.value;
-                        $('input[name="lp_billing_name"]').val(billingAddress.name || '');
-                        $('input[name="lp_billing_line1"]').val(billingAddress.address.line1 || '');
-                        $('input[name="lp_billing_line2"]').val(billingAddress.address.line2 || '');
-                        $('input[name="lp_billing_city"]').val(billingAddress.address.city || '');
-                        $('input[name="lp_billing_state"]').val(billingAddress.address.state || '');
-                        $('input[name="lp_billing_postal_code"]').val(billingAddress.address.postal_code || '');
-                        $('input[name="lp_billing_country"]').val(billingAddress.address.country || '');
-
-                        if ( 'on' === leaky_paywall_stripe_registration_ajax.automatic_tax_enabled ) {
-                            fetchTaxPreview(billingAddress.address);
-                        }
-                    }
-                });
+            if ( 'on' == leaky_paywall_stripe_registration_ajax.billing_address && !addressElementMounted ) {
+                mountAddressElement( elements );
             }
 
         }
 
         function showPaymentForm() {
 
-            setInterval(() => {
+            setTimeout(() => {
                 $("#leaky-paywall-registration-errors").hide();
                 $("#leaky-paywall-registration-next").remove();
                 $(".leaky-paywall-registration-user-container").hide();
@@ -162,14 +185,14 @@
                 if ( 'on' === leaky_paywall_stripe_registration_ajax.automatic_tax_enabled ) {
                     showInitialOrderSummary();
                 }
-            }, 500);
 
-            $("html, body").animate(
-                {
-                scrollTop: $(".leaky-paywall-form-steps").offset().top,
-                },
-                1000
-            );
+                $("html, body").animate(
+                    {
+                    scrollTop: $(".leaky-paywall-form-steps").offset().top,
+                    },
+                    1000
+                );
+            }, 500);
 
         }
 
@@ -185,32 +208,57 @@
             $('#lp-order-summary').slideDown();
         }
 
+        var taxPreviewRequest = null;
+
         function fetchTaxPreview(address) {
             var levelId = $('input[name="level_id"]').val();
+            var customerId = $('#stripe-customer-id').val() || '';
+
+            // Abort any in-flight request.
+            if ( taxPreviewRequest ) {
+                taxPreviewRequest.abort();
+            }
 
             $('#lp-order-tax-amount').text('Calculating...').addClass('lp-order-pending');
+            $('#leaky-paywall-submit').prop('disabled', true);
 
-            $.post(leaky_paywall_stripe_registration_ajax.ajaxurl, {
-                action: 'leaky_paywall_stripe_tax_preview',
-                nonce: leaky_paywall_stripe_registration_ajax.tax_preview_nonce,
-                level_id: levelId,
-                line1: address.line1 || '',
-                city: address.city || '',
-                state: address.state || '',
-                postal_code: address.postal_code || '',
-                country: address.country || ''
-            }, function(response) {
-                if (response.success) {
-                    var data = response.data;
-                    var formatter = formatCurrency(data.currency);
-                    $('#lp-order-subtotal-amount').text(formatter(data.subtotal));
-                    $('#lp-order-tax-amount').text(formatter(data.tax)).removeClass('lp-order-pending');
-                    $('#lp-order-total-amount').text(formatter(data.total));
-                } else {
-                    $('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
+            taxPreviewRequest = $.ajax({
+                url: leaky_paywall_stripe_registration_ajax.ajaxurl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'leaky_paywall_stripe_tax_preview',
+                    nonce: leaky_paywall_stripe_registration_ajax.tax_preview_nonce,
+                    level_id: levelId,
+                    customer_id: customerId,
+                    line1: address.line1 || '',
+                    city: address.city || '',
+                    state: address.state || '',
+                    postal_code: address.postal_code || '',
+                    country: address.country || ''
+                },
+                success: function(response) {
+                    jQuery('#leaky-paywall-submit').prop('disabled', false);
+                    if (response.success) {
+                        var data = response.data;
+                        var formatter = formatCurrency(data.currency);
+                        jQuery('#lp-order-subtotal-amount').text(formatter(data.subtotal));
+                        jQuery('#lp-order-tax-amount').text(formatter(data.tax)).removeClass('lp-order-pending');
+                        jQuery('#lp-order-total-amount').text(formatter(data.total));
+
+                        // Build payment form now that subscription is created with tax.
+                        if (data.client_secret && !jQuery('#payment-element .StripeElement, #payment-element iframe').length) {
+                            buildPaymentForm(data.client_secret);
+                            document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", handleSubmit);
+                        }
+                    } else {
+                        jQuery('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
+                    }
+                },
+                error: function(xhr, status, err) {
+                    jQuery('#leaky-paywall-submit').prop('disabled', false);
+                    jQuery('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
                 }
-            }).fail(function() {
-                $('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
             });
         }
 
