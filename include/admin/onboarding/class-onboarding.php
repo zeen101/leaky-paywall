@@ -239,7 +239,7 @@ class Leaky_Paywall_Onboarding {
 				$lb_settings['enabled']              = 'on';
 				$lb_settings['level_id']             = 0;
 				$lb_settings['heading']              = 'Create a free account, or log in.';
-				$lb_settings['subheading']           = 'Gain access to read this content, plus limited free content.';
+				$lb_settings['subheading']           = 'Gain access to read this article, plus limited free content.';
 				$lb_settings['terms_and_conditions'] = 'Yes! I would like to receive new content and updates.';
 				$lb_settings['background_color']     = '#000000';
 				$lb_settings['text_color']           = '#ffffff';

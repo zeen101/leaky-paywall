@@ -241,7 +241,7 @@ class Leaky_Paywall_List_Builder_Settings
             'enabled'                    => '',
             'level_id'                   => '0',
             'heading'                    => 'Create a free account, or log in.',
-            'subheading'                 => 'Gain access to read this content, plus limited free content.',
+            'subheading'                 => 'Gain access to read this article, plus limited free content.',
             'terms_and_conditions'       => 'Yes! I would like to receive new content and updates.',
             'background_color'           => '#000000',
             'text_color'                 => '#ffffff',
