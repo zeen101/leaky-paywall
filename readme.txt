@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 5.0.3
+Stable tag: 5.0.4
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -229,6 +229,14 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.0.4 =
+* Add new subscriber table filters and screen options
+* Add filters for paywall allowed value and content viewed
+* Add Stripe Tax integration
+* Use terms and conditions setting on List Builder
+* Fix logic for has access check in REST API
+* Fix link colors in List Builder
 
 = 5.0.3 =
 * Fix duplicate display of the same user in subscriber table
