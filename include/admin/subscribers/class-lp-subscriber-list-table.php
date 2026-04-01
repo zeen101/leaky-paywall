@@ -163,7 +163,15 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 		// Level filter.
 		if ( isset( $_GET['filter-level'] ) && isset( $_GET['user-type'] ) && 'lpsubs' === $_GET['user-type'] ) {
 			$level = sanitize_text_field( wp_unslash( $_GET['filter-level'] ) );
-			if ( 'all' !== $level ) {
+			if ( 'undefined' === $level ) {
+				// Find subscribers whose level_id is empty or doesn't match any valid level.
+				$valid_level_ids = array_map( 'strval', array_keys( leaky_paywall_get_levels() ) );
+				$args['meta_query'][] = array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+					'value'   => $valid_level_ids,
+					'compare' => 'NOT IN',
+				);
+			} elseif ( 'all' !== $level ) {
 				$args['meta_query'][] = array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 					'value'   => $level,
@@ -470,6 +478,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 					echo '<option ' . selected( $key, $lev, false ) . ' value="' . esc_attr( $key ) . '">' . esc_html( stripslashes( $level['label'] ) ) . '</option>';
 				}
 				?>
+				<option value="undefined" <?php selected( $lev, 'undefined' ); ?>><?php esc_html_e( 'Undefined', 'leaky-paywall' ); ?></option>
 			</select>
 
 			<?php
