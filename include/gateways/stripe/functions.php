@@ -1374,6 +1374,59 @@ function leaky_paywall_stripe_sync_billing_address( $subscriber_data ) {
 add_action( 'leaky_paywall_after_process_registration', 'leaky_paywall_stripe_sync_billing_address', 10, 1 );
 
 /**
+ * Capture Stripe Tax data on a transaction after it is created.
+ *
+ * Looks up the most recent invoice for the Stripe customer and stores
+ * the tax and subtotal amounts on the transaction post meta.
+ *
+ * @since 5.1.0
+ */
+function leaky_paywall_stripe_capture_tax_on_transaction( $transaction_id, $user ) {
+	$settings = get_leaky_paywall_settings();
+
+	if ( 'on' !== $settings['stripe_automatic_tax'] ) {
+		return;
+	}
+
+	$gateway = get_post_meta( $transaction_id, '_gateway', true );
+
+	if ( ! in_array( $gateway, array( 'stripe', 'stripe_checkout' ), true ) ) {
+		return;
+	}
+
+	$customer_id = get_post_meta( $transaction_id, '_subscriber_id', true );
+
+	if ( empty( $customer_id ) ) {
+		return;
+	}
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	if ( ! $stripe ) {
+		return;
+	}
+
+	try {
+		$invoices = $stripe->invoices->all(
+			array( 'customer' => $customer_id, 'limit' => 1 ),
+			leaky_paywall_get_stripe_connect_params()
+		);
+
+		if ( ! empty( $invoices->data ) ) {
+			$invoice = $invoices->data[0];
+
+			if ( isset( $invoice->tax ) && $invoice->tax > 0 ) {
+				update_post_meta( $transaction_id, '_tax_amount', $invoice->tax / 100 );
+				update_post_meta( $transaction_id, '_subtotal', $invoice->subtotal / 100 );
+			}
+		}
+	} catch ( \Exception $e ) {
+		leaky_paywall_log( $e->getMessage(), 'stripe tax capture on transaction' );
+	}
+}
+add_action( 'leaky_paywall_after_create_transaction', 'leaky_paywall_stripe_capture_tax_on_transaction', 10, 2 );
+
+/**
  * AJAX handler for Stripe Tax preview via Invoice Preview API.
  *
  * @since 5.1.0

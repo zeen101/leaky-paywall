@@ -252,7 +252,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 		<form id="leaky-paywall-subscribers" method="get">
 			<input type="hidden" name="page" value="<?php echo isset($_GET['page']) ? esc_attr(sanitize_text_field(wp_unslash($_GET['page']))) : ''; ?>" />
-			<div class="tablenav top">
+			<div class="tablenav top" style="border-bottom: 0;">
 				<?php $subscriber_table->user_views(); ?>
 				<?php $subscriber_table->search_box(__('Search Subscribers'), 'leaky-paywall'); ?>
 			</div>
@@ -817,7 +817,20 @@ class Leaky_Paywall_Admin_Subscriber
 								<tr>
 									<td><a href="<?php echo esc_url(admin_url('post.php?post=' . $transaction->ID . '&action=edit')); ?>"><?php echo esc_html(gmdate('M j, Y', strtotime($transaction->post_date))); ?></a></td>
 									<td><?php echo isset($txn_level['label']) ? esc_html($txn_level['label']) : esc_html('#' . $txn_level_id); ?></td>
-									<td><?php echo esc_html(leaky_paywall_get_current_currency_symbol()) . esc_html(get_post_meta($transaction->ID, '_price', true)); ?></td>
+									<td>
+										<?php
+										$txn_price    = get_post_meta( $transaction->ID, '_price', true );
+										$txn_tax      = get_post_meta( $transaction->ID, '_tax_amount', true );
+										$txn_subtotal = get_post_meta( $transaction->ID, '_subtotal', true );
+
+										if ( ! empty( $txn_tax ) && $txn_tax > 0 ) {
+											$txn_total = floatval( $txn_subtotal ) + floatval( $txn_tax );
+											echo esc_html( leaky_paywall_get_current_currency_symbol() . number_format( $txn_total, 2 ) );
+										} else {
+											echo esc_html( leaky_paywall_get_current_currency_symbol() . $txn_price );
+										}
+										?>
+									</td>
 									<td>
 										<?php
 										$txn_status = get_post_meta($transaction->ID, '_status', true);

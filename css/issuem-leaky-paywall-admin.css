@@ -542,21 +542,35 @@ input[type="submit"].lp-inline-button {
 .lp-transaction-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.lp-transaction-price-block {
   padding: 0 0 16px;
   margin-bottom: 20px;
   border-bottom: 2px solid #f0f0f1;
 }
 
-.lp-transaction-header .lp-transaction-amount {
+.lp-transaction-price-block .lp-transaction-amount {
   font-size: 32px;
   font-weight: 700;
   color: #1d2327;
   line-height: 1.1;
+  display: block;
 }
 
-.lp-transaction-header .lp-transaction-amount--refund {
+.lp-transaction-price-block .lp-transaction-amount--refund {
   color: #b32d2e;
+}
+
+.lp-transaction-tax-breakdown {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #6b7c93;
+  line-height: 1.6;
+  margin-top: 4px;
 }
 
 /* Transaction detail view — refund notice */

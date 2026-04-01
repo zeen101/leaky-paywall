@@ -31,6 +31,10 @@ class LP_Transaction {
 
 	private $subscriber_id;
 
+	private $tax_amount;
+
+	private $subtotal;
+
 	/**
 	 * The constructor
 	 *
@@ -47,6 +51,8 @@ class LP_Transaction {
 		$this->currency               = isset( $args['currency'] ) ? $args['currency'] : '';
 		$this->is_recurring           = isset( $args['is_recurring'] ) ? true : false;
 		$this->subscriber_id          = isset( $args['subscriber_id'] ) ? $args['subscriber_id'] : '';
+		$this->tax_amount             = isset( $args['tax_amount'] ) ? $args['tax_amount'] : '';
+		$this->subtotal               = isset( $args['subtotal'] ) ? $args['subtotal'] : '';
 
 	}
 
@@ -99,6 +105,14 @@ class LP_Transaction {
 
 		if ( $this->subscriber_id ) {
 			update_post_meta( $transaction_id, '_subscriber_id', $this->subscriber_id );
+		}
+
+		if ( '' !== $this->tax_amount ) {
+			update_post_meta( $transaction_id, '_tax_amount', $this->tax_amount );
+		}
+
+		if ( '' !== $this->subtotal ) {
+			update_post_meta( $transaction_id, '_subtotal', $this->subtotal );
 		}
 
 		do_action( 'leaky_paywall_after_create_transaction', $transaction_id, $user );

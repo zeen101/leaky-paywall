@@ -143,6 +143,9 @@ class LP_Transaction_Post_Type
 		$nag_location = get_post_meta( $post->ID, '_nag_location_id', true );
 		$refund_for   = get_post_meta( $post->ID, '_refund_for', true );
 
+		$tax_amount   = get_post_meta( $post->ID, '_tax_amount', true );
+		$subtotal     = get_post_meta( $post->ID, '_subtotal', true );
+
 		$is_refund    = 'refund' === $status;
 		$display_status = $txn_status ? ucfirst( $txn_status ) : __( 'Complete', 'leaky-paywall' );
 
@@ -167,13 +170,10 @@ class LP_Transaction_Post_Type
 		wp_nonce_field( 'lp_transaction_meta_box_nonce', 'meta_box_nonce' );
 		?>
 
-		<!-- Header: status + amount + payment type -->
+		<!-- Header: status + payment type -->
 		<div class="lp-transaction-header">
 			<span class="lp-status-badge <?php echo esc_attr( $badge_class ); ?>">
 				<?php echo $is_refund ? esc_html__( 'Refund', 'leaky-paywall' ) : esc_html( $display_status ); ?>
-			</span>
-			<span class="lp-transaction-amount <?php echo $is_refund ? 'lp-transaction-amount--refund' : ''; ?>">
-				<?php echo esc_html( $formatted_price ); ?>
 			</span>
 			<?php if ( ! $is_refund ) :
 				if ( $is_recurring ) : ?>
@@ -181,6 +181,25 @@ class LP_Transaction_Post_Type
 				<?php elseif ( isset( $level['recurring'] ) && $level['recurring'] ) : ?>
 				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Initial Subscription Payment', 'leaky-paywall' ); ?></span>
 				<?php endif; ?>
+			<?php endif; ?>
+		</div>
+
+		<!-- Amount -->
+		<div class="lp-transaction-price-block">
+			<?php if ( ! empty( $tax_amount ) && $tax_amount > 0 ) :
+				$total = floatval( $subtotal ) + floatval( $tax_amount );
+			?>
+			<span class="lp-transaction-amount <?php echo $is_refund ? 'lp-transaction-amount--refund' : ''; ?>">
+				<?php echo esc_html( leaky_paywall_format_display_price( $total ) ); ?>
+			</span>
+			<div class="lp-transaction-tax-breakdown">
+				<span class="lp-transaction-tax-line"><?php esc_html_e( 'Subtotal:', 'leaky-paywall' ); ?> <?php echo esc_html( leaky_paywall_format_display_price( $subtotal ) ); ?></span>
+				<span class="lp-transaction-tax-line"><?php esc_html_e( 'Tax:', 'leaky-paywall' ); ?> <?php echo esc_html( leaky_paywall_format_display_price( $tax_amount ) ); ?></span>
+			</div>
+			<?php else : ?>
+			<span class="lp-transaction-amount <?php echo $is_refund ? 'lp-transaction-amount--refund' : ''; ?>">
+				<?php echo esc_html( $formatted_price ); ?>
+			</span>
 			<?php endif; ?>
 		</div>
 
@@ -464,9 +483,14 @@ class LP_Transaction_Post_Type
 				break;
 
 			case 'price':
-				$price = get_post_meta($post_id, '_price', true);
+				$price     = get_post_meta($post_id, '_price', true);
+				$tax_amt   = get_post_meta($post_id, '_tax_amount', true);
+				$sub_total = get_post_meta($post_id, '_subtotal', true);
 
-				if (is_numeric($price)) {
+				if ( ! empty( $tax_amt ) && $tax_amt > 0 ) {
+					$display_total = floatval( $sub_total ) + floatval( $tax_amt );
+					echo esc_html( leaky_paywall_get_current_currency_symbol() . number_format( $display_total, 2 ) );
+				} elseif (is_numeric($price)) {
 					$formatted = esc_html(leaky_paywall_get_current_currency_symbol() . number_format($price, 2));
 					if ($price < 0) {
 						echo '<span class="lp-txn-price--negative">' . $formatted . '</span>';
