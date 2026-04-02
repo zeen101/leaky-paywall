@@ -263,12 +263,19 @@
 			viewed_content: viewedContent
 		};
 
+		var headers = {
+			'Content-Type': 'application/json'
+		};
+
+		// Only send the nonce for logged-in users. For anonymous visitors,
+		// omitting the header avoids 403 errors when a page cache serves a stale nonce.
+		if ( config.nonce && document.body.classList.contains('logged-in') ) {
+			headers['X-WP-Nonce'] = config.nonce;
+		}
+
 		fetch(restUrl, {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': config.nonce || ''
-			},
+			headers: headers,
 			body: JSON.stringify(requestBody),
 			credentials: 'same-origin'
 		})
