@@ -437,9 +437,12 @@ class Leaky_Paywall_REST_Restrictions {
 				}
 
 				foreach ( $restrictions_by_type[ $content_post_type ] as $restriction ) {
-					// First, see if the content has already been viewed.
+					// Allow re-access to previously viewed content, but only if
+					// the user hasn't exceeded their allowed article count.
 					if ( isset( $viewed_content[ $content_post_type ] ) && array_key_exists( $this->post_id, $viewed_content[ $content_post_type ] ) ) {
-						return true;
+						if ( ! $this->allowed_value_exceeded() ) {
+							return true;
+						}
 					}
 
 					$access_taxonomy      = isset( $access_rule['taxonomy'] ) ? $access_rule['taxonomy'] : 'all';
