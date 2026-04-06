@@ -215,17 +215,17 @@
 
 
       document.addEventListener('leaky_paywall_shown', function(e) {
-
           var nagType = e.detail.response.nag_type;
+          var isUpgrade = nagType === 'upgrade' || (nagType && nagType.indexOf('targeted') === 0);
 
-          if (nagType !== 'subscribe' && nagType !== 'upgrade') {
+          if (nagType !== 'subscribe' && !isUpgrade) {
               return;
           }
 
           var subscribePanel = document.getElementById('lplb-subscribe-panel');
           var upgradePanel   = document.getElementById('lplb-upgrade-panel');
 
-          if (nagType === 'upgrade') {
+          if (isUpgrade) {
               if (!LP_LIST_BUILDER.upgradeEnabled) { return; }
               if (subscribePanel) subscribePanel.style.display = 'none';
               if (upgradePanel)   upgradePanel.style.display   = '';

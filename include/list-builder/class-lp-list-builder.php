@@ -17,7 +17,7 @@ class LP_List_Builder
         }
 
         add_action('wp_footer', [$this, 'output_slider']);
-        add_action('wp_enqueue_scripts', array($this, 'load_scripts'));
+        add_action('wp_enqueue_scripts', array($this, 'load_scripts'), 5);
         add_action('rest_api_init', [$this, 'register_routes']);
         add_action('after_setup_theme', [$this, 'maybe_hide_admin_bar']);
     }

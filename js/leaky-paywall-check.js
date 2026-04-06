@@ -228,8 +228,8 @@
 				container.innerHTML = '';
 			} else {
 				container.innerHTML = leadIn + nagContent;
-				container.style.visibility = 'visible';
 			}
+			container.style.visibility = 'visible';
 		});
 	}
 
@@ -287,7 +287,13 @@
 			})
 			.then(function (data) {
 				if (data.show_paywall && data.nag_content) {
-					displayPaywall(data.nag_content, postId);
+					// If List Builder is active, skip the in-content nag —
+					// List Builder's slider will handle the display via the event.
+					if (window.LP_LIST_BUILDER) {
+						showContent(postId);
+					} else {
+						displayPaywall(data.nag_content, postId);
+					}
 
 					// Dispatch event for other plugins to hook into
 					dispatchPaywallEvent('leaky_paywall_shown', {

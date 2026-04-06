@@ -422,10 +422,15 @@ class Leaky_Paywall {
 			$page_container   = apply_filters( 'leaky_paywall_js_restriction_page_container', $settings['js_restrictions_page_container'] );
 			$lead_in_elements = apply_filters( 'leaky_paywall_js_restriction_lead_in_elements', $settings['lead_in_elements'] );
 
+			$check_deps = array();
+			if ( wp_script_is( 'lp-list-builder', 'registered' ) ) {
+				$check_deps[] = 'lp-list-builder';
+			}
+
 			wp_enqueue_script(
 				'leaky-paywall-check',
 				LEAKY_PAYWALL_URL . 'js/leaky-paywall-check.js',
-				array(),
+				$check_deps,
 				LEAKY_PAYWALL_VERSION,
 				true
 			);
