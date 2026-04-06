@@ -953,11 +953,12 @@ class Leaky_Paywall_Settings
 			</div>
 			<script>
 			(function(){
-				document.querySelectorAll('.lp-pro-feature-toggle input[disabled], .lp-pro-feature-link, .lp-pro-badge').forEach(function(el){
-					el.addEventListener('click', function(e){
+				document.addEventListener('click', function(e){
+					var trigger = e.target.closest('.lp-pro-feature-toggle, .lp-pro-feature-link, .lp-pro-badge');
+					if ( trigger ) {
 						e.preventDefault();
 						document.getElementById('lp-pro-modal-overlay').style.display = 'flex';
-					});
+					}
 				});
 				var overlay = document.getElementById('lp-pro-modal-overlay');
 				if ( overlay ) {
