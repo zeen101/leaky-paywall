@@ -2,6 +2,10 @@
 
 	$(document).ready( function() {
 
+        if ( ! leaky_paywall_stripe_registration_ajax.stripe_pk ) {
+            return;
+        }
+
         let stripe = Stripe(leaky_paywall_stripe_registration_ajax.stripe_pk);
 
         if ( leaky_paywall_stripe_registration_ajax.client_id ) {

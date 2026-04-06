@@ -65,7 +65,7 @@ class Leaky_Paywall_Settings
 					<?php
 					if (!isset($settings['page_for_subscription']) || !$settings['page_for_subscription']) {
 					?>
-						<p>Need help getting started? <a target="_blank" href="https://docs.leakypaywall.com/article/39-setting-up-leaky-paywall">See our guide</a> or get setup and support with <a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">Leaky Paywall Pro.</a></p>
+						<p>Need help getting started? <a target="_blank" href="https://docs.leakypaywall.com/article/39-setting-up-leaky-paywall">See our guide</a> or <a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_medium=plugin&utm_source=getting_started&utm_campaign=settings">go Pro and getting everything.</a></p>
 					<?php
 					}
 
@@ -112,7 +112,7 @@ class Leaky_Paywall_Settings
 						<div class="leaky-paywall-sidebar-widget">
 							<h3>Upgrade to Pro</h3>
 							<p class="description">
-								Gain access to our proven subscription building system and 40+ Leaky Paywall extensions when you upgrade
+								Gain access to our proven subscription building system and 50+ Leaky Paywall extensions when you upgrade
 							</p>
 							<ul>
 								<li>Personal setup meeting and priority support</li>

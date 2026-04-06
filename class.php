@@ -263,7 +263,9 @@ class Leaky_Paywall {
 		$tools = new Leaky_Paywall_Tools();
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Tools', 'leaky-paywall' ), __( 'Tools', 'leaky-paywall' ), $capability, 'leaky-paywall-tools', array( $tools, 'tools_page' ) );
 
-		add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), $capability, 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
+		if ( ! leaky_paywall_is_pro() ) {
+			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), $capability, 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
+		}
 
 
 	}
@@ -486,7 +488,7 @@ class Leaky_Paywall {
 
 		$gateways = new Leaky_Paywall_Payment_Gateways();
 
-		if ( $gateways->is_gateway_enabled( 'stripe' ) || $gateways->is_gateway_enabled('stripe_checkout') ) {
+		if ( ( $gateways->is_gateway_enabled( 'stripe' ) || $gateways->is_gateway_enabled('stripe_checkout') ) && leaky_paywall_get_stripe_public_key() ) {
 
 			wp_enqueue_script('leaky_paywall_stripe_registration', LEAKY_PAYWALL_URL . 'js/stripe-registration.js', array('jquery', 'stripe'), LEAKY_PAYWALL_VERSION, true);
 

@@ -2091,6 +2091,34 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		add_action('wp_ajax_issuem-leaky-paywall-add-new-restriction-row', 'build_leaky_paywall_default_restriction_row_ajax');
 	}
 
+	/**
+	 * AJAX handler to toggle an email's enabled/disabled state.
+	 */
+	function leaky_paywall_ajax_toggle_email() {
+		check_ajax_referer( 'leaky-paywall-js-nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+
+		$email_id = isset( $_POST['email_id'] ) ? sanitize_text_field( wp_unslash( $_POST['email_id'] ) ) : '';
+		$email    = LP_Emails::instance()->get_email( $email_id );
+
+		if ( ! $email ) {
+			wp_send_json_error( 'Email not found', 404 );
+		}
+
+		$option_key          = 'leaky_paywall_email_' . $email->id . '_settings';
+		$settings            = get_option( $option_key, array() );
+		$currently_enabled   = isset( $settings['enabled'] ) && 'yes' === $settings['enabled'];
+		$settings['enabled'] = $currently_enabled ? 'no' : 'yes';
+
+		update_option( $option_key, $settings );
+
+		wp_send_json_success( array( 'enabled' => $settings['enabled'] ) );
+	}
+	add_action( 'wp_ajax_lp_toggle_email', 'leaky_paywall_ajax_toggle_email' );
+
 	if (!function_exists('wp_print_r')) {
 
 		/**

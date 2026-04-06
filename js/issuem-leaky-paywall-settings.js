@@ -288,6 +288,30 @@ $leaky_paywall_settings(document).ready(function ($) {
     }
   });
 
+  // Toggle email enabled/disabled from list table
+  $(".lp-toggle-email").on("click", function () {
+    var $btn = $(this);
+    var $icon = $btn.find(".dashicons");
+    $btn.prop("disabled", true).css("opacity", 0.5);
+
+    $.post(ajaxurl, {
+      action: "lp_toggle_email",
+      nonce: leaky_paywall_js.lpJsNonce,
+      email_id: $btn.data("email-id"),
+    }, function (response) {
+      if (response.success) {
+        var enabled = response.data.enabled === "yes";
+        $icon
+          .removeClass("dashicons-yes-alt dashicons-marker")
+          .addClass(enabled ? "dashicons-yes-alt" : "dashicons-marker")
+          .css("color", enabled ? "#00a32a" : "#ccc");
+        $btn.attr("title", enabled ? "Enabled — click to disable" : "Disabled — click to enable");
+      }
+    }).always(function () {
+      $btn.prop("disabled", false).css("opacity", 1);
+    });
+  });
+
   $(".stripe-recurring").click(function (e) {
     if ($(this).is(":checked")) {
       $(this).siblings("span").removeClass("hidden");

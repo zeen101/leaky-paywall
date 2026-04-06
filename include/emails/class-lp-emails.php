@@ -167,11 +167,13 @@ class LP_Emails {
 				<?php foreach ( $this->emails as $email ) : ?>
 					<tr>
 						<td style="text-align: center;">
-							<?php if ( $email->is_enabled() ) : ?>
-								<span class="dashicons dashicons-yes-alt" style="color: #00a32a;" title="<?php esc_attr_e( 'Enabled', 'leaky-paywall' ); ?>"></span>
-							<?php else : ?>
-								<span class="dashicons dashicons-marker" style="color: #ccc;" title="<?php esc_attr_e( 'Disabled', 'leaky-paywall' ); ?>"></span>
-							<?php endif; ?>
+							<button type="button" class="lp-toggle-email button-link" data-email-id="<?php echo esc_attr( $email->id ); ?>" title="<?php echo $email->is_enabled() ? esc_attr__( 'Enabled — click to disable', 'leaky-paywall' ) : esc_attr__( 'Disabled — click to enable', 'leaky-paywall' ); ?>" style="cursor: pointer;">
+								<?php if ( $email->is_enabled() ) : ?>
+									<span class="dashicons dashicons-yes-alt" style="color: #00a32a;"></span>
+								<?php else : ?>
+									<span class="dashicons dashicons-marker" style="color: #ccc;"></span>
+								<?php endif; ?>
+							</button>
 						</td>
 						<td>
 							<a href="<?php echo esc_url( $emails_url . '&section=' . $email->id ); ?>">
