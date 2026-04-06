@@ -53,6 +53,7 @@ class LP_List_Builder
 
         $lp_settings = get_leaky_paywall_settings();
         $subscribe_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
+        $subscribe_url = apply_filters( 'lp_list_builder_upgrade_url', $subscribe_url );
 
 ?>
 
