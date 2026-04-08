@@ -568,7 +568,53 @@ class Leaky_Paywall_Insights
 		$transactions = get_posts( $args );
 
 		if ( ! empty( $transactions ) ) {
+			// Collect emails from free transactions to check for paid conversions.
+			$free_emails = array();
 			foreach ( $transactions as $transaction ) {
+				$email = get_post_meta( $transaction->ID, '_email', true );
+				if ( $email ) {
+					$free_emails[ $transaction->ID ] = $email;
+				}
+			}
+
+			// Find which of these emails also have a paid transaction.
+			$converted_emails = array();
+			if ( ! empty( $free_emails ) ) {
+				$paid_args = array(
+					'post_type'      => 'lp_transaction',
+					'posts_per_page' => 9999,
+					'fields'         => 'ids',
+					'meta_query'     => array(
+						'relation' => 'AND',
+						array(
+							'key'     => '_status',
+							'value'   => 'incomplete',
+							'compare' => 'NOT LIKE',
+						),
+						array(
+							'key'     => '_price',
+							'value'   => '0.00',
+							'compare' => '>',
+						),
+						array(
+							'key'     => '_email',
+							'value'   => array_unique( array_values( $free_emails ) ),
+							'compare' => 'IN',
+						),
+					),
+				);
+				$paid_ids = get_posts( $paid_args );
+				foreach ( $paid_ids as $paid_id ) {
+					$converted_emails[] = get_post_meta( $paid_id, '_email', true );
+				}
+				$converted_emails = array_unique( $converted_emails );
+			}
+
+			foreach ( $transactions as $transaction ) {
+				$email = isset( $free_emails[ $transaction->ID ] ) ? $free_emails[ $transaction->ID ] : '';
+				if ( $email && in_array( $email, $converted_emails, true ) ) {
+					continue;
+				}
 				$time = strtotime( $transaction->post_date );
 				$day  = date( 'M j', $time );
 				$data[ $day ][] = $transaction->post_title;
