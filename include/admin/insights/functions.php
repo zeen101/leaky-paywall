@@ -107,10 +107,13 @@ function leaky_paywall_insights_get_new_free_subs( $period ) {
                  ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
              INNER JOIN {$wpdb->postmeta} pm_status
                  ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+             LEFT JOIN {$wpdb->postmeta} pm_trial
+                 ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'
              WHERE p.post_type = 'lp_transaction'
              AND p.post_date > %s
              AND pm_status.meta_value != 'incomplete'
-             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0",
+             AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0
+             AND pm_trial.meta_id IS NULL",
             $after_date
         )
     );

@@ -558,6 +558,10 @@ class Leaky_Paywall_Insights
 					'value'   => '0',
 					'compare' => '=',
 				),
+				array(
+					'key'     => '_trial_type',
+					'compare' => 'NOT EXISTS',
+				),
 			),
 		);
 
@@ -574,7 +578,7 @@ class Leaky_Paywall_Insights
 		return $this->format_signup_data( $data, $period );
 	}
 
-	private function format_signup_data( $data, $period ) {
+	public function format_signup_data( $data, $period ) {
 		$formatted_data = array();
 
 		foreach ( $data as $day => $subs ) {
@@ -601,7 +605,7 @@ class Leaky_Paywall_Insights
 		return $final_formatted_data;
 	}
 
-	private function starting_period_array( $period ) {
+	public function starting_period_array( $period ) {
 		switch ( $period ) {
 			case '4 weeks':
 				$args_period = 29;

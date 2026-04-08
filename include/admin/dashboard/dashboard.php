@@ -122,6 +122,7 @@ class Leaky_Paywall_Dashboard {
 					<div class="lp-stat-label"><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></div>
 					<div class="lp-stat-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
 				</div>
+				<?php do_action( 'leaky_paywall_dashboard_stat_cards', $period ); ?>
 			</div>
 
 			<!-- Conversion Funnel -->
@@ -353,6 +354,7 @@ class Leaky_Paywall_Dashboard {
 		(function() {
 			var signupPaid = <?php echo wp_json_encode( $signup_paid_data ); ?>;
 			var signupFree = <?php echo wp_json_encode( $signup_free_data ); ?>;
+			<?php do_action( 'leaky_paywall_dashboard_signup_chart_data', $insights, $period ); ?>
 			var revenueData = <?php echo wp_json_encode( $revenue_data ); ?>;
 			var currency = '<?php echo $currency_symbol; ?>';
 
@@ -410,7 +412,7 @@ class Leaky_Paywall_Dashboard {
 							pointHoverRadius: 5,
 							pointHoverBackgroundColor: '#3178D1'
 						}
-					]
+					].concat(typeof lpDashboardSignupDatasets !== 'undefined' ? lpDashboardSignupDatasets : [])
 				}
 			});
 

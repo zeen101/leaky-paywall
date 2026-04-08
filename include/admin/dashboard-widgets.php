@@ -51,7 +51,7 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		#dashboard_widget .inside { padding: 0 12px 12px; }
 		.lp-dash-stats {
 			display: grid;
-			grid-template-columns: repeat(4, 1fr);
+			grid-template-columns: repeat(2, 1fr);
 			gap: 10px;
 			margin-bottom: 20px;
 		}
@@ -188,6 +188,10 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 			<div class="lp-dash-stat-value"><?php echo esc_html( $revenue ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Revenue', 'leaky-paywall' ); ?></div>
 		</a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--paywalls">
+			<div class="lp-dash-stat-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
+			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywalls', 'leaky-paywall' ); ?></div>
+		</a>
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--paid">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $new_paid_subs ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paid', 'leaky-paywall' ); ?></div>
@@ -195,10 +199,6 @@ function leaky_paywall_load_recent_subscribers_dashboard_widget( $post, $callbac
 		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--free">
 			<div class="lp-dash-stat-value"><?php echo esc_html( $new_free_subs ); ?></div>
 			<div class="lp-dash-stat-label"><?php esc_html_e( 'Free', 'leaky-paywall' ); ?></div>
-		</a>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=issuem-leaky-paywall' ) ); ?>" class="lp-dash-stat lp-dash-stat--paywalls">
-			<div class="lp-dash-stat-value"><?php echo esc_html( number_format( $impressions ) ); ?></div>
-			<div class="lp-dash-stat-label"><?php esc_html_e( 'Paywalls', 'leaky-paywall' ); ?></div>
 		</a>
 	</div>
 
