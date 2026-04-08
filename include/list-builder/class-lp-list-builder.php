@@ -120,16 +120,6 @@ class LP_List_Builder
     public static function handle_flow($request)
     {
 
-        $nonce = $request->get_header('X-WP-Nonce');
-
-        if (! wp_verify_nonce($nonce, 'wp_rest')) {
-            return new WP_REST_Response([
-                'ok'    =>  false,
-                'error' => 'invalid_nonce',
-                'message'   => __( 'Invalid request.', 'leaky-paywall' ),
-            ], 403);
-        }
-
         $email = sanitize_email($request->get_param('email'));
 
         if (empty($email) || ! is_email($email)) {
@@ -167,16 +157,6 @@ class LP_List_Builder
 
     public static function handle_signup($request)
     {
-
-        $nonce = $request->get_header('X-WP-Nonce');
-
-        if (! wp_verify_nonce($nonce, 'wp_rest')) {
-            return new WP_REST_Response([
-                'ok'    =>  false,
-                'error' => 'invalid_nonce',
-                'message'   => __( 'Invalid request.', 'leaky-paywall' ),
-            ], 403);
-        }
 
         $email = sanitize_email($request->get_param('email'));
         $password = $request->get_param('password');
@@ -288,15 +268,6 @@ class LP_List_Builder
 
     public static function handle_login($request)
     {
-        $nonce = $request->get_header('X-WP-Nonce');
-
-        if (! wp_verify_nonce($nonce, 'wp_rest')) {
-            return new WP_REST_Response([
-                'ok'    =>  false,
-                'error' => 'invalid_nonce',
-                'message'   => __( 'Invalid request.', 'leaky-paywall' ),
-            ], 403);
-        }
 
         $email = sanitize_email($request->get_param('email'));
         $password = $request->get_param('password');
@@ -729,7 +700,6 @@ class LP_List_Builder
             'pwResetRequestUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/request')),
             'pwResetVerifyUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/verify')),
             'pwResetConfirmUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/confirm')),
-            'nonce'            => wp_create_nonce('wp_rest'),
             'subscribeUrl'     => esc_url_raw( $subscribe_page_url ),
             'upgradeEnabled'   => ( ! empty( $lb_settings['upgrade_enabled'] ) && 'on' === $lb_settings['upgrade_enabled'] ),
         ]) . ';', 'before');
