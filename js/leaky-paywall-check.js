@@ -287,9 +287,15 @@
 			})
 			.then(function (data) {
 				if (data.show_paywall && data.nag_content) {
-					// If List Builder is active, skip the in-content nag —
-					// List Builder's slider will handle the display via the event.
-					if (window.LP_LIST_BUILDER) {
+					// If List Builder is active and handles this nag type,
+					// skip the in-content nag — the slider will handle display via the event.
+					var lb = window.LP_LIST_BUILDER;
+					var lbHandlesNag = lb && (
+						data.nag_type === 'subscribe' ||
+						(data.nag_type === 'upgrade' && lb.upgradeEnabled)
+					);
+
+					if (lbHandlesNag) {
 						showContent(postId);
 					} else {
 						displayPaywall(data.nag_content, postId);
@@ -303,16 +309,16 @@
 				} else {
 					showContent(postId);
 
+					// Only update viewed content when access is granted.
+					if (data.viewed_content) {
+						saveViewedContent(data.viewed_content);
+					}
+
 					// Dispatch event for content access
 					dispatchPaywallEvent('leaky_paywall_access_granted', {
 						postId: postId,
 						response: data
 					});
-				}
-
-				// Update viewed content if provided in response
-				if (data.viewed_content) {
-					saveViewedContent(data.viewed_content);
 				}
 			})
 			.catch(function (error) {

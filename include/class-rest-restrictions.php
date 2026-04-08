@@ -616,11 +616,6 @@ class Leaky_Paywall_REST_Restrictions {
 
 			$restriction_taxonomy = isset( $restriction['taxonomy'] ) ? $restriction['taxonomy'] : 'all';
 
-			// Check if content was already viewed.
-			if ( isset( $viewed_content[ $content_post_type ] ) && array_key_exists( $this->post_id, $viewed_content[ $content_post_type ] ) ) {
-				return false;
-			}
-
 			$matches_restriction = ( 'all' === $restriction_taxonomy ) || $this->content_taxonomy_matches( $restriction_taxonomy );
 
 			if ( ! $matches_restriction && 'on' !== $settings['enable_combined_restrictions'] ) {
