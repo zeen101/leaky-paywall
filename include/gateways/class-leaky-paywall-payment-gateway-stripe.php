@@ -365,16 +365,14 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			case 'customer.subscription.updated':
 
-				if ('past_due' == $stripe_object->status) {
+				if ( 'canceled' === $stripe_object->status ) {
+					leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_webhook' );
+				} elseif ('past_due' == $stripe_object->status) {
 					leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_webhook' );
-				}
-
-				if ('incomplete_expired' == $stripe_object->status) {
+				} elseif ('incomplete_expired' == $stripe_object->status) {
 					leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
-				}
-
-				// cancel_at_period_end: user keeps access until period ends.
-				if ( ! empty( $stripe_object->cancel_at_period_end ) ) {
+				} elseif ( ! empty( $stripe_object->cancel_at_period_end ) ) {
+					// cancel_at_period_end: user keeps access until period ends.
 					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_webhook' );
 					do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
 				}

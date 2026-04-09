@@ -2713,10 +2713,9 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$mode = leaky_paywall_get_current_mode();
 		$site = leaky_paywall_get_current_site();
 
-		// Exclude past_due — Stripe is still retrying payment, so let the webhook resolve it.
 		// Exclude pending_cancel — the subscriber keeps access until period end;
 		// the gateway's subscription.deleted webhook handles the transition to expired.
-		$cron_statuses = array_diff( leaky_paywall_access_statuses(), array( 'past_due', 'pending_cancel' ) );
+		$cron_statuses = array_diff( leaky_paywall_access_statuses(), array( 'pending_cancel' ) );
 		$cron_statuses = array_values( $cron_statuses );
 		$expires_key   = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
@@ -2766,11 +2765,80 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 
 		foreach ( $users as $user ) {
+			$status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+
+			// For past_due subscribers, verify with Stripe before expiring.
+			if ( 'past_due' === $status ) {
+				leaky_paywall_sync_past_due_subscriber( $user );
+				continue;
+			}
+
 			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'cron' );
 			do_action( 'leaky_paywall_cron_expired_subscriber', $user );
 		}
 	}
 	add_action( 'leaky_paywall_process_expiration_check', 'leaky_paywall_process_expiration_check' );
+
+	/**
+	 * Sync a past_due subscriber with Stripe to determine if their subscription
+	 * has been canceled. If no active subscription is found, expire them.
+	 *
+	 * @since 5.0.6
+	 *
+	 * @param WP_User $user The subscriber.
+	 */
+	function leaky_paywall_sync_past_due_subscriber( $user ) {
+		$mode          = leaky_paywall_get_current_mode();
+		$site          = leaky_paywall_get_current_site();
+		$subscriber_id = lp_get_subscriber_meta( 'subscriber_id', $user );
+
+		if ( ! $subscriber_id ) {
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'cron' );
+			do_action( 'leaky_paywall_cron_expired_subscriber', $user );
+			return;
+		}
+
+		$gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
+
+		if ( 'stripe' !== $gateway && 'stripe_checkout' !== $gateway ) {
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'cron' );
+			do_action( 'leaky_paywall_cron_expired_subscriber', $user );
+			return;
+		}
+
+		try {
+			$stripe        = leaky_paywall_initialize_stripe_api();
+			$subscriptions = $stripe->subscriptions->all( array(
+				'customer' => $subscriber_id,
+				'status'   => 'past_due',
+				'limit'    => 1,
+			), leaky_paywall_get_stripe_connect_params() );
+
+			if ( ! empty( $subscriptions->data ) ) {
+				// Stripe still says past_due — leave them alone, retries may still be in progress.
+				return;
+			}
+
+			// No past_due subscription found — check if there's an active one.
+			$active_subs = $stripe->subscriptions->all( array(
+				'customer' => $subscriber_id,
+				'status'   => 'active',
+				'limit'    => 1,
+			), leaky_paywall_get_stripe_connect_params() );
+
+			if ( ! empty( $active_subs->data ) ) {
+				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'cron' );
+				return;
+			}
+
+			// No active or past_due subscription — expire them.
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'cron' );
+			do_action( 'leaky_paywall_cron_expired_subscriber', $user );
+
+		} catch ( \Throwable $th ) {
+			leaky_paywall_log( $th->getMessage(), 'leaky paywall - past_due sync error for user ' . $user->ID );
+		}
+	}
 
 
 	/**
