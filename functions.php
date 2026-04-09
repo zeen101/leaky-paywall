@@ -1774,6 +1774,11 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		 */
 		function build_leaky_paywall_subscription_row_ajax()
 		{
+			if ( ! current_user_can( 'manage_options' ) ) {
+				die();
+			}
+
+			check_ajax_referer( 'leaky-paywall-js-nonce', 'nonce' );
 
 			if (isset($_REQUEST['row-key'])) {
 				// phpcs:ignore
@@ -1890,10 +1895,11 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		 */
 		function build_leaky_paywall_subscription_row_post_type_ajax()
 		{
-
-			if (!wp_verify_nonce(sanitize_key($_POST['nonce']), 'leaky-paywall-js-nonce')) {
-				die(esc_html__('Failed Security Check', 'leaky-paywall'));
+			if ( ! current_user_can( 'manage_options' ) ) {
+				die();
 			}
+
+			check_ajax_referer( 'leaky-paywall-js-nonce', 'nonce' );
 
 			if (isset($_REQUEST['select-post-key']) && isset($_REQUEST['row-key'])) {
 				$settings = get_leaky_paywall_settings();
