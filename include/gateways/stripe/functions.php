@@ -602,24 +602,29 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			return;
 		}
 
+		// Include all statuses so canceled subscriptions are found.
 		$subscriptions = $stripe->subscriptions->all(array(
 			'customer' => $cus->id,
-			'limit' => '1'
+			'limit'    => '1',
+			'status'   => 'all',
 		), leaky_paywall_get_stripe_connect_params() );
 
-		if (empty($subscriptions)) {
+		if ( empty( $subscriptions->data ) ) {
 			return;
 		}
 
 		foreach ($subscriptions->data as $subscription) {
 
 			$current_period_end = $subscription->current_period_end;
-			$plan = $subscription->plan->id;
+			$plan = isset( $subscription->plan->id ) ? $subscription->plan->id : '';
 
 			if ($current_period_end) {
 				$expires = date_i18n('Y-m-d 23:59:59', $current_period_end);
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
+
+				if ( $plan ) {
+					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
+				}
 			}
 
 			if ( $subscription->status == 'active' && ! empty( $subscription->cancel_at_period_end ) ) {

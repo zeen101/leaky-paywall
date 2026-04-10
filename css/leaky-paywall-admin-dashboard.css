@@ -74,6 +74,7 @@
 .lp-stat-card--paywalls  { border-left-color: #8B5CF6; }
 .lp-stat-card--trials    { border-left-color: #EC4899; }
 .lp-stat-card--gifts     { border-left-color: #14B8A6; }
+.lp-stat-card--corp-subs { border-left-color: #F59E0B; }
 
 .lp-stat-label {
 	font-size: 11px;
