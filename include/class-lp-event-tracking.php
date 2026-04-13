@@ -50,6 +50,9 @@ class LP_Event_Tracking {
 			return;
 		}
 
+		// Checkout started — fires when the registration form's payment section renders.
+		add_action( 'leaky_paywall_before_registration_submit_field', array( $this, 'on_checkout_started' ), 10, 2 );
+
 		// Subscription lifecycle.
 		add_action( 'leaky_paywall_new_subscriber', array( $this, 'on_new_subscriber' ), 10, 6 );
 		add_action( 'leaky_paywall_update_subscriber', array( $this, 'on_update_subscriber' ), 10, 5 );
@@ -228,6 +231,59 @@ class LP_Event_Tracking {
 	// ──────────────────────────────────────────────────────────────────────
 	// Event Hooks
 	// ──────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Checkout form loaded by a logged-in user.
+	 *
+	 * Fires on the `leaky_paywall_before_registration_submit_field` action,
+	 * which runs just before the payment gateway fields render. This gives
+	 * us a signal that the user reached the payment step of checkout.
+	 *
+	 * Deduped to once per user per day via transient to keep the data clean.
+	 *
+	 * @param array $gateways Available gateways (unused).
+	 * @param int   $level_id The selected level ID.
+	 */
+	public function on_checkout_started( $gateways, $level_id ) {
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		$user = wp_get_current_user();
+		if ( ! $user instanceof WP_User ) {
+			return;
+		}
+
+		$transient_key = 'lp_checkout_started_' . $user->ID . '_' . intval( $level_id );
+		if ( get_transient( $transient_key ) ) {
+			return;
+		}
+		set_transient( $transient_key, 1, DAY_IN_SECONDS );
+
+		$subscriber_data = $this->get_subscriber_data( $user );
+		if ( ! $subscriber_data ) {
+			$subscriber_data = array(
+				'id'    => $user->ID,
+				'email' => $user->user_email,
+			);
+		}
+
+		$current_level_id = leaky_paywall_subscriber_current_level_id( $user );
+		$level            = get_leaky_paywall_subscription_level( $level_id );
+
+		$properties = array_merge(
+			array(
+				'level_id'   => intval( $level_id ),
+				'level_name' => $this->get_level_name( $level_id ),
+				'price'      => isset( $level['price'] ) ? (float) $level['price'] : 0,
+				'currency'   => $this->get_currency(),
+				'is_upgrade' => $current_level_id !== false && intval( $current_level_id ) !== intval( $level_id ),
+			),
+			$this->get_utm_properties()
+		);
+
+		$this->send_event( 'Checkout Started', $subscriber_data, $properties );
+	}
 
 	/**
 	 * New subscriber created (Registration + Subscription Started).
