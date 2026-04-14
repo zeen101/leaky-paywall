@@ -628,13 +628,20 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			$current_period_end = $subscription->current_period_end;
 			$plan = isset( $subscription->plan->id ) ? $subscription->plan->id : '';
 
-			if ($current_period_end) {
+			// Only advance the expiration date for subscription statuses that
+			// indicate a valid, paid billing cycle. Stripe advances
+			// current_period_end when a renewal invoice is generated, even if
+			// the charge fails — so past_due/unpaid subscriptions would otherwise
+			// get their expiration pushed forward without a successful payment.
+			$is_payment_valid = in_array( $subscription->status, array( 'active', 'trialing' ), true );
+
+			if ( $current_period_end && $is_payment_valid ) {
 				$expires = date_i18n('Y-m-d 23:59:59', $current_period_end);
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+			}
 
-				if ( $plan ) {
-					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
-				}
+			if ( $plan ) {
+				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
 			}
 
 			if ( $subscription->status == 'active' && ! empty( $subscription->cancel_at_period_end ) ) {
