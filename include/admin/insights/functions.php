@@ -107,29 +107,13 @@ function leaky_paywall_insights_get_new_free_subs( $period ) {
                  ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
              INNER JOIN {$wpdb->postmeta} pm_status
                  ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
-             INNER JOIN {$wpdb->postmeta} pm_email
-                 ON p.ID = pm_email.post_id AND pm_email.meta_key = '_email'
              LEFT JOIN {$wpdb->postmeta} pm_trial
                  ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'
              WHERE p.post_type = 'lp_transaction'
              AND p.post_date > %s
              AND pm_status.meta_value != 'incomplete'
              AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0
-             AND pm_trial.meta_id IS NULL
-             AND NOT EXISTS (
-                 SELECT 1
-                 FROM {$wpdb->posts} p2
-                 INNER JOIN {$wpdb->postmeta} pm2_email
-                     ON p2.ID = pm2_email.post_id AND pm2_email.meta_key = '_email'
-                 INNER JOIN {$wpdb->postmeta} pm2_price
-                     ON p2.ID = pm2_price.post_id AND pm2_price.meta_key = '_price'
-                 INNER JOIN {$wpdb->postmeta} pm2_status
-                     ON p2.ID = pm2_status.post_id AND pm2_status.meta_key = '_status'
-                 WHERE p2.post_type = 'lp_transaction'
-                 AND pm2_email.meta_value = pm_email.meta_value
-                 AND CAST(pm2_price.meta_value AS DECIMAL(10,2)) > 0
-                 AND pm2_status.meta_value != 'incomplete'
-             )",
+             AND pm_trial.meta_id IS NULL",
             $after_date
         )
     );
