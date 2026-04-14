@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 5.0.5
+Stable tag: 5.0.6
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -13,6 +13,8 @@ The subscription engine for news & niche publishers.
 == Description ==
 
 [Leaky Paywall](https://leakypaywall.com/) is the most flexible **paywall and subscription plugin for WordPress**. Launch a metered paywall, grow your email list with a registration wall, and sell paid subscriptions while keeping full control of your subscriber data inside WordPress.
+
+https://www.youtube.com/watch?v=N_E64rMBJoY
 
 Trusted by **800+ publishers worldwide**, including local newsrooms, niche magazines, B2B media companies, and independent content creators.
 
@@ -229,6 +231,16 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.0.6 =
+* Add checkout started event
+* Update properties sent with events
+* Add fix for in content nag displaying incorrectly
+* Only update expires when the Stripe subscription status is active or trialing
+* Add nonce check to settings
+* Update cron handling of past due subscribers
+* Adjust free count in dashboard to not include free to paid conversions
+* Add hooks to dashboard widgets
 
 = 5.0.5 =
 * Add check for Stripe key before running script
