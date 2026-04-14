@@ -56,6 +56,17 @@ function leaky_paywall_process_registration() {
 
 	$user_data = leaky_paywall_validate_user_data();
 
+	// Prevent duplicate subscriptions: if a logged-in user already has an
+	// active subscription at this level, stop the registration flow before
+	// any gateway interaction.
+	if ( is_user_logged_in() && leaky_paywall_user_has_active_subscription_at_level( null, $level_id ) ) {
+		leaky_paywall_errors()->add(
+			'duplicate_subscription',
+			__( 'You are already subscribed to this level.', 'leaky-paywall' )
+		);
+		return;
+	}
+
 	// retrieve all error messages, if any.
 	$errors = leaky_paywall_errors()->get_error_messages();
 
@@ -302,6 +313,14 @@ function leaky_paywall_process_user_registration_validation() {
 
 	// allow 3rd party plugins to validate account setup data.
 	$errors = apply_filters( 'leaky_paywall_account_setup_validation', $errors, $fields );
+
+	// Prevent duplicate subscriptions: block logged-in users who already have
+	// an active subscription at this level.
+	if ( is_user_logged_in() && leaky_paywall_user_has_active_subscription_at_level( null, $level_id ) ) {
+		$errors['duplicate_subscription'] = array(
+			'message' => __( 'You are already subscribed to this level.', 'leaky-paywall' ),
+		);
+	}
 
 	if ( ! empty( $errors ) ) {
 		$return = array(

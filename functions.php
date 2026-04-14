@@ -535,6 +535,63 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 }
 
 /**
+ * Determine if a user already has an active subscription at the given level.
+ *
+ * Used to prevent duplicate subscription creation when a logged-in subscriber
+ * tries to check out for a level they already have an active subscription for.
+ *
+ * @since 5.0.7
+ *
+ * @param WP_User|int|null $user     User object or ID. Defaults to current user.
+ * @param int              $level_id The level ID to check against.
+ * @return bool True if the user has an active subscription at this level.
+ */
+function leaky_paywall_user_has_active_subscription_at_level( $user, $level_id ) {
+	if ( null === $user ) {
+		$user = wp_get_current_user();
+	} elseif ( is_numeric( $user ) ) {
+		$user = get_userdata( $user );
+	}
+
+	if ( ! ( $user instanceof WP_User ) || ! $user->ID ) {
+		return false;
+	}
+
+	$level_id = intval( $level_id );
+
+	if ( $level_id < 0 ) {
+		return false;
+	}
+
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$current_level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
+
+	if ( '' === $current_level_id || intval( $current_level_id ) !== $level_id ) {
+		return false;
+	}
+
+	$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+
+	$has_active = in_array( $payment_status, leaky_paywall_access_statuses(), true );
+
+	/**
+	 * Filter whether a user has an active subscription at a given level.
+	 *
+	 * Allows publishers to override the duplicate-subscription check, e.g. to
+	 * allow certain users to create multiple subscriptions at the same level.
+	 *
+	 * @since 5.0.7
+	 *
+	 * @param bool    $has_active Whether the user has an active subscription at this level.
+	 * @param WP_User $user       The user being checked.
+	 * @param int     $level_id   The level ID being checked.
+	 */
+	return apply_filters( 'leaky_paywall_user_has_active_subscription_at_level', $has_active, $user, $level_id );
+}
+
+/**
  * Determine if a user has access based on their user role.
  *
  * @since 4.14.5

@@ -539,15 +539,14 @@ function do_leaky_paywall_register_form($atts)
 		return $content;
 	}
 
-	// do not let free users register for the same level.
-	if (is_user_logged_in() && apply_filters('leaky_paywall_disable_same_free_level', __return_true())) {
-
-		$user_level_id = leaky_paywall_subscriber_current_level_id();
-
-		if ($level['price'] < 1 && $user_level_id === $level_id) {
-			$content = '<p>' . __('You are already subscribed to this level. Please', 'leaky-paywall') . ' <a href="' . get_page_link($settings['page_for_subscription']) . '">' . __('go to the subscribe page', 'leaky-paywall') . '</a> ' . __('to choose a different subscription level.', 'leaky-paywall') . '</p>';
-			return $content;
-		}
+	// Prevent duplicate subscriptions: if a logged-in user already has an active
+	// subscription at the requested level, don't show the checkout form.
+	if ( is_user_logged_in() && leaky_paywall_user_has_active_subscription_at_level( null, $level_id ) ) {
+		$account_url = ! empty( $settings['page_for_profile'] ) ? get_page_link( $settings['page_for_profile'] ) : home_url();
+		$content  = '<p>' . __( 'You are already subscribed to this level.', 'leaky-paywall' ) . ' ';
+		$content .= '<a href="' . esc_url( $account_url ) . '">' . __( 'Visit your account', 'leaky-paywall' ) . '</a> ';
+		$content .= __( 'to manage your subscription.', 'leaky-paywall' ) . '</p>';
+		return $content;
 	}
 
 	if (is_level_hidden($level)) {

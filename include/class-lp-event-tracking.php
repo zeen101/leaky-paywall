@@ -78,10 +78,7 @@ class LP_Event_Tracking {
 		add_action( 'wp_login', array( $this, 'on_login' ), 10, 2 );
 
 		// UTM capture.
-		$settings = get_leaky_paywall_settings();
-		if ( 'on' === ( $settings['insights_enable_utm_capture'] ?? 'on' ) ) {
-			add_action( 'wp_footer', array( $this, 'output_utm_capture_script' ) );
-		}
+		add_action( 'wp_footer', array( $this, 'output_utm_capture_script' ) );
 	}
 
 	// ──────────────────────────────────────────────────────────────────────
@@ -299,14 +296,17 @@ class LP_Event_Tracking {
 			return;
 		}
 
+		$level_id = isset( $meta['level_id'] ) ? $meta['level_id'] : '';
+
 		$properties = array_merge(
 			array(
 				'gateway'  => isset( $meta['payment_gateway'] ) ? $meta['payment_gateway'] : '',
 				'amount'   => isset( $meta['price'] ) ? (float) $meta['price'] : 0,
 				'currency' => $this->get_currency(),
-				'plan'     => $this->get_level_name( isset( $meta['level_id'] ) ? $meta['level_id'] : '' ),
+				'plan'     => $this->get_level_name( $level_id ),
 				'status'   => isset( $meta['payment_status'] ) ? $meta['payment_status'] : '',
 			),
+			$this->get_recurring_properties( $level_id ),
 			$this->get_utm_properties()
 		);
 
@@ -328,12 +328,17 @@ class LP_Event_Tracking {
 			return;
 		}
 
-		$properties = array(
-			'gateway'  => isset( $meta['payment_gateway'] ) ? $meta['payment_gateway'] : '',
-			'amount'   => isset( $meta['price'] ) ? (float) $meta['price'] : 0,
-			'currency' => $this->get_currency(),
-			'plan'     => $this->get_level_name( isset( $meta['level_id'] ) ? $meta['level_id'] : '' ),
-			'status'   => isset( $meta['payment_status'] ) ? $meta['payment_status'] : '',
+		$level_id = isset( $meta['level_id'] ) ? $meta['level_id'] : '';
+
+		$properties = array_merge(
+			array(
+				'gateway'  => isset( $meta['payment_gateway'] ) ? $meta['payment_gateway'] : '',
+				'amount'   => isset( $meta['price'] ) ? (float) $meta['price'] : 0,
+				'currency' => $this->get_currency(),
+				'plan'     => $this->get_level_name( $level_id ),
+				'status'   => isset( $meta['payment_status'] ) ? $meta['payment_status'] : '',
+			),
+			$this->get_recurring_properties( $level_id )
 		);
 
 		$this->send_event( 'Subscription Renewed', $subscriber_data, $properties );
@@ -682,6 +687,33 @@ class LP_Event_Tracking {
 	}
 
 	/**
+	 * Get recurring-billing properties for a subscription level.
+	 *
+	 * Pulls the billing interval, interval count, and subscription length type
+	 * from the LP level config so the Insights app can compute MRR/ARR.
+	 *
+	 * @param int|string $level_id The level ID.
+	 * @return array Recurring properties, or empty array if unavailable.
+	 */
+	private function get_recurring_properties( $level_id ) {
+		if ( '' === $level_id || ! function_exists( 'get_leaky_paywall_subscription_level' ) ) {
+			return array();
+		}
+
+		$level = get_leaky_paywall_subscription_level( $level_id );
+
+		if ( ! is_array( $level ) ) {
+			return array();
+		}
+
+		return array(
+			'interval'                 => isset( $level['interval'] ) ? $level['interval'] : '',
+			'interval_count'           => isset( $level['interval_count'] ) ? (int) $level['interval_count'] : 0,
+			'subscription_length_type' => isset( $level['subscription_length_type'] ) ? $level['subscription_length_type'] : '',
+		);
+	}
+
+	/**
 	 * Get the human-readable level name from a level ID.
 	 */
 	private function get_level_name( $level_id ) {
@@ -753,6 +785,10 @@ class LP_Event_Tracking {
 	 * so the first-touch source that brought the visitor is preserved until conversion.
 	 */
 	public function output_utm_capture_script() {
+		$settings = get_leaky_paywall_settings();
+		if ( 'on' !== ( $settings['insights_enable_utm_capture'] ?? 'on' ) ) {
+			return;
+		}
 		?>
 		<script>
 		(function () {

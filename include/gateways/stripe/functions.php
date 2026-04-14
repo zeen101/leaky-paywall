@@ -237,6 +237,16 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		);
 	}
 
+	// Prevent duplicate subscriptions: if the logged-in user already has an active
+	// subscription at this level, stop before creating a new Stripe subscription.
+	if ( is_user_logged_in() && leaky_paywall_user_has_active_subscription_at_level( null, $level_id ) ) {
+		wp_send_json(
+			array(
+				'error' => __( 'You are already subscribed to this level.', 'leaky-paywall' ),
+			)
+		);
+	}
+
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	try {
