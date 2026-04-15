@@ -75,6 +75,7 @@
 .lp-stat-card--trials    { border-left-color: #EC4899; }
 .lp-stat-card--gifts     { border-left-color: #14B8A6; }
 .lp-stat-card--corp-subs { border-left-color: #F59E0B; }
+.lp-stat-card--retention { border-left-color: #059669; }
 
 .lp-stat-label {
 	font-size: 11px;
