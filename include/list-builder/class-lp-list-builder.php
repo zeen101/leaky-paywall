@@ -244,6 +244,15 @@ class LP_List_Builder
         $transaction_id                    = $transaction->create();
         $subscriber_data['transaction_id'] = $transaction_id;
 
+        // Attribute the conversion to the post the user was on when they signed up,
+        // so it appears in the dashboard's Top Content — Free Conversions report.
+        if ( ! empty( $current_url ) ) {
+            $nag_location_id = url_to_postid( $current_url );
+            if ( $nag_location_id ) {
+                update_post_meta( $transaction_id, '_nag_location_id', $nag_location_id );
+            }
+        }
+
         leaky_paywall_cleanup_incomplete_user($subscriber_data['email']);
 
         // Send email notifications.
