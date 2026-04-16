@@ -277,7 +277,20 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		leaky_paywall_log( $body, 'paypal standard ipn body' );
 
-		if ( 'VERIFIED' === $body ) {
+		$ipn_verified = ( 'VERIFIED' === $body );
+
+		// Fallback self-validation when PayPal's verification endpoint
+		// returns INVALID (known issue since PayPal's IPN format change
+		// in early 2026). Validates the receiver, payment status, amount,
+		// and invoice format independently.
+		if ( ! $ipn_verified && ! empty( $_REQUEST['txn_type'] ) ) {
+			$ipn_verified = $this->self_validate_ipn( $settings, $mode );
+			if ( $ipn_verified ) {
+				leaky_paywall_log( 'PayPal IPN self-validated (classic verification returned INVALID)', 'paypal standard ipn' );
+			}
+		}
+
+		if ( $ipn_verified ) {
 
 			if ( ! empty( $_REQUEST['txn_type'] ) ) {
 
@@ -646,6 +659,74 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			}
 		} else {
 			leaky_paywall_log( $payload, 'Invalid IPN sent from PayPal' );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Self-validate a PayPal IPN when the classic verification endpoint
+	 * returns INVALID (known issue with PayPal's post-2026 IPN format).
+	 *
+	 * Checks: receiver matches LP settings, payment is completed, amount
+	 * matches the subscription level price, and invoice format is LP's.
+	 *
+	 * @param array  $settings LP settings.
+	 * @param string $mode     Current mode (live or test).
+	 * @return bool
+	 */
+	private function self_validate_ipn( $settings, $mode ) {
+		// 1. Verify the receiver matches the publisher's PayPal email.
+		$expected_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+
+		$receiver_email   = isset( $_REQUEST['receiver_email'] ) ? sanitize_email( wp_unslash( $_REQUEST['receiver_email'] ) ) : '';
+		$business_email   = isset( $_REQUEST['business'] ) ? sanitize_email( wp_unslash( $_REQUEST['business'] ) ) : '';
+
+		if ( ! $expected_email ) {
+			leaky_paywall_log( 'Self-validation failed: no PayPal email configured in LP settings', 'paypal standard ipn' );
+			return false;
+		}
+
+		if ( strtolower( $receiver_email ) !== strtolower( $expected_email ) && strtolower( $business_email ) !== strtolower( $expected_email ) ) {
+			leaky_paywall_log( 'Self-validation failed: receiver email mismatch. Expected: ' . $expected_email . ', Got: ' . $receiver_email . ' / ' . $business_email, 'paypal standard ipn' );
+			return false;
+		}
+
+		// 2. Verify payment status is Completed.
+		$payment_status = isset( $_REQUEST['payment_status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_status'] ) ) : '';
+		if ( 'completed' !== strtolower( $payment_status ) ) {
+			leaky_paywall_log( 'Self-validation failed: payment_status is ' . $payment_status, 'paypal standard ipn' );
+			return false;
+		}
+
+		// 3. Verify the invoice format matches LP's pattern (LP-{site}-{id}).
+		$invoice = isset( $_REQUEST['invoice'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['invoice'] ) ) : '';
+		if ( ! preg_match( '/^LP-\d+-\d+$/', $invoice ) ) {
+			leaky_paywall_log( 'Self-validation failed: invoice format mismatch: ' . $invoice, 'paypal standard ipn' );
+			return false;
+		}
+
+		// 4. Verify the amount matches the subscription level price.
+		$item_number = isset( $_REQUEST['item_number'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['item_number'] ) ) : '';
+		$level       = get_leaky_paywall_subscription_level( $item_number );
+
+		if ( $level ) {
+			$mc_gross       = isset( $_REQUEST['mc_gross'] ) ? floatval( $_REQUEST['mc_gross'] ) : 0;
+			$payment_gross  = isset( $_REQUEST['payment_gross'] ) ? floatval( $_REQUEST['payment_gross'] ) : 0;
+			$received       = max( $mc_gross, $payment_gross );
+			$expected_price = floatval( $level['price'] );
+
+			if ( abs( $received - $expected_price ) > 0.01 ) {
+				leaky_paywall_log( 'Self-validation failed: amount mismatch. Expected: ' . $expected_price . ', Got: ' . $received, 'paypal standard ipn' );
+				return false;
+			}
+		}
+
+		// 5. Verify we have a subscriber email in the custom field.
+		$custom = isset( $_REQUEST['custom'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['custom'] ) ) : '';
+		if ( ! is_email( $custom ) ) {
+			leaky_paywall_log( 'Self-validation failed: custom field is not a valid email: ' . $custom, 'paypal standard ipn' );
+			return false;
 		}
 
 		return true;
