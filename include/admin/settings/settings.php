@@ -1779,6 +1779,11 @@ The %sitename% Team';
 
 			if ('emails' === $current_tab) {
 				LP_Emails::instance()->process_save($current_section);
+				// Return early — email settings handle their own save.
+				// Falling through to update_settings() below would overwrite
+				// the values just saved by process_save() with stale data.
+				do_action('leaky_paywall_update_settings', $settings, $current_tab, $current_section);
+				return true;
 			}
 
 			if ('restrictions' === $current_tab) {
