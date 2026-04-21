@@ -37,10 +37,14 @@
       });
     }
 
-    function showSuccessAndReload(form, message = "You're signed in!") {
+    function showSuccessAndReload(form, message = "You're signed in!", heading = 'Welcome!') {
+      const headingEl = document.querySelector('.Slider__ExpandedHeader');
+      const subheadingEl = document.querySelector('.Slider__ExpandedSubHeader');
+      if (headingEl) headingEl.innerHTML = heading;
+      if (subheadingEl) subheadingEl.innerHTML = '';
+
       form.outerHTML = `
         <div class="lp-inline-auth__success">
-          <p><strong>Thanks!</strong></p>
           <p>${message}</p>
         </div>
       `;
@@ -48,6 +52,34 @@
       setTimeout(() => {
         window.location.reload();
       }, 2000);
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function(ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+      });
+    }
+
+    function renderOtpForm(email) {
+      const safeEmail = escapeHtml(email);
+      return ''
+        + '<form class="lp-list-builder-auth__form" data-step="otp">'
+        +   '<input type="hidden" name="email" value="' + safeEmail + '" />'
+        +   '<div class="Slider__InputGroup">'
+        +     '<div class="Slider__InputRow">'
+        +       '<label>Verification code</label>'
+        +       '<div class="TextField Slider__EmailAddressField">'
+        +         '<input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required autofocus placeholder="000000" />'
+        +       '</div>'
+        +     '</div>'
+        +     '<button type="submit" class="Slider__ExpandedButton" tabindex="0">Verify code</button>'
+        +     '<p class="lp-list-builder__subtle">'
+        +       'Didn\'t get the code? '
+        +       '<a href="#" data-action="resend-otp">Send it again</a>'
+        +     '</p>'
+        +     '<p class="lp-list-builder__msg" aria-live="polite"></p>'
+        +   '</div>'
+        + '</form>';
     }
 
     function applyResponse(container, data) {
@@ -77,6 +109,23 @@
       const msgEl = qs(container, '.lp-list-builder__msg');
 
       container.addEventListener("click", async (e) => {
+        const resendOtp = e.target.closest('[data-action="resend-otp"]');
+
+        if (resendOtp) {
+          e.preventDefault();
+          const form = e.target.closest('form');
+          const email = form?.querySelector('input[name="email"]')?.value || '';
+          const msg = form?.querySelector('.lp-list-builder__msg');
+
+          try {
+            const data = await postJson(LP_LIST_BUILDER.requestOtpUrl, { email });
+            if (msg) msg.textContent = data.message || 'A new code was sent.';
+          } catch (err) {
+            if (msg) msg.textContent = err.message || 'Could not send a new code.';
+          }
+          return;
+        }
+
         const forgot = e.target.closest('[data-action="forgot-password"]');
 
         if (!forgot) return;
@@ -128,6 +177,37 @@
 
             const data = await postJson(LP_LIST_BUILDER.flowUrl, { email });
 
+            // If OTP mode is enabled and this is a new signup, insert the
+            // OTP verification step between email and signup.
+            if (data.step === 'signup' && LP_LIST_BUILDER.otpEnabled) {
+              // Stash the signup form HTML for after verification.
+              container.dataset.lpStashedSignupHtml = data.form_html;
+              container.dataset.lpStashedSignupHeading = data.heading || '';
+              container.dataset.lpStashedSignupSubheading = data.subheading || '';
+
+              try {
+                await postJson(LP_LIST_BUILDER.requestOtpUrl, { email });
+              } catch (err) {
+                msgEl.textContent = err.message || 'Could not send verification code.';
+                if (submitBtn) {
+                  submitBtn.disabled = false;
+                  submitBtn.textContent = submitBtn.dataset.originalText || 'Continue';
+                }
+                return;
+              }
+
+              heading.innerHTML = 'Check your email';
+              subheading.innerHTML = 'We sent a 6-digit code to ' + email + '.';
+
+              form.outerHTML = renderOtpForm(email);
+
+              const otpForm = qs(container, 'form[data-step="otp"]');
+              const codeInput = otpForm && qs(otpForm, 'input[name="code"]');
+              if (codeInput) codeInput.focus();
+
+              return;
+            }
+
             form.outerHTML = data.form_html;
             heading.innerHTML = data.heading;
             subheading.innerHTML = data.subheading;
@@ -138,6 +218,44 @@
 
             if (data.step === 'signup') {
               document.dispatchEvent(new CustomEvent('lp_list_builder_signup_form_rendered', { detail: { form: newForm } }));
+            }
+
+            return;
+          }
+
+          if (step === "otp") {
+            const email = (fd.get("email") || "").toString().trim();
+            const code = (fd.get("code") || "").toString().trim();
+
+            await postJson(LP_LIST_BUILDER.verifyOtpUrl, { email, code });
+
+            // Swap in the stashed signup form.
+            const heading = document.querySelector('.Slider__ExpandedHeader');
+            const subheading = document.querySelector('.Slider__ExpandedSubHeader');
+            const stashedHtml = container.dataset.lpStashedSignupHtml || '';
+            const stashedHeading = container.dataset.lpStashedSignupHeading || '';
+            const stashedSubheading = container.dataset.lpStashedSignupSubheading || '';
+
+            form.outerHTML = stashedHtml;
+            // Always apply the stashed heading/subheading (empty string is valid —
+            // it clears the OTP step's "We sent a code" message).
+            if (heading && 'lpStashedSignupHeading' in container.dataset) {
+              heading.innerHTML = stashedHeading;
+            }
+            if (subheading && 'lpStashedSignupSubheading' in container.dataset) {
+              subheading.innerHTML = stashedSubheading;
+            }
+
+            delete container.dataset.lpStashedSignupHtml;
+            delete container.dataset.lpStashedSignupHeading;
+            delete container.dataset.lpStashedSignupSubheading;
+
+            const signupForm = qs(container, 'form[data-step="signup"]');
+            const pw = signupForm && qs(signupForm, 'input[name="password"]');
+            if (pw) pw.focus();
+
+            if (signupForm) {
+              document.dispatchEvent(new CustomEvent('lp_list_builder_signup_form_rendered', { detail: { form: signupForm } }));
             }
 
             return;
@@ -169,7 +287,7 @@
               current_url: window.location.href.split("#")[0],
             });
 
-            showSuccessAndReload(form, "Signing you in…");
+            showSuccessAndReload(form, "Signing you in…", "Welcome back!");
             return;
           }
 
@@ -191,7 +309,7 @@
 
             await postJson(LP_LIST_BUILDER.pwResetConfirmUrl, { email, token, password });
 
-            showSuccessAndReload(form, "Signing you in…");
+            showSuccessAndReload(form, "Signing you in…", "Welcome back!");
             return;
           }
 

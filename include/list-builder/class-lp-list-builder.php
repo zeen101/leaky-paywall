@@ -117,6 +117,109 @@ class LP_List_Builder
     <?php
     }
 
+    /**
+     * Check whether DOI OTP mode is active for List Builder signups.
+     *
+     * @return bool
+     */
+    public static function is_otp_mode_enabled()
+    {
+        if ( ! class_exists( 'LP_DOI_OTP_Service' ) ) {
+            return false;
+        }
+
+        $doi_settings = function_exists( 'get_leaky_paywall_double_opt_in_settings' )
+            ? get_leaky_paywall_double_opt_in_settings()
+            : array();
+
+        return isset( $doi_settings['verification_mode'] ) && 'otp' === $doi_settings['verification_mode'];
+    }
+
+    /**
+     * REST handler: request an OTP code for the given email.
+     *
+     * Intentionally returns the same success response regardless of whether
+     * the email is already registered, to prevent enumeration.
+     */
+    public static function handle_request_otp( $request )
+    {
+        if ( ! self::is_otp_mode_enabled() ) {
+            return new WP_REST_Response( array(
+                'ok'    => false,
+                'error' => 'otp_disabled',
+                'message' => __( 'Email verification is not enabled.', 'leaky-paywall' ),
+            ), 400 );
+        }
+
+        $email = sanitize_email( $request->get_param( 'email' ) );
+
+        if ( empty( $email ) || ! is_email( $email ) ) {
+            return new WP_REST_Response( array(
+                'ok'    => false,
+                'error' => 'invalid_email',
+                'message' => __( 'Please enter a valid email address.', 'leaky-paywall' ),
+            ), 400 );
+        }
+
+        // Always send a code, even if the email is already registered.
+        // The signup endpoint will handle the "already registered" case
+        // after the code is verified — this prevents email enumeration.
+        $result = LP_DOI_OTP_Service::request_code( $email );
+
+        if ( ! $result['success'] ) {
+            return new WP_REST_Response( array(
+                'ok'    => false,
+                'error' => 'request_failed',
+                'message' => $result['message'],
+            ), 429 );
+        }
+
+        return new WP_REST_Response( array(
+            'ok'    => true,
+            'message' => $result['message'],
+        ), 200 );
+    }
+
+    /**
+     * REST handler: verify an OTP code for the given email.
+     */
+    public static function handle_verify_otp( $request )
+    {
+        if ( ! self::is_otp_mode_enabled() ) {
+            return new WP_REST_Response( array(
+                'ok'    => false,
+                'error' => 'otp_disabled',
+                'message' => __( 'Email verification is not enabled.', 'leaky-paywall' ),
+            ), 400 );
+        }
+
+        $email = sanitize_email( $request->get_param( 'email' ) );
+        $code  = sanitize_text_field( $request->get_param( 'code' ) );
+
+        if ( empty( $email ) || ! is_email( $email ) ) {
+            return new WP_REST_Response( array(
+                'ok'    => false,
+                'error' => 'invalid_email',
+                'message' => __( 'Please enter a valid email address.', 'leaky-paywall' ),
+            ), 400 );
+        }
+
+        $result = LP_DOI_OTP_Service::verify_code( $email, $code );
+
+        if ( ! $result['success'] ) {
+            return new WP_REST_Response( array(
+                'ok'    => false,
+                'error' => 'verify_failed',
+                'message' => $result['message'],
+            ), 400 );
+        }
+
+        return new WP_REST_Response( array(
+            'ok'    => true,
+            'message' => $result['message'],
+        ), 200 );
+    }
+
     public static function handle_flow($request)
     {
 
@@ -195,6 +298,19 @@ class LP_List_Builder
             ], 400);
         }
 
+        // When OTP mode is on, require a valid verification flag before creating the user.
+        // This check runs before the email_exists() check so enumeration is still blocked
+        // (attackers can't learn if an email is registered without first verifying it).
+        if ( self::is_otp_mode_enabled() ) {
+            if ( ! LP_DOI_OTP_Service::is_email_verified( $email ) ) {
+                return new WP_REST_Response( array(
+                    'ok'    => false,
+                    'error' => 'email_not_verified',
+                    'message' => __( 'Please verify your email address first.', 'leaky-paywall' ),
+                ), 400 );
+            }
+        }
+
         if (email_exists($email)) {
             return new WP_REST_Response([
                 'ok'    => false,
@@ -254,6 +370,11 @@ class LP_List_Builder
         }
 
         leaky_paywall_cleanup_incomplete_user($subscriber_data['email']);
+
+        // Consume the OTP verification flag (if any) so it can't be reused.
+        if ( self::is_otp_mode_enabled() ) {
+            LP_DOI_OTP_Service::consume_verification( $email );
+        }
 
         // Send email notifications.
         leaky_paywall_email_subscription_status($user_id, 'new', $subscriber_data);
@@ -706,11 +827,14 @@ class LP_List_Builder
             'flowUrl'   => esc_url_raw(rest_url('lp-list-builder/v1/flow')),
             'signupUrl' => esc_url_raw(rest_url('lp-list-builder/v1/signup')),
             'loginUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/login')),
+            'requestOtpUrl'    => esc_url_raw(rest_url('lp-list-builder/v1/request-otp')),
+            'verifyOtpUrl'     => esc_url_raw(rest_url('lp-list-builder/v1/verify-otp')),
             'pwResetRequestUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/request')),
             'pwResetVerifyUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/verify')),
             'pwResetConfirmUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/confirm')),
             'subscribeUrl'     => esc_url_raw( $subscribe_page_url ),
             'upgradeEnabled'   => ( ! empty( $lb_settings['upgrade_enabled'] ) && 'on' === $lb_settings['upgrade_enabled'] ),
+            'otpEnabled'       => self::is_otp_mode_enabled(),
         ]) . ';', 'before');
 
         wp_enqueue_script('lp-list-builder');
@@ -772,6 +896,25 @@ class LP_List_Builder
                     'type'  => 'string',
                     'required'  => true,
                 ]
+            ]
+        ]);
+
+        register_rest_route('lp-list-builder/v1', '/request-otp', [
+            'methods'   => 'POST',
+            'callback'  => [$this, 'handle_request_otp'],
+            'permission_callback'   => '__return_true',
+            'args'  => [
+                'email' => ['required' => true]
+            ]
+        ]);
+
+        register_rest_route('lp-list-builder/v1', '/verify-otp', [
+            'methods'   => 'POST',
+            'callback'  => [$this, 'handle_verify_otp'],
+            'permission_callback'   => '__return_true',
+            'args'  => [
+                'email' => ['required' => true],
+                'code'  => ['required' => true]
             ]
         ]);
 
