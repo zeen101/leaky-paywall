@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.0.7\n"
+"Project-Id-Version: Leaky Paywall 5.0.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-14T16:08:57+00:00\n"
+"POT-Creation-Date: 2026-04-21T15:08:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -3128,8 +3128,8 @@ msgstr ""
 
 #: include/admin/subscribers/subscriber.php:317
 #: include/list-builder/class-lp-list-builder.php:84
-#: include/list-builder/class-lp-list-builder.php:540
-#: include/list-builder/class-lp-list-builder.php:570
+#: include/list-builder/class-lp-list-builder.php:549
+#: include/list-builder/class-lp-list-builder.php:579
 #: shortcodes.php:844
 msgid "Email Address"
 msgstr ""
@@ -3180,8 +3180,8 @@ msgid "Subscriber Details"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:709
-#: include/list-builder/class-lp-list-builder.php:547
-#: include/list-builder/class-lp-list-builder.php:577
+#: include/list-builder/class-lp-list-builder.php:556
+#: include/list-builder/class-lp-list-builder.php:586
 #: shortcodes.php:872
 msgid "Password"
 msgstr ""
@@ -3646,7 +3646,7 @@ msgstr ""
 
 #: include/list-builder/class-lp-list-builder.php:129
 #: include/list-builder/class-lp-list-builder.php:169
-#: include/list-builder/class-lp-list-builder.php:280
+#: include/list-builder/class-lp-list-builder.php:289
 msgid "Please enter a valid email address."
 msgstr ""
 
@@ -3674,39 +3674,39 @@ msgstr ""
 msgid "An account with that email already exists. Please sign in instead."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:290
+#: include/list-builder/class-lp-list-builder.php:299
 msgid "No account found for that email. Please create an account."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:306
+#: include/list-builder/class-lp-list-builder.php:315
 msgid "Incorrect email or password."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:328
+#: include/list-builder/class-lp-list-builder.php:337
 msgid "Check your email"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:329
+#: include/list-builder/class-lp-list-builder.php:338
 msgid "If an account exists for that email, we sent a 6-digit verification code."
 msgstr ""
 
 #. translators: %s: email address
-#: include/list-builder/class-lp-list-builder.php:350
-#: include/list-builder/class-lp-list-builder.php:385
+#: include/list-builder/class-lp-list-builder.php:359
+#: include/list-builder/class-lp-list-builder.php:394
 #, php-format
 msgid "We sent a 6-digit code to %s (expires in 10 minutes)."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:357
+#: include/list-builder/class-lp-list-builder.php:366
 msgid "Please wait a moment before requesting another code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:378
+#: include/list-builder/class-lp-list-builder.php:387
 msgid "Your Verification Code"
 msgstr ""
 
 #. translators: %s: 6-digit verification code
-#: include/list-builder/class-lp-list-builder.php:380
+#: include/list-builder/class-lp-list-builder.php:389
 #, php-format
 msgid ""
 "Your verification code is: %s\n"
@@ -3714,86 +3714,86 @@ msgid ""
 "This code expires in 10 minutes."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:407
-#: include/list-builder/class-lp-list-builder.php:414
-#: include/list-builder/class-lp-list-builder.php:434
+#: include/list-builder/class-lp-list-builder.php:416
+#: include/list-builder/class-lp-list-builder.php:423
+#: include/list-builder/class-lp-list-builder.php:443
 msgid "Invalid code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:422
+#: include/list-builder/class-lp-list-builder.php:431
 msgid "Code expired. Please request a new one."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:427
+#: include/list-builder/class-lp-list-builder.php:436
 msgid "Too many attempts. Request a new code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:446
+#: include/list-builder/class-lp-list-builder.php:455
 msgid "Set a new password"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:447
+#: include/list-builder/class-lp-list-builder.php:456
 msgid "Choose a new password for your account."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:470
-#: include/list-builder/class-lp-list-builder.php:475
+#: include/list-builder/class-lp-list-builder.php:479
+#: include/list-builder/class-lp-list-builder.php:484
 msgid "Invalid request."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:482
+#: include/list-builder/class-lp-list-builder.php:491
 msgid "Reset session expired. Please request a new code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:486
+#: include/list-builder/class-lp-list-builder.php:495
 msgid "Invalid reset session."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:496
+#: include/list-builder/class-lp-list-builder.php:505
 msgid "All set"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:497
+#: include/list-builder/class-lp-list-builder.php:506
 msgid "Your password has been updated."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:499
+#: include/list-builder/class-lp-list-builder.php:508
 msgid "Password updated."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:499
+#: include/list-builder/class-lp-list-builder.php:508
 msgid "You can continue."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:554
+#: include/list-builder/class-lp-list-builder.php:563
 msgid "Forgot your password?"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:557
+#: include/list-builder/class-lp-list-builder.php:566
 msgid "Log in"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:603
+#: include/list-builder/class-lp-list-builder.php:612
 msgid "By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:614
+#: include/list-builder/class-lp-list-builder.php:623
 msgid "Create account"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:632
+#: include/list-builder/class-lp-list-builder.php:641
 msgid "Verification code"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:645
+#: include/list-builder/class-lp-list-builder.php:654
 msgid "Verify code"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:662
+#: include/list-builder/class-lp-list-builder.php:671
 msgid "New password"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:673
+#: include/list-builder/class-lp-list-builder.php:682
 msgid "Set new password"
 msgstr ""
 
