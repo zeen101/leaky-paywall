@@ -572,6 +572,15 @@ function leaky_paywall_user_has_active_subscription_at_level( $user, $level_id )
 		return false;
 	}
 
+	// Non-recurring levels require manual re-registration to renew, so an active
+	// subscription at this level is not a duplicate — it just means they are
+	// within their current paid term and may want to extend it.
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	if ( empty( $level['recurring'] ) || 'on' !== $level['recurring'] ) {
+		return false;
+	}
+
 	$payment_status = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 
 	$has_active = in_array( $payment_status, leaky_paywall_access_statuses(), true );
