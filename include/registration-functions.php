@@ -1371,6 +1371,56 @@ function leaky_paywall_cleanup_incomplete_user( $email ) {
 	}
 }
 
+/**
+ * Permanently delete stale incomplete users and their metadata.
+ *
+ * @since 5.0.9
+ */
+function leaky_paywall_process_incomplete_user_cleanup() {
+	$settings = get_leaky_paywall_settings();
+	$retention_days = isset( $settings['incomplete_user_retention_days'] ) ? absint( $settings['incomplete_user_retention_days'] ) : 365;
+	$retention_days = absint( apply_filters( 'leaky_paywall_incomplete_user_retention_days', $retention_days, $settings ) );
+
+	if ( $retention_days < 1 ) {
+		return;
+	}
+
+	$batch_size = absint( apply_filters( 'leaky_paywall_incomplete_user_cleanup_batch_size', 100, $settings ) );
+
+	if ( $batch_size < 1 ) {
+		$batch_size = 100;
+	}
+
+	$cutoff = gmdate( 'Y-m-d H:i:s', strtotime( '-' . $retention_days . ' days' ) );
+
+	$incomplete_users = get_posts(
+		array(
+			'post_type'      => 'lp_incomplete_user',
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'posts_per_page' => $batch_size,
+			'orderby'        => 'ID',
+			'order'          => 'ASC',
+			'date_query'     => array(
+				array(
+					'column'    => 'post_date_gmt',
+					'before'    => $cutoff,
+					'inclusive' => false,
+				),
+			),
+		)
+	);
+
+	if ( empty( $incomplete_users ) ) {
+		return;
+	}
+
+	foreach ( $incomplete_users as $incomplete_user_id ) {
+		wp_delete_post( $incomplete_user_id, true );
+	}
+}
+add_action( 'leaky_paywall_process_incomplete_user_cleanup', 'leaky_paywall_process_incomplete_user_cleanup' );
+
 function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 
 	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $email );

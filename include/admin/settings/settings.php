@@ -349,6 +349,14 @@ class Leaky_Paywall_Settings
 					</tr>
 
 					<tr class="general-options">
+						<th><label for="incomplete_user_retention_days"><?php esc_html_e('Incomplete Registration Retention', 'leaky-paywall'); ?></label></th>
+						<td>
+							<input type="number" min="0" id="incomplete_user_retention_days" class="small-text" name="incomplete_user_retention_days" value="<?php echo esc_attr($settings['incomplete_user_retention_days']); ?>" />
+							<p class="description"><?php esc_html_e('Automatically delete incomplete registration records after this many days. Set to 0 to disable automatic cleanup.', 'leaky-paywall'); ?></p>
+						</td>
+					</tr>
+
+					<tr class="general-options">
 						<th><?php esc_html_e('Expiration Dates', 'leaky-paywall'); ?></th>
 						<td><input type="checkbox" id="add_expiration_dates" name="add_expiration_dates" <?php checked('on', $settings['add_expiration_dates']); ?> /> <?php esc_html_e('If a current subscriber renews/changes their subscription level, add additional time to their current expiration date. If unchecked, their new expiration date will be calculated from the date of subscription level renewal/change.', 'leaky-paywall'); ?></td>
 					</tr>
@@ -1520,11 +1528,12 @@ The %sitename% Team';
 				'renewal_reminder_email'                => 'on',
 				'renewal_reminder_email_subject'        => '',
 				'renewal_reminder_email_body'           => '',
-				'renewal_reminder_days_before'          => '7',
-				'new_subscriber_admin_email'            => 'off',
-				'admin_new_subscriber_email_subject'    => 'New subscription on ' . stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8')),
-				'admin_new_subscriber_email_recipients' => get_option('admin_email'),
-				'payment_gateway'                       => array('stripe'),
+					'renewal_reminder_days_before'          => '7',
+					'new_subscriber_admin_email'            => 'off',
+					'admin_new_subscriber_email_subject'    => 'New subscription on ' . stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8')),
+					'admin_new_subscriber_email_recipients' => get_option('admin_email'),
+					'incomplete_user_retention_days'        => 365,
+					'payment_gateway'                       => array('stripe'),
 				'test_mode'                             => 'off',
 				'connected_account_id'                  => '',
 				'lp_app_api_key'                        => '',
@@ -1710,6 +1719,10 @@ The %sitename% Team';
 					$settings['enable_user_delete_account'] = sanitize_text_field(wp_unslash($_POST['enable_user_delete_account']));
 				} else {
 					$settings['enable_user_delete_account'] = 'off';
+				}
+
+				if ( isset( $_POST['incomplete_user_retention_days'] ) ) {
+					$settings['incomplete_user_retention_days'] = absint( wp_unslash( $_POST['incomplete_user_retention_days'] ) );
 				}
 
 				if (!empty($_POST['remove_username_field'])) {

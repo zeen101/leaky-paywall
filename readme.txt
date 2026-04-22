@@ -232,6 +232,9 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 
 == Changelog ==
 
+= 5.0.9 =
+* Add configurable retention for incomplete registration records with scheduled cleanup of stale data
+
 = 5.0.8 =
 * Add list builder to top content conversions
 * Fix save issue in email settings

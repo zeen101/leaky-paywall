@@ -2652,6 +2652,17 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	}
 	register_deactivation_hook(__FILE__, 'leaky_paywall_process_renewal_reminder_deactivation');
 
+	/**
+	 * Register cron job to clean up stale incomplete users.
+	 */
+	function leaky_paywall_incomplete_user_cleanup_schedule()
+	{
+		if (!wp_next_scheduled('leaky_paywall_process_incomplete_user_cleanup')) {
+			wp_schedule_event(time(), 'daily', 'leaky_paywall_process_incomplete_user_cleanup');
+		}
+	}
+	add_action('init', 'leaky_paywall_incomplete_user_cleanup_schedule');
+
 
 	/**
 	 * Process renewal reminder email for each Leaky Paywall subscriber
