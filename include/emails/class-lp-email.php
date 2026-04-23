@@ -394,6 +394,16 @@ class LP_Email {
 				<p class="description">
 					<?php echo esc_html( implode( ', ', $this->template_tags ) ); ?>
 				</p>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: %s: example template tag with a fallback value */
+						esc_html__( 'Add a fallback for empty values with %s — for example, %s renders "there" when no first name is on file.', 'leaky-paywall' ),
+						'<code>%token|fallback%</code>',
+						'<code>%firstname|there%</code>'
+					);
+					?>
+				</p>
 			</td>
 		</tr>
 		<?php

@@ -241,11 +241,37 @@ function leaky_paywall_log_status_transition( $new_status, $old_status, $user_id
 		$log = array();
 	}
 
+	$now = current_time( 'timestamp' );
+
+	// Collapse rapid transitions (within 5 seconds) into a single entry. A sync
+	// or webhook flow that briefly flips status mid-request shouldn't produce a
+	// chain of log entries — only the net change should be visible.
+	$last_key = array_key_last( $log );
+	if ( null !== $last_key
+		&& isset( $log[ $last_key ]['to'], $log[ $last_key ]['from'], $log[ $last_key ]['date'] )
+		&& $log[ $last_key ]['to'] === $old_status
+		&& ( $now - (int) $log[ $last_key ]['date'] ) <= 5
+	) {
+		// Round-trip back to the original state — no net change, drop the entry.
+		if ( $log[ $last_key ]['from'] === $new_status ) {
+			array_pop( $log );
+			update_user_meta( $user_id, '_leaky_paywall_status_log', $log );
+			return;
+		}
+
+		// Different end state — extend the existing entry rather than appending.
+		$log[ $last_key ]['to']     = $new_status;
+		$log[ $last_key ]['source'] = $source ? $source : $log[ $last_key ]['source'];
+		$log[ $last_key ]['date']   = $now;
+		update_user_meta( $user_id, '_leaky_paywall_status_log', $log );
+		return;
+	}
+
 	$log[] = array(
 		'from'   => $old_status,
 		'to'     => $new_status,
 		'source' => $source,
-		'date'   => current_time( 'timestamp' ),
+		'date'   => $now,
 	);
 
 	// Keep only the last 50 entries.

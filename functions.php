@@ -3210,14 +3210,37 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$site_name = stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8'));
 
-		$message = str_replace('%blogname%', $site_name, $message);
-		$message = str_replace('%sitename%', $site_name, $message);
-		$message = str_replace('%username%', $user->user_login, $message);
-		$message = str_replace('%useremail%', $user->user_email, $message);
-		$message = str_replace('%firstname%', $user->user_firstname, $message);
-		$message = str_replace('%lastname%', $user->user_lastname, $message);
-		$message = str_replace('%displayname%', $display_name, $message);
-		$message = str_replace('%password%', $password, $message);
+		$values = array(
+			'blogname'    => $site_name,
+			'sitename'    => $site_name,
+			'username'    => $user->user_login,
+			'useremail'   => $user->user_email,
+			'firstname'   => $user->user_firstname,
+			'lastname'    => $user->user_lastname,
+			'displayname' => $display_name,
+			'password'    => $password,
+		);
+
+		// Match %token% or %token|fallback%. The fallback supplies a default when
+		// the token resolves to an empty string (e.g. %firstname|there% renders
+		// "there" for subscribers with no first name on file).
+		$message = preg_replace_callback(
+			'/%([a-z_][a-z0-9_]*)(?:\|([^%]*))?%/',
+			function ( $m ) use ( $values ) {
+				if ( ! array_key_exists( $m[1], $values ) ) {
+					return $m[0];
+				}
+
+				$value = (string) $values[ $m[1] ];
+
+				if ( '' !== $value ) {
+					return $value;
+				}
+
+				return isset( $m[2] ) ? trim( $m[2] ) : '';
+			},
+			$message
+		);
 
 		return $message;
 	}
