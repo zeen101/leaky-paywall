@@ -277,18 +277,21 @@ function leaky_paywall_get_status_log( $user_id ) {
  * @param string $source The raw source value.
  * @return string
  */
-function lp_get_source_label( $source ) {
-	$labels = array(
-		'stripe_webhook' => 'Stripe Webhook',
-		'stripe_sync'    => 'Stripe Sync',
-		'paypal_webhook' => 'PayPal IPN',
-		'admin'          => 'Admin',
-		'cron'           => 'Cron',
-		'migration'      => 'Migration',
-		'registration'   => 'Registration',
-	);
+function lp_get_source_label($source)
+{
+    $labels = array(
+        'stripe_webhook' => 'Stripe Webhook',
+        'stripe_sync'    => 'Stripe Sync',
+        'paypal_webhook' => 'PayPal IPN',
+        'admin'          => 'Admin',
+        'cron'           => 'Cron',
+        'migration'      => 'Migration',
+        'registration'   => 'Registration',
+    );
 
-	return isset( $labels[ $source ] ) ? $labels[ $source ] : ucfirst( str_replace( '_', ' ', $source ) );
+    $labels = apply_filters('leaky_paywall_status_source_labels', $labels);
+
+    return isset($labels[$source]) ? $labels[$source] : ucfirst(str_replace('_', ' ', $source));
 }
 
 function leaky_paywall_get_all_transactions_by_email( $email )
