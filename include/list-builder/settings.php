@@ -90,6 +90,19 @@ class Leaky_Paywall_List_Builder_Settings
                 </td>
             </tr>
 
+            <?php if ( class_exists( 'LP_DOI_OTP_Service' ) ) : ?>
+            <tr>
+                <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Signup Verification', 'leaky-paywall' ); ?></h4></th>
+            </tr>
+            <tr>
+                <th><?php esc_html_e( 'Email Verification', 'leaky-paywall' ); ?></th>
+                <td>
+                    <input type="checkbox" id="lp_listbuilder_require_email_verification" name="lp_listbuilder_require_email_verification" value="on" <?php checked( $settings['require_email_verification'], 'on' ); ?> />
+                    <label for="lp_listbuilder_require_email_verification"><?php esc_html_e( 'Require email verification with one-time code', 'leaky-paywall' ); ?></label>
+                    <p class="description"><?php esc_html_e( 'New List Builder signups must enter a 6-digit code emailed to them before their account is created.', 'leaky-paywall' ); ?></p>
+                </td>
+            </tr>
+            <?php endif; ?>
 
             <tr>
                 <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Logged-In Subscriber Messaging', 'leaky-paywall' ); ?></h4></th>
@@ -201,6 +214,8 @@ class Leaky_Paywall_List_Builder_Settings
             $settings['terms_and_conditions'] = sanitize_text_field(wp_unslash($_POST['terms_and_conditions']));
         }
 
+        $settings['require_email_verification'] = isset( $_POST['lp_listbuilder_require_email_verification'] ) ? 'on' : '';
+
         if (isset($_POST['background_color'])) {
             $settings['background_color'] = sanitize_hex_color($_POST['background_color']);
         }
@@ -243,6 +258,7 @@ class Leaky_Paywall_List_Builder_Settings
             'heading'                    => 'Create a free account, or log in.',
             'subheading'                 => 'Gain access to read this article, plus limited free content.',
             'terms_and_conditions'       => 'Yes! I would like to receive new content and updates.',
+            'require_email_verification' => '',
             'background_color'           => '#000000',
             'text_color'                 => '#ffffff',
             'button_color'               => '#E45637',

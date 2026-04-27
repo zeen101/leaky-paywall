@@ -128,11 +128,9 @@ class LP_List_Builder
             return false;
         }
 
-        $doi_settings = function_exists( 'get_leaky_paywall_double_opt_in_settings' )
-            ? get_leaky_paywall_double_opt_in_settings()
-            : array();
+        $lb_settings = get_option( 'lp-listbuilder', array() );
 
-        return isset( $doi_settings['verification_mode'] ) && 'otp' === $doi_settings['verification_mode'];
+        return ! empty( $lb_settings['require_email_verification'] ) && 'on' === $lb_settings['require_email_verification'];
     }
 
     /**
