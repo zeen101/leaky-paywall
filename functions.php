@@ -378,6 +378,23 @@ function leaky_paywall_set_subscriber_status( $user_id, $new_status, $source = '
 
 	$old_status = get_user_meta( $user_id, $meta_key, true );
 
+	/**
+	 * Filter the target status before it is written.
+	 *
+	 * Lets extensions veto or remap a transition before it happens — e.g. the
+	 * Double Opt In extension forces access-granting transitions to "pending"
+	 * until the user has verified their email. Returning the same value as
+	 * $old_status will result in a no-op.
+	 *
+	 * @since 5.0.x
+	 *
+	 * @param string $new_status The status the caller is trying to set.
+	 * @param string $old_status The current status on the user.
+	 * @param int    $user_id    WordPress user ID.
+	 * @param string $source     What triggered the change (e.g. 'stripe_webhook').
+	 */
+	$new_status = apply_filters( 'leaky_paywall_target_subscriber_status', $new_status, $old_status, $user_id, $source );
+
 	// No change — skip hooks and DB write.
 	if ( $old_status === $new_status ) {
 		return false;
