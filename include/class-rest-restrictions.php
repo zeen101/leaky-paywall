@@ -622,6 +622,13 @@ class Leaky_Paywall_REST_Restrictions {
 				continue;
 			}
 
+			// If the user has already viewed this specific post, allow re-access.
+			// Their view has already been counted; revisiting shouldn't trigger
+			// the paywall just because they're now at the limit.
+			if ( isset( $viewed_content[ $content_post_type ][ $this->post_id ] ) ) {
+				return false;
+			}
+
 			// Calculate allowed value and views.
 			if ( 'on' === $settings['enable_combined_restrictions'] ) {
 				$allowed_value         = $settings['combined_restrictions_total_allowed'];
