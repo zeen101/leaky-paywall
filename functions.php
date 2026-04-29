@@ -1050,6 +1050,12 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 				continue;
 			}
 
+			// Payment status routed through leaky_paywall_set_subscriber_status() so the change is recorded in status history.
+			if ( 'payment_status' === $key ) {
+				leaky_paywall_set_subscriber_status( $user_id, $value, 'registration' );
+				continue;
+			}
+
 			update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value);
 		}
 
@@ -1131,6 +1137,12 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 
 			// Level ID is handled separately via leaky_paywall_set_subscriber_level().
 			if ( 'level_id' === $key ) {
+				continue;
+			}
+
+			// Payment status routed through leaky_paywall_set_subscriber_status() so the change is recorded in status history.
+			if ( 'payment_status' === $key ) {
+				leaky_paywall_set_subscriber_status( $user_id, $value, 'subscriber_update' );
 				continue;
 			}
 
