@@ -30,6 +30,16 @@ $default_body    = $settings['new_email_body'];
 				<li><code>%firstname%</code> — <?php esc_html_e( 'First name', 'leaky-paywall' ); ?></li>
 				<li><code>%lastname%</code> — <?php esc_html_e( 'Last name', 'leaky-paywall' ); ?></li>
 			</ul>
+			<p class="description">
+				<?php
+				printf(
+					/* translators: %s: example template tag with a fallback value */
+					esc_html__( 'Add a fallback for empty values with %s — for example, %s renders "there" when no first name is on file.', 'leaky-paywall' ),
+					'<code>%token|fallback%</code>',
+					'<code>%firstname|there%</code>'
+				);
+				?>
+			</p>
 		</div>
 
 		<div class="leaky-paywall-onboarding--step--actions">

@@ -33,6 +33,15 @@ class LP_Event_Tracking {
 	 */
 	private $queued_events = array();
 
+	/**
+	 * Previous level IDs captured during `leaky_paywall_level_transition` so they
+	 * can be attached as `previous_level` to the subsequent `Subscription Started`
+	 * or `Subscription Renewed` event. Keyed by user ID.
+	 *
+	 * @var array<int, string>
+	 */
+	private $pending_previous_levels = array();
+
 	public function __construct() {
 
 		self::$instance = $this;
@@ -310,6 +319,19 @@ class LP_Event_Tracking {
 			$this->get_utm_properties()
 		);
 
+		// If this registration replaced an existing level, include the previous
+		// level so Insights can identify free→paid (or any) conversions.
+		if ( isset( $this->pending_previous_levels[ $user_id ] ) ) {
+			$previous_level_id = $this->pending_previous_levels[ $user_id ];
+			unset( $this->pending_previous_levels[ $user_id ] );
+
+			$previous_level_name = $this->get_level_name( $previous_level_id );
+			if ( '' !== $previous_level_name ) {
+				$properties['previous_level']    = $previous_level_name;
+				$properties['previous_level_id'] = $previous_level_id;
+			}
+		}
+
 		$this->send_event( 'Registration', $subscriber_data, $properties );
 		$this->send_event( 'Subscription Started', $subscriber_data, $properties );
 	}
@@ -341,6 +363,19 @@ class LP_Event_Tracking {
 			$this->get_recurring_properties( $level_id )
 		);
 
+		// If the subscriber's level changed during this update (e.g. free → paid),
+		// include the previous level so Insights can identify the conversion.
+		if ( isset( $this->pending_previous_levels[ $user_id ] ) ) {
+			$previous_level_id = $this->pending_previous_levels[ $user_id ];
+			unset( $this->pending_previous_levels[ $user_id ] );
+
+			$previous_level_name = $this->get_level_name( $previous_level_id );
+			if ( '' !== $previous_level_name ) {
+				$properties['previous_level']    = $previous_level_name;
+				$properties['previous_level_id'] = $previous_level_id;
+			}
+		}
+
 		$this->send_event( 'Subscription Renewed', $subscriber_data, $properties );
 	}
 
@@ -369,6 +404,14 @@ class LP_Event_Tracking {
 	 * Subscriber level changed.
 	 */
 	public function on_level_transition( $new_level_id, $old_level_id, $user_id, $source ) {
+		// Both leaky_paywall_new_subscriber() and leaky_paywall_update_subscriber()
+		// fire this transition right before their respective action hooks. Stash
+		// the old level so on_new_subscriber / on_update_subscriber can attach it
+		// to the Subscription Started / Subscription Renewed event.
+		if ( ( 'registration' === $source || 'subscriber_update' === $source ) && '' !== $old_level_id ) {
+			$this->pending_previous_levels[ $user_id ] = $old_level_id;
+		}
+
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			return;

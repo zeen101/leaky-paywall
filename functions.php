@@ -378,6 +378,23 @@ function leaky_paywall_set_subscriber_status( $user_id, $new_status, $source = '
 
 	$old_status = get_user_meta( $user_id, $meta_key, true );
 
+	/**
+	 * Filter the target status before it is written.
+	 *
+	 * Lets extensions veto or remap a transition before it happens — e.g. the
+	 * Double Opt In extension forces access-granting transitions to "pending"
+	 * until the user has verified their email. Returning the same value as
+	 * $old_status will result in a no-op.
+	 *
+	 * @since 5.0.x
+	 *
+	 * @param string $new_status The status the caller is trying to set.
+	 * @param string $old_status The current status on the user.
+	 * @param int    $user_id    WordPress user ID.
+	 * @param string $source     What triggered the change (e.g. 'stripe_webhook').
+	 */
+	$new_status = apply_filters( 'leaky_paywall_target_subscriber_status', $new_status, $old_status, $user_id, $source );
+
 	// No change — skip hooks and DB write.
 	if ( $old_status === $new_status ) {
 		return false;
@@ -569,6 +586,15 @@ function leaky_paywall_user_has_active_subscription_at_level( $user, $level_id )
 	$current_level_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true );
 
 	if ( '' === $current_level_id || intval( $current_level_id ) !== $level_id ) {
+		return false;
+	}
+
+	// Non-recurring levels require manual re-registration to renew, so an active
+	// subscription at this level is not a duplicate — it just means they are
+	// within their current paid term and may want to extend it.
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	if ( empty( $level['recurring'] ) || 'on' !== $level['recurring'] ) {
 		return false;
 	}
 
@@ -3212,14 +3238,37 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$site_name = stripslashes_deep(html_entity_decode(get_bloginfo('name'), ENT_COMPAT, 'UTF-8'));
 
-		$message = str_replace('%blogname%', $site_name, $message);
-		$message = str_replace('%sitename%', $site_name, $message);
-		$message = str_replace('%username%', $user->user_login, $message);
-		$message = str_replace('%useremail%', $user->user_email, $message);
-		$message = str_replace('%firstname%', $user->user_firstname, $message);
-		$message = str_replace('%lastname%', $user->user_lastname, $message);
-		$message = str_replace('%displayname%', $display_name, $message);
-		$message = str_replace('%password%', $password, $message);
+		$values = array(
+			'blogname'    => $site_name,
+			'sitename'    => $site_name,
+			'username'    => $user->user_login,
+			'useremail'   => $user->user_email,
+			'firstname'   => $user->user_firstname,
+			'lastname'    => $user->user_lastname,
+			'displayname' => $display_name,
+			'password'    => $password,
+		);
+
+		// Match %token% or %token|fallback%. The fallback supplies a default when
+		// the token resolves to an empty string (e.g. %firstname|there% renders
+		// "there" for subscribers with no first name on file).
+		$message = preg_replace_callback(
+			'/%([a-z_][a-z0-9_]*)(?:\|([^%]*))?%/',
+			function ( $m ) use ( $values ) {
+				if ( ! array_key_exists( $m[1], $values ) ) {
+					return $m[0];
+				}
+
+				$value = (string) $values[ $m[1] ];
+
+				if ( '' !== $value ) {
+					return $value;
+				}
+
+				return isset( $m[2] ) ? trim( $m[2] ) : '';
+			},
+			$message
+		);
 
 		return $message;
 	}
