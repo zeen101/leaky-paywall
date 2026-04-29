@@ -35,3 +35,4 @@ foreach ( $options as $option ) {
 
 // Clean up the tracking cron.
 wp_clear_scheduled_hook( 'leaky_paywall_tracking_send' );
+wp_clear_scheduled_hook( 'leaky_paywall_process_incomplete_user_cleanup' );

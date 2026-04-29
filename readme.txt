@@ -233,14 +233,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 == Changelog ==
 
 = 5.0.9 =
-* Email merge tags now support a fallback value for empty tokens, e.g. `%firstname|there%` renders "there" when no first name is on file
-* Subscription Started and Subscription Renewed events now include previous_level and previous_level_id, enabling free-to-paid conversion tracking in Insights
-* Non-recurring subscribers can now re-register on the same level to renew their subscription
-* Fix paywall incorrectly appearing when a visitor revisits an article they've already viewed
-* List Builder upgrade message now records nag location on conversion, so upgrades from logged-in subscribers appear in Top Content - Paid Conversions
-* Status transition log now collapses rapid same-request transitions into a single entry, so a sync that briefly flips status no longer produces a chain of log rows
-* New filter `leaky_paywall_target_subscriber_status` lets extensions veto or remap a status transition before it is written
-* New filter `leaky_paywall_status_source_labels` lets extensions register custom human-readable labels for status transition sources
+* Add configurable retention for incomplete registration records with scheduled cleanup of stale data
 
 = 5.0.8 =
 * Add list builder to top content conversions
