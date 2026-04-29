@@ -180,6 +180,7 @@ class Leaky_Paywall_REST_Subscribers {
 			'site'           => leaky_paywall_get_current_site(),
 			'first_name'     => $request->get_param( 'first_name' ) ? $request->get_param( 'first_name' ) : '',
 			'last_name'      => $request->get_param( 'last_name' ) ? $request->get_param( 'last_name' ) : '',
+			'expires'        => $request->get_param( 'expires' ) ? $request->get_param( 'expires' ) : '',
 		);
 
 		$user_id = leaky_paywall_new_subscriber( null, $email, $meta_args['subscriber_id'], $meta_args );
@@ -471,6 +472,10 @@ class Leaky_Paywall_REST_Subscribers {
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'plan'            => array(
+				'required'          => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+			'expires'         => array(
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
 			),
