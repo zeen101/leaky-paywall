@@ -651,7 +651,13 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			} elseif ( $subscription->status == 'trialing' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'trial', 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
-				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_sync' );
+				// Stripe can mark a subscription canceled while current_period_end is
+				// still in the future — user keeps access until that date.
+				if ( $current_period_end && $current_period_end > time() ) {
+					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
+				} else {
+					leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_sync' );
+				}
 			} elseif ( 'past_due' === $subscription->status ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_sync' );
 			} elseif ( in_array( $subscription->status, array( 'incomplete_expired', 'unpaid' ), true ) ) {
