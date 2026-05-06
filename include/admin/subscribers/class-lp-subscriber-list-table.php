@@ -175,7 +175,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 				$args['meta_query'][] = array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
 					'value'   => $level,
-					'compare' => 'LIKE',
+					'compare' => '=',
 				);
 			}
 		}
@@ -187,7 +187,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 				$args['meta_query'][] = array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
 					'value'   => $status,
-					'compare' => 'LIKE',
+					'compare' => '=',
 				);
 			}
 		}
