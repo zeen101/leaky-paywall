@@ -1083,23 +1083,53 @@ class Leaky_Paywall_Settings
 								<?php
 
 								if ( $has_connected_account ) {
-									$stripe = leaky_paywall_initialize_stripe_api();
+									$disconnect_link = ' <a href="' . esc_url( $this->get_disconnect_url() ) . '" onclick="return confirm(\'' . esc_js( __( 'Are you sure you want to disconnect your Stripe account?', 'leaky-paywall' ) ) . '\');">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a>';
 
-									try {
-										$account = $stripe->accounts->retrieve($settings['connected_account_id']);
+									if ( 'test' === leaky_paywall_get_current_mode() ) {
 
-										echo '<div class="notice inline notice-success"><p><strong>' . esc_html( $account->settings->dashboard->display_name ) . '</strong><br>account id: ' . esc_html( $settings['connected_account_id'] ) . '</p></div>';
+										// Don't make Stripe API calls here — test keys can't access the live connected account.
+										$display_name = isset( $settings['connected_account_display_name'] ) ? $settings['connected_account_display_name'] : '';
 
-										if ( 'test' === leaky_paywall_get_current_mode() ) {
-											echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '" onclick="return confirm(\'' . esc_js( __( 'Are you sure you want to disconnect your Stripe account?', 'leaky-paywall' ) ) . '\');">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
-										} else {
-											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . ' <a href="' . esc_url( $this->get_disconnect_url() ) . '" onclick="return confirm(\'' . esc_js( __( 'Are you sure you want to disconnect your Stripe account?', 'leaky-paywall' ) ) . '\');">' . esc_html__( 'Disconnect', 'leaky-paywall' ) . '</a></p>';
+										echo '<div class="notice inline notice-success"><p>';
+										if ( $display_name ) {
+											echo '<strong>' . esc_html( $display_name ) . '</strong><br>';
 										}
-									} catch (\Throwable $th) {
+										echo 'account id: ' . esc_html( $settings['connected_account_id'] );
+										echo '</p></div>';
 
-										leaky_paywall_log($th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id']);
+										echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . $disconnect_link . '</p>';
 
-										echo '<div class="notice inline notice-error"><p>' . esc_html( $settings['connected_account_id'] ) . ' ' . esc_html__( 'You do not have access to the account, or it does not exist.', 'leaky-paywall' ) . '<br><a href="' . esc_url( $this->get_connect_url() ) . '">' . esc_html__( 'Connect with Stripe', 'leaky-paywall' ) . '</a></p></div>';
+									} else {
+
+										$stripe = leaky_paywall_initialize_stripe_api();
+
+										try {
+											$account = $stripe->accounts->retrieve($settings['connected_account_id']);
+
+											$display_name = isset( $account->settings->dashboard->display_name ) ? $account->settings->dashboard->display_name : '';
+
+											// Backfill the cached display name for existing publishers who connected before this caching was added,
+											// or refresh it when it changes upstream.
+											if ( $display_name && ( ! isset( $settings['connected_account_display_name'] ) || $settings['connected_account_display_name'] !== $display_name ) ) {
+												$settings['connected_account_display_name'] = $display_name;
+												update_leaky_paywall_settings( $settings );
+											}
+
+											echo '<div class="notice inline notice-success"><p>';
+											if ( $display_name ) {
+												echo '<strong>' . esc_html( $display_name ) . '</strong><br>';
+											}
+											echo 'account id: ' . esc_html( $settings['connected_account_id'] );
+											echo '</p></div>';
+
+											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . $disconnect_link . '</p>';
+
+										} catch (\Throwable $th) {
+
+											leaky_paywall_log($th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id']);
+
+											echo '<div class="notice inline notice-error"><p>' . esc_html( $settings['connected_account_id'] ) . ' ' . esc_html__( 'You do not have access to the account, or it does not exist.', 'leaky-paywall' ) . '<br><a href="' . esc_url( $this->get_connect_url() ) . '">' . esc_html__( 'Connect with Stripe', 'leaky-paywall' ) . '</a></p></div>';
+										}
 									}
 								} else {
 								?>

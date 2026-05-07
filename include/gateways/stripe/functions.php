@@ -1180,6 +1180,20 @@ function leaky_paywall_connect_maybe_process_return()
 
 		$settings['test_mode'] = 'off';
 
+		// Cache the display name so test mode can show it without a Stripe call —
+		// test API keys can't access a live connected account.
+		if ( ! empty( $settings['live_secret_key'] ) ) {
+			try {
+				$temp_client = new \Stripe\StripeClient( $settings['live_secret_key'] );
+				$account     = $temp_client->accounts->retrieve( $connected_account_id );
+				if ( isset( $account->settings->dashboard->display_name ) ) {
+					$settings['connected_account_display_name'] = $account->settings->dashboard->display_name;
+				}
+			} catch ( \Throwable $th ) {
+				leaky_paywall_log( $th->getMessage(), 'leaky paywall - could not cache connected account display name' );
+			}
+		}
+
 		update_leaky_paywall_settings($settings);
 
 		delete_transient('lp_connect_state_' . get_current_user_id());
