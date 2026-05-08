@@ -386,9 +386,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'customer.subscription.created':
-				$expires = date_i18n('Y-m-d 23:59:59', $stripe_object->current_period_end);
-				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
-				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
+				// Stripe fires subscription.created the moment a Subscription
+				// exists, even if the initial PaymentIntent hasn't been
+				// collected (status: incomplete). Without this gate, an
+				// abandoned/unpaid signup would silently activate the user
+				// and extend their expiration. invoice.payment_succeeded is
+				// the proper activation path for paid subs.
+				if ( in_array( $stripe_object->status, array( 'active', 'trialing' ), true ) ) {
+					$expires = date_i18n('Y-m-d 23:59:59', $stripe_object->current_period_end);
+					update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
+					leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
+				}
 				break;
 
 			case 'customer.subscription.deleted':
