@@ -690,6 +690,23 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 
 	leaky_paywall_log( $stripe_object->customer, 'stripe checkout event customer' );
 
+	// Dedup by checkout session ID. cs_xxx IDs are unique per checkout in
+	// Stripe, so a prior transaction stamped with this session is a duplicate
+	// webhook delivery (Stripe retries) or a re-submission of the same flow.
+	$existing_transaction = get_posts( array(
+		'post_type'      => 'lp_transaction',
+		'posts_per_page' => 1,
+		'post_status'    => 'publish',
+		'meta_query'     => array(
+			array( 'key' => '_gateway_txn_id', 'value' => $stripe_object->id ),
+		),
+	) );
+
+	if ( ! empty( $existing_transaction ) ) {
+		leaky_paywall_log( $stripe_object->id, 'stripe checkout - transaction already exists for session, skipping' );
+		return;
+	}
+
 	$incomplete_id = leaky_paywall_get_incomplete_user_from_email($stripe_object->customer_details->email);
 
 	if (!$incomplete_id) {
@@ -742,6 +759,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 		'level_id'	=> $user_data['level_id'],
 		'description' => $level['label'],
 		'subscriber_id'	=> $stripe_object->customer,
+		'payment_gateway_txn_id' => $stripe_object->id,
 		'created'	=> gmdate('Y-m-d H:i:s'),
 		'price'	=> $stripe_object->amount_total / 100,
 		'plan'	=> $plan_id,
@@ -842,21 +860,23 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 		return null;
 	}
 
-	// Dedup: if the other path already created a transaction for this customer
-	// in the last 60 seconds, bail. Keeps redirect + webhook from racing into
-	// duplicate transactions and duplicate Subscription Started events.
-	$recent_transaction = get_posts( array(
+	// Dedup by PaymentIntent ID. PI IDs are unique forever in Stripe, so any
+	// prior transaction stamped with this PI is a duplicate finalize attempt
+	// regardless of how much time has passed. Catches:
+	//   - browser redirect + payment_intent.succeeded webhook racing
+	//   - user re-submitting the form (same customer, same PI re-confirmed)
+	//   - user reloading or back-buttoning the redirect URL
+	$existing_transaction = get_posts( array(
 		'post_type'      => 'lp_transaction',
 		'posts_per_page' => 1,
 		'post_status'    => 'publish',
-		'date_query'     => array( array( 'after' => '60 seconds ago' ) ),
 		'meta_query'     => array(
-			array( 'key' => '_subscriber_id', 'value' => $pi->customer ),
+			array( 'key' => '_gateway_txn_id', 'value' => $pi->id ),
 		),
 	) );
 
-	if ( ! empty( $recent_transaction ) ) {
-		leaky_paywall_log( $pi->customer, "stripe {$source} - transaction already created, skipping" );
+	if ( ! empty( $existing_transaction ) ) {
+		leaky_paywall_log( $pi->id, "stripe {$source} - transaction already exists for PI, skipping" );
 		return null;
 	}
 
@@ -912,26 +932,27 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	}
 
 	$subscriber_data = array(
-		'email'           => $user_data['email'],
-		'password'        => isset( $user_data['password'] ) ? $user_data['password'] : '',
-		'first_name'      => isset( $user_data['first_name'] ) ? $user_data['first_name'] : '',
-		'last_name'       => isset( $user_data['last_name'] ) ? $user_data['last_name'] : '',
-		'level_id'        => $user_data['level_id'],
-		'description'     => isset( $level['label'] ) ? $level['label'] : '',
-		'subscriber_id'   => $pi->customer,
-		'created'         => gmdate( 'Y-m-d H:i:s' ),
-		'price'           => $pi->amount / 100,
-		'plan'            => $plan_id,
-		'interval_count'  => isset( $level['interval_count'] ) ? $level['interval_count'] : 0,
-		'interval'        => isset( $level['interval'] ) ? $level['interval'] : '',
-		'recurring'       => false,
-		'currency'        => leaky_paywall_get_currency(),
-		'new_user'        => true,
-		'payment_gateway' => 'stripe',
-		'payment_status'  => 'active',
-		'site'            => leaky_paywall_get_current_site(),
-		'mode'            => leaky_paywall_get_current_mode(),
-		'need_new'        => ! $existing_customer,
+		'email'                  => $user_data['email'],
+		'password'               => isset( $user_data['password'] ) ? $user_data['password'] : '',
+		'first_name'             => isset( $user_data['first_name'] ) ? $user_data['first_name'] : '',
+		'last_name'              => isset( $user_data['last_name'] ) ? $user_data['last_name'] : '',
+		'level_id'               => $user_data['level_id'],
+		'description'            => isset( $level['label'] ) ? $level['label'] : '',
+		'subscriber_id'          => $pi->customer,
+		'payment_gateway_txn_id' => $pi->id,
+		'created'                => gmdate( 'Y-m-d H:i:s' ),
+		'price'                  => $pi->amount / 100,
+		'plan'                   => $plan_id,
+		'interval_count'         => isset( $level['interval_count'] ) ? $level['interval_count'] : 0,
+		'interval'               => isset( $level['interval'] ) ? $level['interval'] : '',
+		'recurring'              => false,
+		'currency'               => leaky_paywall_get_currency(),
+		'new_user'               => true,
+		'payment_gateway'        => 'stripe',
+		'payment_status'         => 'active',
+		'site'                   => leaky_paywall_get_current_site(),
+		'mode'                   => leaky_paywall_get_current_mode(),
+		'need_new'               => ! $existing_customer,
 	);
 
 	if ( $existing_customer ) {
