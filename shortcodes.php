@@ -245,6 +245,9 @@ function do_leaky_paywall_profile()
 		if ('canceled' === $status) {
 			/* Translators: %s - expiration date */
 			$expires = sprintf(__('Ends on %s', 'leaky-paywall'), $expires);
+		} elseif ('pending_cancel' === $status) {
+			/* Translators: %s - expiration date */
+			$expires = sprintf(__('Expires on %s', 'leaky-paywall'), $expires);
 		} else {
 			/* Translators: %s - recurrs on date */
 			$expires = sprintf(__('Recurs on %s', 'leaky-paywall'), $expires);
@@ -288,6 +291,10 @@ function do_leaky_paywall_profile()
 
 		if ('Trial' === $status_name) {
 			$status_name = esc_html__('Trial', 'leaky-paywall');
+		}
+
+		if ('pending_cancel' === $status) {
+			$status_name = esc_html__('Cancels Soon', 'leaky-paywall');
 		}
 	}
 
