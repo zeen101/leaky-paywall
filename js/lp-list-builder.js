@@ -89,8 +89,6 @@
 
         const msgEl = container.querySelector(".lp-list-builder__msg");
 
-        console.log(headingEl);
-
         if (headingEl && typeof data.heading === "string") headingEl.textContent = data.heading;
         if (subheadingEl && typeof data.subheading === "string") subheadingEl.textContent = data.subheading;
 
@@ -167,10 +165,7 @@
         }
 
         try {
-          console.log('trying form');
-
           if (step == "email") {
-            console.log('step is email');
             const email = (fd.get("email") || "").toString().trim();
             const heading = document.querySelector('.Slider__ExpandedHeader');
             const subheading = document.querySelector('.Slider__ExpandedSubHeader');
