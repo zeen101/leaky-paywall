@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 5.0.9
+Stable tag: 5.1.0
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,18 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.0 =
+* Stripe Payment Element now finalizes subscriptions via a webhook fallback when the browser redirect doesn't complete (e.g. Stripe Link, closed tab)
+* Stripe Checkout webhook now dedupes by checkout session ID, preventing duplicate transactions from webhook retries
+* Subscriptions that Stripe marks "canceled" while still inside their paid period now show as "pending_cancel" instead of immediately expiring
+* customer.subscription.created webhook no longer activates users on incomplete subscriptions
+* My Account page now shows "Cancels Soon" and "Expires on {date}" for pending_cancel subscribers
+* REST PUT /subscribers now accepts an `expires` parameter and auto-calculates expiration when only `level_id` is supplied
+* Stripe Connect admin notice no longer makes live API calls while in test mode
+* leaky_paywall_new_subscriber and leaky_paywall_update_subscriber now record payment status changes in the status history log
+* Fix: subscriber list table level and status filters now match exactly
+* Fix: List Builder popup INP improved on mobile
 
 = 5.0.9 =
 * Email merge tags now support a fallback value for empty tokens, e.g. `%firstname|there%` renders "there" when no first name is on file
