@@ -241,6 +241,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 * REST PUT /subscribers now accepts an `expires` parameter and auto-calculates expiration when only `level_id` is supplied
 * Stripe Connect admin notice no longer makes live API calls while in test mode
 * leaky_paywall_new_subscriber and leaky_paywall_update_subscriber now record payment status changes in the status history log
+* New filter `leaky_paywall_already_subscribed_at_level_content` lets extensions replace the message when a logged-in user tries to subscribe to a level they already have, e.g. to show a Resume Billing CTA for pending_cancel subscribers
 * Fix: subscriber list table level and status filters now match exactly
 * Fix: List Builder popup INP improved on mobile
 

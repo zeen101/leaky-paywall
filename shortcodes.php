@@ -553,7 +553,20 @@ function do_leaky_paywall_register_form($atts)
 		$content  = '<p>' . __( 'You are already subscribed to this level.', 'leaky-paywall' ) . ' ';
 		$content .= '<a href="' . esc_url( $account_url ) . '">' . __( 'Visit your account', 'leaky-paywall' ) . '</a> ';
 		$content .= __( 'to manage your subscription.', 'leaky-paywall' ) . '</p>';
-		return $content;
+
+		/**
+		 * Filter the message shown when a logged-in user tries to subscribe to a
+		 * level they already have an active subscription on. Lets extensions render
+		 * alternative content — e.g. a "Resume Billing" CTA for pending_cancel
+		 * subscribers, where "already subscribed" is the wrong mental model.
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param string  $content  Default already-subscribed message HTML.
+		 * @param int     $level_id Level ID the user is trying to subscribe to.
+		 * @param WP_User $user     Current user.
+		 */
+		return apply_filters( 'leaky_paywall_already_subscribed_at_level_content', $content, $level_id, wp_get_current_user() );
 	}
 
 	if (is_level_hidden($level)) {
