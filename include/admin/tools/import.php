@@ -50,9 +50,6 @@ class Leaky_Paywall_Import {
 			return;
 		}
 
-		// Temporarily allow CSV MIME type through WordPress validation.
-		add_filter( 'wp_check_filetype_and_ext', array( $this, 'allow_csv_mime_type' ), 10, 4 );
-
 		$headers = array();
 		$manager = new SplFileObject( $file_path );
 		$i       = 0;
@@ -92,8 +89,6 @@ class Leaky_Paywall_Import {
 				$updated++;
 			}
 		}
-
-		remove_filter( 'wp_check_filetype_and_ext', array( $this, 'allow_csv_mime_type' ), 10 );
 
 		if ( $new > 0 || $updated > 0 ) {
 			echo '<div class="notice notice-success">';
@@ -233,23 +228,5 @@ class Leaky_Paywall_Import {
 		}
 
 		return $user->ID;
-	}
-
-	/**
-	 * Allow CSV MIME types through WordPress validation.
-	 *
-	 * @param array  $data     File data array.
-	 * @param string $file     Full path to the file.
-	 * @param string $filename The name of the file.
-	 * @param array  $mimes    Allowed MIME types.
-	 * @return array
-	 */
-	public function allow_csv_mime_type( $data, $file, $filename, $mimes ) {
-		$wp_filetype    = wp_check_filetype( $filename, $mimes );
-		$ext            = $wp_filetype['ext'];
-		$type           = $wp_filetype['type'];
-		$proper_filename = $data['proper_filename'];
-
-		return compact( 'ext', 'type', 'proper_filename' );
 	}
 }
