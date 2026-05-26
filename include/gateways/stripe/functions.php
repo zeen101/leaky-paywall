@@ -612,12 +612,24 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			return;
 		}
 
-		// Include all statuses so canceled subscriptions are found.
-		$subscriptions = $stripe->subscriptions->all(array(
-			'customer' => $cus->id,
-			'limit'    => '1',
-			'status'   => 'all',
-		), leaky_paywall_get_stripe_connect_params() );
+		// Prefer the meaningful subscription over "the most recently created."
+		// A customer with cancel-and-resubscribe history can have a canceled
+		// subscription created after their current active one — defaulting to
+		// status=all + limit=1 was returning that stale canceled sub and flipping
+		// the user to expired even though they're paying right now. Try active,
+		// then trialing; only fall back to status=all if nothing's live.
+		$subscriptions = null;
+		foreach ( array( 'active', 'trialing', 'all' ) as $status_filter ) {
+			$subscriptions = $stripe->subscriptions->all( array(
+				'customer' => $cus->id,
+				'limit'    => '1',
+				'status'   => $status_filter,
+			), leaky_paywall_get_stripe_connect_params() );
+
+			if ( ! empty( $subscriptions->data ) ) {
+				break;
+			}
+		}
 
 		if ( empty( $subscriptions->data ) ) {
 			return;
