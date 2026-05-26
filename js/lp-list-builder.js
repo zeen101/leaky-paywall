@@ -4,6 +4,21 @@
       return root.querySelector(sel);
     }
 
+    // Resolve the current post/page ID from the body classes (postid-NN / page-id-NN).
+    // Used for conversion attribution so it doesn't rely on parsing the URL.
+    function getCurrentPostId() {
+      var classes = (document.body.className || '').split(/\s+/);
+      for (var i = 0; i < classes.length; i++) {
+        if (classes[i].indexOf('postid-') === 0) {
+          return parseInt(classes[i].substring(7), 10) || 0;
+        }
+        if (classes[i].indexOf('page-id-') === 0) {
+          return parseInt(classes[i].substring(8), 10) || 0;
+        }
+      }
+      return 0;
+    }
+
     async function postJson(url, payload) {
 
       const res = await fetch(url, {
@@ -259,6 +274,9 @@
           if (step == "signup") {
             const payload = Object.fromEntries(fd.entries());
             payload.current_url = window.location.href.split("#")[0];
+            // Send the post ID straight from the page so attribution doesn't
+            // depend on url_to_postid(), which fails on tagged URLs (?utm_source=…).
+            payload.nag_loc = getCurrentPostId();
 
             if (typeof window.lpListBuilderPreSignup === 'function') {
               await window.lpListBuilderPreSignup(payload);

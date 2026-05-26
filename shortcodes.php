@@ -248,6 +248,9 @@ function do_leaky_paywall_profile()
 		} elseif ('pending_cancel' === $status) {
 			/* Translators: %s - expiration date */
 			$expires = sprintf(__('Expires on %s', 'leaky-paywall'), $expires);
+		} elseif (!leaky_paywall_user_has_access()) {
+			/* Translators: %s - expiration date */
+			$expires = sprintf(__('Expired on %s', 'leaky-paywall'), $expires);
 		} else {
 			/* Translators: %s - recurrs on date */
 			$expires = sprintf(__('Recurs on %s', 'leaky-paywall'), $expires);

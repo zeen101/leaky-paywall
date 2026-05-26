@@ -287,6 +287,12 @@
 			})
 			.then(function (data) {
 				if (data.show_paywall && data.nag_content) {
+					// Record the post where the paywall was shown so a later signup is
+					// attributed to it even if the visitor didn't click a link in the nag.
+					if (postId > 0) {
+						document.cookie = 'lp_nag_loc=' + postId + ';path=/';
+					}
+
 					// If List Builder is active and handles this nag type,
 					// skip the in-content nag — the slider will handle display via the event.
 					var lb = window.LP_LIST_BUILDER;

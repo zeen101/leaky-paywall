@@ -360,11 +360,22 @@ class LP_List_Builder
 
         // Attribute the conversion to the post the user was on when they signed up,
         // so it appears in the dashboard's Top Content — Free Conversions report.
-        if ( ! empty( $current_url ) ) {
-            $nag_location_id = url_to_postid( $current_url );
-            if ( $nag_location_id ) {
-                update_post_meta( $transaction_id, '_nag_location_id', $nag_location_id );
+        // Prefer the post ID sent straight from the page; fall back to resolving
+        // the URL with its query string stripped, since url_to_postid() returns 0
+        // for tagged links (e.g. ?utm_source=...), which loses attribution for
+        // traffic arriving from social and newsletters.
+        $nag_location_id = absint( $request->get_param( 'nag_loc' ) );
+
+        if ( ! $nag_location_id || ! get_post( $nag_location_id ) ) {
+            $nag_location_id = 0;
+            if ( ! empty( $current_url ) ) {
+                $clean_url       = strtok( $current_url, '?' );
+                $nag_location_id = url_to_postid( $clean_url );
             }
+        }
+
+        if ( $nag_location_id ) {
+            update_post_meta( $transaction_id, '_nag_location_id', $nag_location_id );
         }
 
         leaky_paywall_cleanup_incomplete_user($subscriber_data['email']);
@@ -872,6 +883,11 @@ class LP_List_Builder
                 'current_url'   => [
                     'type'  => 'string',
                     'required'  => true
+                ],
+                'nag_loc'   => [
+                    'type'      => 'integer',
+                    'required'  => false,
+                    'sanitize_callback' => 'absint',
                 ]
             ]
         ]);

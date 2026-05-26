@@ -263,6 +263,12 @@ class Leaky_Paywall {
 		$tools = new Leaky_Paywall_Tools();
 		add_submenu_page( 'issuem-leaky-paywall', __( 'Tools', 'leaky-paywall' ), __( 'Tools', 'leaky-paywall' ), $capability, 'leaky-paywall-tools', array( $tools, 'tools_page' ) );
 
+		$extensions_page = isset( $GLOBALS['leaky_paywall_extensions_page'] ) ? $GLOBALS['leaky_paywall_extensions_page'] : new Leaky_Paywall_Extensions_Page();
+		add_submenu_page( 'issuem-leaky-paywall', __( 'Extensions', 'leaky-paywall' ), __( 'Extensions', 'leaky-paywall' ), $capability, 'leaky-paywall-extensions', array( $extensions_page, 'render_page' ) );
+
+		$license_page = new Leaky_Paywall_License_Page();
+		add_submenu_page( 'issuem-leaky-paywall', __( 'License', 'leaky-paywall' ), __( 'License', 'leaky-paywall' ), $capability, 'leaky-paywall-license', array( $license_page, 'render_page' ) );
+
 		if ( ! leaky_paywall_is_pro() ) {
 			add_submenu_page( 'issuem-leaky-paywall', __( 'Upgrade', 'leaky-paywall' ), __( 'Upgrade', 'leaky-paywall' ), $capability, 'leaky-paywall-upgrade', array( $this, 'upgrade_page' ) );
 		}

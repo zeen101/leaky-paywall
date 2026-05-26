@@ -163,11 +163,24 @@ class Leaky_Paywall_Dashboard {
 				array( 'Content', 'Conversions' )
 			); ?>
 
-			<?php $this->render_top_content_card(
+			<?php
+			$free_counts  = $this->get_free_conversion_counts( $period );
+			$free_footer  = '';
+			if ( $free_counts['total'] > 0 ) {
+				$free_footer = sprintf(
+					/* translators: 1: attributed count, 2: total free signups, 3: unattributed count */
+					esc_html__( '%1$s of %2$s free signups this period are attributed to content. %3$s were direct or untracked (e.g. arrived via a tagged link or signed up off-article), so they do not appear above.', 'leaky-paywall' ),
+					number_format_i18n( $free_counts['attributed'] ),
+					number_format_i18n( $free_counts['total'] ),
+					number_format_i18n( $free_counts['unattributed'] )
+				);
+			}
+			$this->render_top_content_card(
 				__( 'Top Content — Free Conversions', 'leaky-paywall' ),
 				$top_free_content,
 				$is_pro,
-				array( 'Content', 'Conversions' )
+				array( 'Content', 'Conversions' ),
+				$free_footer
 			); ?>
 
 			<!-- Paywall Insights -->
@@ -544,10 +557,18 @@ class Leaky_Paywall_Dashboard {
 	private function get_top_converting_content( $period, $type = 'paid', $limit = 3 ) {
 		global $wpdb;
 
-		$args_period = leaky_paywall_insights_get_formatted_period( $period );
-		$after_date  = gmdate( 'Y-m-d H:i:s', strtotime( $args_period ) );
+		// Use the same explicit window the signup charts use, so the two cards
+		// count the identical period (see leaky_paywall_insights_get_period_start_datetime).
+		$after_date  = leaky_paywall_insights_get_period_start_datetime( $period );
 		$price_cond  = 'paid' === $type ? '> 0' : '= 0';
 		$limit       = absint( $limit );
+
+		// Free conversions exclude trials, mirroring get_signup_free_data() so the
+		// Top Content list reconciles with the New Signups (Free) chart.
+		$trial_join  = 'free' === $type
+			? "LEFT JOIN {$wpdb->postmeta} pm_trial ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'"
+			: '';
+		$trial_where = 'free' === $type ? 'AND pm_trial.post_id IS NULL' : '';
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
@@ -559,11 +580,13 @@ class Leaky_Paywall_Dashboard {
 					 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
 				 INNER JOIN {$wpdb->postmeta} pm_nag
 					 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
+				 {$trial_join}
 				 WHERE p.post_type = 'lp_transaction'
 				 AND p.post_date > %s
 				 AND pm_status.meta_value != 'incomplete'
 				 AND CAST(pm_price.meta_value AS DECIMAL(10,2)) {$price_cond}
 				 AND pm_nag.meta_value != ''
+				 {$trial_where}
 				 GROUP BY pm_nag.meta_value
 				 ORDER BY total DESC
 				 LIMIT {$limit}",
@@ -594,7 +617,54 @@ class Leaky_Paywall_Dashboard {
 		return $content;
 	}
 
-	private function render_top_content_card( $title, $items, $is_pro, $columns ) {
+	/**
+	 * Free-conversion totals for the period, used to reconcile the Top Content
+	 * list with the New Signups (Free) chart. Uses the identical definition as
+	 * get_signup_free_data() (price 0, not incomplete, no trial) so the numbers
+	 * line up: attributed + unattributed = total free signups for the period.
+	 *
+	 * @param string $period
+	 * @return array { total:int, attributed:int, unattributed:int }
+	 */
+	private function get_free_conversion_counts( $period ) {
+		global $wpdb;
+
+		$after_date = leaky_paywall_insights_get_period_start_datetime( $period );
+
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					COUNT(*) AS total,
+					SUM( CASE WHEN pm_nag.meta_value IS NOT NULL AND pm_nag.meta_value <> '' THEN 1 ELSE 0 END ) AS attributed
+				 FROM {$wpdb->posts} p
+				 INNER JOIN {$wpdb->postmeta} pm_price
+					 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+				 INNER JOIN {$wpdb->postmeta} pm_status
+					 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+				 LEFT JOIN {$wpdb->postmeta} pm_trial
+					 ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'
+				 LEFT JOIN {$wpdb->postmeta} pm_nag
+					 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
+				 WHERE p.post_type = 'lp_transaction'
+				 AND p.post_date > %s
+				 AND pm_status.meta_value != 'incomplete'
+				 AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0
+				 AND pm_trial.post_id IS NULL",
+				$after_date
+			)
+		);
+
+		$total      = $row ? (int) $row->total : 0;
+		$attributed = $row ? (int) $row->attributed : 0;
+
+		return array(
+			'total'        => $total,
+			'attributed'   => $attributed,
+			'unattributed' => max( 0, $total - $attributed ),
+		);
+	}
+
+	private function render_top_content_card( $title, $items, $is_pro, $columns, $footer = '' ) {
 		?>
 		<div class="lp-card">
 			<h3><?php echo esc_html( $title ); ?></h3>
@@ -626,6 +696,10 @@ class Leaky_Paywall_Dashboard {
 				</table>
 			<?php else : ?>
 				<p class="lp-no-data"><?php esc_html_e( 'No conversion data for this period.', 'leaky-paywall' ); ?></p>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $footer ) ) : ?>
+				<p class="lp-card-footnote" style="margin-top: 12px; color: #646970; font-size: 12px;"><?php echo wp_kses_post( $footer ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php

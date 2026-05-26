@@ -282,3 +282,22 @@ function leaky_paywall_insights_get_formatted_period($period)
 
     return $args_period;
 }
+
+/**
+ * Get the start of an insights period as an explicit site-local datetime.
+ *
+ * Both the signup charts and the Top Content queries must count the exact same
+ * window. Passing an explicit 'Y-m-d H:i:s' boundary to each (instead of letting
+ * one use a relative string and another convert via gmdate) guarantees they
+ * agree regardless of WP_Date_Query internals or the server timezone. The value
+ * is site-local to match the post_date column.
+ *
+ * @since 5.2.0
+ *
+ * @param string $period Period keyword (e.g. '30 days').
+ * @return string MySQL datetime in site-local time.
+ */
+function leaky_paywall_insights_get_period_start_datetime( $period ) {
+    $relative = leaky_paywall_insights_get_formatted_period( $period );
+    return gmdate( 'Y-m-d H:i:s', strtotime( $relative, current_time( 'timestamp' ) ) );
+}

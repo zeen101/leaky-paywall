@@ -1178,6 +1178,12 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
  */
 function leaky_paywall_is_pro() {
 
+	// Single all-access Pro license (5.2.0+).
+	if ( function_exists( 'leaky_paywall_pro_is_active' ) && leaky_paywall_pro_is_active() ) {
+		return true;
+	}
+
+	// Backwards compatibility: any valid per-extension license also counts.
 	if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 		return false;
 	}

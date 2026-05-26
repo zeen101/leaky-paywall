@@ -114,6 +114,11 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/onboarding/tracking.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/list-builder/class-lp-list-builder.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/class-lp-event-tracking.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/class-lp-store-client.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/pro-license.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/license-page.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/extensions-page.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/admin/pro-prompts.php';
 
 		include LEAKY_PAYWALL_PATH . 'include/error-tracking.php';
 		include LEAKY_PAYWALL_PATH . 'include/registration-functions.php';

@@ -476,7 +476,7 @@ class Leaky_Paywall_Insights
 	}
 
 	public function get_signup_paid_data( $period ) {
-		$args_period = leaky_paywall_insights_get_formatted_period( $period );
+		$after_date = leaky_paywall_insights_get_period_start_datetime( $period );
 		$data = array();
 
 		$args = array(
@@ -485,7 +485,7 @@ class Leaky_Paywall_Insights
 			'posts_per_page' => 9999,
 			'date_query'     => array(
 				array(
-					'after'  => $args_period,
+					'after'  => $after_date,
 					'column' => 'post_date',
 				),
 			),
@@ -533,7 +533,7 @@ class Leaky_Paywall_Insights
 	}
 
 	public function get_signup_free_data( $period ) {
-		$args_period = leaky_paywall_insights_get_formatted_period( $period );
+		$after_date = leaky_paywall_insights_get_period_start_datetime( $period );
 		$data = array();
 
 		$args = array(
@@ -542,7 +542,7 @@ class Leaky_Paywall_Insights
 			'posts_per_page' => 9999,
 			'date_query'     => array(
 				array(
-					'after'  => $args_period,
+					'after'  => $after_date,
 					'column' => 'post_date',
 				),
 			),
@@ -553,9 +553,11 @@ class Leaky_Paywall_Insights
 					'value'   => 'incomplete',
 					'compare' => 'NOT LIKE',
 				),
+				// Match free transactions robustly: '0', '0.00', etc. all cast to 0.
 				array(
 					'key'     => '_price',
-					'value'   => '0',
+					'value'   => 0,
+					'type'    => 'DECIMAL(10,2)',
 					'compare' => '=',
 				),
 				array(
