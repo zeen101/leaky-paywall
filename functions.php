@@ -4951,6 +4951,20 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			)
 		);
 
+		$admin_bar->add_menu(
+			array(
+				'id'     => 'leaky-paywall-toolbar-extensions',
+				'parent' => 'leaky-paywall-toolbar',
+				'title'  => 'Extensions',
+				'href'   => admin_url( 'admin.php?page=leaky-paywall-extensions' ),
+				'meta'   => array(
+					'title'  => __('Extensions'),
+					'target' => '',
+					'class'  => 'my_menu_item_class',
+				),
+			)
+		);
+
 		}
 	add_action('admin_bar_menu', 'leaky_paywall_add_toolbar_items', 100);
 

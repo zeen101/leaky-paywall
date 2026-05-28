@@ -41,8 +41,10 @@ function leaky_paywall_pro_activation_notice() {
 		return;
 	}
 
-	// Don't nag on the License page itself.
-	if ( isset( $_GET['page'] ) && 'leaky-paywall-license' === sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) {
+	// Don't nag on screens that already show a contextual Pro prompt
+	// (the License page itself, and the Extensions page which has its own inline notice).
+	$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+	if ( in_array( $page, array( 'leaky-paywall-license', 'leaky-paywall-extensions' ), true ) ) {
 		return;
 	}
 

@@ -233,12 +233,22 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				// do not create if they have not paid
 				if ( isset($stripe_object->amount_paid ) && $stripe_object->amount_paid > 0) {
 
-					if ( isset( $stripe_object->customer_email ) ) {
-						$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
-					}
+					// Claim the registration on the PaymentIntent — the same key the
+					// redirect / payment_intent.succeeded finalize uses — so only one
+					// path finalizes per payment. Skip if the other path already claimed it.
+					$pi_id = isset( $stripe_object->payment_intent ) ? $stripe_object->payment_intent : '';
 
-					if (isset($stripe_object->receipt_email)) {
-						$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
+					if ( $pi_id && ! leaky_paywall_claim_registration( $pi_id ) ) {
+						leaky_paywall_log( $pi_id, 'stripe webhook - registration already claimed, skipping incomplete-user finalize' );
+					} else {
+
+						if ( isset( $stripe_object->customer_email ) ) {
+							$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
+						}
+
+						if (isset($stripe_object->receipt_email)) {
+							$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
+						}
 					}
 
 				}

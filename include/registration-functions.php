@@ -1371,6 +1371,60 @@ function leaky_paywall_cleanup_incomplete_user( $email ) {
 	}
 }
 
+/**
+ * Atomically claim the right to finalize a registration for a given key.
+ *
+ * Returns true exactly once per key; later or concurrent calls return false.
+ * Used to stop the two async Stripe finalization paths — the PaymentIntent
+ * finalize (browser redirect + payment_intent.succeeded webhook) and the
+ * incomplete-user finalize (charge.succeeded / invoice.paid webhook) — from
+ * both firing leaky_paywall_after_process_registration for one payment, which
+ * creates duplicate transactions and (via integrations like SimpleCirc)
+ * duplicate subscriptions.
+ *
+ * A MySQL named lock serializes concurrent callers; a persistent transient
+ * marker rejects later duplicates such as delayed webhook retries. If the
+ * named lock is unavailable on the host, the marker check alone still catches
+ * the common sequential case.
+ *
+ * @since 4.23.1
+ *
+ * @param string $key Stable per-payment identifier (the Stripe PaymentIntent id).
+ * @return bool True if the caller owns the registration, false if already claimed.
+ */
+function leaky_paywall_claim_registration( $key ) {
+	global $wpdb;
+
+	$key = (string) $key;
+
+	// No stable key to dedup on — let the caller proceed rather than risk
+	// blocking a legitimate registration.
+	if ( '' === $key ) {
+		return true;
+	}
+
+	$hash       = md5( $key );
+	$lock_name  = 'lp_reg_' . $hash;
+	$marker_key = 'lp_reg_claimed_' . $hash;
+
+	// Serialize concurrent callers. Wait up to 5s for a peer to finish its
+	// claim; finalize paths set the marker and release within milliseconds.
+	$got_lock = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $lock_name, 5 ) );
+
+	$already_claimed = (bool) get_transient( $marker_key );
+
+	if ( ! $already_claimed ) {
+		// Marker TTL covers delayed Stripe webhook retries (up to a day).
+		set_transient( $marker_key, time(), DAY_IN_SECONDS );
+	}
+
+	if ( '1' === (string) $got_lock ) {
+		$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $lock_name ) );
+	}
+
+	return ! $already_claimed;
+}
+
 function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 
 	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $email );

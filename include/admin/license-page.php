@@ -138,6 +138,9 @@ class Leaky_Paywall_License_Page {
 		delete_transient( 'leaky_paywall_pro_license_notices' );
 
 		foreach ( $notices as $notice ) {
+			if ( ! is_array( $notice ) || empty( $notice['type'] ) || ! isset( $notice['message'] ) ) {
+				continue;
+			}
 			$class = 'success' === $notice['type'] ? 'notice-success' : 'notice-error';
 			echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible"><p>' . esc_html( $notice['message'] ) . '</p></div>';
 		}

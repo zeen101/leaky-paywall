@@ -316,8 +316,10 @@ class Leaky_Paywall_Extensions_Page {
 		$nonce = wp_create_nonce( 'leaky_paywall_extensions' );
 		?>
 		<style>
-			.lp-ext-filter.button-primary { pointer-events: none; }
-			.lp-ext-card.lp-ext-hidden { display: none; }
+			.lp-extensions-filters .lp-ext-filter { cursor: pointer; }
+			/* !important needed because the card div carries an inline
+			   style="display:flex" that would otherwise win specificity. */
+			.lp-ext-card.lp-ext-hidden { display: none !important; }
 			.lp-ext-action[disabled] { opacity: .6; cursor: default; }
 		</style>
 		<script>
@@ -388,24 +390,29 @@ class Leaky_Paywall_Extensions_Page {
 				}
 			} );
 
-			// Filter pills.
-			document.addEventListener( 'click', function( e ) {
-				var pill = e.target.closest( '.lp-ext-filter' );
-				if ( ! pill ) { return; }
+			// Filter pills — bind direct click handlers so nothing about event
+			// delegation or pointer-events can interfere.
+			document.querySelectorAll( '.lp-ext-filter' ).forEach( function( pill ) {
+				pill.addEventListener( 'click', function( e ) {
+					e.preventDefault();
+					document.querySelectorAll( '.lp-ext-filter' ).forEach( function( p ) {
+						p.classList.remove( 'button-primary' );
+					} );
+					pill.classList.add( 'button-primary' );
 
-				document.querySelectorAll( '.lp-ext-filter' ).forEach( function( p ) { p.classList.remove( 'button-primary' ); } );
-				pill.classList.add( 'button-primary' );
-
-				var filter = pill.getAttribute( 'data-filter' );
-				applyFilter( filter, document.querySelector( '.lp-ext-search' ).value );
+					var searchEl = document.querySelector( '.lp-ext-search' );
+					applyFilter( pill.getAttribute( 'data-filter' ), searchEl ? searchEl.value : '' );
+				} );
 			} );
 
 			// Search box.
-			document.addEventListener( 'input', function( e ) {
-				if ( ! e.target.classList.contains( 'lp-ext-search' ) ) { return; }
-				var active = document.querySelector( '.lp-ext-filter.button-primary' );
-				applyFilter( active ? active.getAttribute( 'data-filter' ) : 'all', e.target.value );
-			} );
+			var searchInput = document.querySelector( '.lp-ext-search' );
+			if ( searchInput ) {
+				searchInput.addEventListener( 'input', function( e ) {
+					var active = document.querySelector( '.lp-ext-filter.button-primary' );
+					applyFilter( active ? active.getAttribute( 'data-filter' ) : 'all', e.target.value );
+				} );
+			}
 
 			function applyFilter( filter, search ) {
 				search = ( search || '' ).toLowerCase();

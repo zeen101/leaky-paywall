@@ -216,7 +216,13 @@ class Leaky_Paywall_Pro_License {
 	 * Stash an admin notice for the next page load.
 	 */
 	private function add_notice( $type, $message ) {
-		$notices   = (array) get_transient( 'leaky_paywall_pro_license_notices' );
+		// get_transient returns false when the transient doesn't exist, and
+		// (array) false is [ false ] — not [] — which would leak an empty
+		// notice on render. Initialize to an empty array explicitly.
+		$notices = get_transient( 'leaky_paywall_pro_license_notices' );
+		if ( ! is_array( $notices ) ) {
+			$notices = array();
+		}
 		$notices[] = array( 'type' => $type, 'message' => $message );
 		set_transient( 'leaky_paywall_pro_license_notices', $notices, 60 );
 	}

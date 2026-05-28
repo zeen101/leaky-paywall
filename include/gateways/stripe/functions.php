@@ -918,6 +918,14 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 		return null;
 	}
 
+	// Single atomic claim, keyed on the PaymentIntent and shared with the
+	// charge.succeeded / invoice.paid webhook path, so only one finalize runs
+	// per payment regardless of which path wins the race.
+	if ( ! leaky_paywall_claim_registration( $pi->id ) ) {
+		leaky_paywall_log( $pi->id, "stripe {$source} - registration already claimed, skipping" );
+		return null;
+	}
+
 	// Clean up incomplete user immediately so the other handler bails on lookup
 	// if it races in here. Belt-and-suspenders with the dedup above.
 	leaky_paywall_cleanup_incomplete_user( $cu->email );
