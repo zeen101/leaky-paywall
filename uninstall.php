@@ -35,3 +35,13 @@ foreach ( $options as $option ) {
 
 // Clean up the tracking cron.
 wp_clear_scheduled_hook( 'leaky_paywall_tracking_send' );
+
+// Remove any remaining lp_incomplete_user posts and their post meta. Raw SQL
+// because plugin code (including hook callbacks) is not loaded during uninstall.
+global $wpdb;
+$wpdb->query(
+	"DELETE p, pm
+	 FROM {$wpdb->posts} p
+	 LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+	 WHERE p.post_type = 'lp_incomplete_user'"
+);

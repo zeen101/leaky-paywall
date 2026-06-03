@@ -242,6 +242,9 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 * Stripe Connect admin notice no longer makes live API calls while in test mode
 * leaky_paywall_new_subscriber and leaky_paywall_update_subscriber now record payment status changes in the status history log
 * New filter `leaky_paywall_already_subscribed_at_level_content` lets extensions replace the message when a logged-in user tries to subscribe to a level they already have, e.g. to show a Resume Billing CTA for pending_cancel subscribers
+* Stale `lp_incomplete_user` posts are now deleted daily after 30 days via Action Scheduler; configurable with the `leaky_paywall_incomplete_user_retention_days` filter (0 disables)
+* Fix: orphan `lp_incomplete_user` records no longer cause subscription renewals to be processed as new signups (duplicate "Initial Subscription Payment" transaction and admin new-subscriber email) — guarded both by a subscription_cycle gate in the Payment Intent finalize path and a 1-hour age check (filter: `leaky_paywall_incomplete_user_max_age_hours`) on the incomplete-user lookup
+* Fix: subscriber list table search now matches first and last name user meta in addition to display_name, so subscribers whose display_name is their login or email are found by name search
 * Fix: subscriber list table level and status filters now match exactly
 * Fix: List Builder popup INP improved on mobile
 
