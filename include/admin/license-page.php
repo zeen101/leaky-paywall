@@ -22,13 +22,30 @@ class Leaky_Paywall_License_Page {
 			return;
 		}
 
-		$license = Leaky_Paywall_Pro_License::get();
-		$active  = 'valid' === $license['status'];
+		// Multi-key skip path: the publisher's site has different keys per extension,
+		// so migration deliberately left the Pro UI off. Render an explanation and
+		// point them at the legacy Licenses tab — the canonical UI for that case.
+		if ( 'multi_key' === get_option( Leaky_Paywall_Pro_License_Migration::SKIPPED ) ) {
+			$this->render_multi_key_explainer();
+			return;
+		}
+
+		$license      = Leaky_Paywall_Pro_License::get();
+		$active       = 'valid' === $license['status'];
+		$prefill_key  = $license['key'];
+		$failure      = get_transient( Leaky_Paywall_Pro_License_Migration::FAIL_TRANSIENT );
+
+		// Migration ran but the store rejected the key. Prefill what we tried so
+		// the publisher can correct it and click Activate without re-typing.
+		if ( ! $active && is_array( $failure ) && ! empty( $failure['key'] ) ) {
+			$prefill_key = (string) $failure['key'];
+		}
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Leaky Paywall License', 'leaky-paywall' ); ?></h1>
 
 			<?php $this->render_notices(); ?>
+			<?php $this->render_migration_failure( $failure ); ?>
 
 			<div class="lp-license-page" style="max-width: 720px; margin-top: 16px;">
 				<div class="lp-license-card" style="background:#fff;border:1px solid #ccd0d4;border-radius:6px;padding:20px;">
@@ -54,7 +71,7 @@ class Leaky_Paywall_License_Page {
 										id="leaky_paywall_pro_license_key"
 										name="leaky_paywall_pro_license_key"
 										class="regular-text"
-										value="<?php echo esc_attr( $license['key'] ); ?>"
+										value="<?php echo esc_attr( $prefill_key ); ?>"
 										<?php echo $active ? 'readonly' : ''; ?>
 									/>
 
@@ -144,5 +161,67 @@ class Leaky_Paywall_License_Page {
 			$class = 'success' === $notice['type'] ? 'notice-success' : 'notice-error';
 			echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible"><p>' . esc_html( $notice['message'] ) . '</p></div>';
 		}
+	}
+
+	/**
+	 * Notice surfaced when the auto-migration found a key but the store rejected
+	 * it (expired, disabled, no_activations_left, etc.). The key is prefilled
+	 * in the form above so the publisher can correct it and click Activate.
+	 *
+	 * Cleared as soon as it's rendered; if the publisher's next action succeeds,
+	 * normal success notices take over.
+	 *
+	 * @param mixed $failure Transient payload — array { key, error } or false.
+	 */
+	private function render_migration_failure( $failure ) {
+		if ( ! is_array( $failure ) || empty( $failure['error'] ) ) {
+			return;
+		}
+		delete_transient( Leaky_Paywall_Pro_License_Migration::FAIL_TRANSIENT );
+
+		$message = sprintf(
+			/* translators: %s is the human-readable error from the store. */
+			__( 'We found an existing license key on this site but couldn\'t activate it automatically: %s', 'leaky-paywall' ),
+			Leaky_Paywall_Pro_License::error_message( (string) $failure['error'] )
+		);
+
+		echo '<div class="notice notice-warning"><p>' . esc_html( $message ) . '</p></div>';
+	}
+
+	/**
+	 * Multi-key skip page. Publishers whose per-extension license fields hold
+	 * different keys keep the legacy Settings → Licenses tab as canonical UI.
+	 * Surface that here instead of an empty Pro form.
+	 */
+	private function render_multi_key_explainer() {
+		$legacy_url = admin_url( 'admin.php?page=leaky-paywall-settings&tab=licenses' );
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Leaky Paywall License', 'leaky-paywall' ); ?></h1>
+
+			<div class="lp-license-page" style="max-width: 720px; margin-top: 16px;">
+				<div class="lp-license-card" style="background:#fff;border:1px solid #ccd0d4;border-radius:6px;padding:20px;">
+					<h2 style="margin-top:0;"><?php esc_html_e( 'Multiple license keys detected', 'leaky-paywall' ); ?></h2>
+
+					<p>
+						<?php esc_html_e( 'Your site has different license keys configured for individual Pro extensions, so Leaky Paywall is keeping them separate instead of switching to a single Pro key.', 'leaky-paywall' ); ?>
+					</p>
+					<p>
+						<?php esc_html_e( 'Manage your existing keys on the Licenses tab:', 'leaky-paywall' ); ?>
+					</p>
+
+					<p>
+						<a href="<?php echo esc_url( $legacy_url ); ?>" class="button button-primary">
+							<?php esc_html_e( 'Go to Settings → Licenses', 'leaky-paywall' ); ?>
+						</a>
+					</p>
+
+					<p class="description" style="margin-top:18px;">
+						<?php esc_html_e( 'If you have a single all-access Pro key you\'d rather use, remove the per-extension keys on the Licenses tab and contact support to switch this site over.', 'leaky-paywall' ); ?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 }

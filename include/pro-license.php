@@ -86,7 +86,7 @@ class Leaky_Paywall_Pro_License {
 	}
 
 	/**
-	 * Activate a Pro license key against this site.
+	 * Activate a Pro license key against this site (form-driven path; sets notices).
 	 */
 	public function activate( $key ) {
 		$key = trim( $key );
@@ -96,20 +96,51 @@ class Leaky_Paywall_Pro_License {
 			return;
 		}
 
+		$result = self::apply_activation( $key );
+
+		if ( $result['ok'] ) {
+			$this->add_notice( 'success', __( 'Your Leaky Paywall Pro license is now active.', 'leaky-paywall' ) );
+			return;
+		}
+
+		if ( 'network' === $result['error'] ) {
+			$this->add_notice( 'error', $result['message'] );
+			return;
+		}
+
+		$this->add_notice( 'error', self::error_message( $result['error'] ) );
+	}
+
+	/**
+	 * Activate a key and persist the resulting state. Callable from form handler
+	 * and migration; does not emit user notices — caller decides the messaging.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param string $key License key (trimmed by caller).
+	 * @return array { ok: bool, error?: string, message?: string, expires?: string }
+	 *               error is 'network' on transport failure, or the EDD SL error
+	 *               code on a successful store response with success=false.
+	 */
+	public static function apply_activation( $key ) {
 		$result = Leaky_Paywall_Store_Client::activate( $key );
 
 		if ( is_wp_error( $result ) ) {
-			$this->add_notice( 'error', $result->get_error_message() );
-			return;
+			return array(
+				'ok'      => false,
+				'error'   => 'network',
+				'message' => $result->get_error_message(),
+			);
 		}
 
 		if ( empty( $result['success'] ) ) {
-			$error = isset( $result['error'] ) ? (string) $result['error'] : 'unknown';
-			$this->add_notice( 'error', $this->error_message( $error ) );
-			return;
+			return array(
+				'ok'    => false,
+				'error' => isset( $result['error'] ) ? (string) $result['error'] : 'unknown',
+			);
 		}
 
-		$this->save( array(
+		self::save( array(
 			'key'          => $key,
 			'status'       => 'valid',
 			'expires'      => isset( $result['expires'] ) ? (string) $result['expires'] : '',
@@ -117,8 +148,12 @@ class Leaky_Paywall_Pro_License {
 			'last_checked' => time(),
 		) );
 
-		$this->schedule_cron();
-		$this->add_notice( 'success', __( 'Your Leaky Paywall Pro license is now active.', 'leaky-paywall' ) );
+		self::schedule_cron_static();
+
+		return array(
+			'ok'      => true,
+			'expires' => isset( $result['expires'] ) ? (string) $result['expires'] : '',
+		);
 	}
 
 	/**
@@ -141,7 +176,7 @@ class Leaky_Paywall_Pro_License {
 			'last_checked' => time(),
 		) );
 
-		$this->unschedule_cron();
+		self::unschedule_cron_static();
 		$this->add_notice( 'success', __( 'Your Leaky Paywall Pro license has been deactivated.', 'leaky-paywall' ) );
 	}
 
@@ -177,13 +212,13 @@ class Leaky_Paywall_Pro_License {
 		self::save( $license );
 	}
 
-	private function schedule_cron() {
+	private static function schedule_cron_static() {
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', self::CRON_HOOK );
 		}
 	}
 
-	private function unschedule_cron() {
+	private static function unschedule_cron_static() {
 		$timestamp = wp_next_scheduled( self::CRON_HOOK );
 		if ( $timestamp ) {
 			wp_unschedule_event( $timestamp, self::CRON_HOOK );
@@ -193,7 +228,7 @@ class Leaky_Paywall_Pro_License {
 	/**
 	 * Map an EDD SL activation error code to a human message.
 	 */
-	private function error_message( $code ) {
+	public static function error_message( $code ) {
 		switch ( $code ) {
 			case 'missing':
 				return __( 'That license key was not found. Please double-check it.', 'leaky-paywall' );
