@@ -872,6 +872,24 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 		return null;
 	}
 
+	// Bail if this PaymentIntent is for a subscription renewal. This function
+	// runs initial-signup logic; if it fires for a renewal, an orphan
+	// lp_incomplete_user record for the subscriber's email causes every
+	// renewal to create a duplicate "Initial Subscription Payment" transaction
+	// and send a new-subscriber admin email. Renewal PIs always have an
+	// associated invoice with billing_reason=subscription_cycle.
+	if ( ! empty( $pi->invoice ) ) {
+		try {
+			$invoice = $stripe->invoices->retrieve( $pi->invoice, [], leaky_paywall_get_stripe_connect_params() );
+			if ( isset( $invoice->billing_reason ) && 'subscription_cycle' === $invoice->billing_reason ) {
+				leaky_paywall_log( $pi->customer, "stripe {$source} - PI is a subscription_cycle renewal, skipping initial-signup finalize" );
+				return null;
+			}
+		} catch ( \Throwable $th ) {
+			leaky_paywall_log( $th->getMessage(), "stripe {$source} - could not retrieve invoice for renewal gate" );
+		}
+	}
+
 	// Dedup by PaymentIntent ID. PI IDs are unique forever in Stripe, so any
 	// prior transaction stamped with this PI is a duplicate finalize attempt
 	// regardless of how much time has passed. Catches:
