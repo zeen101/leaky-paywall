@@ -161,10 +161,15 @@ function leaky_paywall_activate() {
 	if ( get_option( 'leaky_paywall_tracking_allow' ) && ! wp_next_scheduled( 'leaky_paywall_tracking_send' ) ) {
 		wp_schedule_event( time(), 'weekly', 'leaky_paywall_tracking_send' );
 	}
+
+	if ( ! wp_next_scheduled( 'leaky_paywall_process_incomplete_user_cleanup' ) ) {
+		wp_schedule_event( time(), 'daily', 'leaky_paywall_process_incomplete_user_cleanup' );
+	}
 }
 register_activation_hook( __FILE__, 'leaky_paywall_activate' );
 
 function leaky_paywall_deactivate() {
 	wp_clear_scheduled_hook( 'leaky_paywall_tracking_send' );
+	wp_clear_scheduled_hook( 'leaky_paywall_process_incomplete_user_cleanup' );
 }
 register_deactivation_hook( __FILE__, 'leaky_paywall_deactivate' );
