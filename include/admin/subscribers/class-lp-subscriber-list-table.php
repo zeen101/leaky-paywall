@@ -153,6 +153,16 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 					'value'   => $search_term,
 					'compare' => 'LIKE',
 				),
+				array(
+					'key'     => 'first_name',
+					'value'   => $search_term,
+					'compare' => 'LIKE',
+				),
+				array(
+					'key'     => 'last_name',
+					'value'   => $search_term,
+					'compare' => 'LIKE',
+				),
 			);
 
 			// Also match name/email in the users table via pre_user_query filter.
