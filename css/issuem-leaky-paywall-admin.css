@@ -489,6 +489,139 @@ input[type="submit"].lp-inline-button {
   color: #856404;
 }
 
+/* License page — extended card layout */
+
+.lp-license-page {
+  max-width: 720px;
+  margin-top: 16px;
+}
+
+.lp-license-card__content {
+  padding: 16px 20px;
+}
+
+.lp-license-card__intro {
+  color: #50575e;
+  margin: 0 0 14px;
+}
+
+.lp-license-card__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.lp-license-card__row:last-child {
+  margin-bottom: 0;
+}
+
+.lp-license-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #50575e;
+  font-size: 13px;
+  padding: 12px 20px;
+  border-top: 1px solid #f0f0f1;
+}
+
+.lp-license-card__meta-label {
+  font-weight: 600;
+  color: #1d2327;
+}
+
+.lp-license-callout {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f0f6fc;
+  border: 1px solid #c5d9ed;
+  border-radius: 6px;
+}
+
+.lp-license-callout h3 {
+  margin-top: 0;
+}
+
+/* Extensions page */
+
+.lp-extensions-toolbar {
+  margin: 16px 0;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.lp-extensions-filters .lp-ext-filter {
+  cursor: pointer;
+}
+
+.lp-extensions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.lp-ext-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-ext-card.lp-ext-hidden {
+  display: none;
+}
+
+.lp-ext-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.lp-ext-card__icon {
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.lp-ext-card__title {
+  margin: 0;
+  font-size: 15px;
+  color: #1d2327;
+}
+
+.lp-ext-card__desc {
+  flex: 1;
+  color: #50575e;
+  margin: 0 0 14px;
+}
+
+.lp-ext-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lp-ext-card__learn-more {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+.lp-ext-msg {
+  font-size: 12px;
+  color: #646970;
+}
+
+.lp-ext-action[disabled] {
+  opacity: .6;
+  cursor: default;
+}
+
 /* Relative dates */
 
 .lp-relative-date {
@@ -787,6 +920,11 @@ input[type="submit"].lp-inline-button {
 }
 
 .leaky-paywall_page_leaky-paywall-insights #wpwrap {
+  background: #FEF2ED;
+}
+
+.leaky-paywall_page_leaky-paywall-license #wpcontent,
+.leaky-paywall_page_leaky-paywall-extensions #wpcontent {
   background: #FEF2ED;
 }
 

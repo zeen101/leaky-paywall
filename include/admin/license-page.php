@@ -6,7 +6,7 @@
  * activation form, current status, and (for free installs) a Get Pro CTA.
  *
  * @package Leaky Paywall
- * @since 5.2.0
+ * @since 5.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,79 +30,71 @@ class Leaky_Paywall_License_Page {
 			return;
 		}
 
-		$license      = Leaky_Paywall_Pro_License::get();
-		$active       = 'valid' === $license['status'];
-		$prefill_key  = $license['key'];
-		$failure      = get_transient( Leaky_Paywall_Pro_License_Migration::FAIL_TRANSIENT );
+		$license     = Leaky_Paywall_Pro_License::get();
+		$active      = 'valid' === $license['status'];
+		$prefill_key = $license['key'];
+		$failure     = get_transient( Leaky_Paywall_Pro_License_Migration::FAIL_TRANSIENT );
 
 		// Migration ran but the store rejected the key. Prefill what we tried so
 		// the publisher can correct it and click Activate without re-typing.
 		if ( ! $active && is_array( $failure ) && ! empty( $failure['key'] ) ) {
 			$prefill_key = (string) $failure['key'];
 		}
+
+		$this->render_header();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Leaky Paywall License', 'leaky-paywall' ); ?></h1>
 
 			<?php $this->render_notices(); ?>
 			<?php $this->render_migration_failure( $failure ); ?>
 
-			<div class="lp-license-page" style="max-width: 720px; margin-top: 16px;">
-				<div class="lp-license-card" style="background:#fff;border:1px solid #ccd0d4;border-radius:6px;padding:20px;">
-					<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-						<h2 style="margin:0;"><?php esc_html_e( 'Leaky Paywall Pro', 'leaky-paywall' ); ?></h2>
-						<?php echo $this->status_badge( $license ); ?>
-					</div>
+			<div class="lp-license-page">
+				<p class="description">
+					<?php esc_html_e( 'One license key unlocks every Leaky Paywall Pro extension. Enter the key from your leakypaywall.com account below.', 'leaky-paywall' ); ?>
+					<a href="https://leakypaywall.com/my-account/#tabs-2" target="_blank" rel="noopener"><?php esc_html_e( 'Find your license key', 'leaky-paywall' ); ?></a>
+				</p>
 
-					<p class="description" style="margin-bottom:16px;">
-						<?php esc_html_e( 'One license key unlocks every Leaky Paywall Pro extension. Enter the key from your leakypaywall.com account below.', 'leaky-paywall' ); ?>
-						<a href="https://leakypaywall.com/my-account/#tabs-2" target="_blank" rel="noopener"><?php esc_html_e( 'Find your license key', 'leaky-paywall' ); ?></a>
-					</p>
+				<div class="lp-license-card">
+					<div class="lp-license-card__header">
+						<span class="lp-license-card__name"><?php esc_html_e( 'Leaky Paywall Pro', 'leaky-paywall' ); ?></span>
+						<?php echo $this->status_badge( $license ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within status_badge(). ?>
+					</div>
 
 					<form method="post" action="">
 						<?php wp_nonce_field( 'leaky_paywall_pro_license', 'leaky_paywall_pro_license_nonce' ); ?>
 
-						<table class="form-table" role="presentation">
-							<tr>
-								<th scope="row"><label for="leaky_paywall_pro_license_key"><?php esc_html_e( 'License Key', 'leaky-paywall' ); ?></label></th>
-								<td>
-									<input
-										type="<?php echo $active ? 'password' : 'text'; ?>"
-										id="leaky_paywall_pro_license_key"
-										name="leaky_paywall_pro_license_key"
-										class="regular-text"
-										value="<?php echo esc_attr( $prefill_key ); ?>"
-										<?php echo $active ? 'readonly' : ''; ?>
-									/>
+						<div class="lp-license-card__body">
+							<label for="leaky_paywall_pro_license_key" class="screen-reader-text"><?php esc_html_e( 'License Key', 'leaky-paywall' ); ?></label>
+							<input
+								type="<?php echo $active ? 'password' : 'text'; ?>"
+								id="leaky_paywall_pro_license_key"
+								name="leaky_paywall_pro_license_key"
+								class="regular-text"
+								value="<?php echo esc_attr( $prefill_key ); ?>"
+								<?php echo $active ? 'readonly' : ''; ?>
+							/>
 
-									<?php if ( $active ) : ?>
-										<input type="hidden" name="leaky_paywall_pro_license_action" value="deactivate" />
-										<button type="submit" class="button button-secondary"><?php esc_html_e( 'Deactivate License', 'leaky-paywall' ); ?></button>
-									<?php else : ?>
-										<input type="hidden" name="leaky_paywall_pro_license_action" value="activate" />
-										<button type="submit" class="button button-primary"><?php esc_html_e( 'Activate License', 'leaky-paywall' ); ?></button>
-									<?php endif; ?>
-								</td>
-							</tr>
-
-							<?php if ( $active && ! empty( $license['expires'] ) && ! $license['is_lifetime'] ) : ?>
-							<tr>
-								<th scope="row"><?php esc_html_e( 'Expires', 'leaky-paywall' ); ?></th>
-								<td><?php echo esc_html( $this->format_expires( $license['expires'] ) ); ?></td>
-							</tr>
-							<?php elseif ( $active && $license['is_lifetime'] ) : ?>
-							<tr>
-								<th scope="row"><?php esc_html_e( 'Expires', 'leaky-paywall' ); ?></th>
-								<td><?php esc_html_e( 'Never (lifetime)', 'leaky-paywall' ); ?></td>
-							</tr>
+							<?php if ( $active ) : ?>
+								<input type="hidden" name="leaky_paywall_pro_license_action" value="deactivate" />
+								<button type="submit" class="button button-secondary"><?php esc_html_e( 'Deactivate License', 'leaky-paywall' ); ?></button>
+							<?php else : ?>
+								<input type="hidden" name="leaky_paywall_pro_license_action" value="activate" />
+								<button type="submit" class="button button-primary"><?php esc_html_e( 'Activate License', 'leaky-paywall' ); ?></button>
 							<?php endif; ?>
-						</table>
+						</div>
 					</form>
+
+					<?php if ( $active ) : ?>
+						<div class="lp-license-card__meta">
+							<span class="lp-license-card__meta-label"><?php esc_html_e( 'Expires:', 'leaky-paywall' ); ?></span>
+							<span><?php echo esc_html( $license['is_lifetime'] ? __( 'Never (lifetime)', 'leaky-paywall' ) : $this->format_expires( $license['expires'] ) ); ?></span>
+						</div>
+					<?php endif; ?>
 				</div>
 
 				<?php if ( ! $active ) : ?>
-					<div style="margin-top:20px;padding:20px;background:#f0f6fc;border:1px solid #c5d9ed;border-radius:6px;">
-						<h3 style="margin-top:0;"><?php esc_html_e( "Don't have a Pro license yet?", 'leaky-paywall' ); ?></h3>
+					<div class="lp-license-callout">
+						<h3><?php esc_html_e( "Don't have a Pro license yet?", 'leaky-paywall' ); ?></h3>
 						<p><?php esc_html_e( 'Leaky Paywall Pro unlocks recurring subscriptions, all premium extensions, and priority support.', 'leaky-paywall' ); ?></p>
 						<a href="<?php echo esc_url( self::UPGRADE_URL ); ?>" target="_blank" rel="noopener" class="button button-primary"><?php esc_html_e( 'Get Leaky Paywall Pro', 'leaky-paywall' ); ?></a>
 					</div>
@@ -116,26 +108,51 @@ class Leaky_Paywall_License_Page {
 		<?php
 	}
 
+	/**
+	 * Standard LP admin header — orange bar with logo + page title. Matches
+	 * Settings, Tools, Dashboard, etc.
+	 */
+	private function render_header() {
+		?>
+		<div id="lp-header" class="lp-header">
+			<div id="lp-header-wrapper">
+				<span id="lp-header-branding">
+					<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL . 'images/leaky-paywall-logo.png' ); ?>" alt="<?php esc_attr_e( 'Leaky Paywall', 'leaky-paywall' ); ?>">
+				</span>
+				<span class="lp-header-page-title-wrap">
+					<span class="lp-header-separator">/</span>
+					<h1 class="lp-header-page-title"><?php esc_html_e( 'License', 'leaky-paywall' ); ?></h1>
+				</span>
+			</div>
+		</div>
+		<?php
+	}
+
 	private function status_badge( $license ) {
 		switch ( $license['status'] ) {
 			case 'valid':
-				$color = '#fff'; $bg = '#46b450'; $label = __( 'Active', 'leaky-paywall' );
+				$variant = 'active';
+				$label   = __( 'Active', 'leaky-paywall' );
 				break;
 			case 'expired':
-				$color = '#fff'; $bg = '#dc3232'; $label = __( 'Expired', 'leaky-paywall' );
+				$variant = 'expired';
+				$label   = __( 'Expired', 'leaky-paywall' );
 				break;
 			case 'disabled':
-				$color = '#fff'; $bg = '#dc3232'; $label = __( 'Disabled', 'leaky-paywall' );
+				$variant = 'expired';
+				$label   = __( 'Disabled', 'leaky-paywall' );
 				break;
 			case '':
-				$color = '#50575e'; $bg = '#f0f0f1'; $label = __( 'Not Activated', 'leaky-paywall' );
+				$variant = 'canceled';
+				$label   = __( 'Not Activated', 'leaky-paywall' );
 				break;
 			default:
-				$color = '#fff'; $bg = '#dba617'; $label = __( 'Inactive', 'leaky-paywall' );
+				$variant = 'suspended';
+				$label   = __( 'Inactive', 'leaky-paywall' );
 				break;
 		}
 
-		return '<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;color:' . esc_attr( $color ) . ';background:' . esc_attr( $bg ) . ';">' . esc_html( $label ) . '</span>';
+		return '<span class="lp-status-badge lp-status-badge--' . esc_attr( $variant ) . '">' . esc_html( $label ) . '</span>';
 	}
 
 	private function format_expires( $expires ) {
@@ -190,35 +207,71 @@ class Leaky_Paywall_License_Page {
 
 	/**
 	 * Multi-key skip page. Publishers whose per-extension license fields hold
-	 * different keys keep the legacy Settings → Licenses tab as canonical UI.
-	 * Surface that here instead of an empty Pro form.
+	 * different keys keep the legacy Settings → Licenses tab as canonical UI —
+	 * but some of them later upgrade to an all-access Pro pass, so we offer a
+	 * Pro activation card below the explainer. Activating a valid Pro key here
+	 * clears the skip flag (via apply_activation) and the page renders normal
+	 * Pro UI on the next load.
 	 */
 	private function render_multi_key_explainer() {
 		$legacy_url = admin_url( 'admin.php?page=leaky-paywall-settings&tab=licenses' );
+
+		// A failed attempt to activate a Pro key from this page leaves the same
+		// transient as a failed auto-migration; surface it identically and
+		// prefill the input so the publisher can correct without re-typing.
+		$failure     = get_transient( Leaky_Paywall_Pro_License_Migration::FAIL_TRANSIENT );
+		$prefill_key = is_array( $failure ) && ! empty( $failure['key'] ) ? (string) $failure['key'] : '';
+
+		$this->render_header();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Leaky Paywall License', 'leaky-paywall' ); ?></h1>
 
-			<div class="lp-license-page" style="max-width: 720px; margin-top: 16px;">
-				<div class="lp-license-card" style="background:#fff;border:1px solid #ccd0d4;border-radius:6px;padding:20px;">
-					<h2 style="margin-top:0;"><?php esc_html_e( 'Multiple license keys detected', 'leaky-paywall' ); ?></h2>
+			<?php $this->render_notices(); ?>
+			<?php $this->render_migration_failure( $failure ); ?>
 
-					<p>
-						<?php esc_html_e( 'Your site has different license keys configured for individual Pro extensions, so Leaky Paywall is keeping them separate instead of switching to a single Pro key.', 'leaky-paywall' ); ?>
-					</p>
-					<p>
-						<?php esc_html_e( 'Manage your existing keys on the Licenses tab:', 'leaky-paywall' ); ?>
-					</p>
+			<div class="lp-license-page">
+				<div class="lp-license-card">
+					<div class="lp-license-card__header">
+						<span class="lp-license-card__name"><?php esc_html_e( 'Multiple license keys detected', 'leaky-paywall' ); ?></span>
+					</div>
+					<div class="lp-license-card__content">
+						<p class="lp-license-card__intro">
+							<?php esc_html_e( 'Your site has different license keys configured for individual Pro extensions, so Leaky Paywall is keeping them separate instead of switching to a single Pro key.', 'leaky-paywall' ); ?>
+						</p>
+						<p>
+							<a href="<?php echo esc_url( $legacy_url ); ?>" class="button button-primary">
+								<?php esc_html_e( 'Manage keys in Settings → Licenses', 'leaky-paywall' ); ?>
+							</a>
+						</p>
+					</div>
+				</div>
 
-					<p>
-						<a href="<?php echo esc_url( $legacy_url ); ?>" class="button button-primary">
-							<?php esc_html_e( 'Go to Settings → Licenses', 'leaky-paywall' ); ?>
-						</a>
-					</p>
+				<div class="lp-license-card">
+					<div class="lp-license-card__header">
+						<span class="lp-license-card__name"><?php esc_html_e( 'Have an all-access Pro key?', 'leaky-paywall' ); ?></span>
+					</div>
+					<div class="lp-license-card__content">
+						<p class="lp-license-card__intro">
+							<?php esc_html_e( 'Enter your all-access key from your leakypaywall.com account. Activating it here will switch this site to the single Pro flow — the per-extension fields stay visible until those extensions ship Pro-aware updates, but you won\'t need to fill them in.', 'leaky-paywall' ); ?>
+						</p>
+					</div>
 
-					<p class="description" style="margin-top:18px;">
-						<?php esc_html_e( 'If you have a single all-access Pro key you\'d rather use, remove the per-extension keys on the Licenses tab and contact support to switch this site over.', 'leaky-paywall' ); ?>
-					</p>
+					<form method="post" action="">
+						<?php wp_nonce_field( 'leaky_paywall_pro_license', 'leaky_paywall_pro_license_nonce' ); ?>
+
+						<div class="lp-license-card__body">
+							<label for="leaky_paywall_pro_license_key" class="screen-reader-text"><?php esc_html_e( 'License Key', 'leaky-paywall' ); ?></label>
+							<input
+								type="text"
+								id="leaky_paywall_pro_license_key"
+								name="leaky_paywall_pro_license_key"
+								class="regular-text"
+								value="<?php echo esc_attr( $prefill_key ); ?>"
+							/>
+							<input type="hidden" name="leaky_paywall_pro_license_action" value="activate" />
+							<button type="submit" class="button button-primary"><?php esc_html_e( 'Activate License', 'leaky-paywall' ); ?></button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>

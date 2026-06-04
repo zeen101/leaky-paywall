@@ -148,6 +148,13 @@ class Leaky_Paywall_Pro_License {
 			'last_checked' => time(),
 		) );
 
+		// A successful activation supersedes any prior multi-key skip decision —
+		// the publisher has now opted into the single Pro flow, and the License
+		// page should render the normal active state on next load.
+		if ( class_exists( 'Leaky_Paywall_Pro_License_Migration' ) ) {
+			delete_option( Leaky_Paywall_Pro_License_Migration::SKIPPED );
+		}
+
 		self::schedule_cron_static();
 
 		return array(

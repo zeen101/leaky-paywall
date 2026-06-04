@@ -57,12 +57,13 @@ class Leaky_Paywall_Extensions_Page {
 
 		$catalog    = $this->get_catalog();
 		$pro_active = leaky_paywall_pro_is_active();
+
+		$this->render_header();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Leaky Paywall Extensions', 'leaky-paywall' ); ?></h1>
 
 			<?php if ( ! $pro_active ) : ?>
-				<div class="notice notice-info" style="margin-top:12px;">
+				<div class="notice notice-info inline">
 					<p>
 						<?php esc_html_e( 'Activate Leaky Paywall Pro to install these extensions with one click.', 'leaky-paywall' ); ?>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-license' ) ); ?>"><?php esc_html_e( 'Add your license →', 'leaky-paywall' ); ?></a>
@@ -71,33 +72,51 @@ class Leaky_Paywall_Extensions_Page {
 			<?php endif; ?>
 
 			<?php if ( empty( $catalog ) ) : ?>
-				<p style="margin-top:20px;"><?php esc_html_e( 'The extension catalog could not be loaded right now. Please try again shortly.', 'leaky-paywall' ); ?></p>
-				</div>
-				<?php
-				return;
-			endif;
-			?>
+				<p><?php esc_html_e( 'The extension catalog could not be loaded right now. Please try again shortly.', 'leaky-paywall' ); ?></p>
+			<?php else : ?>
 
-			<div class="lp-extensions-toolbar" style="margin:16px 0;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-				<div class="lp-extensions-filters">
-					<button type="button" class="button lp-ext-filter button-primary" data-filter="all"><?php esc_html_e( 'All', 'leaky-paywall' ); ?></button>
-					<button type="button" class="button lp-ext-filter" data-filter="installed"><?php esc_html_e( 'Installed', 'leaky-paywall' ); ?></button>
-					<button type="button" class="button lp-ext-filter" data-filter="available"><?php esc_html_e( 'Available', 'leaky-paywall' ); ?></button>
-					<button type="button" class="button lp-ext-filter" data-filter="updates"><?php esc_html_e( 'Updates', 'leaky-paywall' ); ?></button>
+				<div class="lp-extensions-toolbar">
+					<div class="lp-extensions-filters">
+						<button type="button" class="button lp-ext-filter button-primary" data-filter="all"><?php esc_html_e( 'All', 'leaky-paywall' ); ?></button>
+						<button type="button" class="button lp-ext-filter" data-filter="installed"><?php esc_html_e( 'Installed', 'leaky-paywall' ); ?></button>
+						<button type="button" class="button lp-ext-filter" data-filter="available"><?php esc_html_e( 'Available', 'leaky-paywall' ); ?></button>
+						<button type="button" class="button lp-ext-filter" data-filter="updates"><?php esc_html_e( 'Updates', 'leaky-paywall' ); ?></button>
+					</div>
+					<input type="search" class="lp-ext-search regular-text" placeholder="<?php esc_attr_e( 'Search extensions…', 'leaky-paywall' ); ?>" />
 				</div>
-				<input type="search" class="lp-ext-search regular-text" placeholder="<?php esc_attr_e( 'Search extensions…', 'leaky-paywall' ); ?>" />
-			</div>
 
-			<div class="lp-extensions-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
-				<?php
-				foreach ( $catalog as $ext ) {
-					echo $this->render_card( $ext, $pro_active ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within render_card.
-				}
-				?>
-			</div>
+				<div class="lp-extensions-grid">
+					<?php
+					foreach ( $catalog as $ext ) {
+						echo $this->render_card( $ext, $pro_active ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within render_card.
+					}
+					?>
+				</div>
+
+			<?php endif; ?>
 		</div>
 
 		<?php $this->render_inline_assets(); ?>
+		<?php
+	}
+
+	/**
+	 * Standard LP admin header — orange bar with logo + page title. Matches
+	 * Settings, Tools, Dashboard, etc.
+	 */
+	private function render_header() {
+		?>
+		<div id="lp-header" class="lp-header">
+			<div id="lp-header-wrapper">
+				<span id="lp-header-branding">
+					<img class="lp-header-logo" width="200" src="<?php echo esc_url( LEAKY_PAYWALL_URL . 'images/leaky-paywall-logo.png' ); ?>" alt="<?php esc_attr_e( 'Leaky Paywall', 'leaky-paywall' ); ?>">
+				</span>
+				<span class="lp-header-page-title-wrap">
+					<span class="lp-header-separator">/</span>
+					<h1 class="lp-header-page-title"><?php esc_html_e( 'Extensions', 'leaky-paywall' ); ?></h1>
+				</span>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -142,23 +161,23 @@ class Leaky_Paywall_Extensions_Page {
 
 		ob_start();
 		?>
-		<div class="lp-ext-card" data-slug="<?php echo esc_attr( $slug ); ?>" data-state="<?php echo esc_attr( $state ); ?>" data-name="<?php echo esc_attr( strtolower( $name ) ); ?>" style="background:#fff;border:1px solid #ccd0d4;border-radius:6px;padding:16px;display:flex;flex-direction:column;">
-			<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+		<div class="lp-ext-card" data-slug="<?php echo esc_attr( $slug ); ?>" data-state="<?php echo esc_attr( $state ); ?>" data-name="<?php echo esc_attr( strtolower( $name ) ); ?>">
+			<div class="lp-ext-card__head">
 				<?php if ( $icon ) : ?>
-					<img src="<?php echo esc_url( $icon ); ?>" alt="" width="48" height="48" style="border-radius:6px;flex-shrink:0;" />
+					<img class="lp-ext-card__icon" src="<?php echo esc_url( $icon ); ?>" alt="" width="48" height="48" />
 				<?php endif; ?>
-				<h3 style="margin:0;font-size:15px;"><?php echo esc_html( $name ); ?></h3>
+				<h3 class="lp-ext-card__title"><?php echo esc_html( $name ); ?></h3>
 			</div>
 
-			<p style="flex:1;color:#50575e;margin:0 0 14px;"><?php echo esc_html( $desc ); ?></p>
+			<p class="lp-ext-card__desc"><?php echo esc_html( $desc ); ?></p>
 
-			<div class="lp-ext-card__footer" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-				<span class="lp-ext-msg" style="font-size:12px;color:#646970;"></span>
-				<?php echo $this->render_button( $state, $slug, $can_install ); ?>
+			<div class="lp-ext-card__footer">
+				<span class="lp-ext-msg"></span>
+				<?php echo $this->render_button( $state, $slug, $can_install ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within render_button. ?>
 			</div>
 
 			<?php if ( $learn_more ) : ?>
-				<p style="margin:10px 0 0;"><a href="<?php echo esc_url( $learn_more ); ?>" target="_blank" rel="noopener" style="font-size:12px;"><?php esc_html_e( 'Learn more', 'leaky-paywall' ); ?></a></p>
+				<p class="lp-ext-card__learn-more"><a href="<?php echo esc_url( $learn_more ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Learn more', 'leaky-paywall' ); ?></a></p>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -240,10 +259,17 @@ class Leaky_Paywall_Extensions_Page {
 
 		$plugin_file = $this->get_plugin_file_by_slug( $slug );
 
+		// When the publisher clicks Update on an already-active extension,
+		// Plugin_Upgrader::install() with overwrite_package replaces the files
+		// but leaves active_plugins untouched, so the extension stays active.
+		// Report that back so the UI can preserve the active state instead of
+		// dropping back to an Activate button.
+		$still_active = $plugin_file && is_plugin_active( $plugin_file );
+
 		wp_send_json_success( array(
 			'message'     => __( 'Installed.', 'leaky-paywall' ),
 			'plugin_file' => $plugin_file,
-			'state'       => 'installed_inactive',
+			'state'       => $still_active ? 'active' : 'installed_inactive',
 		) );
 	}
 
@@ -315,13 +341,6 @@ class Leaky_Paywall_Extensions_Page {
 	public function render_inline_assets() {
 		$nonce = wp_create_nonce( 'leaky_paywall_extensions' );
 		?>
-		<style>
-			.lp-extensions-filters .lp-ext-filter { cursor: pointer; }
-			/* !important needed because the card div carries an inline
-			   style="display:flex" that would otherwise win specificity. */
-			.lp-ext-card.lp-ext-hidden { display: none !important; }
-			.lp-ext-action[disabled] { opacity: .6; cursor: default; }
-		</style>
 		<script>
 		( function() {
 			var ajaxUrl = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
@@ -357,17 +376,34 @@ class Leaky_Paywall_Extensions_Page {
 				if ( 'install' === action ) {
 					setMsg( card, <?php echo wp_json_encode( __( 'Installing…', 'leaky-paywall' ) ); ?> );
 					post( 'leaky_paywall_install_extension', slug, function( json ) {
-						if ( json.success ) {
-							setMsg( card, '' );
-							// Now show an Activate button.
+						if ( ! json.success ) {
+							setMsg( card, ( json.data && json.data.message ) || 'Error' );
+							btn.removeAttribute( 'disabled' );
+							return;
+						}
+
+						setMsg( card, '' );
+						var returnedState = json.data && json.data.state;
+
+						if ( 'active' === returnedState ) {
+							// Updating an already-active extension — files
+							// were replaced but the plugin is still active.
+							// Swap to the disabled "Active" badge instead of
+							// dropping back to an Activate button.
+							var wrap  = btn.parentNode;
+							var badge = document.createElement( 'span' );
+							badge.className   = 'button button-disabled';
+							badge.textContent = <?php echo wp_json_encode( __( 'Active', 'leaky-paywall' ) ); ?>;
+							btn.remove();
+							wrap.appendChild( badge );
+							card.setAttribute( 'data-state', 'active' );
+						} else {
+							// Fresh install — show an Activate button.
 							btn.removeAttribute( 'disabled' );
 							btn.setAttribute( 'data-action', 'activate' );
 							btn.classList.remove( 'button-primary' );
 							btn.textContent = <?php echo wp_json_encode( __( 'Activate', 'leaky-paywall' ) ); ?>;
 							card.setAttribute( 'data-state', 'installed_inactive' );
-						} else {
-							setMsg( card, ( json.data && json.data.message ) || 'Error' );
-							btn.removeAttribute( 'disabled' );
 						}
 					} );
 				} else if ( 'activate' === action ) {

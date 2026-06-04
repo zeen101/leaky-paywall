@@ -2,12 +2,18 @@
 /**
  * Activation prompts for Leaky Paywall Pro.
  *
- * Surfaces the License page to publishers who have not yet activated a Pro
- * key, via an admin notice on LP screens and a WordPress dashboard widget.
- * Both disappear automatically once a valid Pro license is active.
+ * Banner appears only on the Leaky Paywall Dashboard so publishers setting LP
+ * up don't get nagged on Settings, Tools, Subscribers, etc. The WordPress
+ * dashboard widget stays as a secondary discoverable surface. Banner is
+ * dismissible per-user for 90 days via user meta + a small AJAX endpoint.
+ *
+ * After 90 days the banner re-appears once on the LP Dashboard so publishers
+ * who weren't ready earlier still get a reminder.
+ *
+ * Both surfaces disappear automatically once a valid Pro license is active.
  *
  * @package Leaky Paywall
- * @since 5.2.0
+ * @since 5.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Admin notice on Leaky Paywall admin screens prompting Pro activation.
+ * Admin notice on the LP Dashboard prompting Pro activation.
  */
 function leaky_paywall_pro_activation_notice() {
 
@@ -28,41 +34,82 @@ function leaky_paywall_pro_activation_notice() {
 	}
 
 	$screen = get_current_screen();
-	if ( ! $screen ) {
+	if ( ! $screen || 'toplevel_page_issuem-leaky-paywall' !== $screen->id ) {
 		return;
 	}
 
-	// Only on Leaky Paywall admin pages.
-	$is_lp_screen = ( false !== strpos( $screen->id, 'leaky-paywall' ) )
-		|| ( false !== strpos( $screen->id, 'issuem-leaky-paywall' ) )
-		|| ( isset( $screen->post_type ) && 'lp_transaction' === $screen->post_type );
-
-	if ( ! $is_lp_screen ) {
-		return;
-	}
-
-	// Don't nag on screens that already show a contextual Pro prompt
-	// (the License page itself, and the Extensions page which has its own inline notice).
-	$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
-	if ( in_array( $page, array( 'leaky-paywall-license', 'leaky-paywall-extensions' ), true ) ) {
+	// Respect per-user dismissal for 90 days. After that we re-show once so
+	// publishers who weren't ready earlier still get a nudge.
+	$dismissed_at = (int) get_user_meta( get_current_user_id(), 'lp_pro_prompt_dismissed_at', true );
+	if ( $dismissed_at && ( time() - $dismissed_at ) < 90 * DAY_IN_SECONDS ) {
 		return;
 	}
 
 	$license_url = admin_url( 'admin.php?page=leaky-paywall-license' );
+	$nonce       = wp_create_nonce( 'lp_dismiss_pro_prompt' );
+	$ajax_url    = admin_url( 'admin-ajax.php' );
 	?>
-	<div class="notice notice-info is-dismissible">
+	<div class="notice notice-info is-dismissible" data-lp-prompt="pro" data-lp-nonce="<?php echo esc_attr( $nonce ); ?>">
 		<p>
 			<strong><?php esc_html_e( 'Leaky Paywall Pro', 'leaky-paywall' ); ?>:</strong>
 			<?php esc_html_e( 'Activate your license to unlock all premium extensions and updates.', 'leaky-paywall' ); ?>
 			<a href="<?php echo esc_url( $license_url ); ?>"><?php esc_html_e( 'Add your license key →', 'leaky-paywall' ); ?></a>
 		</p>
 	</div>
+	<script>
+	( function() {
+		var notice = document.querySelector( '.notice[data-lp-prompt="pro"]' );
+		if ( ! notice ) { return; }
+
+		var nonce   = notice.getAttribute( 'data-lp-nonce' );
+		var ajaxUrl = <?php echo wp_json_encode( $ajax_url ); ?>;
+
+		// WP core wires .notice-dismiss onto every .is-dismissible notice on
+		// admin-init. Listen for its click so we can persist the dismissal —
+		// the visual fade-out is already handled by core.
+		notice.addEventListener( 'click', function( e ) {
+			if ( ! e.target.closest( '.notice-dismiss' ) ) { return; }
+
+			var data = new FormData();
+			data.append( 'action', 'lp_dismiss_pro_prompt' );
+			data.append( 'nonce', nonce );
+
+			// Fire and forget — the banner is already gone visually before
+			// the response lands, and the worst case (network failure) is
+			// the banner re-appears next page load, which is the same as
+			// today's behavior.
+			fetch( ajaxUrl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} );
+		} );
+	} )();
+	</script>
 	<?php
 }
 add_action( 'admin_notices', 'leaky_paywall_pro_activation_notice' );
 
 /**
- * Register a dashboard widget prompting Pro activation.
+ * AJAX handler for dismissing the Pro prompt banner. Records the timestamp in
+ * user meta so the banner stays hidden for ~90 days.
+ */
+function leaky_paywall_ajax_dismiss_pro_prompt() {
+	if ( ! check_ajax_referer( 'lp_dismiss_pro_prompt', 'nonce', false ) ) {
+		wp_send_json_error( array( 'message' => 'invalid_nonce' ), 403 );
+	}
+
+	if ( ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
+		wp_send_json_error( array( 'message' => 'forbidden' ), 403 );
+	}
+
+	update_user_meta( get_current_user_id(), 'lp_pro_prompt_dismissed_at', time() );
+	wp_send_json_success();
+}
+add_action( 'wp_ajax_lp_dismiss_pro_prompt', 'leaky_paywall_ajax_dismiss_pro_prompt' );
+
+/**
+ * Register a WordPress-dashboard widget prompting Pro activation.
  */
 function leaky_paywall_register_pro_dashboard_widget() {
 
