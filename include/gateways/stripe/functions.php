@@ -843,6 +843,36 @@ function leaky_paywall_process_stripe_subscription_payment_element_webhook( $str
 	$pi     = $stripe_event->data->object;
 	$stripe = leaky_paywall_initialize_stripe_api();
 
+	// Give the browser's form POST a head start before finalizing here. With
+	// Stripe Link the payment confirms inline and this webhook can arrive ~1s
+	// before the browser submits the registration form. Without this delay the
+	// data-poor webhook path wins the race (no $_POST = no shipping address or
+	// form-driven custom fields), deletes the incomplete-user record, and the
+	// browser POST then errors out in process_signup(). Letting the browser
+	// finalize first means it captures the full form data, and finalize() below
+	// then bails on its existing-transaction / incomplete-user checks. Mirrors
+	// the sleep already used in the charge.succeeded / invoice.paid path.
+	//
+	// Skip the wait when this PaymentIntent has already been finalized (browser
+	// path already done, or a webhook retry) so legitimate fallbacks and retries
+	// aren't delayed.
+	$already_finalized = get_posts( array(
+		'post_type'      => 'lp_transaction',
+		'posts_per_page' => 1,
+		'fields'         => 'ids',
+		'post_status'    => 'publish',
+		'meta_query'     => array(
+			array( 'key' => '_gateway_txn_id', 'value' => $pi->id ),
+		),
+	) );
+
+	if ( empty( $already_finalized ) ) {
+		$delay = (int) apply_filters( 'leaky_paywall_stripe_webhook_finalize_delay', 5, $pi );
+		if ( $delay > 0 ) {
+			sleep( $delay );
+		}
+	}
+
 	leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 'webhook' );
 }
 
