@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 6.9.4
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 5.1.0
+Stable tag: 5.1.1
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,16 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.1 =
+* Add scaffolding for single Pro license key
+* Add handling for multiple subscriptions during a sync
+* Add dedup to registrations
+* Add incomplete user cleanup functionality
+* Add leaky_paywall_already_subscribed_at_level_content filter
+* Allow search in subscriber table by first and last name
+* Code cleanup for import tool
+* Update handling of incomplete user during stripe webhook
 
 = 5.1.0 =
 * Stripe Payment Element now finalizes subscriptions via a webhook fallback when the browser redirect doesn't complete (e.g. Stripe Link, closed tab)
