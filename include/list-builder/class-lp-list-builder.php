@@ -832,7 +832,7 @@ class LP_List_Builder
         $lp_settings = get_leaky_paywall_settings();
         $subscribe_page_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
 
-        wp_add_inline_script('lp-list-builder', 'var LP_LIST_BUILDER = ' . wp_json_encode([
+        wp_add_inline_script('lp-list-builder', 'window.LP_LIST_BUILDER = ' . wp_json_encode([
             'flowUrl'   => esc_url_raw(rest_url('lp-list-builder/v1/flow')),
             'signupUrl' => esc_url_raw(rest_url('lp-list-builder/v1/signup')),
             'loginUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/login')),
