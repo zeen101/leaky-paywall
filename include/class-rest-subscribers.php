@@ -331,29 +331,6 @@ class Leaky_Paywall_REST_Subscribers {
 			}
 		}
 
-		// Auto-calculate expiration when the integration sends a level_id but
-		// no explicit expires. Mirrors the POST endpoint's behavior so a
-		// third-party syncing renewals only has to send email + level_id.
-		// leaky_paywall_set_expiration_date() honors the site's "Add Expiration
-		// Dates" setting — if it's on and the existing expiration is in the
-		// future, the new expiration extends from there rather than from today.
-		$expires_supplied = null !== $request->get_param( 'expires' );
-		$level_id_param   = $request->get_param( 'level_id' );
-
-		if ( ! $expires_supplied && null !== $level_id_param ) {
-			$level = get_leaky_paywall_subscription_level( $level_id_param );
-
-			if ( $level ) {
-				leaky_paywall_set_expiration_date(
-					$user_id,
-					array(
-						'interval'       => isset( $level['interval'] ) ? $level['interval'] : '',
-						'interval_count' => isset( $level['interval_count'] ) ? $level['interval_count'] : '',
-					)
-				);
-			}
-		}
-
 		// Refresh user object and return updated data.
 		$user               = get_user_by( 'id', $user_id );
 		$data               = $this->prepare_subscriber( $user );
