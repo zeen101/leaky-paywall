@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.1.1\n"
+"Project-Id-Version: Leaky Paywall 5.1.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-04T16:09:31+00:00\n"
+"POT-Creation-Date: 2026-06-10T21:11:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -3854,23 +3854,23 @@ msgstr ""
 msgid "You are already subscribed to this level."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1180
+#: include/gateways/stripe/functions.php:1210
 msgid "Insufficient permissions."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1187
+#: include/gateways/stripe/functions.php:1217
 msgid "Invalid or expired connect session."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1194
+#: include/gateways/stripe/functions.php:1224
 msgid "Invalid account id."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1223
+#: include/gateways/stripe/functions.php:1253
 msgid "Failed to retrieve credentials."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1229
+#: include/gateways/stripe/functions.php:1259
 msgid "Invalid credentials response."
 msgstr ""
 

@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 5.1.1
+Stable tag: 5.1.2
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,11 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.2 =
+* Fix for race condition in registratin that could prevent fields from being saved correctly
+* Fix REST API endpoint to keep expiration from being accidently updated
+* Harden list builder scripts to load correctly even with performance add ons
 
 = 5.1.1 =
 * Add scaffolding for single Pro license key
