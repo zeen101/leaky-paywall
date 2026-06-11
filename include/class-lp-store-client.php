@@ -129,17 +129,59 @@ class Leaky_Paywall_Store_Client {
 
 		if ( 200 !== $code ) {
 			// On error the body is JSON, not a ZIP — read it back for the message.
-			$message = __( 'The download could not be authorized.', 'leaky-paywall' );
+			$message  = __( 'The download could not be authorized.', 'leaky-paywall' );
 			$contents = @file_get_contents( $tmp );
 			$decoded  = $contents ? json_decode( $contents, true ) : null;
-			if ( is_array( $decoded ) && ! empty( $decoded['message'] ) ) {
-				$message = $decoded['message'];
+
+			if ( is_array( $decoded ) ) {
+				// When the store returns access_denied, prefer a friendly mapping
+				// of the EDD All Access failure_id over the raw 'access_denied'
+				// string the publisher would otherwise see.
+				$store_message = ! empty( $decoded['message'] ) ? (string) $decoded['message'] : '';
+				$failure_id    = ! empty( $decoded['failure_id'] ) ? (string) $decoded['failure_id'] : '';
+
+				if ( 'access_denied' === $store_message && '' !== $failure_id ) {
+					$message = self::friendly_message_for_failure_id( $failure_id );
+				} elseif ( '' !== $store_message ) {
+					$message = $store_message;
+				}
 			}
+
 			@unlink( $tmp );
 			return new WP_Error( 'lp_store_download_failed_' . $code, $message );
 		}
 
 		return $tmp;
+	}
+
+	/**
+	 * Map a known EDD All Access failure_id to a publisher-friendly message.
+	 * Unknown failure_ids fall back to "Download authorization failed (<id>)"
+	 * so a support report still includes the raw code.
+	 *
+	 * @param string $failure_id
+	 * @return string
+	 */
+	private static function friendly_message_for_failure_id( $failure_id ) {
+
+		$map = array(
+			'no_pass_for_customer' => __( 'Your Leaky Paywall license does not include access to this extension. Please contact support to upgrade your license.', 'leaky-paywall' ),
+			'customer_does_not_have_active_passes' => __( 'Your Leaky Paywall subscription is not currently active. Please renew it to continue receiving updates.', 'leaky-paywall' ),
+			'download_not_in_passes_active_categories' => __( 'Your Leaky Paywall license does not grant access to this extension. Please contact support.', 'leaky-paywall' ),
+			'download_limit_reached' => __( 'You have reached the download limit for today. Please try again tomorrow.', 'leaky-paywall' ),
+			'all_access_pass_expired' => __( 'Your Leaky Paywall subscription has expired. Please renew it to continue receiving extension updates.', 'leaky-paywall' ),
+			'all_access_pass_canceled' => __( 'Your Leaky Paywall subscription has been canceled. Please contact support to restore extension updates.', 'leaky-paywall' ),
+			'all_access_pass_inactive' => __( 'Your Leaky Paywall subscription is currently inactive. Please contact support.', 'leaky-paywall' ),
+			'all_access_not_available' => __( 'The Leaky Paywall store is misconfigured. Please contact support.', 'leaky-paywall' ),
+			'download_post_status_invalid' => __( 'This extension is not currently available for download. Please contact support.', 'leaky-paywall' ),
+		);
+
+		if ( isset( $map[ $failure_id ] ) ) {
+			return $map[ $failure_id ];
+		}
+
+		/* translators: %s: short code identifying the underlying reason. */
+		return sprintf( __( 'Download authorization failed (%s). Please contact support.', 'leaky-paywall' ), $failure_id );
 	}
 
 	/**
