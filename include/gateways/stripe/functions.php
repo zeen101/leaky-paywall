@@ -273,7 +273,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		'customer' => $customer_id,
 		'items'    => array(
 			array(
-				'plan' => $plan_id,
+				'price' => $plan_id,
 			),
 		),
 		'expand'   => array( 'latest_invoice.payment_intent' ),
@@ -338,7 +338,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		'customer' => $customer_id,
 		'items'    => array(
 			array(
-				'plan' => $plan_id,
+				'price' => $plan_id,
 			),
 		),
 		'payment_behavior' => 'default_incomplete',
