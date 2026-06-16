@@ -295,7 +295,12 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 			foreach ( $subscriptions->data as $subscription ) {
 
 				$sub = $stripe->subscriptions->update( $subscription->id, array(
-					'plan' => $plan_id
+					'items' => array(
+						array(
+							'id'    => $subscription->items->data[0]->id,
+							'price' => $plan_id,
+						),
+					),
 				) );
 
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level );
@@ -354,7 +359,12 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			// Update existing subscription to new plan with immediate proration.
 			foreach ( $subscriptions->data as $existing_sub ) {
 				$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', array(
-					'plan'               => $plan_id,
+					'items' => array(
+						array(
+							'id'    => $existing_sub->items->data[0]->id,
+							'price' => $plan_id,
+						),
+					),
 					'proration_behavior' => 'always_invoice',
 				), $level );
 

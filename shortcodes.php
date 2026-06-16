@@ -751,8 +751,8 @@ function do_leaky_paywall_register_form($atts)
 								'subscription'                      => $lp_current_sub->id,
 								'subscription_items'                => array(
 									array(
-										'id'   => $lp_current_sub->items->data[0]->id,
-										'plan' => $lp_new_plan->id,
+										'id'    => $lp_current_sub->items->data[0]->id,
+										'price' => $lp_new_plan->id,
 									),
 								),
 								'subscription_proration_behavior' => 'always_invoice',
