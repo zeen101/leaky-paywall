@@ -14,6 +14,7 @@
 
         let elements;
         let billingAddress = null;
+        let isSubmitting = false;
 
         // Stripe Checkout
         $('#checkout').click(function(e) {
@@ -279,7 +280,20 @@
         async function handleSubmit(e) {
             e.preventDefault();
 
+            // Re-entry guard: if a submission is already in flight, ignore further submits
+            // (handles rapid double-click / Enter-spam where the disabled attribute isn't
+            // applied between events).
+            if ( isSubmitting ) {
+                return;
+            }
+            isSubmitting = true;
+
             let subButton = document.getElementById('leaky-paywall-submit');
+            if ( subButton ) {
+                subButton.disabled = true;
+                subButton.innerHTML = leaky_paywall_stripe_registration_ajax.continue_text;
+            }
+
             let emailAddress = $('input[name="email_address"]').val();
             let isTrial = $('input[name="is_trial"]').val();
             let paymentMethod = $('input[name="payment_method"]:checked').val();
@@ -289,9 +303,6 @@
                 form$.get(0).submit();
                 return;
             }
-
-            subButton.disabled = true;
-            subButton.innerHTML = leaky_paywall_stripe_registration_ajax.continue_text;
 
             if ( isTrial ) {
                 const { error } = await stripe.confirmSetup({
@@ -327,7 +338,11 @@
 
                 if (paymentIntent && paymentIntent.id) {
 
-                    if ( paymentIntent.status == 'succeeded') {
+                    // 'processing' is the success state for ACH (us_bank_account) — the bank
+                    // transfer is in flight but won't settle for 3-5 business days. Treat it
+                    // as a success so the subscriber lands on the post-signup page (where the
+                    // ACH-pending modal can fire) instead of being silently dropped here.
+                    if ( paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing' ) {
                         let form$ = jQuery('#leaky-paywall-payment-form');
                         form$.get(0).submit();
                     } else {
@@ -371,9 +386,12 @@
         }
 
         function resetSubButton() {
+            isSubmitting = false;
             let subButton = document.getElementById('leaky-paywall-submit');
-            subButton.disabled = false;
-            subButton.innerHTML = 'Subscribe';
+            if ( subButton ) {
+                subButton.disabled = false;
+                subButton.innerHTML = 'Subscribe';
+            }
         }
 
 

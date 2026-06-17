@@ -88,6 +88,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'subscriber-table.php';
 		require_once LEAKY_PAYWALL_PATH . 'metaboxes.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/template-functions.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/ach-pending-modal.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/dashboard-widgets.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-transaction.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/lp-incomplete-user.php';

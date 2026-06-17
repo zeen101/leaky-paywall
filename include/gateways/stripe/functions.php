@@ -7,6 +7,95 @@
  */
 
 /**
+ * Check whether a recent duplicate signup attempt exists for this email + plan.
+ *
+ * Searches Stripe for any OTHER customer with the same email who has a subscription
+ * on the same plan/price created within the dedup window. Returns true if found.
+ *
+ * Prevents the "I hit submit, saw an error, hit submit again, got charged twice" trap
+ * — common on ACH where the post-payment feedback lag tempts subscribers to retry.
+ *
+ * Filterable window via leaky_paywall_duplicate_signup_window_minutes (default 60).
+ * Set the filter to 0 to disable the check entirely.
+ *
+ * Fails open: if the Stripe lookup throws, allows the signup. Better to risk a rare
+ * duplicate than block a legitimate signup on a transient API error.
+ *
+ * @since 5.x
+ *
+ * @param string                $email             Subscriber email.
+ * @param string                $plan_id           Stripe price/plan ID being purchased.
+ * @param string                $skip_customer_id  Customer ID to ignore (the one this attempt is using).
+ * @param \Stripe\StripeClient  $stripe            Initialized Stripe client.
+ *
+ * @return bool True if a duplicate was found in the dedup window.
+ */
+function leaky_paywall_check_recent_duplicate_signup( $email, $plan_id, $skip_customer_id, $stripe ) {
+
+	if ( empty( $email ) || empty( $plan_id ) ) {
+		return false;
+	}
+
+	$window_minutes = (int) apply_filters( 'leaky_paywall_duplicate_signup_window_minutes', 60 );
+	if ( $window_minutes <= 0 ) {
+		return false;
+	}
+
+	$threshold = time() - ( $window_minutes * 60 );
+
+	try {
+		$connect_params = leaky_paywall_get_stripe_connect_params();
+
+		$search = $stripe->customers->search(
+			array(
+				'query' => 'email:"' . addcslashes( $email, '"\\' ) . '"',
+				'limit' => 100,
+			),
+			$connect_params
+		);
+
+		if ( empty( $search->data ) ) {
+			return false;
+		}
+
+		foreach ( $search->data as $existing_customer ) {
+			if ( ! empty( $skip_customer_id ) && $existing_customer->id === $skip_customer_id ) {
+				continue;
+			}
+
+			$subs = $stripe->subscriptions->all(
+				array(
+					'customer' => $existing_customer->id,
+					'status'   => 'all',
+					'limit'    => 100,
+				),
+				$connect_params
+			);
+
+			foreach ( $subs->data as $sub ) {
+				if ( ! isset( $sub->created ) || $sub->created < $threshold ) {
+					continue;
+				}
+				if ( in_array( $sub->status, array( 'canceled', 'incomplete_expired' ), true ) ) {
+					continue;
+				}
+				$price_id = isset( $sub->items->data[0]->price->id )
+					? $sub->items->data[0]->price->id
+					: ( isset( $sub->items->data[0]->plan->id ) ? $sub->items->data[0]->plan->id : '' );
+				if ( $price_id === $plan_id ) {
+					return true;
+				}
+			}
+		}
+	} catch ( \Throwable $e ) {
+		leaky_paywall_log( $e->getMessage(), 'duplicate signup check failed' );
+		return false;
+	}
+
+	return false;
+}
+
+/**
  * Add the subscribe link to the subscribe cards.
  *
  * @since 4.0.0
@@ -248,6 +337,19 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	}
 
 	$stripe = leaky_paywall_initialize_stripe_api();
+
+	// Prevent duplicate signups across Stripe customers (e.g., guest retries on ACH).
+	$dedup_email = isset( $fields['email_address'] ) ? sanitize_email( $fields['email_address'] ) : '';
+	if ( leaky_paywall_check_recent_duplicate_signup( $dedup_email, $plan_id, $customer_id, $stripe ) ) {
+		wp_send_json(
+			array(
+				'error' => apply_filters(
+					'leaky_paywall_duplicate_signup_message',
+					__( 'It looks like a signup for this email was started a few minutes ago. Please check your inbox for confirmation, or contact us if you need help.', 'leaky-paywall' )
+				),
+			)
+		);
+	}
 
 	try {
 		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id, [], leaky_paywall_get_stripe_connect_params() );
@@ -673,12 +775,32 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			} elseif ( $subscription->status == 'trialing' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'trial', 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
-				// Stripe can mark a subscription canceled while current_period_end is
-				// still in the future — user keeps access until that date.
-				if ( $current_period_end && $current_period_end > time() ) {
+				// Distinguish voluntary "cancel at period end" from involuntary
+				// cancellations (failed payment, admin cancel, fraud). Stripe leaves
+				// current_period_end set to the NEXT billing cycle even when a renewal
+				// payment fails — trusting that date for involuntary cancels gave
+				// subscribers up to a year of free access. Only respect
+				// current_period_end as a grace window when the cancel was the
+				// subscriber's own choice.
+				$voluntary = ! empty( $subscription->cancel_at_period_end );
+				if ( ! $voluntary && isset( $subscription->cancellation_details->reason ) ) {
+					$voluntary = ( 'cancellation_requested' === $subscription->cancellation_details->reason );
+				}
+
+				$expires_key = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
+
+				if ( $voluntary && $current_period_end && $current_period_end > time() ) {
 					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
+					update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $current_period_end ) );
 				} else {
 					leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_sync' );
+					// Clamp expires to NOW so a stale future date from an unpaid
+					// renewal period doesn't keep granting access.
+					$current_expires    = get_user_meta( $user->ID, $expires_key, true );
+					$current_expires_ts = $current_expires ? strtotime( $current_expires ) : 0;
+					if ( ! $current_expires_ts || $current_expires_ts > time() ) {
+						update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', time() ) );
+					}
 				}
 			} elseif ( 'past_due' === $subscription->status ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_sync' );

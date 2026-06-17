@@ -59,7 +59,12 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_k
 
 		leaky_paywall_log( $user->user_email, 'credit card updated' );
 
-		if ( strcasecmp( 'deactivated', $payment_status ) == 0 ) { // only runs if the user account is deactivated
+		// Lapsed-state list: any state where the subscriber is currently
+		// blocked from access and would expect a card update to restore it.
+		// 'deactivated' alone left expired / past_due / pending_cancel users
+		// with no way to re-activate after a failed-payment cancellation.
+		$lp_renewable_statuses = array( 'deactivated', 'expired', 'past_due', 'pending_cancel' );
+		if ( in_array( strtolower( (string) $payment_status ), $lp_renewable_statuses, true ) ) {
 
 			$subs = $stripe->subscriptions->all(
 				array(
@@ -69,40 +74,46 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_k
 				leaky_paywall_get_stripe_connect_params()
 			);
 
+			// Find a single still-billable subscription on the current plan.
+			// The previous loop iterated every matching sub and could create
+			// a fresh subscription for each dead one — anyone with a history
+			// of cancellations would end up double- or triple-billed.
+			$alive_sub = null;
 			if ( ! empty( $subs->data ) ) {
-
 				foreach ( $subs->data as $sub ) {
-
-					// we are only checking against the subscribers current plan
-					if ( $plan != $sub->items->data[0]->plan->id ) {
+					$sub_price = isset( $sub->items->data[0]->price->id )
+						? $sub->items->data[0]->price->id
+						: ( isset( $sub->items->data[0]->plan->id ) ? $sub->items->data[0]->plan->id : '' );
+					if ( $plan != $sub_price ) {
 						continue;
 					}
-
-					if ( $sub->status == 'active' || $sub->status == 'past_due' || $sub->status == 'trialing' ) {
-
-						// Update the existing subscription to use the new payment source.
-						$stripe->subscriptions->update(
-							$sub->id,
-							array( 'default_source' => $cu->default_source ),
-							leaky_paywall_get_stripe_connect_params()
-						);
-
-						leaky_paywall_log( $user->user_email, 'updated subscription payment source after card update' );
-					} else {
-
-						// only create a new subscription if the subscriber does not have a current subscription
-						// such as expired or canceled
-						$new_sub = \Stripe\Subscription::create(
-							array(
-								'customer' => $cu->id,
-								'items'    => array( array( 'plan' => $plan ) ),
-							),
-							leaky_paywall_get_stripe_connect_params()
-						);
-
-						leaky_paywall_log( $user->user_email, 'created new subscription after card update' );
+					if ( in_array( $sub->status, array( 'active', 'past_due', 'trialing' ), true ) ) {
+						$alive_sub = $sub;
+						break;
 					}
 				}
+			}
+
+			if ( $alive_sub ) {
+				// Point the existing alive subscription at the new payment source.
+				$stripe->subscriptions->update(
+					$alive_sub->id,
+					array( 'default_source' => $cu->default_source ),
+					leaky_paywall_get_stripe_connect_params()
+				);
+				leaky_paywall_log( $user->user_email, 'updated subscription payment source after card update' );
+			} else {
+				// No alive subscription — start a fresh one. items[].price
+				// (vs the deprecated items[].plan) keeps this compatible with
+				// Stripe's flexible billing_mode rollout.
+				$new_sub = $stripe->subscriptions->create(
+					array(
+						'customer' => $cu->id,
+						'items'    => array( array( 'price' => $plan ) ),
+					),
+					leaky_paywall_get_stripe_connect_params()
+				);
+				leaky_paywall_log( $user->user_email, 'created new subscription after card update' );
 			}
 
 			$update_card_success .= __( ' Your subscription has been restarted!', 'leaky-paywall' );

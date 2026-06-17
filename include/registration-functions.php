@@ -570,6 +570,20 @@ function leaky_paywall_process_user_registration_validation() {
 			wp_send_json( $return );
 		}
 
+		// Prevent duplicate signups across Stripe customers (e.g., guest retries on ACH).
+		$lp_dedup_stripe = leaky_paywall_initialize_stripe_api();
+		$lp_dedup_email  = isset( $fields['email_address'] ) ? sanitize_email( $fields['email_address'] ) : '';
+		$lp_dedup_plan   = isset( $fields['plan_id'] ) ? $fields['plan_id'] : '';
+		if ( leaky_paywall_check_recent_duplicate_signup( $lp_dedup_email, $lp_dedup_plan, $cu->id, $lp_dedup_stripe ) ) {
+			$errors['duplicate_signup'] = array(
+				'message' => apply_filters(
+					'leaky_paywall_duplicate_signup_message',
+					__( 'It looks like a signup for this email was started a few minutes ago. Please check your inbox for confirmation, or contact us if you need help.', 'leaky-paywall' )
+				),
+			);
+			wp_send_json( array( 'errors' => $errors ) );
+		}
+
 		$client_secret = leaky_paywall_create_stripe_subscription( $cu, $fields );
 
 		if ( 'subscription_updated' === $client_secret ) {
