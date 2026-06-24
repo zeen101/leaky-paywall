@@ -1338,13 +1338,14 @@ function leaky_paywall_get_incomplete_user_from_email( $email ) {
 
 	$incomplete_id = '';
 
-	// Reject stale records. A legitimate incomplete-user lives between form
-	// submit and webhook/redirect finalize — seconds to a few minutes. Beyond
-	// the cutoff, the PaymentIntent has expired in Stripe and the record is
-	// orphan residue; matching it on a future webhook (e.g. a renewal
-	// payment_intent.succeeded) misroutes the renewal through the
-	// initial-signup flow.
-	$max_age_hours = (int) apply_filters( 'leaky_paywall_incomplete_user_max_age_hours', 1 );
+	// Reject stale records to keep old orphan registrations from being matched
+	// against future webhooks (e.g. a renewal payment_intent.succeeded for a
+	// different customer reusing the same email). Default 14 days covers ACH
+	// settlement windows (3-5 business days + weekends + Stripe retry windows);
+	// card payments finalize within seconds regardless. Renewals for existing
+	// subscribers won't hit this path because the customer-id lookup catches
+	// them first in the webhook handler.
+	$max_age_hours = (int) apply_filters( 'leaky_paywall_incomplete_user_max_age_hours', 24 * 14 );
 
 	$args = array(
 		'post_type'       => 'lp_incomplete_user',
