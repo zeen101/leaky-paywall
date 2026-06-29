@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 5.1.2
+Stable tag: 5.1.3
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,16 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.3 =
+* Added: ACH Pending modal so the 3–5 day clearing window is clear at signup.
+* Added: dedup check at registration to prevent accidental duplicate signups across Stripe customers.
+* Fixed: subscription cards now show "Unlimited Articles" instead of "Access 0 Articles" when a level is set to Unlimited.
+* Fixed: List Builder signups with disposable / blocked emails (e.g. on WP.com / Jetpack) now show a clear error instead of crashing the site.
+* Fixed: Import tool now accepts CSVs exported from LP (the user_email column) without manual rename, validates the header, restricts uploads to .csv, and always reports the import result.
+* Fixed: failed-payment cancellations no longer extend access past the original expiration date.
+* Fixed: Stripe subscription create / update calls updated for Stripe's new flexible billing parameters.
+* Fixed: incomplete-user staleness window extended to 14 days so ACH signups don't get cleaned up before they clear.
 
 = 5.1.2 =
 * Fix for race condition in registratin that could prevent fields from being saved correctly

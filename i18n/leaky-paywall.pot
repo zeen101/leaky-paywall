@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Leaky Paywall plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.1.2\n"
+"Project-Id-Version: Leaky Paywall 5.1.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-10T21:11:43+00:00\n"
+"POT-Creation-Date: 2026-06-29T20:30:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -82,13 +82,13 @@ msgid "Tools"
 msgstr ""
 
 #: class.php:267
-#: functions.php:4381
+#: functions.php:4399
 #: include/admin/extensions-page.php:116
 msgid "Extensions"
 msgstr ""
 
 #: class.php:270
-#: functions.php:4348
+#: functions.php:4366
 #: include/admin/license-page.php:124
 msgid "License"
 msgstr ""
@@ -184,7 +184,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:518
 #: include/admin/subscribers/subscriber.php:729
 #: include/admin/tools/tools.php:227
-#: templates/shortcode-account.php:261
+#: templates/shortcode-account.php:272
 msgid "Payment Status"
 msgstr ""
 
@@ -212,7 +212,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:361
 #: include/admin/subscribers/subscriber.php:521
 #: include/admin/subscribers/subscriber.php:732
-#: templates/shortcode-account.php:169
+#: templates/shortcode-account.php:180
 msgid "Pending Cancel"
 msgstr ""
 
@@ -234,7 +234,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:363
 #: include/admin/subscribers/subscriber.php:523
 #: include/admin/subscribers/subscriber.php:734
-#: templates/shortcode-account.php:171
+#: templates/shortcode-account.php:182
 msgid "Past Due"
 msgstr ""
 
@@ -259,7 +259,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:736
 #: include/admin/tools/tools.php:234
 #: shortcodes.php:287
-#: templates/shortcode-account.php:167
+#: templates/shortcode-account.php:178
 msgid "Expired"
 msgstr ""
 
@@ -280,9 +280,9 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:530
 #: include/admin/subscribers/subscriber.php:777
 #: include/admin/tools/tools.php:249
-#: include/registration-functions.php:1135
+#: include/registration-functions.php:1149
 #: shortcodes.php:317
-#: templates/shortcode-account.php:273
+#: templates/shortcode-account.php:284
 msgid "Payment Method"
 msgstr ""
 
@@ -378,1183 +378,1195 @@ msgstr ""
 #. Translators: %s - error message
 #. Translators: %s - Error message.
 #: functions.php:861
-#: include/gateways/stripe/functions.php:100
+#: include/gateways/stripe/functions.php:189
 #, php-format
 msgid "Error processing request: %s"
 msgstr ""
 
-#: functions.php:1295
-#: functions.php:2570
+#: functions.php:1313
+#: functions.php:2588
 #: include/admin/lp-transaction.php:313
 #: include/admin/settings/settings.php:1617
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:524
 msgid "Free Registration"
 msgstr ""
 
-#: functions.php:1299
+#: functions.php:1317
 msgid "Manually Added"
 msgstr ""
 
-#: functions.php:1623
+#: functions.php:1641
 msgid "Direct Sign Up Link"
 msgstr ""
 
-#: functions.php:1635
+#: functions.php:1653
 msgid "Subscription Level Name"
 msgstr ""
 
-#: functions.php:1644
+#: functions.php:1662
 msgid "Subscribe Card Description"
 msgstr ""
 
-#: functions.php:1648
+#: functions.php:1666
 msgid "If entered, this will replace the auto-generated access description on the subscribe cards. HTML allowed."
 msgstr ""
 
-#: functions.php:1654
+#: functions.php:1672
 msgid "Registration Form Description"
 msgstr ""
 
-#: functions.php:1658
+#: functions.php:1676
 msgid "If entered, this will replace the auto-generated content access description on the registration form. HTML allowed."
 msgstr ""
 
-#: functions.php:1667
-#: functions.php:1699
+#: functions.php:1685
+#: functions.php:1717
 msgid "Recurring"
 msgstr ""
 
-#: functions.php:1704
+#: functions.php:1722
 msgid "Enable recurring payments"
 msgstr ""
 
-#: functions.php:1705
+#: functions.php:1723
 msgid "Pro"
 msgstr ""
 
-#: functions.php:1708
+#: functions.php:1726
 msgid "Upgrade to Pro to enable recurring subscription payments."
 msgstr ""
 
-#: functions.php:1718
+#: functions.php:1736
 msgid "Subscription Price"
 msgstr ""
 
-#: functions.php:1722
+#: functions.php:1740
 msgid "0 for Free Subscriptions"
 msgstr ""
 
-#: functions.php:1728
+#: functions.php:1746
 msgid "Subscription Length"
 msgstr ""
 
-#: functions.php:1732
+#: functions.php:1750
 #: shortcodes.php:642
 msgid "Forever"
 msgstr ""
 
-#: functions.php:1733
+#: functions.php:1751
 msgid "Limited for..."
 msgstr ""
 
-#: functions.php:1747
+#: functions.php:1765
 #: include/admin/settings/settings.php:616
 msgid "Day(s)"
 msgstr ""
 
-#: functions.php:1748
+#: functions.php:1766
 #: include/admin/settings/settings.php:617
 msgid "Week(s)"
 msgstr ""
 
-#: functions.php:1749
+#: functions.php:1767
 #: include/admin/settings/settings.php:618
 msgid "Month(s)"
 msgstr ""
 
-#: functions.php:1750
+#: functions.php:1768
 #: include/admin/settings/settings.php:619
 msgid "Year(s)"
 msgstr ""
 
-#: functions.php:1757
+#: functions.php:1775
 msgid "Access Options"
 msgstr ""
 
-#: functions.php:1789
+#: functions.php:1807
 msgid "+ Add Access Option"
 msgstr ""
 
-#: functions.php:1793
+#: functions.php:1811
 msgid "Post Types that are not native the to the site currently being viewed are marked with an asterisk."
 msgstr ""
 
-#: functions.php:1798
+#: functions.php:1816
 msgid "Access processed from top to bottom. Set limit to 0 to block access."
 msgstr ""
 
-#: functions.php:1804
+#: functions.php:1822
 msgid "Hide Subscribe Card"
 msgstr ""
 
-#: functions.php:1807
+#: functions.php:1825
 msgid "Do not display subscribe card on subscribe page"
 msgstr ""
 
-#: functions.php:1813
+#: functions.php:1831
 msgid "Hide Registration Form"
 msgstr ""
 
-#: functions.php:1816
+#: functions.php:1834
 msgid "Disable the direct sign up link for this level, but still allow manual assignment."
 msgstr ""
 
-#: functions.php:1824
+#: functions.php:1842
 #: include/admin/subscribers/subscriber.php:716
 msgid "Site"
 msgstr ""
 
-#: functions.php:1830
+#: functions.php:1848
 msgid "All Sites"
 msgstr ""
 
-#: functions.php:1920
+#: functions.php:1938
 msgid "Unlimited"
 msgstr ""
 
-#: functions.php:1921
+#: functions.php:1939
 msgid "Limit to..."
 msgstr ""
 
-#: functions.php:1932
+#: functions.php:1950
 msgid "#"
 msgstr ""
 
-#: functions.php:2126
-#: functions.php:2188
+#: functions.php:2144
+#: functions.php:2206
 #: include/admin/settings/settings.php:1682
 msgid "Failed Security Check"
 msgstr ""
 
-#: functions.php:2297
+#: functions.php:2315
 msgid "Subscription Options"
 msgstr ""
 
-#: functions.php:2339
+#: functions.php:2357
 msgid "Your Current Level"
 msgstr ""
 
-#. Translators: %1$s - allowed value, %2$s - name, %3$s - post type name
-#: functions.php:2370
-#, php-format
-msgid "Access %1$s %2$s %3$s*"
-msgstr ""
-
 #. Translators: %1$s - name, %2$s - post type name
-#: functions.php:2373
+#: functions.php:2387
 #, php-format
 msgid "Unlimited %1$s %2$s"
 msgstr ""
 
-#. Translators: %1$s - allowed value, %2$s - post type name
-#: functions.php:2390
+#. Translators: %1$s - allowed value, %2$s - name, %3$s - post type name
+#: functions.php:2393
 #, php-format
-msgid "Access %1$s %2$s*"
+msgid "Access %1$s %2$s %3$s*"
 msgstr ""
 
 #. Translators: %s - type of post object
-#: functions.php:2393
+#: functions.php:2405
 #, php-format
 msgid "Unlimited %s"
 msgstr ""
 
-#: functions.php:2410
+#. Translators: %1$s - allowed value, %2$s - post type name
+#: functions.php:2411
+#, php-format
+msgid "Access %1$s %2$s*"
+msgstr ""
+
+#: functions.php:2428
 msgid "(recurring)"
 msgstr ""
 
 #. Translators: %1$s - display price, %2$s - interval
-#: functions.php:2414
+#: functions.php:2432
 #, php-format
 msgid "%1$s %2$s"
 msgstr ""
 
 #. Translators: %s - trial period days
-#: functions.php:2420
+#: functions.php:2438
 #, php-format
 msgid "Free for the first %s day(s)"
 msgstr ""
 
-#: functions.php:2423
-#: functions.php:4534
+#: functions.php:2441
+#: functions.php:4552
 #: include/admin/dashboard-widgets.php:201
 #: include/admin/dashboard/dashboard.php:417
 #: include/admin/lp-transaction.php:564
 msgid "Free"
 msgstr ""
 
-#: functions.php:2438
+#: functions.php:2456
 msgid "Your Current Subscription"
 msgstr ""
 
-#: functions.php:2555
+#: functions.php:2573
 msgid "Lost Password?"
 msgstr ""
 
-#: functions.php:2567
+#: functions.php:2585
 #: include/admin/lp-transaction.php:312
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:523
 msgid "Manual"
 msgstr ""
 
-#: functions.php:2568
+#: functions.php:2586
 #: include/admin/lp-transaction.php:309
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:520
 msgid "Stripe"
 msgstr ""
 
-#: functions.php:2569
+#: functions.php:2587
 #: include/admin/lp-transaction.php:311
 #: include/gateways/class-leaky-paywall-payment-gateways.php:79
 msgid "PayPal Standard"
 msgstr ""
 
-#: functions.php:2586
+#: functions.php:2604
 msgid "for life"
 msgstr ""
 
-#: functions.php:2595
-#: functions.php:5328
+#: functions.php:2613
+#: functions.php:5346
 msgid "day"
 msgstr ""
 
-#: functions.php:2598
-#: functions.php:5326
+#: functions.php:2616
+#: functions.php:5344
 msgid "days"
 msgstr ""
 
-#: functions.php:2601
-#: functions.php:5336
+#: functions.php:2619
+#: functions.php:5354
 msgid "week"
 msgstr ""
 
-#: functions.php:2604
-#: functions.php:5334
+#: functions.php:2622
+#: functions.php:5352
 msgid "weeks"
 msgstr ""
 
-#: functions.php:2607
-#: functions.php:5344
+#: functions.php:2625
+#: functions.php:5362
 msgid "month"
 msgstr ""
 
-#: functions.php:2610
-#: functions.php:5342
+#: functions.php:2628
+#: functions.php:5360
 msgid "months"
 msgstr ""
 
-#: functions.php:2613
-#: functions.php:5352
+#: functions.php:2631
+#: functions.php:5370
 msgid "year"
 msgstr ""
 
-#: functions.php:2616
-#: functions.php:5350
+#: functions.php:2634
+#: functions.php:5368
 msgid "years"
 msgstr ""
 
-#: functions.php:2624
-#: functions.php:2626
+#: functions.php:2642
+#: functions.php:2644
 msgid "every"
 msgstr ""
 
-#: functions.php:3294
+#: functions.php:3312
 msgid "UAE dirham"
 msgstr ""
 
-#: functions.php:3295
+#: functions.php:3313
 msgid "UAE"
 msgstr ""
 
-#: functions.php:3299
+#: functions.php:3317
 msgid "Afghan afghani"
 msgstr ""
 
-#: functions.php:3300
+#: functions.php:3318
 msgid "Afghanistan"
 msgstr ""
 
-#: functions.php:3304
+#: functions.php:3322
 msgid "Albanian lek"
 msgstr ""
 
-#: functions.php:3305
+#: functions.php:3323
 msgid "Albania"
 msgstr ""
 
-#: functions.php:3309
+#: functions.php:3327
 msgid "Armenian dram"
 msgstr ""
 
-#: functions.php:3310
+#: functions.php:3328
 msgid "Armenia"
 msgstr ""
 
-#: functions.php:3314
+#: functions.php:3332
 msgid "Netherlands Antillean gulden"
 msgstr ""
 
-#: functions.php:3315
+#: functions.php:3333
 msgid "Netherlands"
 msgstr ""
 
-#: functions.php:3319
+#: functions.php:3337
 msgid "Angolan kwanza"
 msgstr ""
 
-#: functions.php:3320
+#: functions.php:3338
 msgid "Angolia"
 msgstr ""
 
-#: functions.php:3324
+#: functions.php:3342
 msgid "Argentine peso"
 msgstr ""
 
-#: functions.php:3325
+#: functions.php:3343
 msgid "Argentina"
 msgstr ""
 
-#: functions.php:3329
+#: functions.php:3347
 msgid "Australian dollar"
 msgstr ""
 
-#: functions.php:3330
+#: functions.php:3348
 msgid "Australia"
 msgstr ""
 
-#: functions.php:3334
+#: functions.php:3352
 msgid "Aruban florin"
 msgstr ""
 
-#: functions.php:3335
+#: functions.php:3353
 msgid "Aruba"
 msgstr ""
 
-#: functions.php:3339
+#: functions.php:3357
 msgid "Azerbaijani manat"
 msgstr ""
 
-#: functions.php:3340
+#: functions.php:3358
 msgid "Azerbaij"
 msgstr ""
 
-#: functions.php:3344
+#: functions.php:3362
 msgid "Bosnia and Herzegovina konvertibilna marka"
 msgstr ""
 
-#: functions.php:3345
+#: functions.php:3363
 msgid "Bosnia"
 msgstr ""
 
-#: functions.php:3349
+#: functions.php:3367
 msgid "Barbadian dollar"
 msgstr ""
 
-#: functions.php:3350
+#: functions.php:3368
 msgid "Barbadian"
 msgstr ""
 
-#: functions.php:3354
+#: functions.php:3372
 msgid "Bangladeshi taka"
 msgstr ""
 
-#: functions.php:3355
+#: functions.php:3373
 msgid "Bangladesh"
 msgstr ""
 
-#: functions.php:3359
+#: functions.php:3377
 msgid "Bulgarian lev"
 msgstr ""
 
-#: functions.php:3360
+#: functions.php:3378
 msgid "Bulgaria"
 msgstr ""
 
-#: functions.php:3364
+#: functions.php:3382
 msgid "Burundi franc"
 msgstr ""
 
-#: functions.php:3365
+#: functions.php:3383
 msgid "Burundi"
 msgstr ""
 
-#: functions.php:3369
+#: functions.php:3387
 msgid "Bermudian dollar"
 msgstr ""
 
-#: functions.php:3370
+#: functions.php:3388
 msgid "Bermuda"
 msgstr ""
 
-#: functions.php:3374
+#: functions.php:3392
 msgid "Brunei dollar"
 msgstr ""
 
-#: functions.php:3375
+#: functions.php:3393
 msgid "Brunei"
 msgstr ""
 
-#: functions.php:3379
+#: functions.php:3397
 msgid "Bolivian boliviano"
 msgstr ""
 
-#: functions.php:3380
+#: functions.php:3398
 msgid "Bolivia"
 msgstr ""
 
-#: functions.php:3384
+#: functions.php:3402
 msgid "Brazilian real"
 msgstr ""
 
-#: functions.php:3385
+#: functions.php:3403
 msgid "Brazil"
 msgstr ""
 
-#: functions.php:3389
+#: functions.php:3407
 msgid "Bahamian dollar"
 msgstr ""
 
-#: functions.php:3390
+#: functions.php:3408
 msgid "Bahamas"
 msgstr ""
 
-#: functions.php:3394
+#: functions.php:3412
 msgid "Botswana pula"
 msgstr ""
 
-#: functions.php:3395
+#: functions.php:3413
 msgid "Botswana"
 msgstr ""
 
-#: functions.php:3399
+#: functions.php:3417
 msgid "Belize dollar"
 msgstr ""
 
-#: functions.php:3400
+#: functions.php:3418
 msgid "Belize"
 msgstr ""
 
-#: functions.php:3404
+#: functions.php:3422
 msgid "Canadian dollar"
 msgstr ""
 
-#: functions.php:3405
+#: functions.php:3423
 msgid "Canada"
 msgstr ""
 
-#: functions.php:3409
+#: functions.php:3427
 msgid "Congolese franc"
 msgstr ""
 
-#: functions.php:3410
+#: functions.php:3428
 msgid "Congo"
 msgstr ""
 
-#: functions.php:3414
+#: functions.php:3432
 msgid "Swiss franc"
 msgstr ""
 
-#: functions.php:3415
+#: functions.php:3433
 msgid "Switzerland"
 msgstr ""
 
-#: functions.php:3419
+#: functions.php:3437
 msgid "Chilean peso"
 msgstr ""
 
-#: functions.php:3420
+#: functions.php:3438
 msgid "Chili"
 msgstr ""
 
-#: functions.php:3424
+#: functions.php:3442
 msgid "Chinese Yuan Renminbi"
 msgstr ""
 
-#: functions.php:3425
+#: functions.php:3443
 msgid "Chinese Yuan"
 msgstr ""
 
-#: functions.php:3429
+#: functions.php:3447
 msgid "Colombian peso"
 msgstr ""
 
-#: functions.php:3430
+#: functions.php:3448
 msgid "Colombia"
 msgstr ""
 
-#: functions.php:3434
+#: functions.php:3452
 msgid "Costa Rican colon"
 msgstr ""
 
-#: functions.php:3435
+#: functions.php:3453
 msgid "Costa Rica"
 msgstr ""
 
-#: functions.php:3439
+#: functions.php:3457
 msgid "Cape Verdean escudo"
 msgstr ""
 
-#: functions.php:3440
+#: functions.php:3458
 msgid "Cape Verde"
 msgstr ""
 
-#: functions.php:3444
+#: functions.php:3462
 msgid "Czech koruna"
 msgstr ""
 
-#: functions.php:3445
+#: functions.php:3463
 msgid "Czech"
 msgstr ""
 
-#: functions.php:3449
+#: functions.php:3467
 msgid "Djiboutian franc"
 msgstr ""
 
-#: functions.php:3450
+#: functions.php:3468
 msgid "Djibouti"
 msgstr ""
 
-#: functions.php:3454
+#: functions.php:3472
 msgid "Danish krone"
 msgstr ""
 
-#: functions.php:3455
+#: functions.php:3473
 msgid "Danish"
 msgstr ""
 
-#: functions.php:3459
+#: functions.php:3477
 msgid "Dominican peso"
 msgstr ""
 
-#: functions.php:3460
+#: functions.php:3478
 msgid "Dominican Republic"
 msgstr ""
 
-#: functions.php:3464
+#: functions.php:3482
 msgid "Algerian dinar"
 msgstr ""
 
-#: functions.php:3465
+#: functions.php:3483
 msgid "Algeria"
 msgstr ""
 
-#: functions.php:3469
+#: functions.php:3487
 msgid "Estonian kroon"
 msgstr ""
 
-#: functions.php:3470
+#: functions.php:3488
 msgid "Estonia"
 msgstr ""
 
-#: functions.php:3474
+#: functions.php:3492
 msgid "Egyptian pound"
 msgstr ""
 
-#: functions.php:3475
+#: functions.php:3493
 msgid "Egypt"
 msgstr ""
 
-#: functions.php:3479
+#: functions.php:3497
 msgid "Ethiopian birr"
 msgstr ""
 
-#: functions.php:3480
+#: functions.php:3498
 msgid "Ethiopia"
 msgstr ""
 
-#: functions.php:3484
+#: functions.php:3502
 msgid "European Euro"
 msgstr ""
 
-#: functions.php:3485
+#: functions.php:3503
 msgid "Euro"
 msgstr ""
 
-#: functions.php:3489
+#: functions.php:3507
 msgid "Fijian dollar"
 msgstr ""
 
-#: functions.php:3490
+#: functions.php:3508
 msgid "Fiji"
 msgstr ""
 
-#: functions.php:3494
+#: functions.php:3512
 msgid "Falkland Islands pound"
 msgstr ""
 
-#: functions.php:3495
+#: functions.php:3513
 msgid "Falkland Islands"
 msgstr ""
 
-#: functions.php:3499
+#: functions.php:3517
 msgid "British pound"
 msgstr ""
 
-#: functions.php:3500
+#: functions.php:3518
 msgid "Great Britian"
 msgstr ""
 
-#: functions.php:3504
+#: functions.php:3522
 msgid "Georgian lari"
 msgstr ""
 
-#: functions.php:3505
+#: functions.php:3523
 msgid "Georgia"
 msgstr ""
 
-#: functions.php:3509
+#: functions.php:3527
 msgid "Gibraltar pound"
 msgstr ""
 
-#: functions.php:3510
+#: functions.php:3528
 msgid "Gibraltar"
 msgstr ""
 
-#: functions.php:3514
+#: functions.php:3532
 msgid "Gambian dalasi"
 msgstr ""
 
-#: functions.php:3515
+#: functions.php:3533
 msgid "Gambia"
 msgstr ""
 
-#: functions.php:3519
+#: functions.php:3537
 msgid "Guinean franc"
 msgstr ""
 
-#: functions.php:3520
+#: functions.php:3538
 msgid "Guinea"
 msgstr ""
 
-#: functions.php:3524
+#: functions.php:3542
 msgid "Guatemalan quetzal"
 msgstr ""
 
-#: functions.php:3525
+#: functions.php:3543
 msgid "Guatemala"
 msgstr ""
 
-#: functions.php:3529
+#: functions.php:3547
 msgid "Guyanese dollar"
 msgstr ""
 
-#: functions.php:3530
+#: functions.php:3548
 msgid "Guyanese"
 msgstr ""
 
-#: functions.php:3534
+#: functions.php:3552
 msgid "Hong Kong dollar"
 msgstr ""
 
-#: functions.php:3535
+#: functions.php:3553
 msgid "Hong Kong"
 msgstr ""
 
-#: functions.php:3539
+#: functions.php:3557
 msgid "Honduran lempira"
 msgstr ""
 
-#: functions.php:3540
+#: functions.php:3558
 msgid "Honduras"
 msgstr ""
 
-#: functions.php:3544
+#: functions.php:3562
 msgid "Croatian kuna"
 msgstr ""
 
-#: functions.php:3545
+#: functions.php:3563
 msgid "Croatia"
 msgstr ""
 
-#: functions.php:3549
+#: functions.php:3567
 msgid "Haitian gourde"
 msgstr ""
 
-#: functions.php:3550
+#: functions.php:3568
 msgid "Haiti"
 msgstr ""
 
-#: functions.php:3554
+#: functions.php:3572
 msgid "Hungarian forint"
 msgstr ""
 
-#: functions.php:3555
+#: functions.php:3573
 msgid "Hungary"
 msgstr ""
 
-#: functions.php:3559
+#: functions.php:3577
 msgid "Indonesian rupiah"
 msgstr ""
 
-#: functions.php:3560
+#: functions.php:3578
 msgid "Idonesia"
 msgstr ""
 
-#: functions.php:3564
+#: functions.php:3582
 msgid "Israeli new sheqel"
 msgstr ""
 
-#: functions.php:3565
+#: functions.php:3583
 msgid "Israel"
 msgstr ""
 
-#: functions.php:3569
+#: functions.php:3587
 msgid "Indian rupee"
 msgstr ""
 
-#: functions.php:3570
+#: functions.php:3588
 msgid "India"
 msgstr ""
 
-#: functions.php:3574
+#: functions.php:3592
 msgid "Icelandic króna"
 msgstr ""
 
-#: functions.php:3575
+#: functions.php:3593
 msgid "Iceland"
 msgstr ""
 
-#: functions.php:3579
+#: functions.php:3597
 msgid "Jamaican dollar"
 msgstr ""
 
-#: functions.php:3580
+#: functions.php:3598
 msgid "Jamaica"
 msgstr ""
 
-#: functions.php:3584
+#: functions.php:3602
 msgid "Japanese yen"
 msgstr ""
 
-#: functions.php:3585
+#: functions.php:3603
 msgid "Japan"
 msgstr ""
 
-#: functions.php:3589
+#: functions.php:3607
 msgid "Kenyan shilling"
 msgstr ""
 
-#: functions.php:3590
+#: functions.php:3608
 msgid "Kenya"
 msgstr ""
 
-#: functions.php:3594
+#: functions.php:3612
 msgid "Kyrgyzstani som"
 msgstr ""
 
-#: functions.php:3595
+#: functions.php:3613
 msgid "Kyrgyzstan"
 msgstr ""
 
-#: functions.php:3599
+#: functions.php:3617
 msgid "Cambodian riel"
 msgstr ""
 
-#: functions.php:3600
+#: functions.php:3618
 msgid "Cambodia"
 msgstr ""
 
-#: functions.php:3604
+#: functions.php:3622
 msgid "Comorian franc"
 msgstr ""
 
-#: functions.php:3605
+#: functions.php:3623
 msgid "Comorian"
 msgstr ""
 
-#: functions.php:3609
+#: functions.php:3627
 msgid "South Korean won"
 msgstr ""
 
-#: functions.php:3610
+#: functions.php:3628
 msgid "South Korea"
 msgstr ""
 
-#: functions.php:3614
+#: functions.php:3632
 msgid "Cayman Islands dollar"
 msgstr ""
 
-#: functions.php:3615
+#: functions.php:3633
 msgid "Cayman Islands"
 msgstr ""
 
-#: functions.php:3619
+#: functions.php:3637
 msgid "Kazakhstani tenge"
 msgstr ""
 
-#: functions.php:3620
+#: functions.php:3638
 msgid "Kazakhstan"
 msgstr ""
 
-#: functions.php:3624
+#: functions.php:3642
 msgid "Lao kip"
 msgstr ""
 
-#: functions.php:3625
+#: functions.php:3643
 msgid "Loa"
 msgstr ""
 
-#: functions.php:3629
+#: functions.php:3647
 msgid "Lebanese lira"
 msgstr ""
 
-#: functions.php:3630
+#: functions.php:3648
 msgid "Lebanese"
 msgstr ""
 
-#: functions.php:3634
+#: functions.php:3652
 msgid "Sri Lankan rupee"
 msgstr ""
 
-#: functions.php:3635
+#: functions.php:3653
 msgid "Sri Lanka"
 msgstr ""
 
-#: functions.php:3639
+#: functions.php:3657
 msgid "Liberian dollar"
 msgstr ""
 
-#: functions.php:3640
+#: functions.php:3658
 msgid "Liberia"
 msgstr ""
 
-#: functions.php:3644
+#: functions.php:3662
 msgid "Lesotho loti"
 msgstr ""
 
-#: functions.php:3645
+#: functions.php:3663
 msgid "Lesotho"
 msgstr ""
 
-#: functions.php:3649
+#: functions.php:3667
 msgid "Lithuanian litas"
 msgstr ""
 
-#: functions.php:3650
+#: functions.php:3668
 msgid "Lithuania"
 msgstr ""
 
-#: functions.php:3654
+#: functions.php:3672
 msgid "Latvian lats"
 msgstr ""
 
-#: functions.php:3655
+#: functions.php:3673
 msgid "Latvia"
 msgstr ""
 
-#: functions.php:3659
+#: functions.php:3677
 msgid "Moroccan dirham"
 msgstr ""
 
-#: functions.php:3660
+#: functions.php:3678
 msgid "Morocco"
 msgstr ""
 
-#: functions.php:3664
+#: functions.php:3682
 msgid "Moldovan leu"
 msgstr ""
 
-#: functions.php:3665
+#: functions.php:3683
 msgid "Moldova"
 msgstr ""
 
-#: functions.php:3669
+#: functions.php:3687
 msgid "Malagasy ariary"
 msgstr ""
 
-#: functions.php:3670
+#: functions.php:3688
 msgid "Malagasy"
 msgstr ""
 
-#: functions.php:3674
+#: functions.php:3692
 msgid "Macedonian denar"
 msgstr ""
 
-#: functions.php:3675
+#: functions.php:3693
 msgid "Macedonia"
 msgstr ""
 
-#: functions.php:3679
+#: functions.php:3697
 msgid "Mongolian tugrik"
 msgstr ""
 
-#: functions.php:3680
+#: functions.php:3698
 msgid "Mongolia"
 msgstr ""
 
-#: functions.php:3684
+#: functions.php:3702
 msgid "Macanese pataca"
 msgstr ""
 
-#: functions.php:3685
+#: functions.php:3703
 msgid "Macanese"
 msgstr ""
 
-#: functions.php:3689
+#: functions.php:3707
 msgid "Mauritanian ouguiya"
 msgstr ""
 
-#: functions.php:3694
+#: functions.php:3712
 msgid "Mauritian rupee"
 msgstr ""
 
-#: functions.php:3699
+#: functions.php:3717
 msgid "Maldivian rufiyaa"
 msgstr ""
 
-#: functions.php:3704
+#: functions.php:3722
 msgid "Malawian kwacha"
 msgstr ""
 
-#: functions.php:3709
+#: functions.php:3727
 msgid "Mexican peso"
 msgstr ""
 
-#: functions.php:3714
+#: functions.php:3732
 msgid "Malaysian ringgit"
 msgstr ""
 
-#: functions.php:3719
+#: functions.php:3737
 msgid "Mozambique Metical"
 msgstr ""
 
-#: functions.php:3724
+#: functions.php:3742
 msgid "Namibian dollar"
 msgstr ""
 
-#: functions.php:3729
+#: functions.php:3747
 msgid "Nigerian naira"
 msgstr ""
 
-#: functions.php:3734
+#: functions.php:3752
 msgid "Nicaraguan Córdoba"
 msgstr ""
 
-#: functions.php:3739
+#: functions.php:3757
 msgid "Norwegian krone"
 msgstr ""
 
-#: functions.php:3744
+#: functions.php:3762
 msgid "Nepalese rupee"
 msgstr ""
 
-#: functions.php:3749
+#: functions.php:3767
 msgid "New Zealand dollar"
 msgstr ""
 
-#: functions.php:3754
+#: functions.php:3772
 msgid "Panamanian balboa"
 msgstr ""
 
-#: functions.php:3759
+#: functions.php:3777
 msgid "Peruvian nuevo sol"
 msgstr ""
 
-#: functions.php:3764
+#: functions.php:3782
 msgid "Papua New Guinean kina"
 msgstr ""
 
-#: functions.php:3769
+#: functions.php:3787
 msgid "Philippine peso"
 msgstr ""
 
-#: functions.php:3774
+#: functions.php:3792
 msgid "Pakistani rupee"
 msgstr ""
 
-#: functions.php:3779
+#: functions.php:3797
 msgid "Polish zloty"
 msgstr ""
 
-#: functions.php:3784
+#: functions.php:3802
 msgid "Paraguayan guarani"
 msgstr ""
 
-#: functions.php:3789
+#: functions.php:3807
 msgid "Qatari riyal"
 msgstr ""
 
-#: functions.php:3794
+#: functions.php:3812
 msgid "Romanian leu"
 msgstr ""
 
-#: functions.php:3799
+#: functions.php:3817
 msgid "Serbian dinar"
 msgstr ""
 
-#: functions.php:3804
+#: functions.php:3822
 msgid "Russian ruble"
 msgstr ""
 
-#: functions.php:3814
+#: functions.php:3832
 msgid "Saudi riyal"
 msgstr ""
 
-#: functions.php:3818
+#: functions.php:3836
 msgid "Solomon Islands dollar"
 msgstr ""
 
-#: functions.php:3823
+#: functions.php:3841
 msgid "Seychellois rupee"
 msgstr ""
 
-#: functions.php:3828
+#: functions.php:3846
 msgid "Swedish krona"
 msgstr ""
 
-#: functions.php:3833
+#: functions.php:3851
 msgid "Singapore dollar"
 msgstr ""
 
-#: functions.php:3838
+#: functions.php:3856
 msgid "Saint Helena pound"
 msgstr ""
 
-#: functions.php:3843
+#: functions.php:3861
 msgid "Sierra Leonean leone"
 msgstr ""
 
-#: functions.php:3848
+#: functions.php:3866
 msgid "Somali shilling"
 msgstr ""
 
-#: functions.php:3853
+#: functions.php:3871
 msgid "Surinamese dollar"
 msgstr ""
 
-#: functions.php:3858
+#: functions.php:3876
 msgid "São Tomé and Príncipe Dobra"
 msgstr ""
 
-#: functions.php:3863
+#: functions.php:3881
 msgid "El Salvador Colon"
 msgstr ""
 
-#: functions.php:3868
+#: functions.php:3886
 msgid "Swazi lilangeni"
 msgstr ""
 
-#: functions.php:3873
+#: functions.php:3891
 msgid "Thai baht"
 msgstr ""
 
-#: functions.php:3878
+#: functions.php:3896
 msgid "Tajikistani somoni"
 msgstr ""
 
-#: functions.php:3883
+#: functions.php:3901
 msgid "Tonga Pa'anga"
 msgstr ""
 
-#: functions.php:3888
+#: functions.php:3906
 msgid "Turkish new lira"
 msgstr ""
 
-#: functions.php:3893
+#: functions.php:3911
 msgid "Trinidad and Tobago dollar"
 msgstr ""
 
-#: functions.php:3898
+#: functions.php:3916
 msgid "New Taiwan dollar"
 msgstr ""
 
-#: functions.php:3903
+#: functions.php:3921
 msgid "Tanzanian shilling"
 msgstr ""
 
-#: functions.php:3908
+#: functions.php:3926
 msgid "Ukrainian hryvnia"
 msgstr ""
 
-#: functions.php:3913
+#: functions.php:3931
 msgid "Ugandan shilling"
 msgstr ""
 
-#: functions.php:3918
+#: functions.php:3936
 msgid "United States dollar"
 msgstr ""
 
-#: functions.php:3919
+#: functions.php:3937
 msgid "United States"
 msgstr ""
 
-#: functions.php:3923
+#: functions.php:3941
 msgid "Uruguayan peso"
 msgstr ""
 
-#: functions.php:3928
+#: functions.php:3946
 msgid "Uzbekistani som"
 msgstr ""
 
-#: functions.php:3933
+#: functions.php:3951
 msgid "Vietnamese dong"
 msgstr ""
 
-#: functions.php:3938
+#: functions.php:3956
 msgid "Vanuatu vatu"
 msgstr ""
 
-#: functions.php:3943
+#: functions.php:3961
 msgid "Samoan tala"
 msgstr ""
 
-#: functions.php:3948
+#: functions.php:3966
 msgid "Central African CFA franc"
 msgstr ""
 
-#: functions.php:3953
+#: functions.php:3971
 msgid "East Caribbean dollar"
 msgstr ""
 
-#: functions.php:3958
+#: functions.php:3976
 msgid "West African CFA franc"
 msgstr ""
 
-#: functions.php:3963
+#: functions.php:3981
 msgid "CFP franc"
 msgstr ""
 
-#: functions.php:3968
+#: functions.php:3986
 msgid "Yemeni rial"
 msgstr ""
 
-#: functions.php:3973
+#: functions.php:3991
 msgid "South African rand"
 msgstr ""
 
-#: functions.php:3978
+#: functions.php:3996
 msgid "Zambian kwacha"
 msgstr ""
 
 #. Translators: %s - site name
-#: functions.php:4462
+#: functions.php:4480
 #, php-format
 msgid "User Account Deleted on %s"
 msgstr ""
 
-#: functions.php:5023
+#: functions.php:5041
 msgid "Congrats!"
 msgstr ""
 
-#: functions.php:5023
+#: functions.php:5041
 msgid "You have more than 100 subscribers with Leaky Paywall. Please help us by leaving a review on WordPress.org. We read every review and use your feedback to make Leaky Paywall better for everyone!"
 msgstr ""
 
-#: functions.php:5025
+#: functions.php:5043
 msgid "Leave a Review"
 msgstr ""
 
-#: functions.php:5026
+#: functions.php:5044
 msgid "Hide"
+msgstr ""
+
+#: include/ach-pending-modal.php:111
+msgid "Your bank payment is processing"
+msgstr ""
+
+#: include/ach-pending-modal.php:112
+msgid "Your bank payment is processing and may take 3 to 5 business days to clear. You will receive a welcome email with your login details once it completes. <strong>Please do not submit the form again — your subscription is already on its way.</strong>"
+msgstr ""
+
+#: include/ach-pending-modal.php:113
+msgid "Got it"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:184
@@ -1614,8 +1626,8 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:697
 #: include/emails/class-lp-emails.php:161
 #: shortcodes.php:476
-#: templates/shortcode-account.php:241
-#: templates/shortcode-account.php:310
+#: templates/shortcode-account.php:252
+#: templates/shortcode-account.php:321
 msgid "Email"
 msgstr ""
 
@@ -2178,8 +2190,8 @@ msgstr ""
 #: include/admin/lp-transaction.php:234
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:39
 #: subscriber-table.php:183
-#: templates/shortcode-account.php:237
-#: templates/shortcode-account.php:257
+#: templates/shortcode-account.php:248
+#: templates/shortcode-account.php:268
 msgid "Name"
 msgstr ""
 
@@ -2313,9 +2325,9 @@ msgstr ""
 #: include/gateways/gateway-functions.php:228
 #: include/gateways/gateway-functions.php:246
 #: include/gateways/paypal/functions.php:31
-#: include/gateways/stripe/functions.php:32
-#: include/gateways/stripe/functions.php:90
-#: include/gateways/stripe/functions.php:109
+#: include/gateways/stripe/functions.php:121
+#: include/gateways/stripe/functions.php:179
+#: include/gateways/stripe/functions.php:198
 msgid "Subscribe"
 msgstr ""
 
@@ -2476,7 +2488,7 @@ msgid "Month"
 msgstr ""
 
 #: include/admin/onboarding/templates/restrictions.php:34
-#: include/registration-functions.php:1153
+#: include/registration-functions.php:1167
 msgid "Year"
 msgstr ""
 
@@ -3051,10 +3063,10 @@ msgid "When set to exclusive, tax is added to the subtotal. If set to inclusive,
 msgstr ""
 
 #: include/admin/settings/settings.php:1219
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:524
-#: include/registration-functions.php:857
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:556
+#: include/registration-functions.php:871
 #: shortcodes.php:358
-#: templates/shortcode-account.php:358
+#: templates/shortcode-account.php:369
 msgid "Billing Address"
 msgstr ""
 
@@ -3217,7 +3229,7 @@ msgid "Created"
 msgstr ""
 
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:47
-#: templates/shortcode-account.php:269
+#: templates/shortcode-account.php:280
 msgid "Has Access"
 msgstr ""
 
@@ -3237,7 +3249,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:585
 #: shortcodes.php:236
 #: subscriber-table.php:505
-#: templates/shortcode-account.php:161
+#: templates/shortcode-account.php:172
 msgid "Never"
 msgstr ""
 
@@ -3259,7 +3271,7 @@ msgstr ""
 #: shortcodes.php:217
 #: shortcodes.php:643
 #: subscriber-table.php:518
-#: templates/shortcode-account.php:270
+#: templates/shortcode-account.php:281
 msgid "Yes"
 msgstr ""
 
@@ -3268,7 +3280,7 @@ msgstr ""
 #: shortcodes.php:219
 #: shortcodes.php:643
 #: subscriber-table.php:522
-#: templates/shortcode-account.php:270
+#: templates/shortcode-account.php:281
 msgid "No"
 msgstr ""
 
@@ -3374,17 +3386,17 @@ msgstr ""
 
 #: include/admin/subscribers/subscriber.php:323
 #: include/admin/subscribers/subscriber.php:689
-#: include/registration-functions.php:846
+#: include/registration-functions.php:860
 #: shortcodes.php:857
-#: templates/shortcode-account.php:298
+#: templates/shortcode-account.php:309
 msgid "First Name"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:327
 #: include/admin/subscribers/subscriber.php:693
-#: include/registration-functions.php:850
+#: include/registration-functions.php:864
 #: shortcodes.php:862
-#: templates/shortcode-account.php:304
+#: templates/shortcode-account.php:315
 msgid "Last Name"
 msgstr ""
 
@@ -3480,12 +3492,34 @@ msgstr ""
 msgid "The file path could not be found."
 msgstr ""
 
-#: include/admin/tools/import.php:95
-msgid " new subscribers were imported."
+#: include/admin/tools/import.php:61
+msgid "Only .csv files are supported by this importer."
 msgstr ""
 
-#: include/admin/tools/import.php:96
-msgid " existing subscribers were updated."
+#. translators: %s: the uploaded file's extension.
+#: include/admin/tools/import.php:64
+#, php-format
+msgid "Uploaded file extension: %s. If you exported from Numbers or Excel, use \"File → Export To → CSV\" first, then upload the .csv."
+msgstr ""
+
+#: include/admin/tools/import.php:108
+msgid "CSV header is missing an email column. Add a header row containing either \"email\" or \"user_email\"."
+msgstr ""
+
+#: include/admin/tools/import.php:109
+msgid "Detected columns:"
+msgstr ""
+
+#: include/admin/tools/import.php:144
+msgid "new subscribers imported."
+msgstr ""
+
+#: include/admin/tools/import.php:145
+msgid "existing subscribers updated."
+msgstr ""
+
+#: include/admin/tools/import.php:147
+msgid "rows skipped (missing email, unknown level_id, or column-count mismatch)."
 msgstr ""
 
 #: include/admin/tools/tools.php:23
@@ -3637,7 +3671,49 @@ msgstr ""
 msgid "The download could not be authorized."
 msgstr ""
 
-#: include/class-lp-store-client.php:165
+#: include/class-lp-store-client.php:168
+msgid "Your Leaky Paywall license does not include access to this extension. Please contact support to upgrade your license."
+msgstr ""
+
+#: include/class-lp-store-client.php:169
+msgid "Your Leaky Paywall subscription is not currently active. Please renew it to continue receiving updates."
+msgstr ""
+
+#: include/class-lp-store-client.php:170
+msgid "Your Leaky Paywall license does not grant access to this extension. Please contact support."
+msgstr ""
+
+#: include/class-lp-store-client.php:171
+msgid "You have reached the download limit for today. Please try again tomorrow."
+msgstr ""
+
+#: include/class-lp-store-client.php:172
+msgid "Your Leaky Paywall subscription has expired. Please renew it to continue receiving extension updates."
+msgstr ""
+
+#: include/class-lp-store-client.php:173
+msgid "Your Leaky Paywall subscription has been canceled. Please contact support to restore extension updates."
+msgstr ""
+
+#: include/class-lp-store-client.php:174
+msgid "Your Leaky Paywall subscription is currently inactive. Please contact support."
+msgstr ""
+
+#: include/class-lp-store-client.php:175
+msgid "The Leaky Paywall store is misconfigured. Please contact support."
+msgstr ""
+
+#: include/class-lp-store-client.php:176
+msgid "This extension is not currently available for download. Please contact support."
+msgstr ""
+
+#. translators: %s: short code identifying the underlying reason.
+#: include/class-lp-store-client.php:184
+#, php-format
+msgid "Download authorization failed (%s). Please contact support."
+msgstr ""
+
+#: include/class-lp-store-client.php:207
 msgid "Unexpected response from the store."
 msgstr ""
 
@@ -3804,13 +3880,13 @@ msgstr ""
 msgid "An error occurred, please try again."
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:504
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:536
 #: shortcodes.php:281
-#: templates/shortcode-account.php:178
+#: templates/shortcode-account.php:189
 msgid "Credit Card"
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:517
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:549
 msgid "This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes."
 msgstr ""
 
@@ -3840,37 +3916,42 @@ msgstr ""
 msgid "Subscribe with Paypal"
 msgstr ""
 
-#: include/gateways/stripe/functions.php:170
-#: include/gateways/stripe/functions.php:235
+#: include/gateways/stripe/functions.php:259
+#: include/gateways/stripe/functions.php:324
 #: include/registration-functions.php:222
-#: include/registration-functions.php:1233
+#: include/registration-functions.php:1247
 msgid "There was an error. Please try again."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:245
+#: include/gateways/stripe/functions.php:334
 #: include/registration-functions.php:65
 #: include/registration-functions.php:321
 #: shortcodes.php:556
 msgid "You are already subscribed to this level."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1210
+#: include/gateways/stripe/functions.php:348
+#: include/registration-functions.php:581
+msgid "It looks like a signup for this email was started a few minutes ago. Please check your inbox for confirmation, or contact us if you need help."
+msgstr ""
+
+#: include/gateways/stripe/functions.php:1342
 msgid "Insufficient permissions."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1217
+#: include/gateways/stripe/functions.php:1349
 msgid "Invalid or expired connect session."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1224
+#: include/gateways/stripe/functions.php:1356
 msgid "Invalid account id."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1253
+#: include/gateways/stripe/functions.php:1385
 msgid "Failed to retrieve credentials."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:1259
+#: include/gateways/stripe/functions.php:1391
 msgid "Invalid credentials response."
 msgstr ""
 
@@ -4185,17 +4266,17 @@ msgid "A user could not be created. Please check your details and try again."
 msgstr ""
 
 #: include/registration-functions.php:260
-#: include/registration-functions.php:710
+#: include/registration-functions.php:724
 msgid "Please enter your first name"
 msgstr ""
 
 #: include/registration-functions.php:266
-#: include/registration-functions.php:714
+#: include/registration-functions.php:728
 msgid "Please enter your last name"
 msgstr ""
 
 #: include/registration-functions.php:272
-#: include/registration-functions.php:718
+#: include/registration-functions.php:732
 msgid "Invalid email"
 msgstr ""
 
@@ -4204,7 +4285,7 @@ msgid "Email already exists. Please log in."
 msgstr ""
 
 #: include/registration-functions.php:285
-#: include/registration-functions.php:723
+#: include/registration-functions.php:737
 msgid "Invalid username"
 msgstr ""
 
@@ -4213,17 +4294,17 @@ msgid "Username already exists. Please log in or try a different one."
 msgstr ""
 
 #: include/registration-functions.php:298
-#: include/registration-functions.php:728
+#: include/registration-functions.php:742
 msgid "Please enter a password"
 msgstr ""
 
 #: include/registration-functions.php:304
-#: include/registration-functions.php:732
+#: include/registration-functions.php:746
 msgid "Passwords do not match"
 msgstr ""
 
 #: include/registration-functions.php:310
-#: include/registration-functions.php:702
+#: include/registration-functions.php:716
 msgid "You must agree to the terms and conditions."
 msgstr ""
 
@@ -4236,103 +4317,103 @@ msgstr ""
 msgid "Could not retrieve customer."
 msgstr ""
 
-#: include/registration-functions.php:588
+#: include/registration-functions.php:602
 msgid "Could not create subscription"
 msgstr ""
 
-#: include/registration-functions.php:635
+#: include/registration-functions.php:649
 msgid "Could not create payment intent."
 msgstr ""
 
-#: include/registration-functions.php:668
+#: include/registration-functions.php:682
 msgid "Your submission could not be processed."
 msgstr ""
 
 #. Translators: %s - login url
-#: include/registration-functions.php:739
+#: include/registration-functions.php:753
 #, php-format
 msgid "Email already registered. Please <a href=\"%s\">login</a>."
 msgstr ""
 
-#: include/registration-functions.php:743
+#: include/registration-functions.php:757
 msgid "Username already taken"
 msgstr ""
 
-#: include/registration-functions.php:747
+#: include/registration-functions.php:761
 msgid "Please enter a username"
 msgstr ""
 
-#: include/registration-functions.php:782
+#: include/registration-functions.php:796
 #: shortcodes.php:369
-#: templates/shortcode-account.php:369
+#: templates/shortcode-account.php:380
 msgid "Name on Card"
 msgstr ""
 
-#: include/registration-functions.php:787
-#: include/registration-functions.php:1138
+#: include/registration-functions.php:801
+#: include/registration-functions.php:1152
 msgid "Card Number"
 msgstr ""
 
-#: include/registration-functions.php:792
-#: include/registration-functions.php:1164
+#: include/registration-functions.php:806
+#: include/registration-functions.php:1178
 msgid "CVC"
 msgstr ""
 
-#: include/registration-functions.php:797
+#: include/registration-functions.php:811
 msgid "Card Zip or Postal Code"
 msgstr ""
 
-#: include/registration-functions.php:802
+#: include/registration-functions.php:816
 msgid "Expiration (MM/YYYY)"
 msgstr ""
 
-#: include/registration-functions.php:843
+#: include/registration-functions.php:857
 msgid "Billing Name"
 msgstr ""
 
-#: include/registration-functions.php:847
+#: include/registration-functions.php:861
 msgid "Jane"
 msgstr ""
 
-#: include/registration-functions.php:851
+#: include/registration-functions.php:865
 msgid "Doe"
 msgstr ""
 
-#: include/registration-functions.php:860
+#: include/registration-functions.php:874
 msgid "Address"
 msgstr ""
 
-#: include/registration-functions.php:866
+#: include/registration-functions.php:880
 #: shortcodes.php:378
-#: templates/shortcode-account.php:381
+#: templates/shortcode-account.php:392
 msgid "City"
 msgstr ""
 
-#: include/registration-functions.php:870
+#: include/registration-functions.php:884
 msgid "State"
 msgstr ""
 
-#: include/registration-functions.php:874
+#: include/registration-functions.php:888
 msgid "ZIP"
 msgstr ""
 
-#: include/registration-functions.php:880
+#: include/registration-functions.php:894
 msgid "Country"
 msgstr ""
 
-#: include/registration-functions.php:1144
+#: include/registration-functions.php:1158
 msgid "Expiry Month"
 msgstr ""
 
-#: include/registration-functions.php:1249
+#: include/registration-functions.php:1263
 msgid "This email is invalid. Please enter a different email."
 msgstr ""
 
-#: include/registration-functions.php:1261
+#: include/registration-functions.php:1275
 msgid "This email already exists. Please login or enter a different email."
 msgstr ""
 
-#: include/registration-functions.php:1278
+#: include/registration-functions.php:1292
 msgid "Username already taken."
 msgstr ""
 
@@ -4505,8 +4586,8 @@ msgstr ""
 
 #. Translators: %s - subscription url
 #: shortcodes.php:277
-#: templates/shortcode-account.php:212
-#: templates/shortcode-account.php:224
+#: templates/shortcode-account.php:223
+#: templates/shortcode-account.php:235
 #, php-format
 msgid "You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href=\"%s\">Subscription page</a>."
 msgstr ""
@@ -4530,32 +4611,32 @@ msgid "Expiration"
 msgstr ""
 
 #: shortcodes.php:372
-#: templates/shortcode-account.php:373
+#: templates/shortcode-account.php:384
 msgid "Address Line 1"
 msgstr ""
 
 #: shortcodes.php:375
-#: templates/shortcode-account.php:377
+#: templates/shortcode-account.php:388
 msgid "Address Line 2"
 msgstr ""
 
 #: shortcodes.php:381
-#: templates/shortcode-account.php:385
+#: templates/shortcode-account.php:396
 msgid "State / Province"
 msgstr ""
 
 #: shortcodes.php:384
-#: templates/shortcode-account.php:389
+#: templates/shortcode-account.php:400
 msgid "Postal Code"
 msgstr ""
 
 #: shortcodes.php:387
-#: templates/shortcode-account.php:393
+#: templates/shortcode-account.php:404
 msgid "Country (2-letter code)"
 msgstr ""
 
 #: shortcodes.php:392
-#: templates/shortcode-account.php:398
+#: templates/shortcode-account.php:409
 msgid "Update Billing Address"
 msgstr ""
 
@@ -4573,12 +4654,12 @@ msgid "Profile Changes Saved."
 msgstr ""
 
 #: shortcodes.php:471
-#: templates/shortcode-account.php:292
+#: templates/shortcode-account.php:303
 msgid "Display Name"
 msgstr ""
 
 #: shortcodes.php:481
-#: templates/shortcode-account.php:316
+#: templates/shortcode-account.php:327
 msgid "New Password"
 msgstr ""
 
@@ -4751,73 +4832,73 @@ msgstr ""
 msgid "Your card details have been updated!"
 msgstr ""
 
-#: templates/shortcode-account.php:108
+#: templates/shortcode-account.php:119
 msgid " Your subscription has been restarted!"
 msgstr ""
 
-#: templates/shortcode-account.php:128
+#: templates/shortcode-account.php:139
 msgid "Account Overview"
 msgstr ""
 
-#: templates/shortcode-account.php:131
+#: templates/shortcode-account.php:142
 msgid "Edit Profile"
 msgstr ""
 
-#: templates/shortcode-account.php:138
+#: templates/shortcode-account.php:149
 msgid "Payment Info"
 msgstr ""
 
-#: templates/shortcode-account.php:144
+#: templates/shortcode-account.php:155
 msgid "Logout"
 msgstr ""
 
-#: templates/shortcode-account.php:183
-#: templates/shortcode-account.php:188
+#: templates/shortcode-account.php:194
+#: templates/shortcode-account.php:199
 msgid "Ends on"
 msgstr ""
 
-#: templates/shortcode-account.php:190
-#: templates/shortcode-account.php:199
+#: templates/shortcode-account.php:201
+#: templates/shortcode-account.php:210
 msgid "Recurs on"
 msgstr ""
 
-#: templates/shortcode-account.php:195
+#: templates/shortcode-account.php:206
 msgid "Expired on"
 msgstr ""
 
-#: templates/shortcode-account.php:210
+#: templates/shortcode-account.php:221
 #, php-format
 msgid "Your recent payment failed. Please <a href=\"%s\">update your payment method</a> to keep your subscription active."
 msgstr ""
 
-#: templates/shortcode-account.php:220
+#: templates/shortcode-account.php:231
 msgid "Cancel your subscription"
 msgstr ""
 
-#: templates/shortcode-account.php:230
+#: templates/shortcode-account.php:241
 msgid "Account overview"
 msgstr ""
 
-#: templates/shortcode-account.php:232
+#: templates/shortcode-account.php:243
 msgid "Profile"
 msgstr ""
 
-#: templates/shortcode-account.php:249
+#: templates/shortcode-account.php:260
 msgid "Your user role can see all content."
 msgstr ""
 
-#: templates/shortcode-account.php:252
+#: templates/shortcode-account.php:263
 msgid "Your plan"
 msgstr ""
 
-#: templates/shortcode-account.php:287
+#: templates/shortcode-account.php:298
 msgid "Edit your profile"
 msgstr ""
 
-#: templates/shortcode-account.php:322
+#: templates/shortcode-account.php:333
 msgid "New Password Confirm"
 msgstr ""
 
-#: templates/shortcode-account.php:328
+#: templates/shortcode-account.php:339
 msgid "Save Profile"
 msgstr ""
