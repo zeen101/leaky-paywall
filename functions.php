@@ -1005,6 +1005,24 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 			$user_id  = wp_insert_user($user_data);
 		}
 
+		// wp_insert_user() returns WP_Error on failure (duplicate email, blocked
+		// username, security-plugin reject, etc.). empty() returns false for a
+		// WP_Error object, so the empty() guard below misses it — execution
+		// would continue with $user_id = WP_Error and crash downstream code that
+		// uses it as an int (e.g., as an array key in level-transition tracking).
+		if ( is_wp_error( $user_id ) ) {
+			leaky_paywall_log(
+				array(
+					'error_code'      => $user_id->get_error_code(),
+					'error_message'   => $user_id->get_error_message(),
+					'attempted_login' => $user_data['user_login'] ?? '',
+					'attempted_email' => $user_data['user_email'] ?? '',
+				),
+				'wp_insert_user returned WP_Error'
+			);
+			return $user_id;
+		}
+
 		if (empty($user_id)) {
 			leaky_paywall_log($meta_args, 'could not create user');
 			return false;

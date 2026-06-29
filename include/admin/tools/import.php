@@ -50,11 +50,13 @@ class Leaky_Paywall_Import {
 			return;
 		}
 
-		$headers = array();
-		$manager = new SplFileObject( $file_path );
-		$i       = 0;
-		$new     = 0;
-		$updated = 0;
+		$headers     = array();
+		$manager     = new SplFileObject( $file_path );
+		$i           = 0;
+		$new         = 0;
+		$updated     = 0;
+		$skipped     = 0;
+		$header_ok   = false;
 
 		while ( ! $manager->eof() ) {
 
@@ -66,6 +68,16 @@ class Leaky_Paywall_Import {
 					$headers[]     = strtolower( str_replace( ' ', '_', $clean_element ) );
 				}
 				$i++;
+
+				// Validate that the file has an email column under either of
+				// the two accepted names (import wants 'email'; LP exports
+				// write 'user_email' — accept both so an exported CSV can be
+				// re-imported without renaming columns).
+				$header_ok = in_array( 'email', $headers, true ) || in_array( 'user_email', $headers, true );
+				if ( ! $header_ok ) {
+					echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'CSV header is missing an email column. Add a header row containing either "email" or "user_email".', 'leaky-paywall' ) . '</strong></p></div>';
+					return;
+				}
 				continue;
 			}
 
@@ -78,6 +90,7 @@ class Leaky_Paywall_Import {
 			}
 
 			if ( count( $headers ) !== count( $row ) ) {
+				$skipped++;
 				continue;
 			}
 
@@ -87,15 +100,21 @@ class Leaky_Paywall_Import {
 				$new++;
 			} elseif ( 'updated' === $type ) {
 				$updated++;
+			} else {
+				$skipped++;
 			}
 		}
 
-		if ( $new > 0 || $updated > 0 ) {
-			echo '<div class="notice notice-success">';
-			echo '<p><strong>' . intval( $new ) . esc_html__( ' new subscribers were imported.', 'leaky-paywall' ) . '</strong></p>';
-			echo '<p><strong>' . intval( $updated ) . esc_html__( ' existing subscribers were updated.', 'leaky-paywall' ) . '</strong></p>';
-			echo '</div>';
+		// Always show a result message — including the all-zero case — so a
+		// silent page refresh after upload never happens again.
+		$class = ( $new + $updated > 0 ) ? 'notice notice-success' : 'notice notice-warning';
+		echo '<div class="' . esc_attr( $class ) . '">';
+		echo '<p><strong>' . intval( $new ) . ' ' . esc_html__( 'new subscribers imported.', 'leaky-paywall' ) . '</strong></p>';
+		echo '<p><strong>' . intval( $updated ) . ' ' . esc_html__( 'existing subscribers updated.', 'leaky-paywall' ) . '</strong></p>';
+		if ( $skipped > 0 ) {
+			echo '<p><strong>' . intval( $skipped ) . ' ' . esc_html__( 'rows skipped (missing email, unknown level_id, or column-count mismatch).', 'leaky-paywall' ) . '</strong></p>';
 		}
+		echo '</div>';
 	}
 
 	/**
@@ -108,7 +127,15 @@ class Leaky_Paywall_Import {
 
 		global $blog_id;
 
-		$email    = isset( $item['email'] ) ? sanitize_text_field( strtolower( $item['email'] ) ) : '';
+		// Accept both 'email' and 'user_email' (the column name LP's own export
+		// writes). Same for 'username' / 'user_login'.
+		$email_raw = '';
+		if ( isset( $item['email'] ) && '' !== trim( (string) $item['email'] ) ) {
+			$email_raw = $item['email'];
+		} elseif ( isset( $item['user_email'] ) ) {
+			$email_raw = $item['user_email'];
+		}
+		$email    = $email_raw !== '' ? sanitize_text_field( strtolower( $email_raw ) ) : '';
 		$level_id = isset( $item['level_id'] ) ? sanitize_text_field( $item['level_id'] ) : '';
 
 		if ( ! is_email( $email ) ) {
@@ -159,7 +186,11 @@ class Leaky_Paywall_Import {
 				'plan'            => isset( $item['plan'] ) ? sanitize_text_field( $item['plan'] ) : '',
 				'site'            => isset( $item['site'] ) ? sanitize_text_field( $item['site'] ) : $blog_id,
 				'password'        => isset( $item['password'] ) ? sanitize_text_field( $item['password'] ) : '',
-				'login'           => isset( $item['username'] ) ? sanitize_text_field( strtolower( $item['username'] ) ) : $email,
+				'login'           => isset( $item['username'] ) && '' !== trim( (string) $item['username'] )
+					? sanitize_text_field( strtolower( $item['username'] ) )
+					: ( isset( $item['user_login'] ) && '' !== trim( (string) $item['user_login'] )
+						? sanitize_text_field( strtolower( $item['user_login'] ) )
+						: $email ),
 				'first_name'      => isset( $item['first_name'] ) ? sanitize_text_field( $item['first_name'] ) : '',
 				'last_name'       => isset( $item['last_name'] ) ? sanitize_text_field( $item['last_name'] ) : '',
 				'display_name'    => isset( $item['display_name'] ) ? sanitize_text_field( $item['display_name'] ) : '',

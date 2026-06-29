@@ -404,6 +404,14 @@ class LP_Event_Tracking {
 	 * Subscriber level changed.
 	 */
 	public function on_level_transition( $new_level_id, $old_level_id, $user_id, $source ) {
+		// Bail on any non-positive-integer user_id (e.g., WP_Error from a
+		// failed wp_insert_user() that a buggy caller forwarded to
+		// leaky_paywall_set_subscriber_level). Using a non-int here as an
+		// array key throws a TypeError and crashes the request.
+		if ( ! is_int( $user_id ) || $user_id <= 0 ) {
+			return;
+		}
+
 		// Both leaky_paywall_new_subscriber() and leaky_paywall_update_subscriber()
 		// fire this transition right before their respective action hooks. Stash
 		// the old level so on_new_subscriber / on_update_subscriber can attach it
