@@ -2375,20 +2375,22 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 									$post_type_obj = get_post_type_object($post_type['post_type']);
 									if (!empty($post_type_obj)) {
-										if (0 <= $post_type['allowed_value']) {
-											$has_allowed_value = true;
+										// 'unlimited' is the admin dropdown value; when chosen
+										// the numeric allowed_value input is hidden and its
+										// stored value stays at the default 0 — gating the
+										// unlimited branch on the numeric value alone would
+										// then render "Access 0 …" by mistake.
+										$is_unlimited = isset($post_type['allowed']) && 'unlimited' === $post_type['allowed'];
 
-											if (1 === $post_type['allowed_value']) {
-												$plural = '';
-											} else {
-												$plural = 's';
-											}
+										if ($is_unlimited) {
+											/* Translators: %1$s - name, %2$s - post type name */
+											$allowed_content .= '<p>' . sprintf(__('Unlimited %1$s %2$s', 'leaky-paywall'), $name, $post_type_obj->labels->name) . '</p>';
+										} elseif (0 <= $post_type['allowed_value']) {
+											$has_allowed_value = true;
+											$plural = (1 === (int) $post_type['allowed_value']) ? '' : 's';
 
 											/* Translators: %1$s - allowed value, %2$s - name, %3$s - post type name */
 											$allowed_content .= '<p>' . sprintf(__('Access %1$s %2$s %3$s*', 'leaky-paywall'), $post_type['allowed_value'], $name, $post_type_obj->labels->singular_name . $plural) . '</p>';
-										} else {
-											/* Translators: %1$s - name, %2$s - post type name */
-											$allowed_content .= '<p>' . sprintf(__('Unlimited %1$s %2$s', 'leaky-paywall'), $name, $post_type_obj->labels->name) . '</p>';
 										}
 									}
 								} else {
@@ -2396,19 +2398,17 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 									/* @todo: We may need to change the site ID during this process, some sites may have different post types enabled */
 									$post_type_obj = get_post_type_object($post_type['post_type']);
 									if (!empty($post_type_obj)) {
-										if (0 <= $post_type['allowed_value']) {
-											$has_allowed_value = true;
+										$is_unlimited = isset($post_type['allowed']) && 'unlimited' === $post_type['allowed'];
 
-											if (1 === $post_type['allowed_value']) {
-												$plural = '';
-											} else {
-												$plural = 's';
-											}
-											/* Translators: %1$s - allowed value, %2$s - post type name */
-											$allowed_content .= '<p>' . sprintf(__('Access %1$s %2$s*', 'leaky-paywall'), $post_type['allowed_value'], $post_type_obj->labels->singular_name . $plural) . '</p>';
-										} else {
+										if ($is_unlimited) {
 											/* Translators: %s - type of post object */
 											$allowed_content .= '<p>' . sprintf(__('Unlimited %s', 'leaky-paywall'), $post_type_obj->labels->name) . '</p>';
+										} elseif (0 <= $post_type['allowed_value']) {
+											$has_allowed_value = true;
+											$plural = (1 === (int) $post_type['allowed_value']) ? '' : 's';
+
+											/* Translators: %1$s - allowed value, %2$s - post type name */
+											$allowed_content .= '<p>' . sprintf(__('Access %1$s %2$s*', 'leaky-paywall'), $post_type['allowed_value'], $post_type_obj->labels->singular_name . $plural) . '</p>';
 										}
 									}
 								}

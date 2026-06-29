@@ -50,8 +50,31 @@ class Leaky_Paywall_Import {
 			return;
 		}
 
+		// Restrict to plain-text CSV. The media uploader accepts other types
+		// (e.g., .numbers binary archives) by default; without this check the
+		// parser walks garbage bytes and shows a misleading "missing email
+		// column" error.
+		$filetype = wp_check_filetype( $file_path );
+		$ext      = strtolower( (string) $filetype['ext'] );
+		if ( 'csv' !== $ext ) {
+			echo '<div class="notice notice-error">';
+			echo '<p><strong>' . esc_html__( 'Only .csv files are supported by this importer.', 'leaky-paywall' ) . '</strong></p>';
+			echo '<p>' . sprintf(
+				/* translators: %s: the uploaded file's extension. */
+				esc_html__( 'Uploaded file extension: %s. If you exported from Numbers or Excel, use "File → Export To → CSV" first, then upload the .csv.', 'leaky-paywall' ),
+				'<code>' . esc_html( $ext !== '' ? '.' . $ext : '(none)' ) . '</code>'
+			) . '</p>';
+			echo '</div>';
+			return;
+		}
+
 		$headers     = array();
 		$manager     = new SplFileObject( $file_path );
+		// Without READ_CSV, fgetcsv() works but trailing blank lines come back
+		// as `[null]` (a 1-element array of null) and confuse the row loop.
+		// SKIP_EMPTY + READ_AHEAD also help with files that have stray
+		// Windows-style line endings or BOM-induced empty first reads.
+		$manager->setFlags( SplFileObject::READ_CSV | SplFileObject::READ_AHEAD | SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE );
 		$i           = 0;
 		$new         = 0;
 		$updated     = 0;
@@ -64,8 +87,13 @@ class Leaky_Paywall_Import {
 
 			if ( 0 === $i ) {
 				foreach ( $row as $element ) {
-					$clean_element = preg_replace( '/[\x00-\x1F\x80-\xFF]/', '', $element );
-					$headers[]     = strtolower( str_replace( ' ', '_', $clean_element ) );
+					$el = (string) $element;
+					// Strip UTF-8 BOM if present on the very first cell.
+					if ( 0 === strpos( $el, "\xEF\xBB\xBF" ) ) {
+						$el = substr( $el, 3 );
+					}
+					$clean_element = preg_replace( '/[\x00-\x1F\x80-\xFF]/', '', $el );
+					$headers[]     = strtolower( str_replace( ' ', '_', trim( $clean_element ) ) );
 				}
 				$i++;
 
@@ -75,7 +103,11 @@ class Leaky_Paywall_Import {
 				// re-imported without renaming columns).
 				$header_ok = in_array( 'email', $headers, true ) || in_array( 'user_email', $headers, true );
 				if ( ! $header_ok ) {
-					echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'CSV header is missing an email column. Add a header row containing either "email" or "user_email".', 'leaky-paywall' ) . '</strong></p></div>';
+					$detected = empty( $headers ) ? '(none detected — file may be empty or not a CSV)' : implode( ', ', array_map( 'sanitize_text_field', $headers ) );
+					echo '<div class="notice notice-error">';
+					echo '<p><strong>' . esc_html__( 'CSV header is missing an email column. Add a header row containing either "email" or "user_email".', 'leaky-paywall' ) . '</strong></p>';
+					echo '<p>' . esc_html__( 'Detected columns:', 'leaky-paywall' ) . ' <code>' . esc_html( $detected ) . '</code></p>';
+					echo '</div>';
 					return;
 				}
 				continue;
