@@ -1,5 +1,20 @@
 (function() {
 
+    // Bail cleanly if the config global isn't defined. This can happen when
+    // a consent-management platform (Cookiebot, OneTrust, Iubenda, etc.)
+    // blocks the inline <script> that defines window.LP_LIST_BUILDER but
+    // allows this external file to load — leaving the file with a missing
+    // dependency. Without this guard the file throws a ReferenceError
+    // during init, which prevents the modal from being closed and locks
+    // paid subscribers out of content behind a stuck popup.
+    //
+    // The right fix is publisher-side (mark LP scripts as Necessary in the
+    // consent tool), but this guard ensures paid subscribers keep working
+    // via leaky-paywall-check.js even when the config isn't available.
+    if (typeof window.LP_LIST_BUILDER === 'undefined') {
+      return;
+    }
+
     function qs(root, sel) {
       return root.querySelector(sel);
     }
@@ -131,7 +146,7 @@
           const msg = form?.querySelector('.lp-list-builder__msg');
 
           try {
-            const data = await postJson(LP_LIST_BUILDER.requestOtpUrl, { email });
+            const data = await postJson(window.LP_LIST_BUILDER.requestOtpUrl, { email });
             if (msg) msg.textContent = data.message || 'A new code was sent.';
           } catch (err) {
             if (msg) msg.textContent = err.message || 'Could not send a new code.';
@@ -149,7 +164,7 @@
         const email = form?.querySelector('input[name="email"]')?.value || "";
 
         try {
-          const data = await postJson(LP_LIST_BUILDER.pwResetRequestUrl, { email } );
+          const data = await postJson(window.LP_LIST_BUILDER.pwResetRequestUrl, { email } );
           applyResponse(container, data);
 
           container.querySelector('input[name="code"]')?.focus();
@@ -185,18 +200,18 @@
             const heading = document.querySelector('.Slider__ExpandedHeader');
             const subheading = document.querySelector('.Slider__ExpandedSubHeader');
 
-            const data = await postJson(LP_LIST_BUILDER.flowUrl, { email });
+            const data = await postJson(window.LP_LIST_BUILDER.flowUrl, { email });
 
             // If OTP mode is enabled and this is a new signup, insert the
             // OTP verification step between email and signup.
-            if (data.step === 'signup' && LP_LIST_BUILDER.otpEnabled) {
+            if (data.step === 'signup' && window.LP_LIST_BUILDER.otpEnabled) {
               // Stash the signup form HTML for after verification.
               container.dataset.lpStashedSignupHtml = data.form_html;
               container.dataset.lpStashedSignupHeading = data.heading || '';
               container.dataset.lpStashedSignupSubheading = data.subheading || '';
 
               try {
-                await postJson(LP_LIST_BUILDER.requestOtpUrl, { email });
+                await postJson(window.LP_LIST_BUILDER.requestOtpUrl, { email });
               } catch (err) {
                 msgEl.textContent = err.message || 'Could not send verification code.';
                 if (submitBtn) {
@@ -237,7 +252,7 @@
             const email = (fd.get("email") || "").toString().trim();
             const code = (fd.get("code") || "").toString().trim();
 
-            await postJson(LP_LIST_BUILDER.verifyOtpUrl, { email, code });
+            await postJson(window.LP_LIST_BUILDER.verifyOtpUrl, { email, code });
 
             // Swap in the stashed signup form.
             const heading = document.querySelector('.Slider__ExpandedHeader');
@@ -282,7 +297,7 @@
               await window.lpListBuilderPreSignup(payload);
             }
 
-            await postJson(LP_LIST_BUILDER.signupUrl, payload);
+            await postJson(window.LP_LIST_BUILDER.signupUrl, payload);
 
             clearRestrictionData();
             showSuccessAndReload(form, "Your account has been created. Unlocking content...");
@@ -294,7 +309,7 @@
             const email = (fd.get("email") || "").toString().trim();
             const password = (fd.get("password") || "").toString();
 
-            await postJson(LP_LIST_BUILDER.loginUrl, {
+            await postJson(window.LP_LIST_BUILDER.loginUrl, {
               email,
               password,
               current_url: window.location.href.split("#")[0],
@@ -308,7 +323,7 @@
             const email = (fd.get("email") || "").toString().trim();
             const code = (fd.get("code") || "").toString().trim();
 
-            const data = await postJson(LP_LIST_BUILDER.pwResetVerifyUrl, { email, code });
+            const data = await postJson(window.LP_LIST_BUILDER.pwResetVerifyUrl, { email, code });
             applyResponse(container, data);
 
             container.querySelector('input[name="password"]')?.focus();
@@ -320,7 +335,7 @@
             const token = (fd.get("token") || "").toString();
             const password = (fd.get("password") || "").toString();
 
-            await postJson(LP_LIST_BUILDER.pwResetConfirmUrl, { email, token, password });
+            await postJson(window.LP_LIST_BUILDER.pwResetConfirmUrl, { email, token, password });
 
             showSuccessAndReload(form, "Signing you in…", "Welcome back!");
             return;
@@ -356,7 +371,7 @@
           var upgradePanel   = document.getElementById('lplb-upgrade-panel');
 
           if (isUpgrade) {
-              if (!LP_LIST_BUILDER.upgradeEnabled) { return; }
+              if (!window.LP_LIST_BUILDER.upgradeEnabled) { return; }
               if (subscribePanel) subscribePanel.style.display = 'none';
               if (upgradePanel)   upgradePanel.style.display   = '';
           } else {

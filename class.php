@@ -399,13 +399,43 @@ class Leaky_Paywall {
 	public function add_type_attribute( $tag, $handle, $src )
 	{
 
-		// if not your script, do nothing and return original $tag
-		if ( 'leaky_paywall_insights' !== $handle ) {
+		// Insights script gets the type="module" treatment.
+		if ( 'leaky_paywall_insights' === $handle ) {
+			return '<script type="module" src="' . esc_url( $src ) . '"></script>';
+		}
+
+		// Let publishers inject extra attributes (e.g., data-cookieconsent="ignore"
+		// for Cookiebot, data-ot-ignore for OneTrust) onto any LP-owned script tag
+		// so consent-management platforms don't block functional scripts. Filter
+		// receives an empty array by default; each returned key/value becomes an
+		// attribute on the <script> tag. Only fires for handles we consider ours.
+		$lp_handles = array(
+			'leaky-paywall',
+			'lp-list-builder',
+			'lp-listbuilder-preview',
+			'leaky_paywall_insights',
+			'leaky-paywall-recurring',
+			'lp-offer-engine',
+			'lp-offer-engine-email-admin',
+		);
+
+		if ( ! in_array( $handle, apply_filters( 'leaky_paywall_owned_script_handles', $lp_handles ), true ) ) {
 			return $tag;
 		}
-		// change the script tag by adding type="module" and return it.
-		$tag = '<script type="module" src="' . esc_url( $src ) . '"></script>';
-		return $tag;
+
+		$extra_attrs = apply_filters( 'leaky_paywall_script_tag_attributes', array(), $handle, $src );
+
+		if ( empty( $extra_attrs ) || ! is_array( $extra_attrs ) ) {
+			return $tag;
+		}
+
+		$attr_string = '';
+		foreach ( $extra_attrs as $key => $value ) {
+			$attr_string .= ' ' . esc_attr( $key ) . '="' . esc_attr( $value ) . '"';
+		}
+
+		// Inject the new attributes right after the opening <script tag.
+		return preg_replace( '/^<script\b/', '<script' . $attr_string, $tag, 1 );
 	}
 
 
