@@ -104,9 +104,27 @@ class Leaky_Paywall_Store_Client {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		$tmp = wp_tempnam( 'lp-ext-' . $slug . '.zip' );
+		// Pre-flight: locate a writable temp directory. Some hosts delete
+		// wp-content/upgrade/ between deploys, lock down wp-content/, or
+		// have a get_temp_dir() choice that isn't actually writable by PHP.
+		// Without this pre-check the failure surfaces as WordPress' cryptic
+		// "Destination directory for file streaming does not exist or is not
+		// writable" from inside WP_Http_Streams, with no actionable guidance.
+		$temp_dir = self::resolve_writable_temp_dir();
+		if ( is_wp_error( $temp_dir ) ) {
+			return $temp_dir;
+		}
+
+		$tmp = wp_tempnam( 'lp-ext-' . $slug . '.zip', $temp_dir );
 		if ( ! $tmp ) {
-			return new WP_Error( 'lp_store_tmp_failed', __( 'Could not create a temporary file for the download.', 'leaky-paywall' ) );
+			return new WP_Error(
+				'lp_store_tmp_failed',
+				sprintf(
+					/* translators: %s: the temp directory path we tried */
+					__( 'Could not create a temporary file in %s. Check that this directory exists and is writable by PHP, or define WP_TEMP_DIR in wp-config.php pointing to a writable directory.', 'leaky-paywall' ),
+					$temp_dir
+				)
+			);
 		}
 
 		$response = wp_remote_post( self::endpoint( 'download' ), array(
@@ -122,7 +140,7 @@ class Leaky_Paywall_Store_Client {
 
 		if ( is_wp_error( $response ) ) {
 			@unlink( $tmp );
-			return $response;
+			return self::wrap_streaming_error( $response, $temp_dir );
 		}
 
 		$code = (int) wp_remote_retrieve_response_code( $response );
@@ -152,6 +170,87 @@ class Leaky_Paywall_Store_Client {
 		}
 
 		return $tmp;
+	}
+
+	/**
+	 * Resolve a writable temp directory for the extension ZIP download.
+	 *
+	 * Tries in order:
+	 *   1. WordPress' get_temp_dir() choice (usually WP_TEMP_DIR or /tmp)
+	 *   2. wp-content/upgrade/ (create if missing — this is the standard
+	 *      WordPress convention for temporary plugin downloads)
+	 *   3. wp-content/uploads/lp-tmp/ (create if missing — last-resort
+	 *      fallback that works when nothing else on the site is writable
+	 *      but uploads is, which is the common case on managed hosts)
+	 *
+	 * Returns the first writable path, or a WP_Error with actionable
+	 * remediation steps if all candidates fail.
+	 *
+	 * @return string|WP_Error
+	 */
+	private static function resolve_writable_temp_dir() {
+		$candidates = array();
+
+		if ( function_exists( 'get_temp_dir' ) ) {
+			$candidates[] = untrailingslashit( get_temp_dir() );
+		}
+
+		if ( defined( 'WP_CONTENT_DIR' ) ) {
+			$candidates[] = WP_CONTENT_DIR . '/upgrade';
+			$candidates[] = WP_CONTENT_DIR . '/uploads/lp-tmp';
+		}
+
+		foreach ( $candidates as $dir ) {
+			if ( '' === $dir ) {
+				continue;
+			}
+			if ( ! is_dir( $dir ) ) {
+				// wp_mkdir_p creates parents as needed and applies WP's file
+				// permission constants.
+				if ( ! function_exists( 'wp_mkdir_p' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/file.php';
+				}
+				if ( ! wp_mkdir_p( $dir ) ) {
+					continue;
+				}
+			}
+			if ( wp_is_writable( $dir ) ) {
+				return $dir;
+			}
+		}
+
+		return new WP_Error(
+			'lp_store_no_writable_temp_dir',
+			sprintf(
+				/* translators: %s: comma-separated list of candidate paths */
+				__( 'Could not find a writable temporary directory for the extension download. Tried: %s. Fix: ensure at least one of these directories exists and is writable by PHP, or define WP_TEMP_DIR in wp-config.php pointing to a writable path. If you\'re on managed hosting, ask your host to enable temp writes for plugin installs.', 'leaky-paywall' ),
+				implode( ', ', array_filter( $candidates ) )
+			)
+		);
+	}
+
+	/**
+	 * Recognize the WP core streaming-write failure and wrap it with an
+	 * actionable message. Everything else passes through unchanged.
+	 *
+	 * @param WP_Error $error    Original error from wp_remote_post.
+	 * @param string   $temp_dir The directory we tried to stream into.
+	 * @return WP_Error
+	 */
+	private static function wrap_streaming_error( $error, $temp_dir ) {
+		$message = $error->get_error_message();
+		if ( false === strpos( strtolower( $message ), 'destination directory' ) ) {
+			return $error;
+		}
+
+		return new WP_Error(
+			'lp_store_temp_dir_unwritable',
+			sprintf(
+				/* translators: %s: the temp directory path */
+				__( 'The extension download could not be saved to %s. This directory exists but PHP cannot write to it — usually a file-ownership issue. Fix: SSH in and run "chown -R <web-user>:<web-group> %1$s", or ask your host to make this directory writable.', 'leaky-paywall' ),
+				$temp_dir
+			)
+		);
 	}
 
 	/**
