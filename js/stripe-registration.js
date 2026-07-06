@@ -6,6 +6,33 @@
             return;
         }
 
+        // Bail cleanly if Stripe.js was blocked. This happens when a consent
+        // management platform (Cookiebot, OneTrust, Iubenda, etc.) auto-blocks
+        // https://js.stripe.com/v3/ because the visitor didn't consent to the
+        // category the CMP classified Stripe under. Without this guard the
+        // form throws "Stripe is not defined" and the Subscribe button appears
+        // broken — user has no idea their consent choices are the reason.
+        //
+        // Publisher-side fix: mark Stripe as "Necessary" in the consent tool
+        // (Stripe processes the transaction the visitor is trying to make,
+        // which fits the Necessary category under GDPR). We surface an
+        // in-form message here so the visitor knows what to do.
+        if ( typeof Stripe === 'undefined' ) {
+            var $errors = $('#leaky-paywall-registration-errors');
+            if ( $errors.length ) {
+                $errors.html(
+                    '<div class="leaky_paywall_message error">' +
+                    'Payment processing is currently blocked by your cookie settings. ' +
+                    'To subscribe, please reopen the cookie banner and allow the payment / necessary category, then reload this page.' +
+                    '</div>'
+                );
+            }
+            // Also disable the submit buttons so the user doesn't repeatedly
+            // click a form that can't submit.
+            $('#checkout, #leaky-paywall-registration-next').prop('disabled', true);
+            return;
+        }
+
         let stripe = Stripe(leaky_paywall_stripe_registration_ajax.stripe_pk);
 
         if ( leaky_paywall_stripe_registration_ajax.client_id ) {

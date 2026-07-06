@@ -417,6 +417,14 @@ class Leaky_Paywall {
 			'leaky-paywall-recurring',
 			'lp-offer-engine',
 			'lp-offer-engine-email-admin',
+			// Stripe.js (js.stripe.com/v3/) and LP's Stripe-side registration
+			// glue. Both are required for payment and are 'Necessary' under
+			// GDPR (the visitor is trying to complete a purchase). Including
+			// them here lets publishers whitelist Stripe in one snippet via
+			// the leaky_paywall_script_tag_attributes filter, so their
+			// consent-management platform doesn't block payment scripts.
+			'stripe',
+			'leaky_paywall_stripe_registration',
 		);
 
 		if ( ! in_array( $handle, apply_filters( 'leaky_paywall_owned_script_handles', $lp_handles ), true ) ) {

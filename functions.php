@@ -769,6 +769,24 @@ function leaky_paywall_has_user_paid($email = false, $blog_id = null)
 					if (empty($expires) || '0000-00-00 00:00:00' === $expires) {
 						return 'unlimited';
 					}
+
+					// Runtime safety net for non-Stripe gateways (Manual,
+					// PayPal Standard, Authorize.Net, etc.). If the expires
+					// date is in the past, the daily cron *should* have
+					// already flipped this user to 'expired' — but if cron
+					// isn't running on this site, they'd stay 'active'
+					// forever. Do the transition here on-the-fly so access
+					// is correct on the very next page load regardless of
+					// cron health. The Stripe branch below does its own
+					// version of this check via strtotime($expires) < time().
+					if ( strtotime( $expires ) < time() && 'pending_cancel' !== $payment_status ) {
+						if ( function_exists( 'leaky_paywall_set_subscriber_status' ) ) {
+							leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'runtime_check' );
+						}
+						$expired = $expires;
+						break;
+					}
+
 					$paid = true;
 					break;
 				case 'refunded':
@@ -2805,7 +2823,13 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 
 	/**
-	 * Register the expiration check cron job on admin_init.
+	 * Register the expiration check cron job.
+	 *
+	 * Hooked to `init` (not `admin_init`) so scheduling happens on any page
+	 * load, frontend or admin. The earlier admin_init-only version silently
+	 * failed to schedule when no one visited wp-admin, which — combined with
+	 * a non-firing WP-Cron — left users' expiration status untouched
+	 * indefinitely.
 	 *
 	 * @since 4.23.0
 	 */
@@ -2814,7 +2838,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			wp_schedule_event( time(), 'daily', 'leaky_paywall_process_expiration_check' );
 		}
 	}
-	add_action( 'admin_init', 'leaky_paywall_expiration_check_schedule' );
+	add_action( 'init', 'leaky_paywall_expiration_check_schedule' );
 
 	/**
 	 * Clear the expiration check cron on plugin deactivation.
