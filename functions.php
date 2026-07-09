@@ -3089,8 +3089,12 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		// 1. Canceled Stripe subscribers → sync with Stripe for authoritative status.
 		// The LP expires meta may not reflect the actual Stripe subscription period end,
 		// so we check Stripe directly instead of relying on the local expires date.
+		// This step is API-heavy — up to 4 Stripe requests per user — so we
+		// process fewer per batch than the other steps and pace the calls, to
+		// keep well under conntrack/egress caps on managed hosts.
+		$stripe_batch          = 25;
 		$canceled_stripe_users = get_users( array(
-			'number'     => $batch,
+			'number'     => $stripe_batch,
 			'meta_query' => array(
 				'relation' => 'AND',
 				array(
@@ -3109,6 +3113,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		foreach ( $canceled_stripe_users as $user ) {
 			if ( function_exists( 'leaky_paywall_sync_stripe_subscription' ) ) {
 				leaky_paywall_sync_stripe_subscription( $user );
+				// Pace outbound API calls at ~5/user/sec so the migration
+				// doesn't saturate outbound connections on hosts with tight
+				// conntrack or egress limits.
+				usleep( 200000 );
 			} else {
 				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'migration' );
 			}
