@@ -783,7 +783,22 @@ class Leaky_Paywall_Restrictions {
 			$settings['page_for_subscription'],
 			$settings['page_for_profile'],
 			$settings['page_for_register'],
+			// If a Terms page is configured in settings, it needs to be
+			// publicly readable — visitors follow the ToS link straight from
+			// the registration form and must not be paywalled out of it.
+			$settings['page_for_terms'],
 		);
+
+		// When WooCommerce is active, its Cart, Checkout, and My Account
+		// pages must never be paywalled — a paywall on Checkout blocks
+		// customers from completing purchases. wc_get_page_id() returns
+		// -1 for pages the site hasn't configured, which is harmless
+		// here since real post IDs are always > 0.
+		if ( function_exists( 'wc_get_page_id' ) ) {
+			$unblockable_content[] = wc_get_page_id( 'cart' );
+			$unblockable_content[] = wc_get_page_id( 'checkout' );
+			$unblockable_content[] = wc_get_page_id( 'myaccount' );
+		}
 
 		if ( in_array( $this->post_id, apply_filters( 'leaky_paywall_unblockable_content', $unblockable_content ) ) ) {
 			return true;
