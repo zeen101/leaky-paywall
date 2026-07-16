@@ -104,6 +104,54 @@ class Leaky_Paywall_REST_Restrictions {
 	public static function init() {
 		$instance = new self();
 		add_action( 'rest_api_init', array( $instance, 'register_routes' ) );
+		// Runs BEFORE WP's rest_cookie_check_errors (priority 100). See
+		// bypass_nonce_for_check_restrictions() for what this fixes and why
+		// it's safe.
+		add_filter( 'rest_authentication_errors', array( $instance, 'bypass_nonce_for_check_restrictions' ), 90 );
+	}
+
+	/**
+	 * Prevent WP's REST nonce check from failing authenticated requests to
+	 * this endpoint that come from cached page HTML.
+	 *
+	 * Symptom without this: on any site with a full-page cache, logged-in
+	 * subscribers hit cached HTML that doesn't include a `logged-in` body
+	 * class, so leaky-paywall-check.js omits the X-WP-Nonce header. WP's
+	 * default REST cookie check then sees a valid auth cookie with no
+	 * matching nonce, returns 401, and the endpoint never runs. That
+	 * silently breaks Content Viewed / Paywall Displayed tracking (both
+	 * fire from filters inside this endpoint) for every read that happens
+	 * off cached HTML — which is most reads on any real production site.
+	 *
+	 * Safety: check-restrictions is a read-only endpoint that returns only
+	 * what the visitor would see rendering the same page server-side, so
+	 * CSRF is not part of its threat model. The auth cookie itself is still
+	 * signature-validated by wp_validate_auth_cookie() the moment the
+	 * endpoint calls is_user_logged_in(); we are not lowering the bar for
+	 * identifying the user, we are only skipping the CSRF-nonce layer that
+	 * WordPress overlays on top of cookie auth in REST contexts.
+	 *
+	 * @param WP_Error|null|true $result Existing auth result, if any.
+	 * @return WP_Error|null|true Passed through unmodified; side effect is
+	 *                            removing rest_cookie_check_errors for this
+	 *                            request only.
+	 */
+	public function bypass_nonce_for_check_restrictions( $result ) {
+		if ( ! empty( $result ) ) {
+			return $result;
+		}
+
+		$route = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+		if ( false === strpos( $route, self::NAMESPACE . self::ROUTE ) ) {
+			return $result;
+		}
+
+		// Removing during filter iteration prevents the priority-100
+		// callback from running on THIS request. The filter is re-registered
+		// naturally on subsequent requests via WP core's init.
+		remove_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
+
+		return $result;
 	}
 
 	/**
