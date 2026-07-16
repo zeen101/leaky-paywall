@@ -127,47 +127,71 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			),
 		);
 
-		// Search across all fields — OR user table columns with meta fields.
+		// Detect the shape of the search term and target the right column
+		// directly. On large sites the original approach — six OR'd
+		// leading-wildcard LIKE clauses across wp_usermeta plus three more
+		// on wp_users — turned a single search into a minutes-long full
+		// scan of the meta table. Real admin searches almost always fall
+		// into one of the shapes below, so we route each to a query that
+		// only touches the columns and meta keys it needs.
 		if ( ! empty( $_GET['s'] ) ) {
 			$search_term = sanitize_text_field( wp_unslash( $_GET['s'] ) );
 
-			$args['meta_query'][] = array(
-				'relation' => 'OR',
-				array(
+			if ( false !== strpos( $search_term, '@' ) ) {
+				// Looks like an email (partial or full). Trailing-wildcard
+				// LIKE on user_email only — the user_email column is
+				// indexed, and a prefix pattern is index-usable.
+				$args['search']         = $search_term . '*';
+				$args['search_columns'] = array( 'user_email' );
+
+			} elseif ( 1 === preg_match( '/^(cus_|sub_|pi_|ch_|in_|src_|ba_|pm_)/', $search_term ) ) {
+				// Gateway object ID (Stripe customer/subscription/invoice/
+				// charge/source/payment-method/bank-account). Restricting
+				// the meta search to a single meta_key (subscriber_id)
+				// collapses six OR'd joins down to one.
+				$args['meta_query'][] = array(
 					'key'     => '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site,
 					'value'   => $search_term,
 					'compare' => 'LIKE',
-				),
-				array(
-					'key'     => '_leaky_paywall_subscriber_notes',
-					'value'   => $search_term,
-					'compare' => 'LIKE',
-				),
-				array(
-					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site,
-					'value'   => $search_term,
-					'compare' => 'LIKE',
-				),
-				array(
-					'key'     => '_issuem_leaky_paywall_' . $mode . '_description' . $site,
-					'value'   => $search_term,
-					'compare' => 'LIKE',
-				),
-				array(
-					'key'     => 'first_name',
-					'value'   => $search_term,
-					'compare' => 'LIKE',
-				),
-				array(
-					'key'     => 'last_name',
-					'value'   => $search_term,
-					'compare' => 'LIKE',
-				),
-			);
+				);
 
-			// Also match name/email in the users table via pre_user_query filter.
-			$args['lp_search_term'] = $search_term;
-			add_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
+			} elseif ( ctype_digit( $search_term ) && strlen( $search_term ) >= 4 ) {
+				// Numeric-only, 4+ digits — treat as a WordPress user ID.
+				// `include` limits the query to one primary-key lookup;
+				// no meta search needed. Sub-4-digit numbers fall through
+				// to text search so "sub 999" style notes still match.
+				$args['include'] = array( absint( $search_term ) );
+
+			} else {
+				// Free-text — name / notes / user-table columns. Publishers
+				// use subscriber_notes as a search surface often enough that
+				// it stays in the OR set. Dropped from the search entirely:
+				// payment_gateway (never useful — filterable via the gateway
+				// dropdown) and description (internal-only field, not
+				// surfaced anywhere admins would search by it).
+				$args['meta_query'][] = array(
+					'relation' => 'OR',
+					array(
+						'key'     => '_leaky_paywall_subscriber_notes',
+						'value'   => $search_term,
+						'compare' => 'LIKE',
+					),
+					array(
+						'key'     => 'first_name',
+						'value'   => $search_term,
+						'compare' => 'LIKE',
+					),
+					array(
+						'key'     => 'last_name',
+						'value'   => $search_term,
+						'compare' => 'LIKE',
+					),
+				);
+
+				// Also match name/email in the users table via pre_user_query filter.
+				$args['lp_search_term'] = $search_term;
+				add_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
+			}
 		}
 
 		// Level filter.
