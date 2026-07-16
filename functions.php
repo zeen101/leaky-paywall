@@ -536,6 +536,38 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 
 		$has_access = in_array( $payment_status, leaky_paywall_access_statuses(), true );
 
+		// Enforce the expires date even for statuses like pending_cancel
+		// that would otherwise grant access indefinitely. A subscriber
+		// canceled at Stripe's period-end keeps `pending_cancel` locally
+		// until the gateway's subscription.deleted webhook flips them to
+		// expired; if that webhook fails to arrive (Stripe outage,
+		// receiver blocked, wp-cron down) they historically retained
+		// content access for months. The daily cron also skipped
+		// pending_cancel by design, so this runtime check is the safety
+		// net that ends access on time regardless of webhook or cron
+		// health. Empty or 0000-00-00 means "no expiration".
+		if ( $has_access ) {
+			$expires        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+			$has_expiration = ! empty( $expires )
+				&& '0000-00-00 00:00:00' !== $expires
+				&& '0' !== $expires;
+
+			if ( $has_expiration && strtotime( $expires ) < time() ) {
+				$has_access = false;
+
+				// Self-heal the stale status so the admin dashboard
+				// reflects reality (no more "Expires Soon" on
+				// subscribers whose access has actually ended) and
+				// transition hooks fire for downstream integrations
+				// like mailing-list sync. set_subscriber_status is a
+				// no-op when target matches current, so this runs
+				// exactly once per subscriber.
+				if ( function_exists( 'leaky_paywall_set_subscriber_status' ) ) {
+					leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'access_check_expired' );
+				}
+			}
+		}
+
 		// Only apply the logged-in check when checking the current visitor.
 		// When a user object is explicitly provided (e.g. REST API lookup),
 		// skip this — the caller already identified the user.
@@ -2862,9 +2894,14 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$mode = leaky_paywall_get_current_mode();
 		$site = leaky_paywall_get_current_site();
 
-		// Exclude pending_cancel — the subscriber keeps access until period end;
-		// the gateway's subscription.deleted webhook handles the transition to expired.
-		$cron_statuses = array_diff( leaky_paywall_access_statuses(), array( 'pending_cancel' ) );
+		// Include pending_cancel. Historically we excluded it here and
+		// deferred to the gateway's subscription.deleted webhook — that
+		// works when the webhook actually arrives, but a missed delivery
+		// (Stripe outage, WAF rule, receiver blocked, wp-cron dead) left
+		// canceled subscribers with content access for months. The
+		// 24-hour grace period below still gives the webhook first
+		// shot; this is the safety net for when it doesn't fire.
+		$cron_statuses = leaky_paywall_access_statuses();
 		$cron_statuses = array_values( $cron_statuses );
 		$expires_key   = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
