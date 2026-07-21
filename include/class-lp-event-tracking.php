@@ -815,6 +815,18 @@ class LP_Event_Tracking {
 			'status'       => isset( $subscriber_data['status'] ) ? $subscriber_data['status'] : 'unknown',
 		);
 
+		// Attach the customer's IP to every event when it's resolvable.
+		// Fires for registration/login/content-viewed events (customer's real
+		// browser IP) as well as gateway-webhook and cron-triggered events
+		// (where the helper typically returns empty and the field is omitted).
+		// Enables geo-dimensional charts on the Insights side.
+		if ( function_exists( 'leaky_paywall_get_customer_ip' ) ) {
+			$customer_ip = leaky_paywall_get_customer_ip();
+			if ( $customer_ip ) {
+				$payload['customer_ip'] = $customer_ip;
+			}
+		}
+
 		if ( ! empty( $properties ) ) {
 			$payload['properties'] = array_filter( $properties, array( $this, 'filter_empty_values' ) );
 		}

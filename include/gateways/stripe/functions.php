@@ -280,6 +280,8 @@ function leaky_paywall_process_apple_pay() {
 		$data['customer'] = $cus_id;
 	}
 
+	$data = leaky_paywall_add_customer_ip_to_stripe_metadata( $data );
+
 	try {
 		$payment_intent = $stripe->paymentIntents->create(
 			$data
@@ -702,6 +704,45 @@ function leaky_paywall_get_stripe_amount( $amount ) {
 	}
 
 	return $stripe_price;
+}
+
+/**
+ * Attach the customer's IP to a Stripe args array via `metadata.customer_ip`.
+ *
+ * Applied at every PaymentIntent + Checkout Session creation site so the IP
+ * lands on the Stripe object itself — visible in the Stripe Dashboard on
+ * each transaction, returned in webhook payloads, available for chargeback
+ * dispute evidence. Does not directly affect Stripe Radar (Radar gets its IP
+ * signal from Stripe.js on the client side); this is for LP-side audit and
+ * publisher-side operations.
+ *
+ * Preserves any existing `metadata` set upstream by callers or by filters
+ * so this is safe to call anywhere in the arg-build pipeline. Only writes
+ * when the LP core helper resolves a valid IP.
+ *
+ * @since 5.x
+ *
+ * @param array $args Stripe API args (paymentIntents->create, checkout->sessions->create, etc.).
+ * @return array The args with `metadata.customer_ip` added when detectable.
+ */
+function leaky_paywall_add_customer_ip_to_stripe_metadata( array $args ) {
+
+	if ( ! function_exists( 'leaky_paywall_get_customer_ip' ) ) {
+		return $args;
+	}
+
+	$ip = leaky_paywall_get_customer_ip();
+	if ( ! $ip ) {
+		return $args;
+	}
+
+	if ( ! isset( $args['metadata'] ) || ! is_array( $args['metadata'] ) ) {
+		$args['metadata'] = array();
+	}
+
+	$args['metadata']['customer_ip'] = $ip;
+
+	return $args;
 }
 
 

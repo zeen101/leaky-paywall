@@ -115,6 +115,19 @@ class LP_Transaction {
 			update_post_meta( $transaction_id, '_subtotal', $this->subtotal );
 		}
 
+		// Capture the customer's IP at transaction time — used later for
+		// support debugging, chargeback disputes, and tax-location evidence.
+		// Empty string when the helper can't resolve one (CLI runs,
+		// server-initiated webhook renewals, publisher opted out via the
+		// leaky_paywall_customer_ip filter). Only stored when we have a
+		// real value, so absence means "unknown" rather than "empty".
+		$customer_ip = function_exists( 'leaky_paywall_get_customer_ip' )
+			? leaky_paywall_get_customer_ip()
+			: '';
+		if ( $customer_ip ) {
+			update_post_meta( $transaction_id, '_customer_ip', $customer_ip );
+		}
+
 		do_action( 'leaky_paywall_after_create_transaction', $transaction_id, $user );
 
 		return $transaction_id;

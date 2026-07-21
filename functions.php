@@ -703,6 +703,61 @@ function leaky_paywall_get_current_site()
 	return apply_filters('leaky_paywall_current_site', $site);
 }
 
+/**
+ * Best-effort resolution of the customer's IP address for the current request.
+ *
+ * Used at transaction creation time so we can:
+ *   - Store the IP on each LP transaction for support/audit/tax evidence
+ *   - Pass it to payment gateways (Stripe Radar, Authorize.Net fraud filters)
+ *     that use it as a signal in their fraud scoring
+ *
+ * Header precedence:
+ *   1. CF-Connecting-IP  — Cloudflare-injected real client IP
+ *   2. X-Forwarded-For   — standard proxy header; leftmost entry is originator
+ *   3. X-Real-IP         — some reverse proxies (nginx, HAProxy)
+ *   4. REMOTE_ADDR       — direct connection fallback
+ *
+ * Each candidate is validated with FILTER_VALIDATE_IP before being returned,
+ * so a spoofed or malformed header can't put junk into transaction meta or
+ * downstream gateway calls.
+ *
+ * Publishers who need to disable IP capture entirely (privacy stance) or
+ * override for unusual proxy chains can hook the filter and return their
+ * own value (or empty string to disable).
+ *
+ * @since 5.x
+ *
+ * @return string Validated IP address, or empty string if none detected.
+ */
+function leaky_paywall_get_customer_ip()
+{
+	$candidates = array(
+		'HTTP_CF_CONNECTING_IP',
+		'HTTP_X_FORWARDED_FOR',
+		'HTTP_X_REAL_IP',
+		'REMOTE_ADDR',
+	);
+
+	$ip = '';
+
+	foreach ($candidates as $key) {
+		if (empty($_SERVER[$key])) {
+			continue;
+		}
+
+		// X-Forwarded-For may be "client, proxy1, proxy2". The originating
+		// client is always the leftmost entry in the standard implementation.
+		$raw = trim(explode(',', (string) $_SERVER[$key])[0]);
+
+		if (filter_var($raw, FILTER_VALIDATE_IP)) {
+			$ip = $raw;
+			break;
+		}
+	}
+
+	return apply_filters('leaky_paywall_customer_ip', $ip);
+}
+
 
 if (!function_exists('leaky_paywall_get_currency')) {
 

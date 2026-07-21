@@ -404,8 +404,11 @@ function leaky_paywall_process_user_registration_validation() {
 				);
 
 				try {
+					$stripe_session_args = leaky_paywall_add_customer_ip_to_stripe_metadata(
+						apply_filters( 'leaky_paywall_stripe_session_recurring_args', $stripe_session_args, $level )
+					);
 					$checkout_session = $stripe->checkout->sessions->create(
-						apply_filters( 'leaky_paywall_stripe_session_recurring_args', $stripe_session_args, $level ),
+						$stripe_session_args,
 						leaky_paywall_get_stripe_connect_params()
 					);
 				} catch ( \Throwable $th ) {
@@ -462,8 +465,11 @@ function leaky_paywall_process_user_registration_validation() {
 					);
 				}
 
+				$stripe_session_args = leaky_paywall_add_customer_ip_to_stripe_metadata(
+					apply_filters( 'leaky_paywall_stripe_session_nonrecurring_args', $stripe_session_args, $level )
+				);
 				$checkout_session = $stripe->checkout->sessions->create(
-					apply_filters( 'leaky_paywall_stripe_session_nonrecurring_args', $stripe_session_args, $level ),
+					$stripe_session_args,
 					leaky_paywall_get_stripe_connect_params()
 				);
 			} catch ( \Throwable $th ) {
@@ -636,6 +642,8 @@ function leaky_paywall_process_user_registration_validation() {
 		),
 		$level
 	);
+
+	$intent_args = leaky_paywall_add_customer_ip_to_stripe_metadata( $intent_args );
 
 	// $intent_params = apply_filters( 'leaky_paywall_payment_intent_params', [], $level );
 

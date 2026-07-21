@@ -301,6 +301,7 @@ class LP_Transaction_Post_Type
 		$email          = get_post_meta( $post->ID, '_email', true );
 		$is_recurring   = get_post_meta( $post->ID, '_is_recurring', true );
 		$status         = get_post_meta( $post->ID, '_status', true );
+		$customer_ip    = get_post_meta( $post->ID, '_customer_ip', true );
 		$mode           = leaky_paywall_get_current_mode();
 		$is_refund      = 'refund' === $status;
 
@@ -413,6 +414,13 @@ class LP_Transaction_Post_Type
 				<span class="lp-sidebar-label"><?php esc_html_e( 'Payment Type', 'leaky-paywall' ); ?></span>
 				<span class="lp-sidebar-value"><?php echo esc_html( $payment_type ); ?></span>
 			</div>
+
+			<?php if ( $customer_ip ) : ?>
+				<div class="lp-sidebar-field">
+					<span class="lp-sidebar-label"><?php esc_html_e( 'Customer IP', 'leaky-paywall' ); ?></span>
+					<span class="lp-sidebar-value"><?php echo esc_html( $customer_ip ); ?></span>
+				</div>
+			<?php endif; ?>
 
 			<?php if ( $subscriber_url ) : ?>
 				<div class="lp-sidebar-actions">
