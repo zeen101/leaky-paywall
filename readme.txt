@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 7.0.1
+Tested up to: 7.0.2
 Requires PHP: 7.4
-Stable tag: 5.1.4
+Stable tag: 5.1.5
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,12 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.5 =
+* Admin new-subscriber email redesigned with structured sections: subscriber details, payment (skipped for free signups), attribution (IP and UTM when available), and quick action links to the subscriber and transaction records.
+* New helper `leaky_paywall_get_customer_ip()` resolves the customer IP address at transaction time and stores it on the transaction as `_customer_ip` meta for fraud analysis.
+* Customer IP is now passed to Stripe as transaction metadata, giving publishers visibility in the Stripe dashboard.
+* Customer IP is now included in `Subscription Started` event payloads sent to Insights.
 
 = 5.1.4 =
 * Content Viewed and Paywall Displayed events are now correctly recorded for logged-in subscribers
