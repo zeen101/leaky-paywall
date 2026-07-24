@@ -772,7 +772,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 		// the user to expired even though they're paying right now. Try active,
 		// then trialing; only fall back to status=all if nothing's live.
 		$subscriptions = null;
-		foreach ( array( 'active', 'trialing', 'all' ) as $status_filter ) {
+		foreach ( array( 'active', 'trialing' ) as $status_filter ) {
 			$subscriptions = $stripe->subscriptions->all( array(
 				'customer' => $cus->id,
 				'limit'    => '1',
@@ -782,6 +782,44 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			if ( ! empty( $subscriptions->data ) ) {
 				break;
 			}
+		}
+
+		// No live subscription. Before falling back to status=all (which
+		// would pick up a dead sub and flip the user to expired/deactivated),
+		// check if the customer has a not_started SubscriptionSchedule queued
+		// for a future date. If so, treat them as pending activation and
+		// leave their LP meta alone — the schedule's first invoice will fire
+		// the normal activation webhook when it starts. Otherwise a pushed-
+		// schedule cohort (e.g. the Point Magazine 2026-07 migration where
+		// SubscriptionSchedules were shifted to a later start date) gets
+		// flipped back to deactivated every time an admin views their
+		// subscriber page.
+		if ( empty( $subscriptions->data ) ) {
+			try {
+				$schedules = $stripe->subscriptionSchedules->all(
+					array( 'customer' => $cus->id, 'limit' => 10 ),
+					leaky_paywall_get_stripe_connect_params()
+				);
+				foreach ( $schedules->data as $sched ) {
+					if ( 'not_started' === $sched->status
+						&& ! empty( $sched->phases[0]->start_date )
+						&& (int) $sched->phases[0]->start_date > time() ) {
+						return;
+					}
+				}
+			} catch ( \Throwable $th ) {
+				// Schedule check failed. Don't block sync silently — fall
+				// through to the historical all-status path so behavior on
+				// a Stripe hiccup matches pre-fix behavior.
+				leaky_paywall_log( $th->getMessage(), 'lp stripe sync - schedule pre-check failed' );
+			}
+
+			// No pending schedule — historical fallback.
+			$subscriptions = $stripe->subscriptions->all( array(
+				'customer' => $cus->id,
+				'limit'    => '1',
+				'status'   => 'all',
+			), leaky_paywall_get_stripe_connect_params() );
 		}
 
 		if ( empty( $subscriptions->data ) ) {
