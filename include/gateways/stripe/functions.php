@@ -338,6 +338,29 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		);
 	}
 
+	// Existing-subscriber customer reuse. Mirrors the Stripe Elements flow
+	// (see leaky_paywall_process_stripe_registration in registration-functions.php).
+	// A logged-in subscriber who signs up for a different level would otherwise
+	// end up with a brand-new Stripe customer + brand-new subscription, and their
+	// old subscription would be orphaned from LP's point of view and keep billing
+	// forever. Swap in their existing Stripe customer id here so the "update the
+	// customer's existing sub" branch below fires with proration instead of
+	// creating a duplicate. The freshly-created customer_id the client sent
+	// becomes an unused orphan in Stripe — harmless, and easier than trying to
+	// coordinate the JS to skip its own customer-create step.
+	if ( is_user_logged_in() ) {
+		$_lp_user             = wp_get_current_user();
+		$_lp_mode             = leaky_paywall_get_current_mode();
+		$_lp_site             = leaky_paywall_get_current_site();
+		$_lp_existing_cus_id  = get_user_meta( $_lp_user->ID, '_issuem_leaky_paywall_' . $_lp_mode . '_subscriber_id' . $_lp_site, true );
+		$_lp_existing_gateway = get_user_meta( $_lp_user->ID, '_issuem_leaky_paywall_' . $_lp_mode . '_payment_gateway' . $_lp_site, true );
+
+		if ( ! empty( $_lp_existing_cus_id )
+			&& in_array( $_lp_existing_gateway, array( 'stripe', 'stripe_checkout' ), true ) ) {
+			$customer_id = $_lp_existing_cus_id;
+		}
+	}
+
 	$stripe = leaky_paywall_initialize_stripe_api();
 
 	// Prevent duplicate signups across Stripe customers (e.g., guest retries on ACH).
@@ -396,18 +419,46 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ), leaky_paywall_get_stripe_connect_params() );
 		} else {
 
+			// Update the existing subscription in place with immediate proration,
+			// matching the Elements flow. Two things the old code was missing:
+			//   1. proration_behavior — without this, Stripe defaults to
+			//      create_prorations (line items only, no immediate invoice), so
+			//      the subscriber wouldn't be charged the prorated difference
+			//      until their normal renewal date.
+			//   2. connect params — Stripe Connect accounts need on-behalf-of
+			//      routing on every write; missing it would fail on Connect
+			//      publishers or write to the wrong account.
 			foreach ( $subscriptions->data as $subscription ) {
 
-				$sub = $stripe->subscriptions->update( $subscription->id, array(
+				$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', array(
 					'items' => array(
 						array(
 							'id'    => $subscription->items->data[0]->id,
 							'price' => $plan_id,
 						),
 					),
-				) );
+					'proration_behavior' => 'always_invoice',
+				), $level );
+
+				// If the sub was set to cancel at period end, clear that flag
+				// so the plan switch doesn't inherit the cancellation intent.
+				if ( ! empty( $subscription->cancel_at_period_end ) ) {
+					$update_args['cancel_at_period_end'] = false;
+				}
+
+				$update_args['expand'] = array( 'latest_invoice' );
+
+				$sub = $stripe->subscriptions->update(
+					$subscription->id,
+					$update_args,
+					leaky_paywall_get_stripe_connect_params()
+				);
 
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level );
+
+				// Overwrite loop var so the response returns the updated sub,
+				// not the pre-update snapshot.
+				$subscription = $sub;
 			}
 		}
 	} catch ( \Stripe\Exception\ApiErrorException $e ) {
