@@ -352,6 +352,29 @@ function leaky_paywall_access_statuses() {
 }
 
 /**
+ * Flush the per-post restriction and exemption transients when a post is saved
+ * or its terms change, so editing a post's categories/tags (or its exemption
+ * eligibility) takes effect immediately instead of waiting out the 15-minute
+ * transient window used by Leaky_Paywall_Restrictions.
+ *
+ * @since 5.1.7
+ *
+ * @param int $post_id The post (object) id being changed.
+ */
+function leaky_paywall_flush_restriction_caches( $post_id ) {
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id || wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+		return;
+	}
+
+	delete_transient( 'lp_restriction_exception_' . $post_id );
+	delete_transient( 'lp_restricted_' . $post_id );
+}
+add_action( 'save_post', 'leaky_paywall_flush_restriction_caches' );
+add_action( 'set_object_terms', 'leaky_paywall_flush_restriction_caches' );
+
+/**
  * Set a subscriber's payment status and fire transition hooks.
  *
  * All status changes should go through this function so that

@@ -818,41 +818,45 @@ class Leaky_Paywall_Restrictions {
 
 		$cache_key = 'lp_restriction_exception_' . $this->post_id;
 
-		if ( false === ( $match = get_transient($cache_key) ) ) {
+		// get_transient() returns false both for a cache miss and for a stored
+		// false, so store an explicit 'yes'/'no' string to make the cached
+		// "not exempt" case actually cache (previously it was recomputed every
+		// request) without ambiguity.
+		$cached = get_transient( $cache_key );
 
-			$match    = false;
-			$settings = get_leaky_paywall_settings();
-
-			$category_exceptions    = $settings['post_category_exceptions'];
-			$category_exception_ids = explode(',', $category_exceptions);
-
-			if (! empty($category_exception_ids)) {
-				$post_categories = get_the_category($this->post_id);
-
-				foreach ($post_categories as $cat) {
-					if (in_array($cat->term_id, $category_exception_ids)) {
-						$match = true;
-					}
-				}
-			}
-
-			$tag_exceptions    = $settings['post_tag_exceptions'];
-			$tag_exception_ids = explode(',', $tag_exceptions);
-
-			if (! empty($tag_exception_ids)) {
-				$post_tag = get_the_tags($this->post_id);
-
-				if (is_array($post_tag)) {
-					foreach ($post_tag as $tag) {
-						if (in_array($tag->term_id, $tag_exception_ids)) {
-							$match = true;
-						}
-					}
-				}
-			}
-
-			set_transient($cache_key, $match, 900);
+		if ( 'yes' === $cached ) {
+			return true;
 		}
+
+		if ( 'no' === $cached ) {
+			return false;
+		}
+
+		$match    = false;
+		$settings = get_leaky_paywall_settings();
+
+		// Collect all configured exception term IDs from the category and tag
+		// settings. Term IDs are globally unique in WordPress, so we can match
+		// them against every taxonomy attached to the post. This lets custom
+		// taxonomies work, not just the built-in category and post_tag, and
+		// trimming + int casting makes matching robust to stray spaces and the
+		// string-vs-int loose comparison the old code relied on.
+		$exception_ids = array_merge(
+			explode( ',', (string) $settings['post_category_exceptions'] ),
+			explode( ',', (string) $settings['post_tag_exceptions'] )
+		);
+		$exception_ids = array_filter( array_map( 'intval', array_map( 'trim', $exception_ids ) ) );
+
+		if ( ! empty( $exception_ids ) ) {
+			$taxonomies = get_object_taxonomies( get_post_type( $this->post_id ) );
+			$post_terms = wp_get_post_terms( $this->post_id, $taxonomies, array( 'fields' => 'ids' ) );
+
+			if ( ! is_wp_error( $post_terms ) && array_intersect( $exception_ids, array_map( 'intval', $post_terms ) ) ) {
+				$match = true;
+			}
+		}
+
+		set_transient( $cache_key, $match ? 'yes' : 'no', 900 );
 
 		return $match;
 	}
