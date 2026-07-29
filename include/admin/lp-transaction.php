@@ -568,10 +568,11 @@ class LP_Transaction_Post_Type
 
 		// Payment type filter.
 		$payment_type_options = array(
-			'paid'    => esc_html__('Paid', 'leaky-paywall'),
-			'free'    => esc_html__('Free', 'leaky-paywall'),
-			'refund'  => esc_html__('Refund', 'leaky-paywall'),
-			'renewal' => esc_html__('Renewal', 'leaky-paywall'),
+			'paid'     => esc_html__('Paid', 'leaky-paywall'),
+			'new_paid' => esc_html__('New Paid Subscription', 'leaky-paywall'),
+			'free'     => esc_html__('Free', 'leaky-paywall'),
+			'refund'   => esc_html__('Refund', 'leaky-paywall'),
+			'renewal'  => esc_html__('Renewal', 'leaky-paywall'),
 		);
 		$payment_type_options = apply_filters('leaky_paywall_transaction_payment_type_filters', $payment_type_options);
 		?>
@@ -660,6 +661,34 @@ class LP_Transaction_Post_Type
 						'key'     => '_status',
 						'value'   => 'refund',
 						'compare' => '!=',
+					);
+					break;
+				case 'new_paid':
+					// Initial paid subscriptions only: a price above 0, not a
+					// refund, and NOT a recurring renewal (renewals set
+					// _is_recurring = 1; initial payments leave it unset).
+					$meta_query[] = array(
+						'key'     => '_price',
+						'value'   => '0',
+						'compare' => '>',
+						'type'    => 'DECIMAL(10,2)',
+					);
+					$meta_query[] = array(
+						'key'     => '_status',
+						'value'   => 'refund',
+						'compare' => '!=',
+					);
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_is_recurring',
+							'compare' => 'NOT EXISTS',
+						),
+						array(
+							'key'     => '_is_recurring',
+							'value'   => '1',
+							'compare' => '!=',
+						),
 					);
 					break;
 				case 'free':
