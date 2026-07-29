@@ -45,6 +45,17 @@ function leaky_paywall_send_to_gateway( $gateway, $subscription_data ) {
 	// we don't have an actual gateway class for a free registration at this time, so we format the data as needed here.
 	if ( 'free_registration' == $gateway ) {
 
+		$free_level = get_leaky_paywall_subscription_level( $subscription_data['level_id'] );
+
+		if ( ! is_array( $free_level ) || (float) $free_level['price'] >= 0.5 ) {
+			leaky_paywall_errors()->add(
+				'invalid_free_registration',
+				__( 'This subscription level requires payment.', 'leaky-paywall' ),
+				'register'
+			);
+			return array();
+		}
+
 		return array(
 			'level_id'          => $subscription_data['level_id'],
 			'subscriber_id'     => '',
