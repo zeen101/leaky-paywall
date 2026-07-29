@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.0.2
 Requires PHP: 7.4
-Stable tag: 5.1.5
+Stable tag: 5.1.6
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,11 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.6 =
+* Security: the free registration flow now verifies the selected level is actually a free level before creating an account
+* Stripe Checkout: existing subscribers who switch to a different level now have their current subscription updated in place with immediate prorated billing, instead of getting a second Stripe customer and a duplicate subscription while the old one keeps billing.
+* Fixed: subscribers with a future-dated Stripe subscription schedule are no longer flipped to expired when their subscriber record is viewed
 
 = 5.1.5 =
 * Admin new-subscriber email redesigned with structured sections: subscriber details, payment (skipped for free signups), attribution (IP and UTM when available), and quick action links to the subscriber and transaction records.
