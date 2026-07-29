@@ -333,7 +333,18 @@ class LP_Event_Tracking {
 		}
 
 		$this->send_event( 'Registration', $subscriber_data, $properties );
-		$this->send_event( 'Subscription Started', $subscriber_data, $properties );
+
+		// Only a paid signup is a "Subscription Started". Free-level
+		// registrations go through the free_registration gateway and are already
+		// captured by the Registration event above; firing Subscription Started
+		// for them too polluted the paid-conversion reporting in Insights.
+		// Gate on the gateway (not amount) so paid-level trials and 100%-off
+		// coupons — which still run through a real payment gateway — are
+		// correctly counted as new paid subscriptions.
+		$event_gateway = isset( $meta['payment_gateway'] ) ? $meta['payment_gateway'] : '';
+		if ( ! in_array( $event_gateway, array( 'free_registration', 'free' ), true ) ) {
+			$this->send_event( 'Subscription Started', $subscriber_data, $properties );
+		}
 	}
 
 	/**
