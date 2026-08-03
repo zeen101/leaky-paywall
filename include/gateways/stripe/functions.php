@@ -799,6 +799,15 @@ function leaky_paywall_add_customer_ip_to_stripe_metadata( array $args ) {
 
 function leaky_paywall_sync_stripe_subscription( $user ) {
 
+	// Allow the Stripe->LP sync to be suppressed. Needed during migrations or
+	// bulk corrections where the Stripe subscriptions are temporarily in a
+	// known-bad state (e.g. anchored to the wrong date, past_due after a mass
+	// refund) and mirroring them back into LP would undo a deliberate LP-side
+	// fix. Default false preserves existing behavior.
+	if ( apply_filters( 'leaky_paywall_skip_stripe_sync', false, $user ) ) {
+		return;
+	}
+
 	$mode     = leaky_paywall_get_current_mode();
 	$site     = leaky_paywall_get_current_site();
 	$subscriber_id = lp_get_subscriber_meta('subscriber_id', $user);
