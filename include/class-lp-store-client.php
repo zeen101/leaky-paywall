@@ -115,14 +115,16 @@ class Leaky_Paywall_Store_Client {
 			return $temp_dir;
 		}
 
+		// wp_tempnam() returns its intended path even when it could not create
+		// the file, so an existence check is required to catch a real failure.
 		$tmp = wp_tempnam( 'lp-ext-' . $slug . '.zip', $temp_dir );
-		if ( ! $tmp ) {
+		if ( ! $tmp || ! file_exists( $tmp ) ) {
 			return new WP_Error(
 				'lp_store_tmp_failed',
 				sprintf(
 					/* translators: %s: the temp directory path we tried */
 					__( 'Could not create a temporary file in %s. Check that this directory exists and is writable by PHP, or define WP_TEMP_DIR in wp-config.php pointing to a writable directory.', 'leaky-paywall' ),
-					$temp_dir
+					untrailingslashit( $temp_dir )
 				)
 			);
 		}
@@ -183,8 +185,11 @@ class Leaky_Paywall_Store_Client {
 	 *      fallback that works when nothing else on the site is writable
 	 *      but uploads is, which is the common case on managed hosts)
 	 *
-	 * Returns the first writable path, or a WP_Error with actionable
-	 * remediation steps if all candidates fail.
+	 * Returns the first writable path with a trailing slash, or a WP_Error
+	 * with actionable remediation steps if all candidates fail. The trailing
+	 * slash matters: wp_tempnam() builds its path with a bare concatenation
+	 * ( $dir . $filename ), so an untrailingslashit'd directory produces a
+	 * sibling of that directory instead of a file inside it.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -215,7 +220,7 @@ class Leaky_Paywall_Store_Client {
 				}
 			}
 			if ( wp_is_writable( $dir ) ) {
-				return $dir;
+				return trailingslashit( $dir );
 			}
 		}
 
@@ -233,6 +238,11 @@ class Leaky_Paywall_Store_Client {
 	 * Recognize the WP core streaming-write failure and wrap it with an
 	 * actionable message. Everything else passes through unchanged.
 	 *
+	 * The pre-flight in resolve_writable_temp_dir() has already proven this
+	 * directory writable, so reaching here means something outside the
+	 * publisher's control is wrong. Point them at support and the manual
+	 * upload path rather than at server permissions.
+	 *
 	 * @param WP_Error $error    Original error from wp_remote_post.
 	 * @param string   $temp_dir The directory we tried to stream into.
 	 * @return WP_Error
@@ -247,8 +257,8 @@ class Leaky_Paywall_Store_Client {
 			'lp_store_temp_dir_unwritable',
 			sprintf(
 				/* translators: %s: the temp directory path */
-				__( 'The extension download could not be saved to %s. This directory exists but PHP cannot write to it — usually a file-ownership issue. Fix: SSH in and run "chown -R <web-user>:<web-group> %1$s", or ask your host to make this directory writable.', 'leaky-paywall' ),
-				$temp_dir
+				__( 'The extension download could not be saved to %s. Please contact Leaky Paywall support and include this message. In the meantime you can install the extension by uploading its ZIP file under Plugins > Add New Plugin.', 'leaky-paywall' ),
+				untrailingslashit( $temp_dir )
 			)
 		);
 	}

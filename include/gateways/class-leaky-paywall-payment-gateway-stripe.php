@@ -136,6 +136,31 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$stripe_amount = get_post_meta( $incomplete_user[0]->ID, '_stripe_amount_paid', true );
 		$price = $stripe_amount ? $stripe_amount : $this->level_price;
 
+		// Only grant access up front when the payment is actually confirmed (or genuinely
+		// in-flight). Historically this defaulted to 'active' and relied on a
+		// payment_intent.payment_failed webhook to clean up, but an abandoned or
+		// unconfirmed PaymentIntent doesn't fail cleanly — Stripe can leave it pending for
+		// days before firing payment_intent.canceled, during which the subscriber had free
+		// access they never paid for. When we have a PaymentIntent whose status is not yet
+		// confirmed, start the subscriber as 'pending' (no access) and let the existing
+		// payment_intent.succeeded / invoice.payment_succeeded webhook flip them to active
+		// the moment payment actually lands. Falls back to 'active' when there is no
+		// PaymentIntent (free levels, coupons, trials) or the lookup fails, preserving prior
+		// behavior for those flows.
+		$payment_status = 'active';
+		if ( $payment_intent_id ) {
+			try {
+				$stripe = leaky_paywall_initialize_stripe_api();
+				$intent = $stripe->paymentIntents->retrieve( $payment_intent_id, array(), leaky_paywall_get_stripe_connect_params() );
+				$confirmed_statuses = array( 'succeeded', 'processing', 'requires_capture' );
+				if ( is_object( $intent ) && ! in_array( $intent->status, $confirmed_statuses, true ) ) {
+					$payment_status = 'pending';
+				}
+			} catch ( \Throwable $e ) {
+				leaky_paywall_log( $e->getMessage(), 'stripe signup - payment intent status check failed for ' . $this->email );
+			}
+		}
+
 		$gateway_data = array(
 			'level_id'               => $this->level_id,
 			'subscriber_id'          => $customer_id,
@@ -144,7 +169,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'price'                  => $price,
 			'description'            => $this->level_name,
 			'payment_gateway'        => 'stripe',
-			'payment_status'         => 'active', // will deaactivate with payment_intent.failed webhook if needed.
+			'payment_status'         => $payment_status, // 'active' only when the PaymentIntent is confirmed; otherwise 'pending' until the success webhook.
 			'interval'               => $this->length_unit,
 			'interval_count'         => $this->length,
 			'site'                   => !empty($level['site']) ? $level['site'] : '',

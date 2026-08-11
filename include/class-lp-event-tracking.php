@@ -819,9 +819,9 @@ class LP_Event_Tracking {
 		$payload = array(
 			'name'         => $name,
 			'occurred_at'  => gmdate( 'c' ),
-			'email'        => $subscriber_data['email'],
-			'wp_user_id'   => $subscriber_data['wp_user_id'],
-			'display_name' => $subscriber_data['display_name'],
+			'email'        => isset( $subscriber_data['email'] ) ? $subscriber_data['email'] : '',
+			'wp_user_id'   => isset( $subscriber_data['wp_user_id'] ) ? $subscriber_data['wp_user_id'] : '',
+			'display_name' => isset( $subscriber_data['display_name'] ) ? $subscriber_data['display_name'] : '',
 			'level_name'   => isset( $subscriber_data['level_name'] ) ? $subscriber_data['level_name'] : '',
 			'status'       => isset( $subscriber_data['status'] ) ? $subscriber_data['status'] : 'unknown',
 		);
