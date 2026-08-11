@@ -47,7 +47,29 @@ function leaky_paywall_send_to_gateway( $gateway, $subscription_data ) {
 
 		$free_level = get_leaky_paywall_subscription_level( $subscription_data['level_id'] );
 
-		if ( ! is_array( $free_level ) || (float) $free_level['price'] >= 0.5 ) {
+		/**
+		 * Filter the effective price of this registration.
+		 *
+		 * The gateway is supplied by the client, so this guard is what stops a
+		 * forged free_registration submission from claiming a paid level. The
+		 * stored level price is not authoritative on its own: extensions apply
+		 * discounts further down the stack, so a paid level can legitimately
+		 * resolve to $0 for a given registration (a 100% coupon, for example).
+		 *
+		 * Anything hooking this filter is part of that security boundary. Only
+		 * reduce the price after validating the request data server-side —
+		 * never on the presence of a POST field alone, since the whole request
+		 * is attacker-controlled. Return the unmodified price to fail closed.
+		 *
+		 * @param float $price             The level's stored price.
+		 * @param array $free_level        The subscription level.
+		 * @param array $subscription_data The submitted subscription data.
+		 */
+		$effective_price = is_array( $free_level )
+			? (float) apply_filters( 'leaky_paywall_free_registration_effective_price', (float) $free_level['price'], $free_level, $subscription_data )
+			: null;
+
+		if ( null === $effective_price || $effective_price >= 0.5 ) {
 			leaky_paywall_errors()->add(
 				'invalid_free_registration',
 				__( 'This subscription level requires payment.', 'leaky-paywall' ),
