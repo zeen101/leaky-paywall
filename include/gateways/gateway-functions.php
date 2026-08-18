@@ -131,6 +131,47 @@ function leaky_paywall_get_enabled_payment_gateways( $level_id = '' ) {
 
 
 /**
+ * Count subscribers on a payment gateway.
+ *
+ * @param array|string $gateway  Gateway slug, or slugs to count together.
+ * @param array        $statuses Payment statuses to count. Defaults to the
+ *                               statuses that represent a live subscription.
+ * @return int
+ */
+function leaky_paywall_count_subscribers_by_gateway( $gateway, $statuses = array( 'active', 'pending_cancel', 'trial' ) ) {
+
+	$mode = leaky_paywall_get_current_mode();
+	$site = leaky_paywall_get_current_site();
+
+	$meta_query = array(
+		array(
+			'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site,
+			'value'   => (array) $gateway,
+			'compare' => 'IN',
+		),
+	);
+
+	if ( ! empty( $statuses ) ) {
+		$meta_query[] = array(
+			'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+			'value'   => (array) $statuses,
+			'compare' => 'IN',
+		);
+	}
+
+	$query = new WP_User_Query(
+		array(
+			'number'      => 1, // only the total is needed.
+			'fields'      => 'ID',
+			'count_total' => true,
+			'meta_query'  => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery
+		)
+	);
+
+	return (int) $query->get_total();
+}
+
+/**
  * Calls the load_fields() method for gateways when a gateway selection is made
  *
  * @access      public

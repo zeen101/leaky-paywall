@@ -974,6 +974,97 @@ class Leaky_Paywall_Settings
 			<?php
 		}
 
+		/**
+		 * Whether to show the PayPal Standard settings fields.
+		 *
+		 * The gateway being unchecked is not a reason to hide them. A site that
+		 * still has PayPal subscribers needs to reach the email address, because
+		 * the IPN self-validation fallback matches against it, and a site that
+		 * has unchecked the gateway has no other route back to these fields.
+		 *
+		 * @param array $settings Leaky Paywall settings.
+		 * @return bool
+		 */
+		private function should_show_paypal_settings($settings)
+		{
+
+			if (in_array('paypal_standard', $settings['payment_gateway'], true) || in_array('paypal-standard', $settings['payment_gateway'], true)) {
+				return true;
+			}
+
+			// Any site that ever configured PayPal has this saved.
+			if (!empty($settings['paypal_live_email']) || !empty($settings['paypal_sand_email'])) {
+				return true;
+			}
+
+			$count = get_transient('leaky_paywall_paypal_subscriber_count');
+
+			if (false === $count) {
+				$count = leaky_paywall_count_subscribers_by_gateway(array('paypal_standard', 'paypal-standard'));
+				set_transient('leaky_paywall_paypal_subscriber_count', $count, HOUR_IN_SECONDS);
+			}
+
+			return $count > 0;
+		}
+
+		/**
+		 * Report what unchecking a gateway did, and just as importantly what it
+		 * did not do. Publishers read the checkbox as "stop offering this" and
+		 * are then surprised when they think existing subscriptions broke, which
+		 * is the confusion this notice exists to prevent.
+		 */
+		private function output_gateway_removed_notice()
+		{
+
+			$notice = get_transient('leaky_paywall_gateway_removed_notice_' . get_current_user_id());
+
+			if (empty($notice) || !is_array($notice)) {
+				return;
+			}
+
+			delete_transient('leaky_paywall_gateway_removed_notice_' . get_current_user_id());
+
+			foreach ($notice as $removed) {
+
+				$count = (int) $removed['count'];
+
+				// Manual and free registrations have no gateway to renew
+				// against, so promising renewals there would be wrong.
+				if (in_array($removed['slug'], array('manual', 'free_registration'), true)) {
+					$message = sprintf(
+						/* Translators: %1$s gateway name, %2$s subscriber count, %3$s gateway name */
+						_n(
+							'%1$s is no longer offered to new subscribers. Your %2$s existing %3$s subscriber keeps their access and expiration date.',
+							'%1$s is no longer offered to new subscribers. Your %2$s existing %3$s subscribers keep their access and expiration dates.',
+							$count,
+							'leaky-paywall'
+						),
+						$removed['name'],
+						number_format_i18n($count),
+						$removed['name']
+					);
+				} else {
+					$message = sprintf(
+						/* Translators: %1$s gateway name, %2$s subscriber count, %3$s gateway name */
+						_n(
+							'%1$s is no longer offered to new subscribers. Your %2$s existing %3$s subscriber will keep renewing normally, and a cancellation will still be processed.',
+							'%1$s is no longer offered to new subscribers. Your %2$s existing %3$s subscribers will keep renewing normally, and cancellations will still be processed.',
+							$count,
+							'leaky-paywall'
+						),
+						$removed['name'],
+						number_format_i18n($count),
+						$removed['name']
+					);
+				}
+				?>
+				<div class="notice notice-info is-dismissible">
+					<p><?php echo esc_html($message); ?></p>
+				</div>
+				<?php
+			}
+		}
+
 		public function output_payments_settings($current_section)
 		{
 
@@ -982,6 +1073,8 @@ class Leaky_Paywall_Settings
 			}
 
 			$settings = $this->get_settings();
+
+			$this->output_gateway_removed_notice();
 
 			if ( isset( $_GET['lp_stripe_disconnected'] ) ) { ?>
 				<div class="notice notice-success is-dismissible">
@@ -1019,6 +1112,14 @@ class Leaky_Paywall_Settings
 						$gateways = leaky_paywall_get_payment_gateways();
 
 						foreach ($gateways as $key => $value) {
+
+							// A legacy gateway can be turned off but never on. Sites
+							// already using it keep their checkbox, everyone else
+							// never sees it. Its events are still processed either
+							// way, so unchecking it only stops new signups.
+							if (!empty($value['legacy']) && !in_array($key, $settings['payment_gateway'], true)) {
+								continue;
+							}
 						?>
 							<p>
 								<input id="enable-<?php echo esc_attr($key); ?>" type="checkbox" name="payment_gateway[]" value="<?php echo esc_attr($key); ?>" <?php checked(in_array($key, $settings['payment_gateway'], true)); ?> /> <label for="enable-<?php echo esc_attr($key); ?>"><?php echo esc_html($value['admin_label']); ?></label>
@@ -1244,7 +1345,7 @@ class Leaky_Paywall_Settings
 				<?php } ?>
 
 				<?php
-				if (in_array('paypal_standard', $settings['payment_gateway'], true) || in_array('paypal-standard', $settings['payment_gateway'], true)) {
+				if ($this->should_show_paypal_settings($settings)) {
 				?>
 
 					<table id="leaky_paywall_paypal_options" class="gateway-options form-table">
@@ -1935,6 +2036,8 @@ The %sitename% Team';
 					$settings['test_mode'] = apply_filters('zeen101_demo_test_mode', 'off');
 				}
 
+				$previous_gateways = isset($settings['payment_gateway']) ? (array) $settings['payment_gateway'] : array();
+
 				if (!empty($_POST['payment_gateway'])) {
 
 					$settings['payment_gateway'] = array_map('sanitize_text_field', wp_unslash($_POST['payment_gateway']));
@@ -1945,6 +2048,8 @@ The %sitename% Team';
 				} else {
 					$settings['payment_gateway'] = array('manual');
 				}
+
+				$this->queue_gateway_removed_notice($previous_gateways, $settings['payment_gateway']);
 
 				if (isset($_POST['manual_payment_title'])) {
 					$settings['manual_payment_title'] = sanitize_text_field(wp_unslash($_POST['manual_payment_title']));
@@ -2182,6 +2287,58 @@ The %sitename% Team';
 			}
 
 			return $restrictions;
+		}
+
+		/**
+		 * Note any gateway that was just switched off and still has subscribers
+		 * on it, for the notice shown on the Payments tab after saving.
+		 *
+		 * @param array $previous Gateways enabled before this save.
+		 * @param array $current  Gateways enabled after this save.
+		 */
+		private function queue_gateway_removed_notice($previous, $current)
+		{
+
+			$removed = array_diff($previous, $current);
+
+			if (empty($removed)) {
+				return;
+			}
+
+			$notice = array();
+			$labels = leaky_paywall_get_payment_gateways();
+
+			foreach ($removed as $gateway) {
+
+				// PayPal has been stored under both spellings over the years.
+				$slugs = in_array($gateway, array('paypal_standard', 'paypal-standard'), true)
+					? array('paypal_standard', 'paypal-standard')
+					: array($gateway);
+
+				$count = leaky_paywall_count_subscribers_by_gateway($slugs);
+
+				if ($count < 1) {
+					continue; // nothing to reassure them about.
+				}
+
+				// The registered label is what the publisher just unchecked, so
+				// it is the name they will recognise in the notice.
+				$name = isset($labels[$gateway]['label'])
+					? $labels[$gateway]['label']
+					: leaky_paywall_translate_payment_gateway_slug_to_name($gateway);
+
+				$notice[] = array(
+					'slug'  => $gateway,
+					'name'  => $name,
+					'count' => $count,
+				);
+			}
+
+			if (empty($notice)) {
+				return;
+			}
+
+			set_transient('leaky_paywall_gateway_removed_notice_' . get_current_user_id(), $notice, MINUTE_IN_SECONDS * 5);
 		}
 
 		/**

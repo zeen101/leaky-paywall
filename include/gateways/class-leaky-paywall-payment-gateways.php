@@ -68,18 +68,31 @@ class Leaky_Paywall_Payment_Gateways {
 			)
 		);
 
-		// Only show PayPal Standard if the site already has it enabled.
-		$settings    = get_leaky_paywall_settings();
-		$saved       = isset( $settings['payment_gateway'] ) ? $settings['payment_gateway'] : array();
-		$paypal_on   = in_array( 'paypal_standard', $saved, true ) || in_array( 'paypal-standard', $saved, true );
-
-		if ( $paypal_on ) {
-			$gateways['paypal_standard'] = array(
-				'label'       => __( 'PayPal', 'leaky-paywall' ),
-				'admin_label' => __( 'PayPal Standard', 'leaky-paywall' ),
-				'class'       => 'Leaky_Paywall_Payment_Gateway_PayPal',
-			);
-		}
+		/**
+		 * PayPal Standard is registered unconditionally, even on sites that do
+		 * not offer it.
+		 *
+		 * Registration and availability at checkout are separate concerns. This
+		 * list drives webhook processing (see leaky_paywall_process_gateway_webhooks),
+		 * while the registration form is built from enabled gateways, which is
+		 * the saved setting intersected with this list. Gating registration on
+		 * the saved setting therefore stopped PayPal IPNs from being processed
+		 * the moment a publisher unchecked the box, so subscribers who were
+		 * still paying through PayPal hit their stored expiration with no
+		 * renewal arriving and lost access.
+		 *
+		 * The 'legacy' flag is what keeps PayPal Standard from being adopted by
+		 * new sites: the Payments settings tab hides the checkbox for a legacy
+		 * gateway the site has not already enabled, so it can never be turned
+		 * on, only turned off. Events for existing subscribers keep flowing
+		 * either way.
+		 */
+		$gateways['paypal_standard'] = array(
+			'label'       => __( 'PayPal', 'leaky-paywall' ),
+			'admin_label' => __( 'PayPal Standard', 'leaky-paywall' ),
+			'class'       => 'Leaky_Paywall_Payment_Gateway_PayPal',
+			'legacy'      => true,
+		);
 
 		return apply_filters( 'leaky_paywall_payment_gateways', $gateways );
 	}
