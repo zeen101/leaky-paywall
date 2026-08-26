@@ -180,8 +180,14 @@ class Leaky_Paywall_REST_Subscribers {
 			'site'           => leaky_paywall_get_current_site(),
 			'first_name'     => $request->get_param( 'first_name' ) ? $request->get_param( 'first_name' ) : '',
 			'last_name'      => $request->get_param( 'last_name' ) ? $request->get_param( 'last_name' ) : '',
-			'expires'        => $request->get_param( 'expires' ) ? $request->get_param( 'expires' ) : '',
 		);
+
+		// Only set expires when the request supplies it. An empty value here would
+		// overwrite the expiration leaky_paywall_set_expiration_date() calculates
+		// from the level's interval.
+		if ( $request->get_param( 'expires' ) ) {
+			$meta_args['expires'] = $request->get_param( 'expires' );
+		}
 
 		$user_id = leaky_paywall_new_subscriber( null, $email, $meta_args['subscriber_id'], $meta_args );
 
