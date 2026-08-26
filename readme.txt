@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
-Tested up to: 7.0.2
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.1.6
+Stable tag: 5.1.7
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,18 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.7 =
+* Added: the category and tag exemption setting now supports custom taxonomies, not just the built-in categories and tags.
+* Added: a "New Paid Subscription" filter on the Transactions list that shows initial paid signups only, excluding renewals and refunds.
+* Added: a `leaky_paywall_free_registration_effective_price` filter so extensions can adjust a registration's effective price (for example, coupon discounts) while keeping free vs paid level validation secure.
+* Added: a `leaky_paywall_skip_stripe_sync` filter to suppress the Stripe to Leaky Paywall sync during migrations or bulk corrections.
+* Improved: extension installation is more reliable, with a writable-directory pre-flight check and a clear support message (including manual-upload instructions) when a download cannot be saved.
+* Improved: REST API subscriber endpoints. Expiration is only overwritten when a value is supplied, an optional password can be set when creating a subscriber, expiration now accepts "never" and rejects unparseable dates, and API-driven changes are labeled "API" in the status log so they can be told apart from admin edits.
+* Fixed: PayPal Standard settings and IPN processing now stay available even after the gateway is unchecked, so existing PayPal subscribers keep renewing instead of silently lapsing.
+* Fixed: new Stripe signups are granted access only once payment is confirmed or genuinely in progress, closing a window where an abandoned or unconfirmed payment could receive temporary access.
+* Fixed: the "Subscription Started" event sent to Insights now fires only for paid signups, so free registrations no longer inflate paid-conversion reporting (paid trials and 100%-off coupons still count).
+* Fixed: editing a post's categories, tags, or exemption setting now takes effect immediately instead of waiting for the restriction cache to expire.
 
 = 5.1.6 =
 * Security: the free registration flow now verifies the selected level is actually a free level before creating an account
