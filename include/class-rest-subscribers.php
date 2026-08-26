@@ -185,8 +185,10 @@ class Leaky_Paywall_REST_Subscribers {
 		// Only set expires when the request supplies it. An empty value here would
 		// overwrite the expiration leaky_paywall_set_expiration_date() calculates
 		// from the level's interval.
-		if ( $request->get_param( 'expires' ) ) {
-			$meta_args['expires'] = $request->get_param( 'expires' );
+		$expires = $request->get_param( 'expires' );
+
+		if ( null !== $expires && '' !== trim( (string) $expires ) ) {
+			$meta_args['expires'] = $this->normalize_expires( $expires );
 		}
 
 		// Use the supplied password for the new WordPress user instead of a
@@ -341,9 +343,18 @@ class Leaky_Paywall_REST_Subscribers {
 
 		foreach ( $updatable_fields as $field ) {
 			$value = $request->get_param( $field );
-			if ( null !== $value ) {
-				lp_update_subscriber_meta( $field, $value, $user_id );
+
+			if ( null === $value ) {
+				continue;
 			}
+
+			if ( 'expires' === $field ) {
+				$value = $this->normalize_expires( $value );
+			}
+
+			// Source 'rest_api' so the status log distinguishes an integration
+			// changing a subscriber from someone using the admin screen.
+			lp_update_subscriber_meta( $field, $value, $user_id, 'rest_api' );
 		}
 
 		// Refresh user object and return updated data.
@@ -375,6 +386,58 @@ class Leaky_Paywall_REST_Subscribers {
 	 * @param WP_User $user
 	 * @return array
 	 */
+	/**
+	 * Normalize an expires value supplied by a request.
+	 *
+	 * Accepts "never" and "0" as no expiration, matching the CSV importer, and
+	 * passes anything else through untouched.
+	 *
+	 * @param mixed $value Raw expires value.
+	 * @return string
+	 */
+	private function normalize_expires( $value ) {
+		$value = trim( (string) $value );
+
+		if ( 'never' === strtolower( $value ) || '0' === $value ) {
+			return '0000-00-00 00:00:00';
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Validate an expires parameter.
+	 *
+	 * An unparseable date must be rejected rather than stored: downstream code
+	 * falls back to the current time when strtotime() fails, which silently
+	 * turns a bad value into an expiration of today.
+	 *
+	 * @param mixed $param Raw expires value.
+	 * @return true|WP_Error
+	 */
+	public static function validate_expires( $param ) {
+		$value = trim( (string) $param );
+
+		// Empty is treated as "not supplied" by both endpoints.
+		if ( '' === $value ) {
+			return true;
+		}
+
+		if ( 'never' === strtolower( $value ) || '0' === $value || '0000-00-00 00:00:00' === $value ) {
+			return true;
+		}
+
+		if ( false !== strtotime( $value ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'rest_invalid_expires',
+			__( 'The expires parameter must be a parseable date, ideally in Y-m-d H:i:s format, or "never" for no expiration.', 'leaky-paywall' ),
+			array( 'status' => 400 )
+		);
+	}
+
 	private function prepare_subscriber( $user ) {
 
 		$level_id   = lp_get_subscriber_meta( 'level_id', $user );
@@ -493,6 +556,7 @@ class Leaky_Paywall_REST_Subscribers {
 			'expires'         => array(
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => array( __CLASS__, 'validate_expires' ),
 			),
 			// No sanitize_callback: passwords are passed to wp_insert_user()
 			// untouched so they hash exactly as sent. sanitize_text_field()
@@ -540,6 +604,7 @@ class Leaky_Paywall_REST_Subscribers {
 			'expires'         => array(
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => array( __CLASS__, 'validate_expires' ),
 			),
 			'subscriber_id'   => array(
 				'required'          => false,

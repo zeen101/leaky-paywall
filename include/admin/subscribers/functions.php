@@ -52,7 +52,17 @@ function lp_get_subscriber_meta( $key, $user = null ) {
 	return $value;
 }
 
-function lp_update_subscriber_meta( $key, $value, $user_id ) {
+/**
+ * Update a single subscriber field.
+ *
+ * @param string $key     Field name.
+ * @param mixed  $value   New value.
+ * @param int    $user_id WordPress user ID.
+ * @param string $source  What triggered the change. Recorded in the status log
+ *                        for level and status changes, so an API-driven update
+ *                        can be told apart from an admin one.
+ */
+function lp_update_subscriber_meta( $key, $value, $user_id, $source = 'admin' ) {
 
     $mode = leaky_paywall_get_current_mode();
     $site = leaky_paywall_get_current_site();
@@ -76,7 +86,7 @@ function lp_update_subscriber_meta( $key, $value, $user_id ) {
             update_user_meta($user_id, '_leaky_paywall_subscriber_notes', $value);
             break;
         case 'level_id':
-            leaky_paywall_set_subscriber_level( $user_id, $value, 'admin' );
+            leaky_paywall_set_subscriber_level( $user_id, $value, $source );
             break;
         case 'expires':
             update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $value);
@@ -85,7 +95,7 @@ function lp_update_subscriber_meta( $key, $value, $user_id ) {
             update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, $value);
             break;
         case 'payment_status':
-            leaky_paywall_set_subscriber_status( $user_id, $value, 'admin' );
+            leaky_paywall_set_subscriber_status( $user_id, $value, $source );
             break;
         case 'payment_gateway':
             update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, $value);
@@ -310,6 +320,7 @@ function lp_get_source_label($source)
         'stripe_sync'    => 'Stripe Sync',
         'paypal_webhook' => 'PayPal IPN',
         'admin'          => 'Admin',
+        'rest_api'       => 'API',
         'cron'           => 'Cron',
         'migration'      => 'Migration',
         'registration'   => 'Registration',
