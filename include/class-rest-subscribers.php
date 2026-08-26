@@ -189,6 +189,15 @@ class Leaky_Paywall_REST_Subscribers {
 			$meta_args['expires'] = $request->get_param( 'expires' );
 		}
 
+		// Use the supplied password for the new WordPress user instead of a
+		// generated one. leaky_paywall_new_subscriber() skips this key when it
+		// writes user meta, so it is never stored as plain text. It only applies
+		// to accounts this request creates: an email that already has a
+		// WordPress user keeps its existing password.
+		if ( $request->get_param( 'password' ) ) {
+			$meta_args['password'] = $request->get_param( 'password' );
+		}
+
 		$user_id = leaky_paywall_new_subscriber( null, $email, $meta_args['subscriber_id'], $meta_args );
 
 		if ( ! $user_id ) {
@@ -484,6 +493,15 @@ class Leaky_Paywall_REST_Subscribers {
 			'expires'         => array(
 				'required'          => false,
 				'sanitize_callback' => 'sanitize_text_field',
+			),
+			// No sanitize_callback: passwords are passed to wp_insert_user()
+			// untouched so they hash exactly as sent. sanitize_text_field()
+			// would strip characters and trim whitespace.
+			'password'        => array(
+				'required'          => false,
+				'validate_callback' => function ( $param ) {
+					return is_string( $param );
+				},
 			),
 		);
 	}

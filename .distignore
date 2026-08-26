@@ -1,0 +1,35 @@
+# .distignore — files kept OUT of the WordPress.org release.
+#
+# This is the release counterpart to .gitignore. They are NOT the same list:
+# vendor/ is git-ignored (Composer-rebuildable) but MUST ship, because it holds
+# Action Scheduler, a runtime dependency required at leaky-paywall.php:60.
+# Do not add /vendor here.
+#
+# Read by bin/release-svn.sh (rsync --exclude-from) and by the standard
+# wp-cli dist-archive / 10up deploy tooling, which use the same format.
+
+# Version control
+# NOTE: include/stripe is a git submodule (stripe-php) and DOES ship — do not
+# add it here. Only the git metadata files below are excluded.
+/.git
+/.github
+/.gitignore
+/.gitmodules
+/.distignore
+
+# Release + dev tooling (not shipped to users)
+/bin
+/node_modules
+/composer.json
+/composer.lock
+/phpcs.xml
+/.phpcs-cache
+
+# Editor / OS
+/.vscode
+/.claude
+/.DS_Store
+
+# Runtime logs (must never ship)
+/lp-log.txt
+/ipn-log.txt
