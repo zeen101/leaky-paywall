@@ -1735,17 +1735,25 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			'hide_subscribe_card'           => 'off',
 			'hide_registration_form'           => 'off',
 			'plan_id'                       => array(),
-			'post_types'                    => array(
+			'deleted'                       => 0,
+			'site'                          => 'all',
+		);
+
+		// Only a brand new level gets a starter access rule. Merging one into a
+		// saved level would draw a rule the access resolver does not honour.
+		$is_new_level = empty($level);
+
+		$level   = wp_parse_args($level, $default);
+
+		if ($is_new_level) {
+			$level['post_types'] = array(
 				array(
 					'post_type'     => ACTIVE_ISSUEM ? 'article' : 'post',
 					'allowed'       => 'unlimited',
 					'allowed_value' => 0,
 				),
-			),
-			'deleted'                       => 0,
-			'site'                          => 'all',
-		);
-		$level   = wp_parse_args($level, $default);
+			);
+		}
 
 		if (empty($level['recurring'])) {
 			$level['recurring'] = 'off';
@@ -1930,7 +1938,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<th>&nbsp;</th>
 				<td>
 					<script>
-						var leaky_paywall_subscription_row_<?php echo esc_attr($row_key); ?>_last_post_type_key = <?php echo absint($last_key); ?>;
+						var leaky_paywall_subscription_row_<?php echo esc_attr($row_key); ?>_last_post_type_key = <?php echo intval($last_key); ?>;
 					</script>
 					<p><input data-row-key="<?php echo esc_attr($row_key); ?>" class="button-secondary" id="add-subscription-row-post-type" class="add-new-issuem-leaky-paywall-row-post-type" type="submit" name="add_leaky_paywall_subscription_row_post_type" value="<?php esc_attr_e('+ Add Access Option', 'leaky-paywall'); ?>" /></p>
 					<?php

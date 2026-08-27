@@ -70,7 +70,11 @@ class Leaky_Paywall_Admin_Subscriber
 		$last_name = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
 		$email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
 		$subscriber_notes = isset($_POST['subscriber_notes']) ? sanitize_textarea_field($_POST['subscriber_notes']) : '';
-		$level_id = isset($_POST['level_id']) ? absint($_POST['level_id']) : '';
+		// A blank submission is not level 0. absint('') is 0, and on publishers
+		// whose first level is ID 0 that silently grants a paid level, so the
+		// posted value is checked for emptiness before it is cast.
+		$posted_level_id = isset($_POST['level_id']) ? sanitize_text_field(wp_unslash($_POST['level_id'])) : '';
+		$level_id = '' !== $posted_level_id ? absint($posted_level_id) : '';
 		$subscriber_id = isset($_POST['subscriber_id']) ? sanitize_text_field($_POST['subscriber_id']) : '';
 		$payment_status = isset($_POST['payment_status']) ? sanitize_text_field($_POST['payment_status']) : '';
 		$payment_gateway = isset($_POST['payment_gateway']) ? sanitize_text_field($_POST['payment_gateway']) : '';
@@ -92,7 +96,7 @@ class Leaky_Paywall_Admin_Subscriber
 			lp_update_subscriber_meta('subscriber_notes', $subscriber_notes, $user_id);
 		}
 
-		if (isset($_POST['level_id'])) {
+		if ('' !== $posted_level_id) {
 			lp_update_subscriber_meta('level_id', $level_id, $user_id);
 		}
 
@@ -741,8 +745,35 @@ class Leaky_Paywall_Admin_Subscriber
 							<label for="level_id"><?php esc_html_e('Level', 'leaky-paywall'); ?></label>
 							<select name="level_id" id="level_id">
 								<?php
+								$available_level_ids = array_map('strval', wp_list_pluck($levels, 'id'));
+
+								if (!in_array((string) $level_id, $available_level_ids, true)) {
+									/*
+									 * Nothing in the list matches what is stored, either because no
+									 * level_id was ever saved for this subscriber or because the level
+									 * it points at has been deleted. Without an explicit placeholder the
+									 * browser falls back to displaying the first option, which reads as an
+									 * assigned level (and on publishers whose first level is ID 0, as an
+									 * assigned paid one). Marking it disabled means the select submits
+									 * nothing, so saving any other field on this page cannot quietly
+									 * assign a level as a side effect.
+									 */
+									if (is_numeric($level_id)) {
+										printf(
+											'<option value="" disabled selected>%s</option>',
+											/* translators: %s: the level id currently stored on the subscriber. */
+											esc_html(sprintf(__('Unknown level (ID: %s)', 'leaky-paywall'), $level_id))
+										);
+									} else {
+										printf(
+											'<option value="" disabled selected>%s</option>',
+											esc_html__('No level assigned', 'leaky-paywall')
+										);
+									}
+								}
+
 								foreach ($levels as $level) {
-									echo '<option ' . selected($level_id, $level['id']) . ' value="' . esc_attr($level['id']) . '">ID: ' . esc_html($level['id']) . ' - ' .  esc_html($level['label']) . '</option>';
+									echo '<option ' . selected($level_id, $level['id'], false) . ' value="' . esc_attr($level['id']) . '">ID: ' . esc_html($level['id']) . ' - ' .  esc_html($level['label']) . '</option>';
 								}
 								?>
 							</select>

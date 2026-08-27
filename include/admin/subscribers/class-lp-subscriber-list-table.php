@@ -198,12 +198,33 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 		if ( isset( $_GET['filter-level'] ) && isset( $_GET['user-type'] ) && 'lpsubs' === $_GET['user-type'] ) {
 			$level = sanitize_text_field( wp_unslash( $_GET['filter-level'] ) );
 			if ( 'undefined' === $level ) {
-				// Find subscribers whose level_id is empty or doesn't match any valid level.
+				// "No level" has two shapes: a level_id row holding a value that
+				// matches no configured level, and no level_id row at all (records
+				// created by an import, a gateway webhook, or a migration that never
+				// wrote one). The base clause above requires that key to exist, which
+				// would hide the second shape from the very filter meant to surface
+				// it, so for this filter only the "is an LP subscriber" test moves to
+				// payment_status. Index 0 is the base clause built above; replacing it
+				// in place preserves any search clauses appended after it. Every other
+				// view still defines an LP subscriber as "has a level_id".
 				$valid_level_ids = array_map( 'strval', array_keys( leaky_paywall_get_levels() ) );
+
+				$args['meta_query'][0] = array(
+					'key'     => '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site,
+					'compare' => 'EXISTS',
+				);
+
 				$args['meta_query'][] = array(
-					'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
-					'value'   => $valid_level_ids,
-					'compare' => 'NOT IN',
+					'relation' => 'OR',
+					array(
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => '_issuem_leaky_paywall_' . $mode . '_level_id' . $site,
+						'value'   => $valid_level_ids,
+						'compare' => 'NOT IN',
+					),
 				);
 			} elseif ( 'all' !== $level ) {
 				$args['meta_query'][] = array(
@@ -355,7 +376,17 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 				$level_id = apply_filters( 'get_leaky_paywall_users_level_id', $level_id, $user, $mode, $site );
 				$level_id = apply_filters( 'get_leaky_paywall_subscription_level_level_id', $level_id );
 
-				if ( false === $level_id || empty( $settings['levels'][ $level_id ]['label'] ) ) {
+				// No level stored at all. The old output printed "Undefined" above a
+				// bare "ID:" with nothing after it, which reads as a rendering glitch
+				// rather than as the finding it is.
+				if ( false === $level_id || null === $level_id || '' === $level_id ) {
+					return esc_html__( 'No level assigned', 'leaky-paywall' );
+				}
+
+				// A stored id that matches no level, e.g. one that was deleted. Note
+				// that level ID 0 is a real level on some publishers, so the check
+				// below must stay a label lookup and never a falsy test on $level_id.
+				if ( empty( $settings['levels'][ $level_id ]['label'] ) ) {
 					$level_name = __( 'Undefined', 'leaky-paywall' );
 				} else {
 					$level_name = stripslashes( $settings['levels'][ $level_id ]['label'] );

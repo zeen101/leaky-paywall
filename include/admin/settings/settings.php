@@ -2215,11 +2215,14 @@ The %sitename% Team';
 					if (in_array($key, $textarea_fields)) {
 						$levels[$i][$key] = wp_kses_post(wp_unslash($value));
 					}
-
-					if ('post_types' == $key) {
-						$levels[$i][$key] = $this->sanitize_level_post_types($value);
-					}
 				}
+
+				// Always write post_types, even when the level was saved with every
+				// access row removed. Omitting the key leaves the level unreadable to
+				// the access resolver instead of simply granting nothing.
+				$levels[$i]['post_types'] = isset($level['post_types']) && is_array($level['post_types'])
+					? $this->sanitize_level_post_types($level['post_types'])
+					: array();
 			}
 
 			return $levels;
@@ -2245,11 +2248,14 @@ The %sitename% Team';
 				if (in_array($key, $textarea_fields)) {
 					$level[$key] = wp_kses_post(wp_unslash($value));
 				}
-
-				if ('post_types' == $key) {
-					$level[$key] = $this->sanitize_level_post_types($value);
-				}
 			}
+
+			// Always write post_types, even when the level was saved with every
+			// access row removed. Omitting the key leaves the level unreadable to
+			// the access resolver instead of simply granting nothing.
+			$level['post_types'] = isset($level['post_types']) && is_array($level['post_types'])
+				? $this->sanitize_level_post_types($level['post_types'])
+				: array();
 
 			return $level;
 		}

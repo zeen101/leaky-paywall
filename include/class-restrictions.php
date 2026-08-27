@@ -46,6 +46,17 @@ class Leaky_Paywall_Restrictions {
 	private $nag_type = 'subscribe';
 
 	/**
+	 * Whether the restricted-content action has already fired this request.
+	 *
+	 * get_subscribe_nag() runs as a the_content filter, which a theme can
+	 * invoke more than once per request. The nag is only shown once, so the
+	 * action and the impression record fire once too.
+	 *
+	 * @var bool
+	 */
+	private $nag_rendered = false;
+
+	/**
 	 * Constructor
 	 *
 	 * @param integer $post_id The post id.
@@ -71,9 +82,10 @@ class Leaky_Paywall_Restrictions {
 			return;
 		}
 
+		// The action fires from get_subscribe_nag() once the nag has actually
+		// rendered, so listeners receive the nag type that was shown rather
+		// than the default this property still holds.
 		$this->display_subscribe_nag();
-
-		do_action( 'leaky_paywall_is_restricted_content', $this->post_id, $this->nag_type );
 	}
 
 	/**
@@ -129,7 +141,6 @@ class Leaky_Paywall_Restrictions {
 		}
 
 		echo json_encode( $this->get_subscribe_nag() );
-		do_action( 'leaky_paywall_is_restricted_content', $this->post_id, $this->nag_type );
 		exit();
 	}
 
@@ -290,6 +301,12 @@ class Leaky_Paywall_Restrictions {
 
 		foreach ( $level_ids as $level_id ) {
 
+			// A level with no saved access rules grants nothing, so skip it rather than
+			// reading a key that may not exist. Matches Leaky_Paywall_REST_Restrictions.
+			if ( ! isset( $settings['levels'][ $level_id ]['post_types'] ) || ! is_array( $settings['levels'][ $level_id ]['post_types'] ) ) {
+				continue;
+			}
+
 			$access_rules = $settings['levels'][ $level_id ]['post_types'];
 
 			// Pre-scan: does a taxonomy-specific rule on this level block this content?
@@ -369,7 +386,7 @@ class Leaky_Paywall_Restrictions {
 							$number_already_viewed = isset($viewed_content[$content_post_type]) ? $this->get_number_viewed_by_term($access_rule['taxonomy']) : 0;
 
 							// max views reached so block the content.
-							if (!empty($viewed_content) && $number_already_viewed >= $allowed_value) {
+							if ($number_already_viewed >= $allowed_value) {
 								$allows_access = false;
 							} else {
 								$this->update_content_viewed_by_user();
@@ -383,29 +400,42 @@ class Leaky_Paywall_Restrictions {
 					if ( 'limited' == $access_rule['allowed'] && 'all' == $access_rule['taxonomy'] && $content_post_type == $access_rule['post_type'] ) {
 
 						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', intval( $access_rule['allowed_value'] ), $level_id, $access_rule, $this->post_id );
-						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 
-						// max views reached so block the content.
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+						// 0 means no access to this post type — block immediately, whether or
+						// not the visitor is carrying a view counter.
+						if ( $allowed_value <= 0 ) {
 							$allows_access = false;
 						} else {
-							$this->update_content_viewed_by_user();
-							$allows_access = true;
+							$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
+
+							// max views reached so block the content.
+							if ( $number_already_viewed >= $allowed_value ) {
+								$allows_access = false;
+							} else {
+								$this->update_content_viewed_by_user();
+								$allows_access = true;
+							}
 						}
 					}
 
 					if ( 'limited' == $access_rule['allowed'] && $access_rule['taxonomy'] == $restriction['taxonomy'] && $content_post_type == $access_rule['post_type'] && $this->content_taxonomy_matches( $restriction['taxonomy'] ) ) {
 
 						$allowed_value = apply_filters( 'leaky_paywall_meter_allowed_value', intval( $access_rule['allowed_value'] ), $level_id, $access_rule, $this->post_id );
-						// this only needs to calculate for this term.
-						$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
 
-						// max views reached so block the content.
-						if ( ! empty( $viewed_content ) && $number_already_viewed >= $allowed_value ) {
+						// 0 means no access to this taxonomy — block immediately.
+						if ( $allowed_value <= 0 ) {
 							$allows_access = false;
 						} else {
-							$this->update_content_viewed_by_user();
-							$allows_access = true;
+							// this only needs to calculate for this term.
+							$number_already_viewed = isset( $viewed_content[ $content_post_type ] ) ? $this->get_number_viewed_by_term( $restriction['taxonomy'] ) : 0;
+
+							// max views reached so block the content.
+							if ( $number_already_viewed >= $allowed_value ) {
+								$allows_access = false;
+							} else {
+								$this->update_content_viewed_by_user();
+								$allows_access = true;
+							}
 						}
 					}
 
@@ -435,6 +465,10 @@ class Leaky_Paywall_Restrictions {
 	 * @return bool True if a taxonomy-specific rule blocks access.
 	 */
 	private function has_taxonomy_specific_block( $access_rules, $content_post_type, $viewed_content ) {
+
+		if ( ! is_array( $access_rules ) ) {
+			return false;
+		}
 
 		foreach ( $access_rules as $rule ) {
 
@@ -635,10 +669,26 @@ class Leaky_Paywall_Restrictions {
 		$message     = $this->the_content_paywall_message();
 		$new_content = $this->get_nag_excerpt( $content ) . $message;
 
-		// Record the nag impression (skip for REST content filter — the REST
-		// restrictions endpoint records its own impression).
-		if ( $this->post_id && ! $this->is_rest ) {
+		// Record the impression and notify listeners now that
+		// the_content_paywall_message() has resolved $this->nag_type and the
+		// leaky_paywall_nag_type filter has been applied.
+		//
+		// Skipped for the REST content filter — the REST restrictions endpoint
+		// records its own impression and fires its own action.
+		if ( $this->post_id && ! $this->is_rest && ! $this->nag_rendered ) {
+			$this->nag_rendered = true;
+
 			LP_Nag_Impressions::record( $this->post_id, $this->nag_type );
+
+			/**
+			 * Fires when restricted content has been replaced with a paywall nag.
+			 *
+			 * @since 4.0.0
+			 *
+			 * @param int    $post_id  The restricted post id.
+			 * @param string $nag_type The nag shown: subscribe, upgrade, or targeted:{post_id}.
+			 */
+			do_action( 'leaky_paywall_is_restricted_content', $this->post_id, $this->nag_type );
 		}
 
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content, $this->post_id );
