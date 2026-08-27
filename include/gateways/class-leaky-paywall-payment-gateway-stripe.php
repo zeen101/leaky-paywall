@@ -426,7 +426,54 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				} elseif ('past_due' == $stripe_object->status) {
 					leaky_paywall_set_subscriber_status( $user->ID, 'past_due', 'stripe_webhook' );
 				} elseif ('incomplete_expired' == $stripe_object->status) {
-					leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
+					// An incomplete_expired subscription never collected a payment, so it
+					// must never be the reason a subscriber loses access.
+					//
+					// This handler resolves the user from the Stripe *customer*, not the
+					// subscription, so a visitor who submits the registration form twice
+					// ends up with two subscriptions on one customer: the abandoned
+					// attempt and the one they actually paid for. Stripe expires the
+					// abandoned one roughly a day later, and that event used to deactivate
+					// a fully paid-up subscriber, whose card had been charged and who then
+					// found themselves locked out with no failure anywhere to point at.
+					//
+					// So only deactivate when this customer has no other live subscription.
+					// If Stripe cannot be reached, leave the status alone: leaving an
+					// abandoned stub marked active is far cheaper than cutting off someone
+					// who paid.
+					$has_live_subscription = false;
+
+					try {
+						$customer_subscriptions = $stripe->subscriptions->all(
+							array(
+								'customer' => $stripe_object->customer,
+								'status'   => 'all',
+								'limit'    => 100,
+							),
+							leaky_paywall_get_stripe_connect_params()
+						);
+
+						foreach ( $customer_subscriptions->data as $customer_subscription ) {
+							// The subscription this event is about is the dead one.
+							if ( $customer_subscription->id === $stripe_object->id ) {
+								continue;
+							}
+
+							if ( in_array( $customer_subscription->status, array( 'active', 'trialing', 'past_due' ), true ) ) {
+								$has_live_subscription = true;
+								break;
+							}
+						}
+					} catch ( \Throwable $th ) {
+						leaky_paywall_log( $th->getMessage(), 'lp stripe - error listing subscriptions before incomplete_expired deactivate' );
+						$has_live_subscription = true;
+					}
+
+					if ( $has_live_subscription ) {
+						leaky_paywall_log( $stripe_object->id, 'stripe webhook - incomplete_expired ignored, customer has another live subscription' );
+					} else {
+						leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
+					}
 				} elseif ( ! empty( $stripe_object->cancel_at_period_end ) ) {
 					// cancel_at_period_end: user keeps access until period ends.
 					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_webhook' );
