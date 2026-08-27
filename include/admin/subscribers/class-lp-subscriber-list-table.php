@@ -169,26 +169,13 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 				// payment_gateway (never useful — filterable via the gateway
 				// dropdown) and description (internal-only field, not
 				// surfaced anywhere admins would search by it).
-				$args['meta_query'][] = array(
-					'relation' => 'OR',
-					array(
-						'key'     => '_leaky_paywall_subscriber_notes',
-						'value'   => $search_term,
-						'compare' => 'LIKE',
-					),
-					array(
-						'key'     => 'first_name',
-						'value'   => $search_term,
-						'compare' => 'LIKE',
-					),
-					array(
-						'key'     => 'last_name',
-						'value'   => $search_term,
-						'compare' => 'LIKE',
-					),
-				);
-
-				// Also match name/email in the users table via pre_user_query filter.
+				//
+				// Both halves of this search (user table and meta) are built in
+				// modify_search_query below rather than here. They have to OR with
+				// each other but AND with the base subscriber clause and the
+				// filters, and a meta_query clause cannot express that: everything
+				// in meta_query shares one AND chain that the user-table half is
+				// not part of.
 				$args['lp_search_term'] = $search_term;
 				add_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
 			}
@@ -321,7 +308,19 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Modify WP_User_Query to OR user table columns (name, email) with meta conditions.
+	 * Apply the free-text search: user table columns OR'd with subscriber meta.
+	 *
+	 * Added as its own AND'ed group rather than merged into the meta_query.
+	 * The previous version spliced the user-table conditions onto the tail of
+	 * the meta_query's parenthesised group with a regex, which landed the OR at
+	 * the top of that group's AND chain. SQL precedence then read it as
+	 * ( base AND search AND filters ) OR ( name match ), so any row matching on
+	 * name, login or email skipped the "is an LP subscriber" clause and every
+	 * active filter: a free-text search in the Subscribers view returned users
+	 * with no Leaky Paywall record at all, and returned subscribers on other
+	 * levels while a level filter was set. In the All WordPress Users view,
+	 * where meta_query is unset and there is no group for the regex to match,
+	 * the search was dropped silently and every user came back.
 	 *
 	 * @param WP_User_Query $query The user query object.
 	 */
@@ -332,26 +331,32 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			return;
 		}
 
-		$term = $query->query_vars['lp_search_term'];
-		$like = '%' . $wpdb->esc_like( $term ) . '%';
+		remove_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
 
-		$user_search = $wpdb->prepare(
-			"({$wpdb->users}.user_login LIKE %s OR {$wpdb->users}.user_email LIKE %s OR {$wpdb->users}.display_name LIKE %s)",
+		$like = '%' . $wpdb->esc_like( $query->query_vars['lp_search_term'] ) . '%';
+
+		// EXISTS rather than a join, so the meta half of the search cannot
+		// multiply rows or interact with the joins meta_query has already built
+		// for the base clause and the filters.
+		// phpcs:disable WordPressVIPMinimum.Variables.RestrictedVariables.user_meta__wpdb__users -- this is the subscriber list table; searching wp_users by name is its purpose.
+		$query->query_where .= $wpdb->prepare(
+			" AND (
+				{$wpdb->users}.user_login LIKE %s
+				OR {$wpdb->users}.user_email LIKE %s
+				OR {$wpdb->users}.display_name LIKE %s
+				OR EXISTS (
+					SELECT 1 FROM {$wpdb->usermeta} lp_search
+					WHERE lp_search.user_id = {$wpdb->users}.ID
+					AND lp_search.meta_key IN ( 'first_name', 'last_name', '_leaky_paywall_subscriber_notes' )
+					AND lp_search.meta_value LIKE %s
+				)
+			)",
+			$like,
 			$like,
 			$like,
 			$like
 		);
-
-		// Replace the closing meta paren to OR in the user table search.
-		// The meta_query generates: ... AND ( (meta conditions) ) ...
-		// We want: ... AND ( (meta conditions) OR (user table conditions) ) ...
-		$query->query_where = preg_replace(
-			'/(\)\s*)\)\s*$/',
-			"$1 OR {$user_search} ) ",
-			$query->query_where
-		);
-
-		remove_action( 'pre_user_query', array( $this, 'modify_search_query' ) );
+		// phpcs:enable WordPressVIPMinimum.Variables.RestrictedVariables.user_meta__wpdb__users
 	}
 
 	/**
