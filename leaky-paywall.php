@@ -130,6 +130,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/class-rest-restrictions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-rest-subscribers.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
+		include LEAKY_PAYWALL_PATH . 'include/log-protection.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-nag-impressions.php';
 		include LEAKY_PAYWALL_PATH . 'include/incomplete-user-cleanup.php';

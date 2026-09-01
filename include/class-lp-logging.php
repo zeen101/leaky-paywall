@@ -20,11 +20,7 @@ class LP_Logging {
 	 *
 	 * @since 4.16.14
 	 */
-	public function __construct() {
-
-		add_action( 'sanitize_comment_cookies', array( $this, 'setup_log_file' ), 0 );
-
-	}
+	public function __construct() {}
 
 	/**
 	 * Sets up the log file if it is writable
@@ -39,11 +35,12 @@ class LP_Logging {
 			return;
 		}
 
-		$upload_dir       = wp_get_upload_dir();
-		$this->filename   = wp_hash( home_url( '/' ) ) . '-lp-debug.log';
-		$this->file       = trailingslashit( $upload_dir['basedir'] ) . $this->filename;
+		$dir = leaky_paywall_get_log_dir( false );
 
-		if ( ! is_writeable( $upload_dir['basedir'] ) ) {
+		$this->filename = wp_hash( home_url( '/' ) . leaky_paywall_get_log_key() ) . '-lp-debug.log';
+		$this->file     = $dir . $this->filename;
+
+		if ( is_dir( $dir ) && ! wp_is_writable( $dir ) ) {
 			$this->is_writable = false;
 		}
 	}
@@ -113,6 +110,8 @@ class LP_Logging {
 			return;
 		}
 
+		leaky_paywall_get_log_dir();
+
 		// Append. Reading the whole log back in on every entry made each write
 		// cost the size of the file, twice.
 		@file_put_contents( $this->file, $message, FILE_APPEND );
@@ -125,6 +124,8 @@ class LP_Logging {
 	 * @return void
 	 */
 	public function clear_log_file() {
+		$this->setup_log_file();
+
 		@unlink( $this->file );
 
 		if ( file_exists( $this->file ) ) {
@@ -159,6 +160,66 @@ class LP_Logging {
 	}
 
 	/**
+	 * Describe the current log file for the Tools screen.
+	 *
+	 * @since 5.1.8
+	 * @return array
+	 */
+	public function get_log_file_stats() {
+
+		$stats = array(
+			'exists'   => false,
+			'size'     => 0,
+			'entries'  => 0,
+			'modified' => 0,
+		);
+
+		$this->setup_log_file();
+
+		if ( ! $this->file || ! file_exists( $this->file ) ) {
+			return $stats;
+		}
+
+		$stats['exists']   = true;
+		$stats['size']     = (int) filesize( $this->file );
+		$stats['modified'] = (int) filemtime( $this->file );
+		$stats['entries']  = $this->count_entries();
+
+		return $stats;
+	}
+
+	/**
+	 * Count the entries in the log without reading it all into memory.
+	 *
+	 * @since 5.1.8
+	 * @return int
+	 */
+	private function count_entries() {
+
+		$handle = @fopen( $this->file, 'rb' );
+
+		if ( ! $handle ) {
+			return 0;
+		}
+
+		$count = 0;
+
+		while ( ! feof( $handle ) ) {
+			$chunk = fread( $handle, 8192 );
+
+			if ( false === $chunk ) {
+				break;
+			}
+
+			$count += substr_count( $chunk, "\n" );
+		}
+
+		fclose( $handle );
+
+		return $count;
+	}
+
+	/**
 	 * Return the location of the log file that LP_Logging will use.
 	 *
 	 * Note: Do not use this file to write to the logs, please use the `leaky_paywall_log` function to do so.
@@ -168,6 +229,8 @@ class LP_Logging {
 	 * @return string
 	 */
 	public function get_log_file_path() {
+		$this->setup_log_file();
+
 		return $this->file;
 	}
 

@@ -350,6 +350,9 @@ class Leaky_Paywall_Tools {
 						<p class="description">
 							<?php esc_html_e( 'Turn this on when you are reproducing a problem or our support team asks for it, then turn it off again. Detailed logging records subscriber email addresses and full payment gateway responses, so the log should not be left running. Errors are always recorded.', 'leaky-paywall' ); ?>
 						</p>
+						<p class="description">
+							<?php esc_html_e( 'The log is kept in a protected folder inside your uploads directory and is given a new, unguessable name each time you turn detailed logging on. If your server ignores .htaccess rules, as nginx does, define LEAKY_PAYWALL_LOG_DIR in wp-config.php to store the log outside your website folder instead.', 'leaky-paywall' ); ?>
+						</p>
 						<?php if ( defined( 'LEAKY_PAYWALL_DEBUG' ) ) { ?>
 							<p class="description">
 								<?php esc_html_e( 'This setting is currently being overridden by the LEAKY_PAYWALL_DEBUG constant in your site configuration.', 'leaky-paywall' ); ?>
@@ -374,8 +377,28 @@ class Leaky_Paywall_Tools {
 			</p>
 		</form>
 
-		<p><?php esc_html_e( 'Log file', 'leaky-paywall' ); ?>: <code><?php echo esc_html( $lp_logs->get_log_file_path() ); ?></code></p>
 		<?php
+		$stats = $lp_logs->get_log_file_stats();
+
+		if ( ! $stats['exists'] || ! $stats['entries'] ) {
+			?>
+			<p><?php esc_html_e( 'The log is empty.', 'leaky-paywall' ); ?></p>
+			<?php
+		} else {
+			?>
+			<p>
+				<?php
+				printf(
+					/* translators: 1: number of log entries, 2: file size, 3: human readable time, e.g. "5 mins" */
+					esc_html( _n( '%1$s entry, %2$s, last written %3$s ago.', '%1$s entries, %2$s, last written %3$s ago.', $stats['entries'], 'leaky-paywall' ) ),
+					esc_html( number_format_i18n( $stats['entries'] ) ),
+					esc_html( size_format( $stats['size'] ) ),
+					esc_html( human_time_diff( $stats['modified'] ) )
+				);
+				?>
+			</p>
+			<?php
+		}
 	}
 
 }
@@ -399,9 +422,16 @@ function leaky_paywall_tools_handle_debug_log() {
 
 	if ( isset( $_POST['lp-save-debug-log-settings'] ) ) {
 
-		$settings               = get_leaky_paywall_settings();
-		$settings['debug_mode'] = isset( $_POST['lp_debug_mode'] ) ? 'on' : 'off';
+		$settings   = get_leaky_paywall_settings();
+		$was_on     = isset( $settings['debug_mode'] ) && 'on' === $settings['debug_mode'];
+		$turning_on = isset( $_POST['lp_debug_mode'] );
+
+		$settings['debug_mode'] = $turning_on ? 'on' : 'off';
 		update_leaky_paywall_settings( $settings );
+
+		if ( $turning_on && ! $was_on ) {
+			leaky_paywall_rotate_log_key();
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-tools&tab=debug_log&lp-settings-updated=1' ) );
 		exit;
