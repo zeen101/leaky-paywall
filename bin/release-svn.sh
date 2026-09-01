@@ -59,10 +59,34 @@ svn status | awk '/^!/ {print $2}' | while IFS= read -r f; do
 done
 
 # --- 3. Tag ------------------------------------------------------------------
+# A tag directory that already exists means one of two very different things,
+# and treating them the same nearly shipped a tag that did not match trunk:
+#
+#   Schedule: add     -> staged but NOT committed, from an earlier run of this
+#                        script in the same release. It predates the trunk sync
+#                        above, so it is stale. Discard and re-copy.
+#   Schedule: normal  -> already published to WordPress.org. Never rewrite it.
+#
+TAG_SCHEDULE="$(svn info "tags/$VERSION" 2>/dev/null | awk -F': ' '/^Schedule:/ {print $2}' || true)"
+
+if [[ "$TAG_SCHEDULE" == "normal" ]]; then
+	echo "tags/$VERSION is already committed to WordPress.org." >&2
+	echo "Refusing to rewrite a published tag. Release a new version instead." >&2
+	exit 1
+fi
+
 if [[ -d "tags/$VERSION" ]]; then
-	echo "tags/$VERSION already exists — leaving it as-is." >&2
-else
-	svn cp trunk "tags/$VERSION"
+	echo "tags/$VERSION was staged by an earlier run and predates this sync. Refreshing it."
+	svn revert -R "tags/$VERSION" -q 2>/dev/null || true
+	rm -rf "tags/$VERSION"
+fi
+
+svn cp trunk "tags/$VERSION"
+
+# The tag must be byte-identical to what we just staged in trunk.
+if ! diff -rq --exclude=.svn trunk "tags/$VERSION" >/dev/null 2>&1; then
+	echo "tags/$VERSION does not match trunk after copy. Aborting." >&2
+	exit 1
 fi
 
 # --- Done: leave the commit to a human --------------------------------------
