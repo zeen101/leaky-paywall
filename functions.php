@@ -4654,12 +4654,15 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		if (in_array('subscriber', $user->roles, true)) {
 
 			$stripe_cancel_note = '';
+			$cancelled_subs     = array();
+			$checked_stripe     = false;
 			$mode               = leaky_paywall_get_current_mode();
 			$site               = leaky_paywall_get_current_site();
 			$subscriber_id      = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
 			if ( $subscriber_id && strpos( $subscriber_id, 'cus_' ) === 0 ) {
-				$stripe = leaky_paywall_initialize_stripe_api();
+				$checked_stripe = true;
+				$stripe         = leaky_paywall_initialize_stripe_api();
 				try {
 					$subs = $stripe->subscriptions->all(
 						array(
@@ -4674,10 +4677,11 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 							continue;
 						}
 						$stripe->subscriptions->cancel( $sub->id, array(), leaky_paywall_get_stripe_connect_params() );
+						$cancelled_subs[] = $sub->id;
 						leaky_paywall_log( $user->user_email, 'Stripe subscription ' . $sub->id . ' cancelled on account deletion' );
 					}
 				} catch ( \Stripe\Exception\ApiErrorException $e ) {
-					$stripe_cancel_note = '<p><strong>Note:</strong> An error occurred while cancelling the Stripe subscription: ' . esc_html( $e->getMessage() ) . '</p>';
+					$stripe_cancel_note .= '<p><strong>Note:</strong> An error occurred while cancelling the Stripe subscription: ' . esc_html( $e->getMessage() ) . '</p>';
 					leaky_paywall_log_error( $user->user_email . ' (user ' . $user->ID . ')', 'Stripe cancellation error on account deletion: ' . $e->getMessage() );
 				}
 			}
@@ -4699,6 +4703,23 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			$headers[] = 'From: ' . stripslashes_deep(html_entity_decode($from_name, ENT_COMPAT, 'UTF-8')) . " <$from_email>";
 			$headers[] = 'Reply-To: ' . $from_email;
 			$headers[] = 'Content-Type: text/html; charset=UTF-8';
+
+			if ( $cancelled_subs ) {
+				$stripe_cancel_note = '<p>' . esc_html(
+					sprintf(
+						/* translators: %s: comma-separated list of Stripe subscription IDs */
+						_n(
+							'Stripe subscription %s was cancelled.',
+							'Stripe subscriptions %s were cancelled.',
+							count( $cancelled_subs ),
+							'leaky-paywall'
+						),
+						implode( ', ', $cancelled_subs )
+					)
+				) . '</p>' . $stripe_cancel_note;
+			} elseif ( $checked_stripe && ! $stripe_cancel_note ) {
+				$stripe_cancel_note = '<p>' . esc_html__( 'They had no active Stripe subscription to cancel.', 'leaky-paywall' ) . '</p>';
+			}
 
 			$admin_message = '<p>The user ' . $user->user_email . ' has deleted their account.</p>' . $stripe_cancel_note;
 
