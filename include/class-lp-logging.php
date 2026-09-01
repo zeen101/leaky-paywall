@@ -52,7 +52,14 @@ class LP_Logging {
 	 * @return string
 	 */
 	public function get_file_contents() {
-		return $this->get_file();
+
+		$contents = '';
+
+		foreach ( $this->get_log_files() as $file ) {
+			$contents .= (string) @file_get_contents( $file );
+		}
+
+		return $contents;
 	}
 
 	/**
@@ -134,11 +141,9 @@ class LP_Logging {
 	public function clear_log_file() {
 		$this->setup_log_file();
 
-		$rotated = leaky_paywall_get_rotated_log_path();
-
-		if ( $rotated && file_exists( $rotated ) ) {
-			@unlink( $rotated );
-		}
+		// Everything in the directory, not just the paths the current key
+		// computes, so Clear removes exactly what the screen reported.
+		leaky_paywall_delete_log_files();
 
 		delete_option( 'leaky_paywall_log_started' );
 
@@ -227,16 +232,23 @@ class LP_Logging {
 			return array();
 		}
 
-		$files   = array();
-		$rotated = leaky_paywall_get_rotated_log_path();
+		// Read the directory rather than only the two paths the current key
+		// computes. A log file can outlive the key that named it (a domain
+		// move, a cleared option), and a file the admin screen cannot see is a
+		// file nobody knows is holding subscriber data.
+		$files = glob( leaky_paywall_get_log_dir( false ) . '*-lp-debug*.log' );
 
-		if ( $rotated && file_exists( $rotated ) ) {
-			$files[] = $rotated;
+		if ( ! $files ) {
+			return array();
 		}
 
-		if ( file_exists( $this->file ) ) {
-			$files[] = $this->file;
-		}
+		// Oldest first, so a download reads in chronological order.
+		usort(
+			$files,
+			function ( $a, $b ) {
+				return filemtime( $a ) <=> filemtime( $b );
+			}
+		);
 
 		return $files;
 	}

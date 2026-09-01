@@ -159,9 +159,21 @@ function leaky_paywall_get_log_key() {
 
 	$key = get_option( 'leaky_paywall_log_key' );
 
-	if ( ! $key ) {
-		$key = wp_generate_password( 20, false );
-		update_option( 'leaky_paywall_log_key', $key, false );
+	if ( $key ) {
+		return $key;
+	}
+
+	$key = wp_generate_password( 20, false );
+
+	// add_option() is an INSERT that fails if the row already exists, so the
+	// first request to get here wins and every other concurrent request adopts
+	// the stored key instead of writing to a log file of its own.
+	if ( ! add_option( 'leaky_paywall_log_key', $key, '', false ) ) {
+		$stored = get_option( 'leaky_paywall_log_key' );
+
+		if ( $stored ) {
+			return $stored;
+		}
 	}
 
 	return $key;

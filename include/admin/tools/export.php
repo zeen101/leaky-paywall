@@ -53,6 +53,8 @@ class Leaky_Paywall_Export {
 			if ( ! self::token_is_valid( $token ) ) {
 				wp_send_json( array( 'error' => __( 'Your export session has expired. Please start the export again.', 'leaky-paywall' ) ) );
 			}
+
+			self::touch_token( $token );
 		}
 
 		$users = $this->reporting_tool_query( $fields, $step );
@@ -169,9 +171,24 @@ class Leaky_Paywall_Export {
 
 		$token = bin2hex( random_bytes( 16 ) );
 
-		set_transient( 'leaky_paywall_export_' . get_current_user_id(), $token, HOUR_IN_SECONDS );
+		self::touch_token( $token );
 
 		return $token;
+	}
+
+	/**
+	 * Extend the life of an in-flight export token.
+	 *
+	 * Called on every batch, so the window is a gap-between-steps timeout rather
+	 * than a budget for the whole export. A large subscriber list runs to many
+	 * batches and can take well over an hour; expiring part way through would
+	 * strand it with no way to resume.
+	 *
+	 * @param string $token The export token.
+	 * @return void
+	 */
+	private static function touch_token( $token ) {
+		set_transient( 'leaky_paywall_export_' . get_current_user_id(), $token, HOUR_IN_SECONDS );
 	}
 
 	/**

@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.1.7
+Stable tag: 5.1.8
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,15 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.8 =
+* Security: detailed debug logging is now off by default and can be turned on from Leaky Paywall > Tools > Debug Log. Errors are always recorded. The log is stored in a protected folder, is given a new unguessable name each time detailed logging is enabled, and is capped at 5 MB or 30 days. Existing log files created by earlier versions are deleted on update. Define LEAKY_PAYWALL_LOG_DIR in wp-config.php to store the log outside your website folder.
+* Security: subscriber exports are no longer saved to a publicly readable location. Exports are delivered as a download only a logged-in administrator can request, are removed once downloaded, and any export files left behind by earlier versions are deleted on update.
+* Added: the Import tool can now delete the uploaded CSV from your Media Library when the import finishes, so a file containing subscriber data is not left in place. Enabled by default.
+* Improved: the email you receive when a subscriber deletes their own account now lists the Stripe subscriptions that were cancelled, or confirms there were none.
+* Improved: admin notices now warn when an access configuration would silently lock subscribers out, and a new level no longer starts with an access rule the resolver does not honour.
+* Fixed: searching subscribers now matches on both account details and subscriber data instead of losing one half of the search when a filter is applied.
+* Fixed: an abandoned Stripe registration no longer removes access from a subscriber who signed up twice on the same Stripe customer.
 
 = 5.1.7 =
 * Added: the category and tag exemption setting now supports custom taxonomies, not just the built-in categories and tags.
