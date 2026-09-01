@@ -1642,6 +1642,7 @@ The %sitename% Team';
 				'remove_username_field'                 => 'off',
 				'add_expiration_dates'   	            => 'on',
 				'enable_rest_api'                  		=> 'on',
+				'debug_mode'                            => 'off',
 				'site_name'                             => get_option('blogname'), /* Site Specific */
 				'from_name'                             => get_option('blogname'), /* Site Specific */
 				'from_email'                            => get_option('admin_email'), /* Site Specific */

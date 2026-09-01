@@ -35,6 +35,10 @@ class LP_Logging {
 	public function setup_log_file()
 	{
 
+		if ( ! empty( $this->file ) ) {
+			return;
+		}
+
 		$upload_dir       = wp_get_upload_dir();
 		$this->filename   = wp_hash( home_url( '/' ) ) . '-lp-debug.log';
 		$this->file       = trailingslashit( $upload_dir['basedir'] ) . $this->filename;
@@ -61,7 +65,7 @@ class LP_Logging {
 	 * @return void
 	 */
 	public function log_to_file( $message = '' ) {
-		$message = date( 'Y-n-d H:i:s' ) . ' - ' . $message . "\r\n";
+		$message = gmdate( 'Y-m-d H:i:s' ) . ' - ' . $message . "\r\n";
 		$this->write_to_log( $message );
 
 	}
@@ -76,6 +80,12 @@ class LP_Logging {
 
 		$file = '';
 
+		$this->setup_log_file();
+
+		if ( ! $this->file ) {
+			return $file;
+		}
+
 		if ( @file_exists( $this->file ) ) {
 
 			if ( ! is_writeable( $this->file ) ) {
@@ -83,11 +93,6 @@ class LP_Logging {
 			}
 
 			$file = @file_get_contents( $this->file );
-
-		} else {
-
-			@file_put_contents( $this->file, '' );
-			@chmod( $this->file, 0664 );
 
 		}
 
@@ -102,9 +107,15 @@ class LP_Logging {
 	 */
 	protected function write_to_log( $message = '' ) {
 
-		$file = $this->get_file();
-		$file .= $message;
-		@file_put_contents( $this->file, $file );
+		$this->setup_log_file();
+
+		if ( ! $this->file ) {
+			return;
+		}
+
+		// Append. Reading the whole log back in on every entry made each write
+		// cost the size of the file, twice.
+		@file_put_contents( $this->file, $message, FILE_APPEND );
 	}
 
 	/**
@@ -170,7 +181,9 @@ $GLOBALS['lp_logs'] = new LP_Logging();
  *
  * @since 4.16.14
  *
- * @param string $message
+ * @param string $message The message to log.
+ * @param bool   $force   Write the message even when debug mode is off. Used
+ *                        for errors, which are always recorded.
  * @global $lp_logs LP Logs Object
  * @return void
  */
@@ -193,11 +206,26 @@ function leaky_paywall_debug_log( $message = '', $force = false ) {
 /**
  * Check if debug logging is allowed
  *
+ * Off unless a site turns it on. The LEAKY_PAYWALL_DEBUG constant overrides the
+ * setting, and the leaky_paywall_is_debug_mode filter overrides both so the
+ * long-standing __return_false snippet keeps working.
+ *
+ * Errors are logged regardless of this setting, via leaky_paywall_log_error().
+ *
  * @since 4.16.14
  * @return boolean
  */
 function leaky_paywall_is_debug_mode() {
 
-	return (bool) apply_filters( 'leaky_paywall_is_debug_mode', true );
+	if ( defined( 'LEAKY_PAYWALL_DEBUG' ) ) {
+		$is_debug_mode = (bool) LEAKY_PAYWALL_DEBUG;
+	} elseif ( function_exists( 'get_leaky_paywall_settings' ) ) {
+		$settings      = get_leaky_paywall_settings();
+		$is_debug_mode = isset( $settings['debug_mode'] ) && 'on' === $settings['debug_mode'];
+	} else {
+		$is_debug_mode = false;
+	}
+
+	return (bool) apply_filters( 'leaky_paywall_is_debug_mode', $is_debug_mode );
 
 }

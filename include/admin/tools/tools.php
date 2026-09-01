@@ -322,16 +322,52 @@ class Leaky_Paywall_Tools {
 
 		global $lp_logs;
 
+		$settings   = get_leaky_paywall_settings();
+		$debug_mode = isset( $settings['debug_mode'] ) && 'on' === $settings['debug_mode'];
+
 		?>
 		<h2><?php esc_html_e( 'Debug Log', 'leaky-paywall' ); ?></h2>
 		<p><?php esc_html_e( 'Use this tool to help debug Leaky Paywall functionality.', 'leaky-paywall' ); ?></p>
 
+		<?php if ( isset( $_GET['lp-settings-updated'] ) ) { ?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'Settings saved.', 'leaky-paywall' ); ?></p>
+			</div>
+		<?php } ?>
+
 		<form id="lp-debug-log" method="post">
 			<input type="hidden" name="lp_action" value="submit_debug_log" />
 			<?php wp_nonce_field( 'lp_debug_log_action', 'lp_debug_log_field' ); ?>
+
+			<table class="form-table">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Detailed Logging', 'leaky-paywall' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="lp_debug_mode" value="on" <?php checked( $debug_mode ); ?> />
+							<?php esc_html_e( 'Record every Leaky Paywall event, not just errors', 'leaky-paywall' ); ?>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Turn this on when you are reproducing a problem or our support team asks for it, then turn it off again. Detailed logging records subscriber email addresses and full payment gateway responses, so the log should not be left running. Errors are always recorded.', 'leaky-paywall' ); ?>
+						</p>
+						<?php if ( defined( 'LEAKY_PAYWALL_DEBUG' ) ) { ?>
+							<p class="description">
+								<?php esc_html_e( 'This setting is currently being overridden by the LEAKY_PAYWALL_DEBUG constant in your site configuration.', 'leaky-paywall' ); ?>
+							</p>
+						<?php } elseif ( has_filter( 'leaky_paywall_is_debug_mode' ) ) { ?>
+							<p class="description">
+								<?php esc_html_e( 'This setting is currently being overridden by a leaky_paywall_is_debug_mode filter added by your theme or another plugin.', 'leaky-paywall' ); ?>
+							</p>
+						<?php } ?>
+					</td>
+				</tr>
+			</table>
+
 			<p class="submit">
 				<?php
-				submit_button( __( 'Download Debug Log File', 'leaky-paywall' ), 'primary', 'lp-download-debug-log', false );
+				submit_button( __( 'Save', 'leaky-paywall' ), 'primary', 'lp-save-debug-log-settings', false );
+				echo '&nbsp;';
+				submit_button( __( 'Download Debug Log File', 'leaky-paywall' ), 'secondary lp-inline-button', 'lp-download-debug-log', false );
 				echo '&nbsp;';
 				submit_button( __( 'Clear Log', 'leaky-paywall' ), 'secondary lp-inline-button', 'lp-clear-debug-log', false );
 				?>
@@ -361,7 +397,16 @@ function leaky_paywall_tools_handle_debug_log() {
 		return;
 	}
 
-	if ( isset( $_POST['lp-download-debug-log'] ) ) {
+	if ( isset( $_POST['lp-save-debug-log-settings'] ) ) {
+
+		$settings               = get_leaky_paywall_settings();
+		$settings['debug_mode'] = isset( $_POST['lp_debug_mode'] ) ? 'on' : 'off';
+		update_leaky_paywall_settings( $settings );
+
+		wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-tools&tab=debug_log&lp-settings-updated=1' ) );
+		exit;
+
+	} elseif ( isset( $_POST['lp-download-debug-log'] ) ) {
 		nocache_headers();
 
 		header( 'Content-Type: text/plain' );

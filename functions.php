@@ -4355,6 +4355,25 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	}
 
 	/**
+	 * Log a Leaky Paywall error to a file
+	 *
+	 * Errors are written whether or not debug mode is on, so a publisher who has
+	 * never enabled logging still has something to send us when checkout or a
+	 * webhook fails. Use leaky_paywall_log() for anything on a success path.
+	 *
+	 * @param array|object $data the data to store.
+	 * @param string       $event name of event.
+	 *
+	 * @since 5.1.8
+	 * @return void
+	 */
+	function leaky_paywall_log_error($data, $event)
+	{
+
+		leaky_paywall_debug_log('ERROR | ' . $event . ' | ' . wp_json_encode($data), true);
+	}
+
+	/**
 	 * Show Leaky Paywall profile fields on user
 	 *
 	 * @param object $user The user object.
