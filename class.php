@@ -969,8 +969,8 @@ class Leaky_Paywall {
 	 */
 	public function reporting_tool_deactivation_notice() {
 		if ( is_plugin_active( 'leaky-paywall-reporting-tool/leaky-paywall-reporting-tool.php' ) ) {
-			echo '<div class="notice notice-info is-dismissible">';
-			echo '<p><strong>Leaky Paywall:</strong> The Reporting Tool is now built into Leaky Paywall under <strong>Tools &gt; Export</strong>. You can safely deactivate and delete the <em>Leaky Paywall - Reporting Tool</em> plugin.</p>';
+			echo '<div class="notice notice-warning is-dismissible">';
+			echo '<p><strong>Leaky Paywall:</strong> The Reporting Tool is now built into Leaky Paywall under <strong>Tools &gt; Export</strong>. Please deactivate and delete the <em>Leaky Paywall - Reporting Tool</em> plugin. Its own export downloads no longer work, because the folder it saved them to is now closed to direct access.</p>';
 			echo '</div>';
 		}
 	}

@@ -16,6 +16,7 @@ class Leaky_Paywall_Export {
 
 	public function __construct() {
 		add_action( 'wp_ajax_leaky_paywall_reporting_tool_process', array( $this, 'process_requests' ) );
+		add_action( 'admin_post_leaky_paywall_download_export', array( $this, 'download_export' ) );
 	}
 
 	/**
@@ -39,10 +40,19 @@ class Leaky_Paywall_Export {
 		}
 
 		$step = sanitize_text_field( $_POST['step'] );
-		$rand = absint( $_POST['rand'] );
 
 		if ( 'done' === $step ) {
 			wp_send_json( array( 'step' => 'done' ) );
+		}
+
+		if ( 1 == $step ) {
+			$token = self::create_token();
+		} else {
+			$token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
+
+			if ( ! self::token_is_valid( $token ) ) {
+				wp_send_json( array( 'error' => __( 'Your export session has expired. Please start the export again.', 'leaky-paywall' ) ) );
+			}
 		}
 
 		$users = $this->reporting_tool_query( $fields, $step );
@@ -106,27 +116,158 @@ class Leaky_Paywall_Export {
 			}
 
 			if ( ! empty( $user_meta ) ) {
-				$this->export_file( $user_meta, $step, $rand );
+				$this->export_file( $user_meta, $step, $token );
 			}
 		} else {
 
 			if ( 1 == $step ) {
+				self::delete_token();
+
 				$response = array(
 					'step' => 'done',
 					'url'  => 'none',
 				);
 			} else {
-				$uploads_dir = trailingslashit( wp_upload_dir()['baseurl'] ) . 'leaky-paywall';
-				$filename    = str_replace( 'http://', 'https://', $uploads_dir . '/leaky-paywall-report-' . $rand . '-' . wp_hash( home_url( '/' ) ) ) . '.csv';
-
+				// The file is never given a public URL. This points at an
+				// admin-post handler that checks capability and nonce, then
+				// streams it.
 				$response = array(
 					'step' => 'done',
-					'url'  => $filename,
+					'url'  => add_query_arg(
+						array(
+							'action'   => 'leaky_paywall_download_export',
+							'token'    => $token,
+							'_wpnonce' => wp_create_nonce( 'leaky_paywall_download_export' ),
+						),
+						admin_url( 'admin-post.php' )
+					),
 				);
 			}
 
 			wp_send_json( $response );
 		}
+	}
+
+	/**
+	 * Directory the export files are written to.
+	 *
+	 * Closed to direct requests, and separate from uploads/leaky-paywall, which
+	 * older versions wrote publicly readable exports into.
+	 *
+	 * @return string
+	 */
+	public static function get_export_dir() {
+		return leaky_paywall_get_protected_dir( 'leaky-paywall-exports' );
+	}
+
+	/**
+	 * Start a new export and remember its token for the current user.
+	 *
+	 * @return string
+	 */
+	private static function create_token() {
+
+		$token = bin2hex( random_bytes( 16 ) );
+
+		set_transient( 'leaky_paywall_export_' . get_current_user_id(), $token, HOUR_IN_SECONDS );
+
+		return $token;
+	}
+
+	/**
+	 * Whether a token belongs to the current user's in-flight export.
+	 *
+	 * @param string $token The token to check.
+	 * @return bool
+	 */
+	private static function token_is_valid( $token ) {
+
+		if ( ! $token || ! preg_match( '/^[a-f0-9]{32}$/', $token ) ) {
+			return false;
+		}
+
+		$stored = get_transient( 'leaky_paywall_export_' . get_current_user_id() );
+
+		return is_string( $stored ) && hash_equals( $stored, $token );
+	}
+
+	/**
+	 * Forget the current user's export token.
+	 *
+	 * @return void
+	 */
+	private static function delete_token() {
+		delete_transient( 'leaky_paywall_export_' . get_current_user_id() );
+	}
+
+	/**
+	 * Full path of the export file for a token.
+	 *
+	 * @param string $token The export token.
+	 * @return string
+	 */
+	public static function get_export_path( $token ) {
+		return self::get_export_dir() . 'leaky-paywall-report-' . $token . '.csv';
+	}
+
+	/**
+	 * Stream a finished export to the admin who requested it.
+	 *
+	 * @return void
+	 */
+	public function download_export() {
+
+		if ( ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
+			wp_die( esc_html__( 'You do not have permission to download subscriber exports.', 'leaky-paywall' ), '', array( 'response' => 403 ) );
+		}
+
+		check_admin_referer( 'leaky_paywall_download_export' );
+
+		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+
+		if ( ! self::token_is_valid( $token ) ) {
+			wp_die( esc_html__( 'This export link is no longer valid. Please run the export again.', 'leaky-paywall' ), '', array( 'response' => 403 ) );
+		}
+
+		$file = self::get_export_path( $token );
+
+		if ( ! file_exists( $file ) ) {
+			wp_die( esc_html__( 'The export file could not be found. Please run the export again.', 'leaky-paywall' ), '', array( 'response' => 404 ) );
+		}
+
+		$size = filesize( $file );
+
+		// Content-Length has to match what actually reaches the browser. With
+		// output compression on, or another plugin's buffer in the way, it does
+		// not, and the browser truncates the file. The export would then be
+		// deleted below as though it had been delivered in full.
+		if ( function_exists( 'apache_setenv' ) ) {
+			@apache_setenv( 'no-gzip', '1' ); // phpcs:ignore
+		}
+
+		@ini_set( 'zlib.output_compression', 'Off' ); // phpcs:ignore
+
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+
+		nocache_headers();
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="leaky-paywall-subscribers-' . gmdate( 'Y-m-d' ) . '.csv"' );
+		header( 'Content-Length: ' . $size );
+
+		$sent = readfile( $file );
+
+		// Only discard it once the whole file went out. A truncated stream
+		// leaves the export in place so the admin can retry without re-running
+		// the query.
+		if ( $sent === $size ) {
+			@unlink( $file );
+			self::delete_token();
+		}
+
+		exit;
 	}
 
 	/**
@@ -136,20 +277,15 @@ class Leaky_Paywall_Export {
 	 * @param int   $step          Current batch step.
 	 * @param int   $rand          Random number for filename uniqueness.
 	 */
-	public function export_file( $content_array, $step, $rand ) {
+	public function export_file( $content_array, $step, $token ) {
 
-		$uploads_dir = trailingslashit( wp_upload_dir()['basedir'] ) . 'leaky-paywall';
+		self::get_export_dir();
 
-		if ( 1 == $step ) {
-			if ( ! is_dir( $uploads_dir ) ) {
-				wp_mkdir_p( $uploads_dir );
-			}
+		$filename = self::get_export_path( $token );
+		$f        = fopen( $filename, 1 == $step ? 'w' : 'a' );
 
-			$filename = $uploads_dir . '/leaky-paywall-report-' . $rand . '-' . wp_hash( home_url( '/' ) ) . '.csv';
-			$f        = fopen( $filename, 'w' );
-		} else {
-			$filename = $uploads_dir . '/leaky-paywall-report-' . $rand . '-' . wp_hash( home_url( '/' ) ) . '.csv';
-			$f        = fopen( $filename, 'a' );
+		if ( ! $f ) {
+			wp_send_json( array( 'error' => __( 'The export file could not be written. Please check that your uploads directory is writable.', 'leaky-paywall' ) ) );
 		}
 
 		if ( 1 == $step ) {
@@ -173,7 +309,8 @@ class Leaky_Paywall_Export {
 
 		wp_send_json(
 			array(
-				'step' => $step + 1,
+				'step'  => $step + 1,
+				'token' => $token,
 			)
 		);
 	}
@@ -314,3 +451,97 @@ class Leaky_Paywall_Export {
 if ( ! is_plugin_active( 'leaky-paywall-reporting-tool/leaky-paywall-reporting-tool.php' ) ) {
 	new Leaky_Paywall_Export();
 }
+
+/**
+ * How long a finished export is kept before the daily sweep removes it.
+ *
+ * @return int Seconds.
+ */
+function leaky_paywall_get_export_retention_period() {
+
+	$hours = (int) apply_filters( 'leaky_paywall_export_retention_hours', 24 );
+
+	return ( $hours > 0 ? $hours : 24 ) * HOUR_IN_SECONDS;
+}
+
+/**
+ * Delete every subscriber export file.
+ *
+ * @return int Number of files deleted.
+ */
+function leaky_paywall_delete_export_files() {
+
+	$files   = glob( Leaky_Paywall_Export::get_export_dir() . 'leaky-paywall-report-*.csv' );
+	$deleted = 0;
+
+	if ( ! $files ) {
+		return 0;
+	}
+
+	foreach ( $files as $file ) {
+		if ( @unlink( $file ) ) {
+			++$deleted;
+		}
+	}
+
+	return $deleted;
+}
+
+/**
+ * Delete subscriber exports that were never downloaded.
+ *
+ * A completed download removes its own file. This catches the export whose
+ * download was abandoned, so a full subscriber list is not left sitting on disk
+ * indefinitely.
+ *
+ * @return int Number of files deleted.
+ */
+function leaky_paywall_cleanup_subscriber_exports() {
+
+	$files = glob( Leaky_Paywall_Export::get_export_dir() . 'leaky-paywall-report-*.csv' );
+
+	if ( ! $files ) {
+		return 0;
+	}
+
+	$cutoff  = time() - leaky_paywall_get_export_retention_period();
+	$deleted = 0;
+
+	foreach ( $files as $file ) {
+		if ( filemtime( $file ) > $cutoff ) {
+			continue;
+		}
+
+		if ( @unlink( $file ) ) {
+			++$deleted;
+		}
+	}
+
+	return $deleted;
+}
+add_action( 'leaky_paywall_cleanup_exports', 'leaky_paywall_cleanup_subscriber_exports' );
+
+/**
+ * Schedule the daily export sweep.
+ *
+ * @return void
+ */
+function leaky_paywall_register_export_cleanup() {
+
+	if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+		return;
+	}
+
+	if ( as_has_scheduled_action( 'leaky_paywall_cleanup_exports' ) ) {
+		return;
+	}
+
+	as_schedule_recurring_action(
+		time() + HOUR_IN_SECONDS,
+		DAY_IN_SECONDS,
+		'leaky_paywall_cleanup_exports',
+		array(),
+		'leaky-paywall'
+	);
+}
+add_action( 'init', 'leaky_paywall_register_export_cleanup' );

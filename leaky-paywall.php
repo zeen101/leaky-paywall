@@ -130,7 +130,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/class-rest-restrictions.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-rest-subscribers.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-transaction.php';
-		include LEAKY_PAYWALL_PATH . 'include/log-protection.php';
+		include LEAKY_PAYWALL_PATH . 'include/private-files.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-nag-impressions.php';
 		include LEAKY_PAYWALL_PATH . 'include/incomplete-user-cleanup.php';
@@ -186,6 +186,15 @@ function leaky_paywall_deactivate() {
 	if ( function_exists( 'leaky_paywall_delete_log_files' ) ) {
 		leaky_paywall_delete_log_files();
 		delete_option( 'leaky_paywall_log_started' );
+	}
+
+	if ( function_exists( 'as_unschedule_all_actions' ) ) {
+		as_unschedule_all_actions( 'leaky_paywall_cleanup_exports' );
+	}
+
+	// Subscriber exports are the same story, and more sensitive.
+	if ( function_exists( 'leaky_paywall_delete_export_files' ) ) {
+		leaky_paywall_delete_export_files();
 	}
 }
 register_deactivation_hook( __FILE__, 'leaky_paywall_deactivate' );

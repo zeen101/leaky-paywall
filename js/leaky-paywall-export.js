@@ -50,15 +50,13 @@
 						formData: formData,
 					};
 
-					var rand = Math.floor(Math.random() * 1001);
-
-					self.process_step( 1, data, self, rand );
+					self.process_step( 1, data, self, '' );
 
 				});
 
 			},
 
-			process_step : function( step, data, self, rand ) {
+			process_step : function( step, data, self, token ) {
 
 				$.ajax({
 					type: 'POST',
@@ -66,11 +64,18 @@
 					data: {
 						action: 'leaky_paywall_reporting_tool_process',
 						step: step,
-						rand: rand,
+						token: token,
 						formData: data.formData,
 					},
 					dataType: 'json',
 					success: function( response ) {
+
+						if ( response.error ) {
+							$('#leaky-paywall-reporting-tool-submit').val('Export Subscribers');
+							$('#leaky-paywall-reporting-tool-submit').attr('disabled', false );
+							$('#leaky-paywall-reporting-tool-message').text( response.error );
+							return;
+						}
 
 						if ( 'done' == response.step ) {
 
@@ -87,7 +92,7 @@
 
 						} else {
 
-							self.process_step( parseInt( response.step ), data, self, rand );
+							self.process_step( parseInt( response.step ), data, self, response.token );
 
 						}
 

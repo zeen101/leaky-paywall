@@ -147,6 +147,17 @@ class Leaky_Paywall_Import {
 			echo '<p><strong>' . intval( $skipped ) . ' ' . esc_html__( 'rows skipped (missing email, unknown level_id, or column-count mismatch).', 'leaky-paywall' ) . '</strong></p>';
 		}
 		echo '</div>';
+
+		// Release the read handle before touching the file.
+		unset( $manager );
+
+		if ( isset( $_POST['leaky_paywall_delete_import_file'] ) ) {
+			if ( wp_delete_attachment( $file_id, true ) ) {
+				echo '<div class="notice notice-info"><p>' . esc_html__( 'The uploaded CSV has been deleted from your Media Library.', 'leaky-paywall' ) . '</p></div>';
+			} else {
+				echo '<div class="notice notice-warning"><p>' . esc_html__( 'The uploaded CSV could not be deleted. Please remove it from your Media Library manually, as it contains subscriber data and is publicly readable.', 'leaky-paywall' ) . '</p></div>';
+			}
+		}
 	}
 
 	/**

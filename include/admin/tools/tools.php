@@ -140,6 +140,18 @@ class Leaky_Paywall_Tools {
 						</p>
 					</td>
 				</tr>
+				<tr>
+					<th><?php esc_html_e( 'After Importing', 'leaky-paywall' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="leaky_paywall_delete_import_file" value="on" checked="checked" />
+							<?php esc_html_e( 'Delete the uploaded CSV when the import finishes', 'leaky-paywall' ); ?>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Uploading a CSV adds it to your Media Library, where it can be downloaded by anyone who knows its web address. Your file holds subscriber names and email addresses, so we recommend removing it once the import is done.', 'leaky-paywall' ); ?>
+						</p>
+					</td>
+				</tr>
 			</table>
 
 			<p class="submit">

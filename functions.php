@@ -5503,8 +5503,6 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		do_action( 'leaky_paywall_after_create_refund_transaction', $transaction_id, $original_txn_id, $user );
 
-		leaky_paywall_log( 'Refund transaction ' . $transaction_id . ' created for ' . $user->user_email . ' - amount: ' . $refund_amount, 'stripe refund' );
-
 		return $transaction_id;
 	}
 

@@ -1,11 +1,15 @@
 <?php
 /**
- * Leaky Paywall debug log location and access protection
+ * Leaky Paywall private file storage
  *
- * The debug log holds subscriber email addresses and full payment gateway
- * responses, so it is kept in its own directory that is closed to direct
- * requests, and its filename carries a secret that is rotated every time
- * detailed logging is switched on.
+ * Leaky Paywall writes two kinds of file that hold subscriber data: the debug
+ * log, and subscriber export CSVs. Both are kept in their own directories inside
+ * uploads, closed to direct requests, and given names that cannot be guessed.
+ *
+ * This file provides the shared directory and protection helpers, everything
+ * specific to the debug log (naming, rotation, retention), and the migrations
+ * that clean up the publicly readable files earlier versions left behind. The
+ * export side lives in include/admin/tools/export.php.
  *
  * @package Leaky Paywall
  */
@@ -27,22 +31,62 @@ if ( ! defined( 'WPINC' ) ) {
 function leaky_paywall_get_log_dir( $create = true ) {
 
 	if ( defined( 'LEAKY_PAYWALL_LOG_DIR' ) && LEAKY_PAYWALL_LOG_DIR ) {
-		$dir = LEAKY_PAYWALL_LOG_DIR;
-	} else {
-		$upload_dir = wp_get_upload_dir();
-		// Deliberately not uploads/leaky-paywall, which holds subscriber export
-		// CSVs that are served to the admin over HTTP.
-		$dir        = trailingslashit( $upload_dir['basedir'] ) . 'leaky-paywall-logs';
+		$dir = trailingslashit( LEAKY_PAYWALL_LOG_DIR );
+
+		$dir = trailingslashit( apply_filters( 'leaky_paywall_log_directory', $dir ) );
+
+		if ( $create ) {
+			leaky_paywall_prepare_protected_dir( $dir );
+		}
+
+		return $dir;
 	}
 
+	// Deliberately not uploads/leaky-paywall, which holds subscriber export
+	// CSVs and predates this directory.
+	$dir = leaky_paywall_get_protected_dir( 'leaky-paywall-logs', false );
 	$dir = trailingslashit( apply_filters( 'leaky_paywall_log_directory', $dir ) );
 
-	if ( $create && ! is_dir( $dir ) ) {
-		wp_mkdir_p( $dir );
-		leaky_paywall_create_log_protection_files( true );
+	if ( $create ) {
+		leaky_paywall_prepare_protected_dir( $dir );
 	}
 
 	return $dir;
+}
+
+/**
+ * Path of a Leaky Paywall directory inside uploads that is closed to direct
+ * requests.
+ *
+ * @param string $name   Directory name, relative to the uploads base.
+ * @param bool   $create Create and protect it if it does not exist.
+ * @return string Directory path with a trailing slash.
+ */
+function leaky_paywall_get_protected_dir( $name, $create = true ) {
+
+	$upload_dir = wp_get_upload_dir();
+	$dir        = trailingslashit( trailingslashit( $upload_dir['basedir'] ) . $name );
+
+	if ( $create ) {
+		leaky_paywall_prepare_protected_dir( $dir );
+	}
+
+	return $dir;
+}
+
+/**
+ * Create a directory if needed and write its access-protection files.
+ *
+ * @param string $dir Directory path with a trailing slash.
+ * @return void
+ */
+function leaky_paywall_prepare_protected_dir( $dir ) {
+
+	if ( ! is_dir( $dir ) ) {
+		wp_mkdir_p( $dir );
+	}
+
+	leaky_paywall_write_protection_files( $dir );
 }
 
 /**
@@ -60,14 +104,26 @@ function leaky_paywall_create_log_protection_files( $force = false ) {
 		return;
 	}
 
-	$dir = leaky_paywall_get_log_dir( false );
+	leaky_paywall_write_protection_files( leaky_paywall_get_log_dir( false ) );
 
-	if ( ! is_dir( $dir ) || ! wp_is_writable( $dir ) ) {
+	set_transient( 'leaky_paywall_log_protection_checked', true, DAY_IN_SECONDS );
+}
+add_action( 'admin_init', 'leaky_paywall_create_log_protection_files' );
+
+/**
+ * Write the deny rules and index files into a directory.
+ *
+ * @param string $dir Directory path with a trailing slash.
+ * @return void
+ */
+function leaky_paywall_write_protection_files( $dir ) {
+
+	if ( ! $dir || ! is_dir( $dir ) || ! wp_is_writable( $dir ) ) {
 		return;
 	}
 
 	// Apache 2.4 wants Require, 2.2 wants Deny. Write both so neither version
-	// serves the log, and turn off directory listing either way.
+	// serves the contents, and turn off directory listing either way.
 	$rules = "Options -Indexes\n"
 		. "<IfModule mod_authz_core.c>\n"
 		. "\tRequire all denied\n"
@@ -77,7 +133,7 @@ function leaky_paywall_create_log_protection_files( $force = false ) {
 		. "\tDeny from all\n"
 		. "</IfModule>\n";
 
-	$rules = apply_filters( 'leaky_paywall_log_directory_htaccess_rules', $rules );
+	$rules = apply_filters( 'leaky_paywall_protected_directory_htaccess_rules', $rules );
 
 	$htaccess = $dir . '.htaccess';
 
@@ -92,10 +148,7 @@ function leaky_paywall_create_log_protection_files( $force = false ) {
 	if ( ! file_exists( $dir . 'index.html' ) ) {
 		@file_put_contents( $dir . 'index.html', '' );
 	}
-
-	set_transient( 'leaky_paywall_log_protection_checked', true, DAY_IN_SECONDS );
 }
-add_action( 'admin_init', 'leaky_paywall_create_log_protection_files' );
 
 /**
  * Get the secret that is mixed into the log filename.
@@ -416,3 +469,49 @@ function leaky_paywall_register_log_rotation() {
 	);
 }
 add_action( 'init', 'leaky_paywall_register_log_rotation' );
+
+/**
+ * Delete subscriber export files left in the public uploads directory.
+ *
+ * Before 5.1.8 the Export tool wrote exports to uploads/leaky-paywall and handed
+ * the admin a public URL. The filename combined a browser-generated integer
+ * between 0 and 1000 with wp_hash( home_url('/') ), which is constant per site,
+ * so one leaked URL exposed every export the site had produced. Nothing reads
+ * these files and they are regenerable in one click, so they are deleted rather
+ * than moved.
+ *
+ * @return void
+ */
+function leaky_paywall_maybe_migrate_subscriber_exports() {
+
+	if ( get_option( 'lp_subscriber_exports_migrated' ) ) {
+		return;
+	}
+
+	$upload_dir = wp_get_upload_dir();
+	$legacy_dir = trailingslashit( $upload_dir['basedir'] ) . 'leaky-paywall/';
+	$deleted    = 0;
+
+	$files = glob( $legacy_dir . 'leaky-paywall-report-*.csv' );
+
+	if ( $files ) {
+		foreach ( $files as $file ) {
+			if ( @unlink( $file ) ) {
+				++$deleted;
+			}
+		}
+	}
+
+	update_option( 'lp_subscriber_exports_migrated', '1' );
+
+	// Nothing serves from this directory any more, so close it in case an
+	// extension or a retired add-on writes an export there.
+	if ( is_dir( $legacy_dir ) ) {
+		leaky_paywall_write_protection_files( $legacy_dir );
+	}
+
+	if ( $deleted ) {
+		leaky_paywall_log_error( $deleted . ' publicly readable subscriber export file(s) removed from the uploads directory', 'migration' );
+	}
+}
+add_action( 'admin_init', 'leaky_paywall_maybe_migrate_subscriber_exports', 5 );
