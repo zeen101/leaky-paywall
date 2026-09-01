@@ -88,7 +88,7 @@ function leaky_paywall_check_recent_duplicate_signup( $email, $plan_id, $skip_cu
 			}
 		}
 	} catch ( \Throwable $e ) {
-		leaky_paywall_log( $e->getMessage(), 'duplicate signup check failed' );
+		leaky_paywall_log_error( $e->getMessage(), 'duplicate signup check failed' );
 		return false;
 	}
 
@@ -288,7 +288,7 @@ function leaky_paywall_process_apple_pay() {
 		);
 
 	} catch (\Throwable $th) {
-		leaky_paywall_log('error', 'stripe payment intent');
+		leaky_paywall_log_error($th->getMessage(), 'stripe payment intent error');
 
 		wp_send_json(
 			array(
@@ -385,7 +385,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 		$customer->save();
 	} catch ( \Throwable $th ) {
 
-		leaky_paywall_log( 'error 1', 'stripe checkout subscription' );
+		leaky_paywall_log_error( $th->getMessage(), 'stripe checkout subscription - could not set default payment method' );
 
 		wp_send_json(
 			array(
@@ -462,7 +462,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 			}
 		}
 	} catch ( \Stripe\Exception\ApiErrorException $e ) {
-		leaky_paywall_log( 'error 2', 'stripe checkout subscription' );
+		leaky_paywall_log_error( $e->getMessage(), 'stripe checkout subscription error' );
 		leaky_paywall_log( $form_data, 'stripe checkout subscription form data error 2' );
 		wp_send_json(
 			array(
@@ -556,7 +556,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			return 'subscription_updated';
 		}
 	} catch (\Throwable $th) {
-		leaky_paywall_log($th->getMessage(), 'stripe subscription - error 2');
+		leaky_paywall_log_error($th->getMessage(), 'stripe subscription - error 2');
 		leaky_paywall_log($fields, 'stripe subscription form data error 2');
 		return false;
 	}
@@ -622,7 +622,7 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 			//	$plan_params = apply_filters('leaky_paywall_stripe_plan_params', [], $level, $plan_args);
 				$stripe_plan = $stripe->plans->retrieve($plan_id, [], leaky_paywall_get_stripe_connect_params() );
 			} catch ( \Throwable $th ) {
-				leaky_paywall_log($th->getMessage(), 'lp - error retrieving stripe plan for ' . $plan_id);
+				leaky_paywall_log_error($th->getMessage(), 'lp - error retrieving stripe plan for ' . $plan_id);
 				$stripe_plan = false;
 			}
 
@@ -685,7 +685,7 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
 	} catch ( \Throwable $th ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
-		leaky_paywall_log( $th->getMessage(), 'lp create stripe plan error' );
+		leaky_paywall_log_error( $th->getMessage(), 'lp create stripe plan error' );
 		$stripe_plan = false;
 	}
 
@@ -871,7 +871,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				// Schedule check failed. Don't block sync silently — fall
 				// through to the historical all-status path so behavior on
 				// a Stripe hiccup matches pre-fix behavior.
-				leaky_paywall_log( $th->getMessage(), 'lp stripe sync - schedule pre-check failed' );
+				leaky_paywall_log_error( $th->getMessage(), 'lp stripe sync - schedule pre-check failed' );
 			}
 
 			// No pending schedule — historical fallback.
@@ -949,7 +949,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 		}
 
 	} catch (\Throwable $th) {
-		leaky_paywall_log($th->getMessage(), 'leaky paywall - stripe sync error');
+		leaky_paywall_log_error($th->getMessage(), 'leaky paywall - stripe sync error');
 		return;
 	}
 }
@@ -993,7 +993,7 @@ function leaky_paywall_process_stripe_checkout_webhook( $stripe_event ) {
 	$incomplete_id = leaky_paywall_get_incomplete_user_from_email($stripe_object->customer_details->email);
 
 	if (!$incomplete_id) {
-		leaky_paywall_log($stripe_object->customer, 'stripe checkout event no incomplete found');
+		leaky_paywall_log_error($stripe_object->customer, 'stripe checkout event no incomplete found');
 		return;
 	}
 
@@ -1187,7 +1187,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 				return null;
 			}
 		} catch ( \Throwable $th ) {
-			leaky_paywall_log( $th->getMessage(), "stripe {$source} - could not retrieve invoice for renewal gate" );
+			leaky_paywall_log_error( $th->getMessage(), "stripe {$source} - could not retrieve invoice for renewal gate" );
 		}
 	}
 
@@ -1214,7 +1214,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	try {
 		$cu = $stripe->customers->retrieve( $pi->customer, [], leaky_paywall_get_stripe_connect_params() );
 	} catch ( \Throwable $th ) {
-		leaky_paywall_log( $th->getMessage(), "lp error - retrieving customer in {$source} flow" );
+		leaky_paywall_log_error( $th->getMessage(), "lp error - retrieving customer in {$source} flow" );
 		return null;
 	}
 
@@ -1225,7 +1225,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $cu->email );
 
 	if ( ! $incomplete_id ) {
-		leaky_paywall_log( $pi->customer, "stripe {$source} - no incomplete user found for {$cu->email}" );
+		leaky_paywall_log_error( $pi->customer, "stripe {$source} - no incomplete user found for {$cu->email}" );
 		return null;
 	}
 
@@ -1233,7 +1233,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	$field_data = get_post_meta( $incomplete_id, '_field_data', true );
 
 	if ( empty( $user_data['email'] ) ) {
-		leaky_paywall_log( $pi->customer, "stripe {$source} - incomplete user has no email" );
+		leaky_paywall_log_error( $pi->customer, "stripe {$source} - incomplete user has no email" );
 		return null;
 	}
 
@@ -1301,7 +1301,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	}
 
 	if ( ! $user_id ) {
-		leaky_paywall_log( $pi->customer, "stripe {$source} - failed to create/update WP user" );
+		leaky_paywall_log_error( $pi->customer, "stripe {$source} - failed to create/update WP user" );
 		return null;
 	}
 
@@ -1311,7 +1311,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	$transaction_id = $transaction->create();
 
 	if ( ! $transaction_id ) {
-		leaky_paywall_log( $pi->customer, "stripe {$source} - failed to create LP transaction" );
+		leaky_paywall_log_error( $pi->customer, "stripe {$source} - failed to create LP transaction" );
 		return null;
 	}
 
@@ -1353,7 +1353,7 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 	try {
 		$pi = $stripe->paymentIntents->retrieve( $pi_id, [], leaky_paywall_get_stripe_connect_params() );
 	} catch ( \Throwable $th ) {
-		leaky_paywall_log( $th->getMessage(), 'lp error - retrieving payment intent from redirect url' );
+		leaky_paywall_log_error( $th->getMessage(), 'lp error - retrieving payment intent from redirect url' );
 		return;
 	}
 
@@ -1433,7 +1433,7 @@ function leaky_paywall_maybe_generate_stripe_customer_portal() {
 			'return_url' => get_page_link( $settings['page_for_profile'] ),
 		], leaky_paywall_get_stripe_connect_params());
 	} catch (\Throwable $th) {
-		leaky_paywall_log($th->getMessage(), 'lp error - generate stripe customer portal session');
+		leaky_paywall_log_error($th->getMessage(), 'lp error - generate stripe customer portal session');
 	}
 
 	// Redirect to the customer portal.
@@ -1604,7 +1604,7 @@ function leaky_paywall_stripe_sync_email_change( $user_id, $old_email, $new_emai
 		);
 		leaky_paywall_log( $new_email, 'stripe email sync: updated customer ' . $customer_id );
 	} catch ( \Exception $e ) {
-		leaky_paywall_log( $e->getMessage(), 'stripe email sync: error for customer ' . $customer_id );
+		leaky_paywall_log_error( $e->getMessage(), 'stripe email sync: error for customer ' . $customer_id );
 	}
 }
 add_action( 'leaky_paywall_subscriber_email_changed', 'leaky_paywall_stripe_sync_email_change', 10, 3 );
@@ -1709,7 +1709,7 @@ function leaky_paywall_stripe_sync_billing_address( $subscriber_data ) {
 		$stripe->customers->update( $customer_id, $update_args, leaky_paywall_get_stripe_connect_params() );
 		leaky_paywall_log( $customer_id, 'stripe billing address sync: updated customer' );
 	} catch ( \Exception $e ) {
-		leaky_paywall_log( $e->getMessage(), 'stripe billing address sync: error for customer ' . $customer_id );
+		leaky_paywall_log_error( $e->getMessage(), 'stripe billing address sync: error for customer ' . $customer_id );
 	}
 }
 add_action( 'leaky_paywall_after_process_registration', 'leaky_paywall_stripe_sync_billing_address', 10, 1 );
@@ -1762,7 +1762,7 @@ function leaky_paywall_stripe_capture_tax_on_transaction( $transaction_id, $user
 			}
 		}
 	} catch ( \Exception $e ) {
-		leaky_paywall_log( $e->getMessage(), 'stripe tax capture on transaction' );
+		leaky_paywall_log_error( $e->getMessage(), 'stripe tax capture on transaction' );
 	}
 }
 add_action( 'leaky_paywall_after_create_transaction', 'leaky_paywall_stripe_capture_tax_on_transaction', 10, 2 );
@@ -1810,7 +1810,7 @@ function leaky_paywall_stripe_tax_preview() {
 				leaky_paywall_get_stripe_connect_params()
 			);
 		} catch ( \Exception $e ) {
-			leaky_paywall_log( $e->getMessage(), 'stripe tax preview: could not update customer address' );
+			leaky_paywall_log_error( $e->getMessage(), 'stripe tax preview: could not update customer address' );
 			wp_send_json_error( 'Could not update billing address.' );
 		}
 
@@ -1852,7 +1852,7 @@ function leaky_paywall_stripe_tax_preview() {
 
 					$client_secret = $subscription->latest_invoice->payment_intent->client_secret;
 				} catch ( \Exception $e ) {
-					leaky_paywall_log( $e->getMessage(), 'stripe tax preview: could not create subscription' );
+					leaky_paywall_log_error( $e->getMessage(), 'stripe tax preview: could not create subscription' );
 					wp_send_json_error( 'Could not create subscription.' );
 				}
 			} else {
@@ -1999,7 +1999,7 @@ function leaky_paywall_stripe_tax_preview() {
 		wp_send_json_success( $response );
 
 	} catch ( \Exception $e ) {
-		leaky_paywall_log( $e->getMessage(), 'stripe tax preview error' );
+		leaky_paywall_log_error( $e->getMessage(), 'stripe tax preview error' );
 		wp_send_json_error( $e->getMessage() );
 	}
 }

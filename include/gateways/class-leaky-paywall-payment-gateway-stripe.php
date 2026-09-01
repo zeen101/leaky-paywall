@@ -73,7 +73,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			!isset($_POST['leaky_paywall_register_nonce'])
 			|| !wp_verify_nonce(sanitize_key(wp_unslash($_POST['leaky_paywall_register_nonce'])), 'leaky-paywall-register-nonce')
 		) {
-			leaky_paywall_log('nonce error for ' . $this->email . ' with nonce ' . sanitize_key(wp_unslash($_POST['leaky_paywall_register_nonce'])) . ' and verified ' . wp_verify_nonce(sanitize_key(wp_unslash($_POST['leaky_paywall_register_nonce'])), 'leaky-paywall-register-nonce'), 'stripe signup - error 1');
+			leaky_paywall_log_error('nonce error for ' . $this->email . ' with nonce ' . sanitize_key(wp_unslash($_POST['leaky_paywall_register_nonce'])) . ' and verified ' . wp_verify_nonce(sanitize_key(wp_unslash($_POST['leaky_paywall_register_nonce'])), 'leaky-paywall-register-nonce'), 'stripe signup - error 1');
 			leaky_paywall_errors()->add('nonce_error', __('An error occurred, please try again.', 'leaky-paywall'), 'register');
 			return;
 
@@ -96,7 +96,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		);
 
 		if (empty($incomplete_user)) {
-			leaky_paywall_log('incomplete user error for ' . $this->email, 'stripe signup - error 2');
+			leaky_paywall_log_error('incomplete user error for ' . $this->email, 'stripe signup - error 2');
 			leaky_paywall_errors()->add('incomplete_user_error', __('An error occurred, please try again.', 'leaky-paywall'), 'register');
 			return;
 
@@ -119,7 +119,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		}
 
 		if (!$customer_id) {
-			leaky_paywall_log('customer id error for ' . $this->email, 'stripe signup - error 3');
+			leaky_paywall_log_error('customer id error for ' . $this->email, 'stripe signup - error 3');
 			leaky_paywall_errors()->add('customer_id_error', __('An error occurred, please try again.', 'leaky-paywall'), 'register');
 			return;
 
@@ -157,7 +157,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					$payment_status = 'pending';
 				}
 			} catch ( \Throwable $e ) {
-				leaky_paywall_log( $e->getMessage(), 'stripe signup - payment intent status check failed for ' . $this->email );
+				leaky_paywall_log_error( $e->getMessage(), 'stripe signup - payment intent status check failed for ' . $this->email );
 			}
 		}
 
@@ -227,11 +227,11 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				);
 			} catch (\UnexpectedValueException $e) {
 				// Invalid payload
-				leaky_paywall_log($e->getMessage(), 'stripe webhook - invalid payload');
+				leaky_paywall_log_error($e->getMessage(), 'stripe webhook - invalid payload');
 				wp_send_json(['leaky paywall webhook received - invalid payload'], 400);
 			} catch (\Stripe\Exception\SignatureVerificationException $e) {
 				// Invalid signature
-				leaky_paywall_log($e->getMessage(), 'stripe webhook - invalid signature');
+				leaky_paywall_log_error($e->getMessage(), 'stripe webhook - invalid signature');
 				wp_send_json(['leaky paywall webhook received - invalid signature'], 400);
 			}
 		}
@@ -372,7 +372,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 						$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
 						update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
 					} catch (\Throwable $th) {
-						leaky_paywall_log( $th->getMessage(), 'lp stripe - error retrieving subscription 1' );
+						leaky_paywall_log_error( $th->getMessage(), 'lp stripe - error retrieving subscription 1' );
 					}
 
 				}
@@ -384,7 +384,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 						$expires = date_i18n('Y-m-d 23:59:59', $sub->current_period_end);
 						update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, $expires);
 					} catch (\Throwable $th) {
-						leaky_paywall_log($th->getMessage(), 'lp stripe - error retrieving subscription 2');
+						leaky_paywall_log_error($th->getMessage(), 'lp stripe - error retrieving subscription 2');
 					}
 				}
 
@@ -465,7 +465,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 							}
 						}
 					} catch ( \Throwable $th ) {
-						leaky_paywall_log( $th->getMessage(), 'lp stripe - error listing subscriptions before incomplete_expired deactivate' );
+						leaky_paywall_log_error( $th->getMessage(), 'lp stripe - error listing subscriptions before incomplete_expired deactivate' );
 						$has_live_subscription = true;
 					}
 

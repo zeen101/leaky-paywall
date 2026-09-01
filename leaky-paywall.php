@@ -176,5 +176,16 @@ register_activation_hook( __FILE__, 'leaky_paywall_activate' );
 
 function leaky_paywall_deactivate() {
 	wp_clear_scheduled_hook( 'leaky_paywall_tracking_send' );
+
+	if ( function_exists( 'as_unschedule_all_actions' ) ) {
+		as_unschedule_all_actions( 'leaky_paywall_rotate_debug_log' );
+	}
+
+	// The debug log holds subscriber data. A deactivated plugin has no reason
+	// to leave it on disk.
+	if ( function_exists( 'leaky_paywall_delete_log_files' ) ) {
+		leaky_paywall_delete_log_files();
+		delete_option( 'leaky_paywall_log_started' );
+	}
 }
 register_deactivation_hook( __FILE__, 'leaky_paywall_deactivate' );

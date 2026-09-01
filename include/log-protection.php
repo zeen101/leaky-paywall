@@ -139,7 +139,7 @@ function leaky_paywall_rotate_log_key() {
 function leaky_paywall_delete_log_files() {
 
 	$deleted = 0;
-	$files   = glob( leaky_paywall_get_log_dir( false ) . '*-lp-debug.log' );
+	$files   = glob( leaky_paywall_get_log_dir( false ) . '*-lp-debug*.log' );
 
 	if ( ! $files ) {
 		return $deleted;
@@ -171,7 +171,7 @@ function leaky_paywall_maybe_migrate_debug_log() {
 	}
 
 	$upload_dir = wp_get_upload_dir();
-	$legacy     = glob( trailingslashit( $upload_dir['basedir'] ) . '*-lp-debug.log' );
+	$legacy     = glob( trailingslashit( $upload_dir['basedir'] ) . '*-lp-debug*.log' );
 	$deleted    = 0;
 
 	if ( $legacy ) {
@@ -192,3 +192,227 @@ function leaky_paywall_maybe_migrate_debug_log() {
 	}
 }
 add_action( 'admin_init', 'leaky_paywall_maybe_migrate_debug_log', 5 );
+
+/**
+ * Size at which the log is rotated.
+ *
+ * @return int Bytes.
+ */
+function leaky_paywall_get_log_size_limit() {
+
+	$limit = (int) apply_filters( 'leaky_paywall_log_size_limit', 5 * MB_IN_BYTES );
+
+	return $limit > 0 ? $limit : 5 * MB_IN_BYTES;
+}
+
+/**
+ * Age at which the log is rotated.
+ *
+ * A single append-only file cannot expire line by line without reading and
+ * rewriting the whole thing, which is the cost we removed from the write path.
+ * Rotating on age instead bounds the log to two generations and needs no
+ * parsing: anything older than twice this window is gone.
+ *
+ * @return int Seconds.
+ */
+function leaky_paywall_get_log_retention_period() {
+
+	$days = (int) apply_filters( 'leaky_paywall_log_retention_days', 30 );
+
+	return ( $days > 0 ? $days : 30 ) * DAY_IN_SECONDS;
+}
+
+/**
+ * When the current log file was started.
+ *
+ * @return int Unix timestamp, or 0 if there is no current log.
+ */
+function leaky_paywall_get_log_started() {
+
+	return (int) get_option( 'leaky_paywall_log_started', 0 );
+}
+
+/**
+ * Record the moment a fresh log file begins.
+ *
+ * @return void
+ */
+function leaky_paywall_set_log_started() {
+
+	update_option( 'leaky_paywall_log_started', time(), false );
+}
+
+/**
+ * Move the current log aside, keeping one previous generation.
+ *
+ * @return bool True if a rotation happened.
+ */
+function leaky_paywall_rotate_log_file() {
+
+	global $lp_logs;
+
+	if ( ! $lp_logs instanceof LP_Logging ) {
+		return false;
+	}
+
+	$current = $lp_logs->get_log_file_path();
+
+	if ( ! $current || ! file_exists( $current ) ) {
+		return false;
+	}
+
+	$previous = leaky_paywall_get_rotated_log_path();
+
+	// Only one generation is kept, so the existing one makes way.
+	if ( file_exists( $previous ) ) {
+		@unlink( $previous );
+	}
+
+	if ( ! @rename( $current, $previous ) ) {
+		return false;
+	}
+
+	leaky_paywall_set_log_started();
+
+	return true;
+}
+
+/**
+ * Path of the previous generation of the log.
+ *
+ * Keeps the .log extension so it stays inside the patterns the delete and
+ * protection helpers use.
+ *
+ * @return string
+ */
+function leaky_paywall_get_rotated_log_path() {
+
+	global $lp_logs;
+
+	if ( ! $lp_logs instanceof LP_Logging ) {
+		return '';
+	}
+
+	$current = $lp_logs->get_log_file_path();
+
+	if ( ! $current ) {
+		return '';
+	}
+
+	return substr( $current, 0, -4 ) . '.1.log';
+}
+
+/**
+ * Rotate the log if it has grown past the size limit.
+ *
+ * Checked on the write path, so a burst of webhook traffic cannot run the file
+ * past the ceiling before the daily job notices.
+ *
+ * @param string $file Path of the log about to be written to.
+ * @return void
+ */
+function leaky_paywall_maybe_rotate_log_for_size( $file ) {
+
+	if ( ! $file || ! file_exists( $file ) ) {
+		return;
+	}
+
+	if ( filesize( $file ) < leaky_paywall_get_log_size_limit() ) {
+		return;
+	}
+
+	leaky_paywall_rotate_log_file();
+}
+
+/**
+ * Rotate the log if it has been open longer than the retention window.
+ *
+ * @return void
+ */
+function leaky_paywall_maybe_rotate_log_for_age() {
+
+	$started = leaky_paywall_get_log_started();
+
+	if ( ! $started ) {
+		leaky_paywall_set_log_started();
+		return;
+	}
+
+	if ( ( time() - $started ) < leaky_paywall_get_log_retention_period() ) {
+		return;
+	}
+
+	leaky_paywall_rotate_log_file();
+}
+add_action( 'leaky_paywall_rotate_debug_log', 'leaky_paywall_maybe_rotate_log_for_age' );
+
+/**
+ * Delete log files that no longer belong to the current filename.
+ *
+ * The filename is derived from home_url() and the rotating key, so moving a
+ * site to a new domain, or turning detailed logging on, leaves the previous
+ * file stranded in the directory. Nothing reads it and nothing else would ever
+ * remove it, so the daily job sweeps it up.
+ *
+ * @return int Number of files deleted.
+ */
+function leaky_paywall_delete_orphan_log_files() {
+
+	global $lp_logs;
+
+	if ( ! $lp_logs instanceof LP_Logging ) {
+		return 0;
+	}
+
+	$keep = array_filter( array( $lp_logs->get_log_file_path(), leaky_paywall_get_rotated_log_path() ) );
+
+	if ( ! $keep ) {
+		return 0;
+	}
+
+	$files = glob( leaky_paywall_get_log_dir( false ) . '*-lp-debug*.log' );
+
+	if ( ! $files ) {
+		return 0;
+	}
+
+	$deleted = 0;
+
+	foreach ( $files as $file ) {
+		if ( in_array( $file, $keep, true ) ) {
+			continue;
+		}
+
+		if ( @unlink( $file ) ) {
+			++$deleted;
+		}
+	}
+
+	return $deleted;
+}
+add_action( 'leaky_paywall_rotate_debug_log', 'leaky_paywall_delete_orphan_log_files' );
+
+/**
+ * Schedule the daily age check.
+ *
+ * @return void
+ */
+function leaky_paywall_register_log_rotation() {
+
+	if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+		return;
+	}
+
+	if ( as_has_scheduled_action( 'leaky_paywall_rotate_debug_log' ) ) {
+		return;
+	}
+
+	as_schedule_recurring_action(
+		time() + DAY_IN_SECONDS,
+		DAY_IN_SECONDS,
+		'leaky_paywall_rotate_debug_log',
+		array(),
+		'leaky-paywall'
+	);
+}
+add_action( 'init', 'leaky_paywall_register_log_rotation' );

@@ -1227,7 +1227,7 @@ class Leaky_Paywall_Settings
 
 										} catch (\Throwable $th) {
 
-											leaky_paywall_log($th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id']);
+											leaky_paywall_log_error($th->getMessage(), 'leaky paywall connected account retrieve error - ' . $settings['connected_account_id']);
 
 											echo '<div class="notice inline notice-error"><p>' . esc_html( $settings['connected_account_id'] ) . ' ' . esc_html__( 'You do not have access to the account, or it does not exist.', 'leaky-paywall' ) . '<br><a href="' . esc_url( $this->get_connect_url() ) . '">' . esc_html__( 'Connect with Stripe', 'leaky-paywall' ) . '</a></p></div>';
 										}

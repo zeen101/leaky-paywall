@@ -1139,7 +1139,7 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 		// would continue with $user_id = WP_Error and crash downstream code that
 		// uses it as an int (e.g., as an array key in level-transition tracking).
 		if ( is_wp_error( $user_id ) ) {
-			leaky_paywall_log(
+			leaky_paywall_log_error(
 				array(
 					'error_code'      => $user_id->get_error_code(),
 					'error_message'   => $user_id->get_error_message(),
@@ -1152,7 +1152,7 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 		}
 
 		if (empty($user_id)) {
-			leaky_paywall_log($meta_args, 'could not create user');
+			leaky_paywall_log_error($meta_args, 'could not create user');
 			return false;
 		} else {
 			$logged_userdata = $user_data;
@@ -3108,7 +3108,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			do_action( 'leaky_paywall_cron_expired_subscriber', $user );
 
 		} catch ( \Throwable $th ) {
-			leaky_paywall_log( $th->getMessage(), 'leaky paywall - past_due sync error for user ' . $user->ID );
+			leaky_paywall_log_error( $th->getMessage(), 'leaky paywall - past_due sync error for user ' . $user->ID );
 		}
 	}
 
@@ -4351,7 +4351,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_log($data, $event)
 	{
 
-		leaky_paywall_debug_log($event . ' | ' . wp_json_encode($data));
+		leaky_paywall_debug_log($event . ' | ' . wp_json_encode(leaky_paywall_scrub_log_data($data)));
 	}
 
 	/**
@@ -4370,7 +4370,59 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_log_error($data, $event)
 	{
 
-		leaky_paywall_debug_log('ERROR | ' . $event . ' | ' . wp_json_encode($data), true);
+		leaky_paywall_debug_log('ERROR | ' . $event . ' | ' . wp_json_encode(leaky_paywall_scrub_log_data($data)), true);
+	}
+
+	/**
+	 * Remove credentials from data on its way to the log
+	 *
+	 * Registration payloads carry the subscriber's chosen password, and the
+	 * arrays and serialized form strings logged around checkout failures carry
+	 * it with them. Nothing in a log needs it.
+	 *
+	 * @param mixed $data the data about to be logged.
+	 *
+	 * @since 5.1.8
+	 * @return mixed
+	 */
+	function leaky_paywall_scrub_log_data($data)
+	{
+
+		$keys = apply_filters(
+			'leaky_paywall_log_scrubbed_keys',
+			array('password', 'confirm_password', 'user_pass', 'pass', 'pwd')
+		);
+
+		if (is_object($data)) {
+			$data = clone $data;
+
+			foreach ($keys as $key) {
+				if (isset($data->$key)) {
+					$data->$key = '[redacted]';
+				}
+			}
+
+			return $data;
+		}
+
+		if (is_array($data)) {
+			foreach ($keys as $key) {
+				if (isset($data[$key])) {
+					$data[$key] = '[redacted]';
+				}
+			}
+
+			return $data;
+		}
+
+		// Serialized form strings, e.g. the checkout form posted as formData.
+		if (is_string($data) && false !== strpos($data, '=')) {
+			foreach ($keys as $key) {
+				$data = preg_replace('/(^|&)' . preg_quote($key, '/') . '=[^&]*/', '$1' . $key . '=[redacted]', $data);
+			}
+		}
+
+		return $data;
 	}
 
 	/**
@@ -4626,7 +4678,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					}
 				} catch ( \Stripe\Exception\ApiErrorException $e ) {
 					$stripe_cancel_note = '<p><strong>Note:</strong> An error occurred while cancelling the Stripe subscription: ' . esc_html( $e->getMessage() ) . '</p>';
-					leaky_paywall_log( $user->user_email, 'Stripe cancellation error on account deletion: ' . $e->getMessage() );
+					leaky_paywall_log_error( $user->user_email . ' (user ' . $user->ID . ')', 'Stripe cancellation error on account deletion: ' . $e->getMessage() );
 				}
 			}
 

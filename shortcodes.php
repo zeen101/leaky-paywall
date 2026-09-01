@@ -781,7 +781,7 @@ function do_leaky_paywall_register_form($atts)
 					}
 				}
 			} catch ( \Throwable $th ) {
-				leaky_paywall_log( $th->getMessage(), 'proration preview error' );
+				leaky_paywall_log_error( $th->getMessage(), 'proration preview error' );
 			}
 			?>
 			<div class="leaky-paywall-subscription-change-notice" style="background: #FEF9E7; border-left: 4px solid #F0C929; padding: 12px 16px; margin-bottom: 20px; font-size: 14px;">

@@ -112,9 +112,17 @@ class LP_Logging {
 
 		leaky_paywall_get_log_dir();
 
+		leaky_paywall_maybe_rotate_log_for_size( $this->file );
+
+		$is_new = ! file_exists( $this->file );
+
 		// Append. Reading the whole log back in on every entry made each write
 		// cost the size of the file, twice.
 		@file_put_contents( $this->file, $message, FILE_APPEND );
+
+		if ( $is_new ) {
+			leaky_paywall_set_log_started();
+		}
 	}
 
 	/**
@@ -125,6 +133,14 @@ class LP_Logging {
 	 */
 	public function clear_log_file() {
 		$this->setup_log_file();
+
+		$rotated = leaky_paywall_get_rotated_log_path();
+
+		if ( $rotated && file_exists( $rotated ) ) {
+			@unlink( $rotated );
+		}
+
+		delete_option( 'leaky_paywall_log_started' );
 
 		@unlink( $this->file );
 
@@ -172,20 +188,57 @@ class LP_Logging {
 			'size'     => 0,
 			'entries'  => 0,
 			'modified' => 0,
+			'rotated'  => false,
 		);
 
 		$this->setup_log_file();
 
-		if ( ! $this->file || ! file_exists( $this->file ) ) {
+		if ( ! $this->file ) {
 			return $stats;
 		}
 
-		$stats['exists']   = true;
-		$stats['size']     = (int) filesize( $this->file );
-		$stats['modified'] = (int) filemtime( $this->file );
-		$stats['entries']  = $this->count_entries();
+		foreach ( $this->get_log_files() as $file ) {
+			$stats['exists']   = true;
+			$stats['size']    += (int) filesize( $file );
+			$stats['entries'] += $this->count_entries( $file );
+			$stats['modified'] = max( $stats['modified'], (int) filemtime( $file ) );
+		}
+
+		$rotated = leaky_paywall_get_rotated_log_path();
+
+		if ( $rotated && file_exists( $rotated ) ) {
+			$stats['rotated'] = true;
+		}
 
 		return $stats;
+	}
+
+	/**
+	 * Every generation of the log that currently exists, oldest first.
+	 *
+	 * @since 5.1.8
+	 * @return array
+	 */
+	public function get_log_files() {
+
+		$this->setup_log_file();
+
+		if ( ! $this->file ) {
+			return array();
+		}
+
+		$files   = array();
+		$rotated = leaky_paywall_get_rotated_log_path();
+
+		if ( $rotated && file_exists( $rotated ) ) {
+			$files[] = $rotated;
+		}
+
+		if ( file_exists( $this->file ) ) {
+			$files[] = $this->file;
+		}
+
+		return $files;
 	}
 
 	/**
@@ -194,9 +247,13 @@ class LP_Logging {
 	 * @since 5.1.8
 	 * @return int
 	 */
-	private function count_entries() {
+	private function count_entries( $file = '' ) {
 
-		$handle = @fopen( $this->file, 'rb' );
+		if ( ! $file ) {
+			$file = $this->file;
+		}
+
+		$handle = @fopen( $file, 'rb' );
 
 		if ( ! $handle ) {
 			return 0;

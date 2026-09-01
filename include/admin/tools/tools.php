@@ -398,6 +398,20 @@ class Leaky_Paywall_Tools {
 				?>
 			</p>
 			<?php
+
+			if ( $stats['rotated'] ) {
+				?>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: %s: file size, e.g. "5 MB" */
+						esc_html__( 'The log is rotated once it passes %s or after 30 days. The previous log is kept and is included when you download.', 'leaky-paywall' ),
+						esc_html( size_format( leaky_paywall_get_log_size_limit() ) )
+					);
+					?>
+				</p>
+				<?php
+			}
 		}
 	}
 
@@ -420,7 +434,21 @@ function leaky_paywall_tools_handle_debug_log() {
 		return;
 	}
 
-	if ( isset( $_POST['lp-save-debug-log-settings'] ) ) {
+	if ( isset( $_POST['lp-download-debug-log'] ) ) {
+		nocache_headers();
+
+		header( 'Content-Type: text/plain' );
+		header( 'Content-Disposition: attachment; filename="lp-debug-log.txt"' );
+
+		// Stream every generation, oldest first, so a rotation does not hide
+		// half the history from the person we asked for the log.
+		foreach ( $lp_logs->get_log_files() as $file ) {
+			readfile( $file );
+		}
+
+		die( 'end of lp log' );
+
+	} elseif ( isset( $_POST['lp-save-debug-log-settings'] ) ) {
 
 		$settings   = get_leaky_paywall_settings();
 		$was_on     = isset( $settings['debug_mode'] ) && 'on' === $settings['debug_mode'];
@@ -435,15 +463,6 @@ function leaky_paywall_tools_handle_debug_log() {
 
 		wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-tools&tab=debug_log&lp-settings-updated=1' ) );
 		exit;
-
-	} elseif ( isset( $_POST['lp-download-debug-log'] ) ) {
-		nocache_headers();
-
-		header( 'Content-Type: text/plain' );
-		header( 'Content-Disposition: attachment; filename="lp-debug-log.txt"' );
-
-		print_r( stripslashes_deep( wp_unslash( $lp_logs->get_file_contents() ) ) );
-		die( 'end of lp log' );
 
 	} elseif ( isset( $_POST['lp-clear-debug-log'] ) ) {
 

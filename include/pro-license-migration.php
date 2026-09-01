@@ -153,7 +153,7 @@ class Leaky_Paywall_Pro_License_Migration {
 
 		if ( 'network' === $result['error'] ) {
 			// Transient failure — try again next page load. No sentinel write.
-			leaky_paywall_log(
+			leaky_paywall_log_error(
 				isset( $result['message'] ) ? $result['message'] : 'unknown network error',
 				'pro license migration - network error'
 			);
@@ -168,7 +168,7 @@ class Leaky_Paywall_Pro_License_Migration {
 			'key'   => $key,
 			'error' => $result['error'],
 		), DAY_IN_SECONDS );
-		leaky_paywall_log(
+		leaky_paywall_log_error(
 			sprintf( 'Auto-activation failed: %s', $result['error'] ),
 			'pro license migration'
 		);
