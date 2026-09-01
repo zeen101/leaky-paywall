@@ -253,7 +253,7 @@ function leaky_paywall_maybe_migrate_debug_log() {
 	leaky_paywall_get_log_dir();
 
 	if ( $deleted ) {
-		leaky_paywall_log_error( $deleted . ' legacy debug log file(s) removed from the uploads directory', 'migration' );
+		leaky_paywall_debug_log( 'migration | ' . $deleted . ' legacy debug log file(s) removed from the uploads directory', true );
 	}
 }
 add_action( 'admin_init', 'leaky_paywall_maybe_migrate_debug_log', 5 );
@@ -523,7 +523,7 @@ function leaky_paywall_maybe_migrate_subscriber_exports() {
 	}
 
 	if ( $deleted ) {
-		leaky_paywall_log_error( $deleted . ' publicly readable subscriber export file(s) removed from the uploads directory', 'migration' );
+		leaky_paywall_debug_log( 'migration | ' . $deleted . ' publicly readable subscriber export file(s) removed from the uploads directory', true );
 	}
 }
 add_action( 'admin_init', 'leaky_paywall_maybe_migrate_subscriber_exports', 5 );
