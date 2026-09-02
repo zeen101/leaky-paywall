@@ -4495,7 +4495,21 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		}
 
 		$level = get_leaky_paywall_subscription_level($level_id);
-		$description      = $level['label'];
+
+		// A stored level_id can outlive the level itself: a deleted level, or an
+		// id that arrived with an import. get_leaky_paywall_subscription_level()
+		// returns false in that case. Keep rendering the rest of the record,
+		// because the admin needs to see it in order to correct the level.
+		if (is_array($level) && isset($level['label'])) {
+			$description = $level['label'];
+		} else {
+			$description = sprintf(
+				/* translators: %s: the subscription level id stored on the subscriber */
+				__('Level %s no longer exists', 'leaky-paywall'),
+				$level_id
+			);
+		}
+
 		$gateway          = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true);
 		$status           = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
 		$expires          = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
