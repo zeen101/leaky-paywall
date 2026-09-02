@@ -236,11 +236,75 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			}
 		}
 
+		// Drop replays before doing any work. Stripe retries any delivery it does
+		// not get a timely 2xx for, and this handler sleeps 3 seconds and makes API
+		// calls, so retries are realistic under load. Not everything downstream is
+		// idempotent: the SimpleCirc renewal handler adds issues on every
+		// invoice.paid. The claim is network-wide, so it also covers the case of one
+		// event reaching more than one site's endpoint.
+		$event_id = isset($stripe_event->id) ? $stripe_event->id : '';
+
+		if ( ! leaky_paywall_claim_gateway_event( $event_id ) ) {
+			leaky_paywall_log( $event_id, 'stripe webhook - duplicate event ignored' );
+			wp_send_json(['leaky paywall webhook received - duplicate event ignored'], 200);
+		}
+
 		$stripe_object = $stripe_event->data->object;
 
 		do_action('leaky_paywall_before_process_stripe_webhook', $stripe_event);
 
+		$site     = '';
+		$switched = false;
+
+		// On multisite, work out which site in the network owns this customer and
+		// switch to it before doing anything else.
+		//
+		// This has to be a real switch, not just a suffix carried around:
+		//   - get_leaky_paywall_subscriber_by_subscriber_id() runs a WP_User_Query,
+		//     which on multisite is scoped to the current blog's members, so a
+		//     subscriber belonging to another site is invisible until we switch.
+		//   - leaky_paywall_set_subscriber_status() derives its own suffix from
+		//     get_current_blog_id(), so without the switch the status write lands on
+		//     the receiving site while the expiration write lands on the owning one.
+		//   - Extensions hooked to leaky_paywall_stripe_* read per-site settings and
+		//     per-site meta (the SimpleCirc renewal handler needs the owning site's
+		//     publication id and its _simplecirc_account_id suffix).
+		//
+		// With this in place a network needs one endpoint, not one per site.
+		if ( ! empty( $stripe_object->customer ) && is_multisite_premium() ) {
+
+			$owner_blog_id = leaky_paywall_get_subscriber_blog_id_by_subscriber_id( $stripe_object->customer, $mode );
+
+			if ( $owner_blog_id && get_current_blog_id() !== $owner_blog_id ) {
+				switch_to_blog( $owner_blog_id );
+				$switched = true;
+
+				leaky_paywall_log(
+					$stripe_object->customer . ' -> blog ' . $owner_blog_id,
+					'stripe webhook - switched to owning site'
+				);
+			}
+		}
+
 		leaky_paywall_log($stripe_object, 'stripe webhook - ' . $stripe_event->type);
+
+		// Pin the mode to the one the event itself declares. Without this,
+		// leaky_paywall_set_subscriber_status() and every extension re-derive the mode
+		// from the owning site's test_mode setting, which can disagree with the meta
+		// keys this handler writes directly.
+		add_filter(
+			'leaky_paywall_current_mode',
+			function () use ( $mode ) {
+				return $mode;
+			},
+			99
+		);
+
+		if ( $switched ) {
+			// Re-key the client so API calls use the owning site's credentials and
+			// Stripe Connect account rather than the site that received the request.
+			$stripe = leaky_paywall_initialize_stripe_api();
+		}
 
 		if (!empty($stripe_object->customer)) {
 			$user = get_leaky_paywall_subscriber_by_subscriber_id($stripe_object->customer, $mode);
@@ -258,6 +322,38 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				// do not create if they have not paid
 				if ( isset($stripe_object->amount_paid ) && $stripe_object->amount_paid > 0) {
 
+					$emails = array();
+
+					if ( isset( $stripe_object->customer_email ) ) {
+						$emails[] = $stripe_object->customer_email;
+					}
+
+					if ( isset( $stripe_object->receipt_email ) ) {
+						$emails[] = $stripe_object->receipt_email;
+					}
+
+					// The lp_incomplete_user record lives on the site the reader
+					// registered on, which is not necessarily the site serving this
+					// endpoint. Locate it before claiming, so the claim transient is set
+					// on the same site the redirect finalize path would claim on.
+					if ( ! $switched && is_multisite_premium() ) {
+
+						foreach ( $emails as $email ) {
+							$incomplete_blog_id = leaky_paywall_get_incomplete_user_blog_id( $email );
+
+							if ( $incomplete_blog_id && get_current_blog_id() !== $incomplete_blog_id ) {
+								switch_to_blog( $incomplete_blog_id );
+								$switched = true;
+
+								leaky_paywall_log(
+									$email . ' -> blog ' . $incomplete_blog_id,
+									'stripe webhook - switched to incomplete user site'
+								);
+								break;
+							}
+						}
+					}
+
 					// Claim the registration on the PaymentIntent — the same key the
 					// redirect / payment_intent.succeeded finalize uses — so only one
 					// path finalizes per payment. Skip if the other path already claimed it.
@@ -267,33 +363,33 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 						leaky_paywall_log( $pi_id, 'stripe webhook - registration already claimed, skipping incomplete-user finalize' );
 					} else {
 
-						if ( isset( $stripe_object->customer_email ) ) {
-							$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->customer_email);
-						}
-
-						if (isset($stripe_object->receipt_email)) {
-							$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user($stripe_object->receipt_email);
+						foreach ( $emails as $email ) {
+							// Keep a success sticky. The first call consumes the incomplete
+							// record, so a second lookup legitimately returns false and must
+							// not clear the result.
+							$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user( $email ) || $is_incomplete;
 						}
 					}
 
 				}
 
 				if ($is_incomplete) {
+					leaky_paywall_complete_gateway_event( $event_id );
 					wp_send_json(['leaky paywall webhook received - subscriber created from incomplete user 2'], 200);
 				}
 			}
 
+			// Deliberately not completed. We could not act on this event yet, so let
+			// the short in-flight claim lapse and allow Stripe's retry to try again
+			// once the subscriber record it was waiting for exists.
 			wp_send_json(['leaky paywall webhook received - no user found'], 200);
 
 		}
 
 		if (is_multisite_premium()) {
-			$site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id($stripe_object->customer);
-			if ($site_id) {
-				$site = '_' . $site_id;
-			}
-		} else {
-			$site = '';
+			// Correct for the owning site after the switch above, and correctly empty
+			// for a main-site subscriber, whose meta carries no suffix.
+			$site = leaky_paywall_get_current_site();
 		}
 
 		// https://stripe.com/docs/api#event_types .
@@ -539,6 +635,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		$action = str_replace('.', '_', $stripe_event->type);
 		do_action('leaky_paywall_stripe_' . $action, $user, $stripe_object);
 
+		leaky_paywall_complete_gateway_event( $event_id );
+
+		// Deliberately no restore_current_blog() here. wp_send_json() ends the
+		// request, and shutdown handlers still need the owning site's context: the
+		// Insights tracker flushes its queued events on 'shutdown' using the current
+		// site's credentials, so restoring first would attribute them to whichever
+		// site happened to receive the webhook.
 		wp_send_json(['leaky paywall webhook received - success'], 200);
 	}
 

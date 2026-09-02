@@ -127,6 +127,58 @@ if (!function_exists('get_leaky_paywall_subscribers_site_id_by_subscriber_id')) 
 	}
 }
 
+if (!function_exists('leaky_paywall_get_subscriber_blog_id_by_subscriber_id')) {
+	/**
+	 * Get the blog id of the site that owns a gateway customer.
+	 *
+	 * Unlike get_leaky_paywall_subscribers_site_id_by_subscriber_id(), this can
+	 * report the main site. The main site stores its subscriber meta without a
+	 * site suffix, so the suffixed scan cannot see it and returns an empty string
+	 * both for "main site" and for "not found".
+	 *
+	 * Used by inbound handlers (gateway webhooks and anything else without an
+	 * ambient site) that need to switch to the owning site before doing work.
+	 *
+	 * @since 5.1.x
+	 *
+	 * @param string $subscriber_id The gateway customer id (e.g. a Stripe cus_ id).
+	 * @param string $mode          The payment mode. Defaults to the current mode.
+	 * @return int Blog id, or 0 if no site in the network has this customer.
+	 */
+	function leaky_paywall_get_subscriber_blog_id_by_subscriber_id($subscriber_id, $mode = '')
+	{
+		if (!is_multisite_premium() || empty($subscriber_id)) {
+			return 0;
+		}
+
+		if (empty($mode)) {
+			$mode = leaky_paywall_get_current_mode();
+		}
+
+		$site_id = get_leaky_paywall_subscribers_site_id_by_subscriber_id($subscriber_id, $mode);
+
+		if ($site_id) {
+			return (int) $site_id;
+		}
+
+		// Fall back to the unsuffixed key, which only the main site uses. Query
+		// usermeta directly rather than via get_users(): on multisite WP_User_Query
+		// is scoped to the current blog's members, so it would miss a subscriber
+		// who belongs to a different site.
+		global $wpdb;
+
+		$found = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT user_id FROM $wpdb->usermeta WHERE meta_key = %s AND meta_value = %s LIMIT 1",
+				'_issuem_leaky_paywall_' . $mode . '_subscriber_id',
+				$subscriber_id
+			)
+		);
+
+		return $found ? (int) get_main_site_id() : 0;
+	}
+}
+
 if (!function_exists('get_leaky_paywall_subscribers_site_id_by_subscriber_email')) {
 	/**
 	 * Get subscriber's site id by their email

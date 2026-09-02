@@ -323,3 +323,94 @@ function leaky_paywall_get_registration_checkout_button_text( $method = '' ) {
 	return apply_filters( 'registration_checkout_button_text', $text );
 
 }
+
+/**
+ * Claim a gateway event id so it is only processed once.
+ *
+ * Gateways retry any delivery they don't get a timely success response for, and
+ * on multisite the same event can also reach more than one endpoint. Several
+ * downstream effects are not idempotent (the SimpleCirc renewal handler adds
+ * issues on every invoice.paid), so replays have to be dropped rather than
+ * merely tolerated.
+ *
+ * The claim is stored as a site transient, which is network-wide on multisite
+ * and therefore holds regardless of which site received the delivery or which
+ * blog the request has switched to. It is deliberately short-lived: a handler
+ * that fatals or times out leaves only the in-flight marker behind, which
+ * expires and lets the gateway's own retry succeed. Call
+ * leaky_paywall_complete_gateway_event() once the work is genuinely done to
+ * extend the claim across the gateway's full retry window.
+ *
+ * @since 5.1.x
+ *
+ * @param string $event_id          The gateway's event id (e.g. a Stripe evt_ id).
+ * @param int    $in_flight_seconds How long an unfinished claim is held. Default 5 minutes.
+ * @return bool True if the caller owns this event and should process it, false if it is a replay.
+ */
+function leaky_paywall_claim_gateway_event( $event_id, $in_flight_seconds = 0 ) {
+
+	global $wpdb;
+
+	$event_id = (string) $event_id;
+
+	// No stable id to dedupe on. Let the caller proceed rather than drop a
+	// delivery that might be the only one.
+	if ( '' === $event_id ) {
+		return true;
+	}
+
+	if ( ! $in_flight_seconds ) {
+		$in_flight_seconds = (int) apply_filters( 'leaky_paywall_gateway_event_in_flight_seconds', 5 * MINUTE_IN_SECONDS, $event_id );
+	}
+
+	$hash      = md5( $event_id );
+	$lock_name = 'lp_evt_' . $hash;
+	$key       = 'lp_evt_' . $hash;
+
+	// Serialize concurrent deliveries of the same event: a gateway can retry
+	// while the first attempt is still running.
+	$got_lock = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $lock_name, 5 ) );
+
+	$already_claimed = (bool) get_site_transient( $key );
+
+	if ( ! $already_claimed ) {
+		set_site_transient( $key, 'processing', $in_flight_seconds );
+	}
+
+	if ( '1' === (string) $got_lock ) {
+		$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $lock_name ) );
+	}
+
+	return ! $already_claimed;
+}
+
+/**
+ * Mark a claimed gateway event as fully processed.
+ *
+ * Extends the claim from leaky_paywall_claim_gateway_event() across the
+ * gateway's retry window so a later retry of work we already did is dropped.
+ * Only call this when the event was actually handled. Leaving the short
+ * in-flight claim in place is the right outcome for an event we could not act
+ * on yet (an unmatched customer, say), because the gateway's retry may find the
+ * record it was waiting for.
+ *
+ * @since 5.1.x
+ *
+ * @param string $event_id The gateway's event id.
+ * @param int    $ttl      How long to remember it. Default 3 days, which covers Stripe's retry schedule.
+ * @return void
+ */
+function leaky_paywall_complete_gateway_event( $event_id, $ttl = 0 ) {
+
+	$event_id = (string) $event_id;
+
+	if ( '' === $event_id ) {
+		return;
+	}
+
+	if ( ! $ttl ) {
+		$ttl = (int) apply_filters( 'leaky_paywall_gateway_event_ttl', 3 * DAY_IN_SECONDS, $event_id );
+	}
+
+	set_site_transient( 'lp_evt_' . md5( $event_id ), 'done', $ttl );
+}

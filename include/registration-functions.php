@@ -1338,6 +1338,63 @@ function leaky_paywall_create_incomplete_user( $user_data, $customer_data, $fiel
 }
 
 /**
+ * Find which site in the network holds an incomplete-user record for an email.
+ *
+ * The lp_incomplete_user CPT is per-site, so an inbound handler served by one
+ * site cannot see a record created on another. Walks the network so a single
+ * gateway webhook endpoint can finalize a registration abandoned on any site.
+ *
+ * @since 5.1.x
+ *
+ * @param string $email The email address on the incomplete registration.
+ * @return int Blog id holding the record, or 0 if none was found.
+ */
+function leaky_paywall_get_incomplete_user_blog_id( $email ) {
+
+	if ( ! is_multisite() || ! is_email( $email ) ) {
+		return 0;
+	}
+
+	$site_ids = get_sites(
+		array(
+			'fields'   => 'ids',
+			'number'   => (int) apply_filters( 'leaky_paywall_incomplete_user_site_search_limit', 100 ),
+			'archived' => 0,
+			'deleted'  => 0,
+			'spam'     => 0,
+		)
+	);
+
+	/**
+	 * Filter the sites searched for an incomplete-user record.
+	 *
+	 * Large networks can narrow this to the sites that actually take payments
+	 * rather than paying for a walk across every site on every unmatched webhook.
+	 *
+	 * @since 5.1.x
+	 *
+	 * @param array  $site_ids Blog ids to search.
+	 * @param string $email    The email being looked up.
+	 */
+	$site_ids = apply_filters( 'leaky_paywall_incomplete_user_search_site_ids', $site_ids, $email );
+
+	foreach ( (array) $site_ids as $site_id ) {
+
+		$site_id = (int) $site_id;
+
+		switch_to_blog( $site_id );
+		$found = leaky_paywall_get_incomplete_user_from_email( $email );
+		restore_current_blog();
+
+		if ( $found ) {
+			return $site_id;
+		}
+	}
+
+	return 0;
+}
+
+/**
  * Get incomplete user using their email address
  *
  * @param string $email The email address.
