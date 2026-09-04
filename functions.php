@@ -1097,6 +1097,46 @@ if (!function_exists('leaky_paywall_set_expiration_date')) {
 	}
 }
 
+if (!function_exists('leaky_paywall_ensure_blog_membership')) {
+	/**
+	 * Make sure a subscriber is a member of the site they just subscribed to.
+	 *
+	 * On multisite, "membership" is the {$wpdb->prefix}capabilities role entry, and
+	 * WP_User_Query is scoped to it. leaky_paywall_new_subscriber() reuses an
+	 * existing network account when one matches the email and only writes
+	 * subscription meta, so a reader who already had an account on one magazine and
+	 * then subscribed to another ended up with a perfectly good subscription on a
+	 * site they were not a member of.
+	 *
+	 * Anything that looks subscribers up by query then cannot see them:
+	 * get_leaky_paywall_subscriber_by_subscriber_id() is how the gateway webhooks
+	 * find people, so those subscribers were charged and silently ignored.
+	 *
+	 * Never touches an existing member, so it cannot downgrade a role.
+	 *
+	 * @since 5.1.x
+	 *
+	 * @param int $user_id WordPress user ID.
+	 * @return void
+	 */
+	function leaky_paywall_ensure_blog_membership($user_id)
+	{
+		if (!is_multisite_premium() || empty($user_id) || is_wp_error($user_id)) {
+			return;
+		}
+
+		$blog_id = get_current_blog_id();
+
+		if (is_user_member_of_blog($user_id, $blog_id)) {
+			return;
+		}
+
+		$role = apply_filters('leaky_paywall_subscriber_blog_role', 'subscriber', $user_id, $blog_id);
+
+		add_user_to_blog($blog_id, $user_id, $role);
+	}
+}
+
 if (!function_exists('leaky_paywall_new_subscriber')) {
 
 	/**
@@ -1216,6 +1256,8 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 			leaky_paywall_log($logged_userdata, 'leaky paywall - new subscriber created');
 		}
 
+		leaky_paywall_ensure_blog_membership($user_id);
+
 		leaky_paywall_set_expiration_date($user_id, $meta_args);
 		unset($meta_args['site']);
 
@@ -1313,6 +1355,8 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 		}
 
 		$current_level_id = get_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_level_id' . $site, true);
+
+		leaky_paywall_ensure_blog_membership($user_id);
 
 		leaky_paywall_set_expiration_date($user_id, $meta_args);
 		unset($meta_args['site']);

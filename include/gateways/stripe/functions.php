@@ -46,9 +46,14 @@ function leaky_paywall_check_recent_duplicate_signup( $email, $plan_id, $skip_cu
 	try {
 		$connect_params = leaky_paywall_get_stripe_connect_params();
 
-		$search = $stripe->customers->search(
+		// Deliberately the list endpoint, not customers->search(). Search is backed
+		// by an index that does not see newly created objects for a minute or more,
+		// so it returns nothing for the double-submit this guard exists to catch and
+		// the check silently passes. /v1/customers with an exact email filter is
+		// strongly consistent and sees a customer created moments earlier.
+		$search = $stripe->customers->all(
 			array(
-				'query' => 'email:"' . addcslashes( $email, '"\\' ) . '"',
+				'email' => $email,
 				'limit' => 100,
 			),
 			$connect_params
@@ -618,9 +623,11 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 			}
 
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
+			// Retrieved via the Prices API (not Plans) since every legacy plan has a
+			// same-ID shadow price, and new plan_ids are created as prices below.
 			try {
 			//	$plan_params = apply_filters('leaky_paywall_stripe_plan_params', [], $level, $plan_args);
-				$stripe_plan = $stripe->plans->retrieve($plan_id, [], leaky_paywall_get_stripe_connect_params() );
+				$stripe_plan = $stripe->prices->retrieve($plan_id, [], leaky_paywall_get_stripe_connect_params() );
 			} catch ( \Throwable $th ) {
 				leaky_paywall_log_error($th->getMessage(), 'lp - error retrieving stripe plan for ' . $plan_id);
 				$stripe_plan = false;
@@ -629,9 +636,9 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 			if (
 				! is_object( $stripe_plan ) || // If we don't have a stripe plan.
 				( // or the stripe plan doesn't match...
-					$plan_args['stripe_price'] != $stripe_plan->amount
-					|| $level['interval'] != $stripe_plan->interval
-					|| $level['interval_count'] != $stripe_plan->interval_count )
+					$plan_args['stripe_price'] != $stripe_plan->unit_amount
+					|| $level['interval'] != $stripe_plan->recurring->interval
+					|| $level['interval_count'] != $stripe_plan->recurring->interval_count )
 			) {
 				// does not match.
 			} else {
@@ -669,19 +676,27 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 
 	$time = time();
 
+	// Created via the Prices API (not the legacy Plans API) so the resulting id is a
+	// native price, matching what leaky_paywall_create_stripe_subscription() sends as
+	// items[].price. A Plan-created id mixed into that call trips Stripe's "You may
+	// only specify one of these parameters: plan, price" error. Prices don't take a
+	// custom id, so the product name carries the timestamp for uniqueness instead.
 	$args = array(
-		'amount'         => esc_js( $plan_args['stripe_price'] ),
-		'interval'       => esc_js( $level['interval'] ),
-		'interval_count' => esc_js( $level['interval_count'] ),
-		'name'           => esc_js( leaky_paywall_normalize_chars( $level['label'] ) ) . ' ' . $time,
-		'currency'       => esc_js( $plan_args['currency'] ),
-		'id'             => sanitize_title_with_dashes( leaky_paywall_normalize_chars( $level['label'] ) ) . '-' . $time,
+		'unit_amount'   => intval( $plan_args['stripe_price'] ),
+		'currency'      => esc_js( $plan_args['currency'] ),
+		'recurring'     => array(
+			'interval'       => esc_js( $level['interval'] ),
+			'interval_count' => esc_js( $level['interval_count'] ),
+		),
+		'product_data'  => array(
+			'name' => esc_js( leaky_paywall_normalize_chars( $level['label'] ) ) . ' ' . $time,
+		),
 	);
 
 	// $plan_params = apply_filters( 'leaky_paywall_stripe_plan_params', [], $level, $plan_args );
 
 	try {
-		$stripe_plan = $stripe->plans->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ), leaky_paywall_get_stripe_connect_params() );
+		$stripe_plan = $stripe->prices->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ), leaky_paywall_get_stripe_connect_params() );
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
 	} catch ( \Throwable $th ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
@@ -1841,7 +1856,7 @@ function leaky_paywall_stripe_tax_preview() {
 					$subscription = $stripe->subscriptions->create(
 						array(
 							'customer'         => $customer_id,
-							'items'            => array( array( 'plan' => $stripe_plan->id ) ),
+							'items'            => array( array( 'price' => $stripe_plan->id ) ),
 							'automatic_tax'    => array( 'enabled' => true ),
 							'payment_behavior' => 'default_incomplete',
 							'payment_settings' => array( 'save_default_payment_method' => 'on_subscription' ),
