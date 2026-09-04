@@ -622,6 +622,16 @@ function leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args ) {
 				continue; // fixes null or whitespace error
 			}
 
+			// Cached ids from before this moved to the Prices API are legacy Plan ids
+			// (custom, non-"price_" strings). Stripe's Prices API can retrieve one and
+			// report matching amount/interval on request, but Subscriptions API rejects
+			// it when used as items[].price ("You may only specify one of these
+			// parameters: plan, price"). Skip straight to minting a real price instead
+			// of reusing a legacy id that will look like a match forever.
+			if ( 0 !== strpos( $plan_id, 'price_' ) ) {
+				continue;
+			}
+
 			// We need to verify that the plan_id matches the level details, otherwise we need to update it.
 			// Retrieved via the Prices API (not Plans) since every legacy plan has a
 			// same-ID shadow price, and new plan_ids are created as prices below.
