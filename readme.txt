@@ -240,6 +240,7 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 * Fix: Free subscribers added through the REST API on a Forever level were given a one month expiration instead of never expiring. This also affected the default Free Registration level.
 * Fix: Prevented an error when creating a Stripe subscription for a level that still referenced an old Stripe plan ID.
 * Fix: Prevented a PHP warning on the account screen when a subscriber's level could not be found.
+* Fix: Prevented a "Could not create subscription" error at Stripe checkout on sites running an older Recurring Payments add-on.
 
 = 5.1.8 =
 * Security: detailed debug logging is now off by default and can be turned on from Leaky Paywall > Tools > Debug Log. Errors are always recorded. The log is stored in a protected folder, is given a new unguessable name each time detailed logging is enabled, and is capped at 5 MB or 30 days. Existing log files created by earlier versions are deleted on update. Define LEAKY_PAYWALL_LOG_DIR in wp-config.php to store the log outside your website folder.

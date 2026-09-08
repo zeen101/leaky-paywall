@@ -705,8 +705,21 @@ function leaky_paywall_create_stripe_plan( $level, $level_id, $plan_args ) {
 
 	// $plan_params = apply_filters( 'leaky_paywall_stripe_plan_params', [], $level, $plan_args );
 
+	$args = apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id );
+
+	// Older Recurring Payments / Stripe Plan Fix builds hook that filter to
+	// rewrite the legacy Plans arg 'name' into an inline 'product' array. The
+	// Prices API rejects a request carrying both 'product' and the 'product_data'
+	// core sends ("You may only specify one of these parameters: product,
+	// product_data"), and a top-level 'name' is not a valid Prices arg. Core owns
+	// product_data, so drop what those legacy filters leave behind.
+	if ( isset( $args['product'] ) && is_array( $args['product'] ) && isset( $args['product_data'] ) ) {
+		unset( $args['product'] );
+	}
+	unset( $args['name'] );
+
 	try {
-		$stripe_plan = $stripe->prices->create( apply_filters( 'leaky_paywall_create_stripe_plan', $args, $level, $level_id ), leaky_paywall_get_stripe_connect_params() );
+		$stripe_plan = $stripe->prices->create( $args, leaky_paywall_get_stripe_connect_params() );
 		leaky_paywall_log( $args, 'lp create stripe plan success' );
 	} catch ( \Throwable $th ) {
 		leaky_paywall_log( $args, 'lp create stripe plan error' );
