@@ -440,6 +440,15 @@ class LP_Transaction_Post_Type
 					</a>
 				</div>
 			<?php endif; ?>
+
+			<?php
+			/**
+			 * Fires at the end of the transaction sidebar meta box.
+			 *
+			 * @param WP_Post $post The transaction post.
+			 */
+			do_action( 'leaky_paywall_transaction_sidebar_after', $post );
+			?>
 		</div>
 
 		<?php

@@ -55,6 +55,7 @@ class LP_Emails {
 			'LP_Email_Admin_New_Subscriber',
 			'LP_Email_New_Subscriber',
 			'LP_Email_Renewal_Reminder',
+			'LP_Email_Payment_Receipt',
 		);
 
 		/**
