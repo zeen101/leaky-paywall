@@ -1719,8 +1719,8 @@ The %sitename% Team';
 						'label'                    => __('Free Registration', 'leaky-paywall'),
 						'price'                    => '0',
 						'subscription_length_type' => 'unlimited',
-						'interval_count'           => 1,
-						'interval'                 => 'month',
+						'interval_count'           => 0,
+						'interval'                 => '',
 						'recurring'                => 'off',
 						'plan_id'                  => array(),
 						'post_types'               => array(
@@ -2218,6 +2218,15 @@ The %sitename% Team';
 					}
 				}
 
+				// A level saved as "Forever" (unlimited) hides its interval inputs in
+				// the admin UI but still submits their last values. Zero them here so
+				// stale interval data cannot reach leaky_paywall_set_expiration_date()
+				// or anything else downstream that reads the level config.
+				if (isset($levels[$i]['subscription_length_type']) && 'unlimited' === $levels[$i]['subscription_length_type']) {
+					$levels[$i]['interval_count'] = 0;
+					$levels[$i]['interval']       = '';
+				}
+
 				// Always write post_types, even when the level was saved with every
 				// access row removed. Omitting the key leaves the level unreadable to
 				// the access resolver instead of simply granting nothing.
@@ -2249,6 +2258,15 @@ The %sitename% Team';
 				if (in_array($key, $textarea_fields)) {
 					$level[$key] = wp_kses_post(wp_unslash($value));
 				}
+			}
+
+			// A level saved as "Forever" (unlimited) hides its interval inputs in the
+			// admin UI but still submits their last values. Zero them here so stale
+			// interval data cannot reach leaky_paywall_set_expiration_date() or
+			// anything else downstream that reads the level config.
+			if (isset($level['subscription_length_type']) && 'unlimited' === $level['subscription_length_type']) {
+				$level['interval_count'] = 0;
+				$level['interval']       = '';
 			}
 
 			// Always write post_types, even when the level was saved with every

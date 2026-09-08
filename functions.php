@@ -1075,13 +1075,32 @@ if (!function_exists('leaky_paywall_set_expiration_date')) {
 		$mode     = leaky_paywall_get_current_mode();
 		$site     = leaky_paywall_get_current_site();
 
+		// A level set to "Forever" (subscription_length_type "unlimited") keeps its
+		// last interval/interval_count in the level config - the admin UI only hides
+		// those inputs when Forever is chosen, it never clears them, and the level
+		// sanitizer does not reset them on save. Without this check the interval math
+		// below hands an unlimited subscriber a real expiration date (the default
+		// Free Registration level ships as unlimited + "1 month", so REST and
+		// front-end free signups were expiring a month out). Treat unlimited as
+		// never expire unless the caller passed an explicit expiration.
+		$is_unlimited = false;
+
+		if (isset($data['subscription_length_type'])) {
+			$is_unlimited = 'unlimited' === $data['subscription_length_type'];
+		} elseif (isset($data['level_id']) && '' !== $data['level_id']) {
+			$level        = get_leaky_paywall_subscription_level($data['level_id']);
+			$is_unlimited = is_array($level) && isset($level['subscription_length_type']) && 'unlimited' === $level['subscription_length_type'];
+		}
+
 		if (isset($data['expires']) && $data['expires']) {
 			$expires = $data['expires'];
+		} elseif ($is_unlimited) {
+			$expires = '0000-00-00 00:00:00';
 		} elseif (!empty($data['interval']) && isset($data['interval_count']) && 1 <= $data['interval_count']) {
 			$expires = date_i18n('Y-m-d 23:59:59', strtotime('+' . $data['interval_count'] . ' ' . $data['interval'])); // we're generous, give them the whole day!
 		}
 
-		if ('on' === $settings['add_expiration_dates']) {
+		if (!$is_unlimited && 'on' === $settings['add_expiration_dates']) {
 
 			$current_expires = get_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true);
 
