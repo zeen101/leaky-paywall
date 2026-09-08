@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.1.8
+Stable tag: 5.1.9
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,15 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.1.9 =
+* New: Payment Receipt email. Leaky Paywall now emails subscribers a branded receipt for every payment, including automatic subscription renewals. It is on by default for new installs. On existing sites it starts switched off with a dashboard notice so you can turn it on when you are ready. You can resend a receipt from any transaction.
+* New: Branded email template. Add your logo, an accent color, and footer text under Leaky Paywall > Settings > Emails and it applies to every email Leaky Paywall sends. Each email now has a Send Test Email button.
+* Improvement: Stripe subscriptions are now created with Stripe's current Prices API instead of the deprecated Plans API.
+* Improvement: On multisite, a single gateway webhook endpoint can now finalize a registration that was started on any site in the network.
+* Fix: Free subscribers added through the REST API on a Forever level were given a one month expiration instead of never expiring. This also affected the default Free Registration level.
+* Fix: Prevented an error when creating a Stripe subscription for a level that still referenced an old Stripe plan ID.
+* Fix: Prevented a PHP warning on the account screen when a subscriber's level could not be found.
 
 = 5.1.8 =
 * Security: detailed debug logging is now off by default and can be turned on from Leaky Paywall > Tools > Debug Log. Errors are always recorded. The log is stored in a protected folder, is given a new unguessable name each time detailed logging is enabled, and is capped at 5 MB or 30 days. Existing log files created by earlier versions are deleted on update. Define LEAKY_PAYWALL_LOG_DIR in wp-config.php to store the log outside your website folder.

@@ -33,8 +33,8 @@ $default_body    = $settings['new_email_body'];
 			<p class="description">
 				<?php
 				printf(
-					/* translators: %s: example template tag with a fallback value */
-					esc_html__( 'Add a fallback for empty values with %s — for example, %s renders "there" when no first name is on file.', 'leaky-paywall' ),
+					/* translators: 1: the %token|fallback% syntax, 2: an example using it. */
+					esc_html__( 'Add a fallback for empty values with %1$s — for example, %2$s renders "there" when no first name is on file.', 'leaky-paywall' ),
 					'<code>%token|fallback%</code>',
 					'<code>%firstname|there%</code>'
 				);
