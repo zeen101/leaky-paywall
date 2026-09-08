@@ -143,6 +143,75 @@ class LP_Emails {
 						value="<?php echo esc_attr( $settings['from_email'] ); ?>" />
 				</td>
 			</tr>
+			<?php
+			$email_logo   = isset( $settings['email_logo'] ) ? $settings['email_logo'] : '';
+			$email_accent = isset( $settings['email_accent_color'] ) && $settings['email_accent_color'] ? $settings['email_accent_color'] : '#1e293b';
+			$email_footer = isset( $settings['email_footer_text'] ) ? $settings['email_footer_text'] : '';
+			?>
+			<tr>
+				<th><?php esc_html_e( 'Email Logo', 'leaky-paywall' ); ?></th>
+				<td>
+					<input type="text" id="email_logo" name="email_logo" class="regular-text"
+						value="<?php echo esc_attr( $email_logo ); ?>" placeholder="https://" />
+					<button type="button" class="button" id="email_logo_select"><?php esc_html_e( 'Select Image', 'leaky-paywall' ); ?></button>
+					<button type="button" class="button-link" id="email_logo_clear" <?php echo $email_logo ? '' : 'style="display:none;"'; ?>><?php esc_html_e( 'Remove', 'leaky-paywall' ); ?></button>
+					<p class="description"><?php esc_html_e( 'Shown at the top of every email. Leave blank to use your site name.', 'leaky-paywall' ); ?></p>
+					<p><img id="email_logo_preview" src="<?php echo esc_url( $email_logo ); ?>" alt="" style="max-height:40px;max-width:220px;<?php echo $email_logo ? '' : 'display:none;'; ?>" /></p>
+					<script>
+					( function() {
+						var field = document.getElementById( 'email_logo' );
+						var preview = document.getElementById( 'email_logo_preview' );
+						var clear = document.getElementById( 'email_logo_clear' );
+						function sync() {
+							var v = field.value.trim();
+							preview.src = v;
+							preview.style.display = v ? '' : 'none';
+							clear.style.display = v ? '' : 'none';
+						}
+						field.addEventListener( 'input', sync );
+						clear.addEventListener( 'click', function() { field.value = ''; sync(); } );
+						document.getElementById( 'email_logo_select' ).addEventListener( 'click', function( e ) {
+							e.preventDefault();
+							if ( ! window.wp || ! window.wp.media ) { return; }
+							var frame = wp.media( { title: <?php echo wp_json_encode( __( 'Select an image', 'leaky-paywall' ) ); ?>, multiple: false, library: { type: 'image' } } );
+							frame.on( 'select', function() {
+								var att = frame.state().get( 'selection' ).first().toJSON();
+								field.value = att.url;
+								sync();
+							} );
+							frame.open();
+						} );
+					} )();
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Accent Color', 'leaky-paywall' ); ?></th>
+				<td>
+					<input type="color" id="email_accent_color" name="email_accent_color"
+						value="<?php echo esc_attr( $email_accent ); ?>" />
+					<code id="email_accent_color_hex"><?php echo esc_html( $email_accent ); ?></code>
+					<p class="description"><?php esc_html_e( 'Used for the top border, headings, and links.', 'leaky-paywall' ); ?></p>
+					<script>
+					( function() {
+						var input = document.getElementById( 'email_accent_color' );
+						var hex = document.getElementById( 'email_accent_color_hex' );
+						input.addEventListener( 'input', function() { hex.textContent = input.value; } );
+					} )();
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Footer Text', 'leaky-paywall' ); ?></th>
+				<td>
+					<textarea id="email_footer_text" name="email_footer_text" class="large-text" rows="3"
+						placeholder="<?php echo esc_attr( "The Example Review\n123 Main St, Suite 200, Springfield, IL 62704\n© %year% %sitename%" ); ?>"><?php echo esc_textarea( $email_footer ); ?></textarea>
+					<p class="description">
+						<?php esc_html_e( 'Appears at the bottom of every email. A good place for your mailing address.', 'leaky-paywall' ); ?>
+						<?php esc_html_e( 'Tags:', 'leaky-paywall' ); ?> <code>%sitename% %siteurl% %year%</code>
+					</p>
+				</td>
+			</tr>
 		</table>
 		<?php
 	}
@@ -271,6 +340,23 @@ class LP_Emails {
 		if ( ! empty( $_POST['from_email'] ) ) {
 			$settings['from_email'] = sanitize_text_field( wp_unslash( $_POST['from_email'] ) );
 		}
+
+		// The settings form nonce is verified in
+		// Leaky_Paywall_Settings::process_settings_update() before this runs.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['email_logo'] ) ) {
+			$settings['email_logo'] = esc_url_raw( wp_unslash( $_POST['email_logo'] ) );
+		}
+
+		if ( ! empty( $_POST['email_accent_color'] ) ) {
+			$accent                         = sanitize_hex_color( wp_unslash( $_POST['email_accent_color'] ) );
+			$settings['email_accent_color'] = $accent ? $accent : '#1e293b';
+		}
+
+		if ( isset( $_POST['email_footer_text'] ) ) {
+			$settings['email_footer_text'] = wp_kses_post( wp_unslash( $_POST['email_footer_text'] ) );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		update_option( 'issuem-leaky-paywall', $settings );
 

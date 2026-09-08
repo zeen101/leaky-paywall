@@ -349,6 +349,7 @@ class Leaky_Paywall {
 	public function admin_wp_enqueue_scripts( $hook_suffix ) {
 
 		if ( 'leaky-paywall_page_leaky-paywall-settings' === $hook_suffix ) {
+			wp_enqueue_media();
 			wp_enqueue_script( 'leaky_paywall_js', LEAKY_PAYWALL_URL . 'js/issuem-leaky-paywall-settings.js', array( 'jquery' ), LEAKY_PAYWALL_VERSION, true );
 
 			wp_localize_script(

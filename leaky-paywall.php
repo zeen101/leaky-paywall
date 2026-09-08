@@ -103,6 +103,7 @@ function leaky_paywall_plugins_loaded() {
 
 		// Email classes.
 		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/emails/email-template.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email-new-subscriber.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email-admin-new-subscriber.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/emails/class-lp-email-renewal-reminder.php';

@@ -107,7 +107,7 @@ class LP_Email_Renewal_Reminder extends LP_Email {
 
 		$filtered_subject = $this->replace_tags( $this->subject, $user_id, $display_name, $password );
 		$filtered_message = $this->replace_tags( $message, $user_id, $display_name, $password );
-		$filtered_message = wpautop( make_clickable( $filtered_message ) );
+		$filtered_message = $this->wrap( wpautop( make_clickable( $filtered_message ) ) );
 
 		$headers     = $this->get_headers();
 		$attachments = apply_filters( 'leaky_paywall_email_attachments', array(), $user_info, 'renewal_reminder' );

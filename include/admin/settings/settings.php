@@ -1646,6 +1646,9 @@ The %sitename% Team';
 				'site_name'                             => get_option('blogname'), /* Site Specific */
 				'from_name'                             => get_option('blogname'), /* Site Specific */
 				'from_email'                            => get_option('admin_email'), /* Site Specific */
+				'email_logo'                            => '',
+				'email_accent_color'                    => '#1e293b',
+				'email_footer_text'                     => '',
 				'new_subscriber_email'                  => 'off',
 				'new_email_subject'                     => __( 'Welcome to %sitename%', 'leaky-paywall' ),
 				'new_email_body'                        => $default_email_body,

@@ -43,7 +43,6 @@ class LP_Email_Payment_Receipt extends LP_Email {
 			'%transaction_id%',
 			'%next_renewal_date%',
 			'%account_url%',
-			'%receipt_url%',
 		);
 
 		parent::__construct();
@@ -105,7 +104,7 @@ class LP_Email_Payment_Receipt extends LP_Email {
 		$subject = leaky_paywall_replace_payment_receipt_tags( $subject, $transaction_id );
 		$message = leaky_paywall_replace_payment_receipt_tags( $message, $transaction_id );
 
-		$message = wpautop( make_clickable( $message ) );
+		$message = $this->wrap( wpautop( make_clickable( $message ) ) );
 
 		$headers     = $this->get_headers();
 		$attachments = apply_filters( 'leaky_paywall_email_attachments', array(), $user_info, 'payment_receipt' );
@@ -117,6 +116,16 @@ class LP_Email_Payment_Receipt extends LP_Email {
 		}
 
 		return $sent;
+	}
+
+	/**
+	 * Swap the transaction tags for sample values in a test send.
+	 *
+	 * @param string $content Content with tags.
+	 * @return string
+	 */
+	protected function preview_tags( $content ) {
+		return leaky_paywall_apply_receipt_tag_values( $content, leaky_paywall_get_payment_receipt_sample_values() );
 	}
 
 	/**

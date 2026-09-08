@@ -208,7 +208,7 @@ class LP_Email_Admin_New_Subscriber extends LP_Email {
 		$headers     = $this->get_headers();
 		$attachments = apply_filters( 'leaky_paywall_email_attachments', array(), $user_info, $status );
 
-		wp_mail( $this->recipients, $this->subject, $admin_message, $headers, $attachments );
+		wp_mail( $this->recipients, $this->subject, $this->wrap( $admin_message ), $headers, $attachments );
 	}
 
 	/**

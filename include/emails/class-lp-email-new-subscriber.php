@@ -56,7 +56,7 @@ class LP_Email_New_Subscriber extends LP_Email {
 
 		$filtered_subject = $this->replace_tags( $subject, $user_id, $display_name, $password );
 		$filtered_message = $this->replace_tags( $message, $user_id, $display_name, $password );
-		$filtered_message = wpautop( make_clickable( $filtered_message ) );
+		$filtered_message = $this->wrap( wpautop( make_clickable( $filtered_message ) ) );
 
 		if ( ! apply_filters( 'leaky_paywall_send_' . $status . '_email', true, $user_id ) ) {
 			return;

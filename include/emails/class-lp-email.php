@@ -251,7 +251,7 @@ class LP_Email {
 
 		$subject = $this->replace_tags( stripslashes( $this->subject ), $user_id, $display_name, $password );
 		$message = $this->replace_tags( stripslashes( $this->body ), $user_id, $display_name, $password );
-		$message = wpautop( make_clickable( $message ) );
+		$message = $this->wrap( wpautop( make_clickable( $message ) ) );
 
 		$headers     = $this->get_headers();
 		$attachments = apply_filters( 'leaky_paywall_email_attachments', array(), $user_info, $this->id );
@@ -268,6 +268,71 @@ class LP_Email {
 	 */
 	public function trigger( $user_id, $args = array() ) {
 		$this->send( $user_id, $args );
+	}
+
+	/**
+	 * Wrap a finished email body in the branded HTML template.
+	 *
+	 * Every LP email calls this just before wp_mail(). Extensions can opt an
+	 * email out with the leaky_paywall_use_email_template filter.
+	 *
+	 * @param string $message The email body HTML.
+	 * @return string
+	 */
+	public function wrap( $message ) {
+		if ( ! apply_filters( 'leaky_paywall_use_email_template', true, $this->id, $this->recipient_type ) ) {
+			return $message;
+		}
+
+		if ( ! function_exists( 'leaky_paywall_get_email_template' ) ) {
+			return $message;
+		}
+
+		return leaky_paywall_get_email_template( $message, array( 'email_id' => $this->id ) );
+	}
+
+	/**
+	 * Send a test copy of this email to an address, using the saved settings
+	 * and sample data for any tags that need a real event.
+	 *
+	 * @param string $to Recipient address.
+	 * @return bool
+	 */
+	public function send_test( $to ) {
+		if ( ! is_email( $to ) ) {
+			return false;
+		}
+
+		$user_id      = get_current_user_id();
+		$user_info    = get_userdata( $user_id );
+		$display_name = $user_info ? $user_info->display_name : '';
+
+		$subject = $this->replace_tags( stripslashes( $this->subject ), $user_id, $display_name, 'sample-password-1234' );
+		$message = $this->replace_tags( stripslashes( $this->body ), $user_id, $display_name, 'sample-password-1234' );
+
+		$subject = $this->preview_tags( $subject );
+		$message = $this->preview_tags( $message );
+
+		$message = $this->wrap( wpautop( make_clickable( $message ) ) );
+
+		return wp_mail(
+			$to,
+			/* translators: %s: email subject line. */
+			sprintf( __( '[Test] %s', 'leaky-paywall' ), $subject ),
+			$message,
+			$this->get_headers()
+		);
+	}
+
+	/**
+	 * Hook for subclasses to swap event-specific tags for sample values in a
+	 * test send. Default: no-op.
+	 *
+	 * @param string $content Content with tags.
+	 * @return string
+	 */
+	protected function preview_tags( $content ) {
+		return $content;
 	}
 
 	// ──────────────────────────────────────────────────────────────────────
@@ -287,8 +352,57 @@ class LP_Email {
 			$this->output_body_field();
 			$this->output_extra_fields();
 			$this->output_template_tags_hint();
+			$this->output_test_send_field();
 			?>
 		</table>
+		<?php
+	}
+
+	/**
+	 * Render the "Send test email" row.
+	 */
+	protected function output_test_send_field() {
+		$current_user = wp_get_current_user();
+		?>
+		<tr>
+			<th><?php esc_html_e( 'Send Test Email', 'leaky-paywall' ); ?></th>
+			<td>
+				<input type="email" id="<?php echo esc_attr( $this->id ); ?>_test_to" class="regular-text"
+					value="<?php echo esc_attr( $current_user->user_email ); ?>" />
+				<button type="button" class="button lp-send-test-email"
+					data-email-id="<?php echo esc_attr( $this->id ); ?>"
+					data-nonce="<?php echo esc_attr( wp_create_nonce( 'lp_send_test_email' ) ); ?>">
+					<?php esc_html_e( 'Send Test', 'leaky-paywall' ); ?>
+				</button>
+				<span class="lp-send-test-email-result" style="margin-left: 8px;"></span>
+				<p class="description">
+					<?php esc_html_e( 'Sends this email with sample data using your saved settings. Save changes first.', 'leaky-paywall' ); ?>
+				</p>
+				<script>
+				( function() {
+					var btn = document.querySelector( '.lp-send-test-email[data-email-id="<?php echo esc_js( $this->id ); ?>"]' );
+					if ( ! btn || btn.dataset.lpBound ) { return; }
+					btn.dataset.lpBound = '1';
+					btn.addEventListener( 'click', function() {
+						var to  = document.getElementById( '<?php echo esc_js( $this->id ); ?>_test_to' ).value;
+						var out = btn.parentNode.querySelector( '.lp-send-test-email-result' );
+						btn.disabled = true;
+						out.textContent = <?php echo wp_json_encode( __( 'Sending…', 'leaky-paywall' ) ); ?>;
+						var data = new FormData();
+						data.append( 'action', 'lp_send_test_email' );
+						data.append( 'email_id', btn.dataset.emailId );
+						data.append( 'to', to );
+						data.append( 'nonce', btn.dataset.nonce );
+						fetch( <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>, { method: 'POST', credentials: 'same-origin', body: data } )
+							.then( function( r ) { return r.json(); } )
+							.then( function( j ) { out.textContent = ( j.data && j.data.message ) ? j.data.message : ( j.success ? 'Sent' : 'Failed' ); } )
+							.catch( function() { out.textContent = 'Failed'; } )
+							.then( function() { btn.disabled = false; } );
+					} );
+				} )();
+				</script>
+			</td>
+		</tr>
 		<?php
 	}
 
@@ -397,8 +511,8 @@ class LP_Email {
 				<p class="description">
 					<?php
 					printf(
-						/* translators: %s: example template tag with a fallback value */
-						esc_html__( 'Add a fallback for empty values with %s — for example, %s renders "there" when no first name is on file.', 'leaky-paywall' ),
+						/* translators: 1: the %token|fallback% syntax, 2: an example using it. */
+						esc_html__( 'Add a fallback for empty values with %1$s — for example, %2$s renders "there" when no first name is on file.', 'leaky-paywall' ),
 						'<code>%token|fallback%</code>',
 						'<code>%firstname|there%</code>'
 					);

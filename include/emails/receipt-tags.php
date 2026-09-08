@@ -115,15 +115,13 @@ function leaky_paywall_get_payment_receipt_tag_values( $transaction_id ) {
 }
 
 /**
- * Replace %token% and %token|fallback% in a string with transaction values.
+ * Replace %token% / %token|fallback% in a string from a token => value map.
  *
- * @param string $content        The string with tags.
- * @param int    $transaction_id Transaction post ID.
+ * @param string $content The string with tags.
+ * @param array  $values  token => value.
  * @return string
  */
-function leaky_paywall_replace_payment_receipt_tags( $content, $transaction_id ) {
-
-	$values = leaky_paywall_get_payment_receipt_tag_values( $transaction_id );
+function leaky_paywall_apply_receipt_tag_values( $content, array $values ) {
 
 	foreach ( $values as $token => $value ) {
 		$content = preg_replace_callback(
@@ -140,6 +138,47 @@ function leaky_paywall_replace_payment_receipt_tags( $content, $transaction_id )
 	}
 
 	return $content;
+}
+
+/**
+ * Replace %token% and %token|fallback% in a string with transaction values.
+ *
+ * @param string $content        The string with tags.
+ * @param int    $transaction_id Transaction post ID.
+ * @return string
+ */
+function leaky_paywall_replace_payment_receipt_tags( $content, $transaction_id ) {
+	return leaky_paywall_apply_receipt_tag_values(
+		$content,
+		leaky_paywall_get_payment_receipt_tag_values( $transaction_id )
+	);
+}
+
+/**
+ * Sample tag values for a "Send test email" preview of the receipt.
+ *
+ * @return array token => value.
+ */
+function leaky_paywall_get_payment_receipt_sample_values() {
+
+	$settings    = get_leaky_paywall_settings();
+	$account_url = ! empty( $settings['page_for_profile'] ) ? get_page_link( $settings['page_for_profile'] ) : home_url();
+
+	return array(
+		'amount'            => leaky_paywall_format_display_price( 49 ),
+		'currency'          => leaky_paywall_get_currency(),
+		'subtotal'          => leaky_paywall_format_display_price( 49 ),
+		'tax'               => '',
+		'payment_date'      => date_i18n( get_option( 'date_format' ) ),
+		'payment_method'    => __( 'Card', 'leaky-paywall' ),
+		'payment_type'      => __( 'Subscription renewal', 'leaky-paywall' ),
+		'level_name'        => __( 'Annual Membership', 'leaky-paywall' ),
+		'invoice_number'    => '#12345',
+		'transaction_id'    => 'sample_txn_12345',
+		'next_renewal_date' => date_i18n( get_option( 'date_format' ), strtotime( '+1 year' ) ),
+		'account_url'       => $account_url,
+		'receipt_url'       => '',
+	);
 }
 
 /**
