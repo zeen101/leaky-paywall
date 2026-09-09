@@ -749,6 +749,56 @@ function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
 }
 
 /**
+ * Decide whether an invoice.payment_succeeded / invoice.paid webhook represents
+ * a billing period the subscriber actually paid for, and so should activate
+ * them and move their expiration date.
+ *
+ * Stripe fires these events for invoices where no money changed hands:
+ *
+ *   - A plan change (billing_reason "subscription_update") produces a proration
+ *     invoice. It is a mid-cycle adjustment, not a new period. After a failed
+ *     renewal Stripe credits the unused portion of the unpaid term, and that
+ *     credit then covers the proration, so amount_paid is 0. The old handler
+ *     activated the subscriber and pushed their expiration to
+ *     current_period_end, so switching plans while a renewal was unpaid handed
+ *     out a free paid term.
+ *   - A renewal (billing_reason "subscription_cycle") can be covered entirely
+ *     by an accumulated credit balance, so amount_paid is 0 while total > 0.
+ *
+ * A genuine free period (100%-off coupon) has total 0 and still passes, as does
+ * a payment made outside Stripe (paid_out_of_band).
+ *
+ * @since 5.1.10
+ *
+ * @param object $invoice The Stripe invoice object from the webhook event.
+ * @return bool True if the invoice should drive access; false if it was settled
+ *              from credit balance / proration and should be ignored.
+ */
+function leaky_paywall_stripe_invoice_collected_payment( $invoice ) {
+
+	$amount_paid      = isset( $invoice->amount_paid ) ? (int) $invoice->amount_paid : 0;
+	$total            = isset( $invoice->total ) ? (int) $invoice->total : 0;
+	$billing_reason   = isset( $invoice->billing_reason ) ? $invoice->billing_reason : '';
+	$starting_balance = isset( $invoice->starting_balance ) ? (int) $invoice->starting_balance : 0;
+
+	$collected = true;
+
+	if ( $amount_paid > 0 || ! empty( $invoice->paid_out_of_band ) ) {
+		$collected = true;
+	} elseif ( 'subscription_update' === $billing_reason ) {
+		// Plan-change proration that collected nothing: never a new paid period.
+		$collected = false;
+	} elseif ( $total > 0 && $starting_balance < 0 ) {
+		// A billed period covered entirely by an existing credit balance rather
+		// than a charge. Stripe spending accrued credit is not a payment. A real
+		// free period (coupon) has total <= 0 and stays true.
+		$collected = false;
+	}
+
+	return apply_filters( 'leaky_paywall_stripe_invoice_collected_payment', $collected, $invoice );
+}
+
+/**
  * Initialize a call to the Stripe API with Leaky Paywall App Info
  *
  * @since 4.15.4

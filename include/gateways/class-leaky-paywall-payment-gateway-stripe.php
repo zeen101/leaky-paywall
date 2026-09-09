@@ -459,6 +459,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'invoice.payment_succeeded':
+				// Ignore invoices that collected no money (a plan-change
+				// proration or a renewal covered entirely by credit balance).
+				// Activating and extending the term on these hands a subscriber
+				// free paid time whenever they switch plans while a renewal is
+				// unpaid. The leaky_paywall_stripe_invoice_payment_succeeded
+				// action below still fires for extensions.
+				if ( ! leaky_paywall_stripe_invoice_collected_payment( $stripe_object ) ) {
+					leaky_paywall_log( $stripe_object->id, 'stripe webhook - invoice.payment_succeeded ignored, no payment collected (credit/proration)' );
+					break;
+				}
+
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 
 				if ($stripe_object->subscription !== null ) {
@@ -486,6 +497,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				break;
 			case 'invoice.paid':
+				// See invoice.payment_succeeded above: a credit-covered
+				// proration or renewal is not a payment and must not activate.
+				if ( ! leaky_paywall_stripe_invoice_collected_payment( $stripe_object ) ) {
+					leaky_paywall_log( $stripe_object->id, 'stripe webhook - invoice.paid ignored, no payment collected (credit/proration)' );
+					break;
+				}
+
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 				break;
 
