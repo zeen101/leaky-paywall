@@ -160,7 +160,10 @@ class Leaky_Paywall_Dashboard {
 				__( 'Top Content — Paid Conversions', 'leaky-paywall' ),
 				$top_paid_content,
 				$is_pro,
-				array( 'Content', 'Conversions' )
+				array( 'Content', 'Conversions' ),
+				'',
+				'paid',
+				$period
 			); ?>
 
 			<?php
@@ -180,7 +183,9 @@ class Leaky_Paywall_Dashboard {
 				$top_free_content,
 				$is_pro,
 				array( 'Content', 'Conversions' ),
-				$free_footer
+				$free_footer,
+				'free',
+				$period
 			); ?>
 
 			<!-- Paywall Insights -->
@@ -608,9 +613,10 @@ class Leaky_Paywall_Dashboard {
 			}
 
 			$content[] = array(
-				'title' => $title,
-				'url'   => get_the_permalink( $post_id ),
-				'count' => (int) $row->total,
+				'post_id' => $post_id,
+				'title'   => $title,
+				'url'     => get_the_permalink( $post_id ),
+				'count'   => (int) $row->total,
 			);
 		}
 
@@ -664,7 +670,7 @@ class Leaky_Paywall_Dashboard {
 		);
 	}
 
-	private function render_top_content_card( $title, $items, $is_pro, $columns, $footer = '' ) {
+	private function render_top_content_card( $title, $items, $is_pro, $columns, $footer = '', $export_type = '', $period = '' ) {
 		?>
 		<div class="lp-card">
 			<h3><?php echo esc_html( $title ); ?></h3>
@@ -680,7 +686,27 @@ class Leaky_Paywall_Dashboard {
 						<?php foreach ( $items as $i => $item ) : ?>
 						<tr<?php echo ( ! $is_pro && $i >= 1 ) ? ' class="lp-pro-blurred-row"' : ''; ?>>
 							<td><a href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['title'] ); ?></a></td>
-							<td style="text-align: right;"><?php echo absint( $item['count'] ); ?></td>
+							<td style="text-align: right;">
+								<?php if ( $is_pro && $export_type && ! empty( $item['post_id'] ) ) : ?>
+									<?php
+									// Drill through to the subscribers themselves. The
+									// list view names the filter, reconciles the count,
+									// and offers the CSV from there.
+									$drilldown_url = add_query_arg(
+										array(
+											'page'            => 'leaky-paywall-subscribers',
+											'filter-article'  => (int) $item['post_id'],
+											'conversion_type' => $export_type,
+											'nag_period'      => $period,
+										),
+										admin_url( 'admin.php' )
+									);
+									?>
+									<a href="<?php echo esc_url( $drilldown_url ); ?>" title="<?php esc_attr_e( 'View these subscribers', 'leaky-paywall' ); ?>"><?php echo absint( $item['count'] ); ?></a>
+								<?php else : ?>
+									<?php echo absint( $item['count'] ); ?>
+								<?php endif; ?>
+							</td>
 						</tr>
 						<?php endforeach; ?>
 						<?php if ( ! $is_pro ) : ?>

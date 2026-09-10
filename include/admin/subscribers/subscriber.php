@@ -206,6 +206,106 @@ class Leaky_Paywall_Admin_Subscriber
 	<?php
 	}
 
+
+	/**
+	 * Show the active "converted from this article" filter, if one is applied.
+	 *
+	 * Drilled into from the dashboard's Top Content cards. Names the article,
+	 * reconciles the number of listed subscribers against the conversions the
+	 * card counted, offers the CSV, and gives a way back out of the filter.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return void
+	 */
+	public function render_attributed_filter_notice()
+	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$post_id = isset($_GET['filter-article']) ? absint($_GET['filter-article']) : 0;
+		$type    = (isset($_GET['conversion_type']) && 'paid' === $_GET['conversion_type']) ? 'paid' : 'free';
+		$period  = isset($_GET['nag_period']) ? sanitize_text_field(wp_unslash($_GET['nag_period'])) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if (!$post_id || !leaky_paywall_is_pro()) {
+			return;
+		}
+
+		$attributed = leaky_paywall_get_attributed_conversions($post_id, $type, $period);
+		$conversions = count($attributed['emails']);
+		$listed      = count($attributed['user_ids']);
+		$title       = get_the_title($post_id);
+
+		$clear_url = remove_query_arg(array('filter-article', 'conversion_type', 'nag_period'));
+
+		$download_url = wp_nonce_url(
+			add_query_arg(
+				array(
+					'action'          => 'leaky_paywall_download_attributed',
+					'filter-article'  => $post_id,
+					'conversion_type' => $type,
+					'nag_period'      => $period,
+				),
+				admin_url('admin-post.php')
+			),
+			'leaky_paywall_download_attributed'
+		);
+?>
+		<div class="lp-attributed-filter" style="clear: both; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; margin: 0 0 16px; background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #72aee6; border-radius: 2px;">
+			<div>
+				<strong>
+					<?php
+					printf(
+						/* translators: 1: free or paid, 2: article title */
+						esc_html__('Subscribers with a %1$s conversion from "%2$s"', 'leaky-paywall'),
+						esc_html($type),
+						esc_html($title ? $title : __('(Untitled)', 'leaky-paywall'))
+					);
+					?>
+				</strong>
+				<a href="<?php echo esc_url($clear_url); ?>" style="text-decoration: none; margin-left: 6px; font-size: 16px; line-height: 1;" title="<?php esc_attr_e('Clear this filter', 'leaky-paywall'); ?>">&times;</a>
+				<p class="description" style="margin: 4px 0 0;">
+					<?php
+					if (0 === $listed) {
+						// The table will be empty. Say why, or this reads as a bug.
+						printf(
+							/* translators: %s: number of conversions */
+							esc_html(_n(
+								'This article has %s attributed conversion, but that subscriber no longer exists in WordPress, so there is nothing to list.',
+								'This article has %s attributed conversions, but none of those subscribers still exist in WordPress, so there is nothing to list.',
+								$conversions,
+								'leaky-paywall'
+							)),
+							esc_html(number_format_i18n($conversions))
+						);
+					} elseif ($listed === $conversions) {
+						printf(
+							/* translators: %s: number of conversions */
+							esc_html(_n('%s conversion.', '%s conversions.', $conversions, 'leaky-paywall')),
+							esc_html(number_format_i18n($conversions))
+						);
+					} else {
+						// The dashboard card counts conversions; this screen lists
+						// users. Surface the gap rather than quietly showing fewer.
+						printf(
+							/* translators: 1: subscribers listed, 2: conversions counted, 3: difference */
+							esc_html__('Showing %1$s of %2$s conversions. %3$s of these subscribers have since been deleted.', 'leaky-paywall'),
+							esc_html(number_format_i18n($listed)),
+							esc_html(number_format_i18n($conversions)),
+							esc_html(number_format_i18n($conversions - $listed))
+						);
+					}
+					?>
+				</p>
+			</div>
+			<?php if ($listed > 0) : ?>
+				<a class="button button-primary" href="<?php echo esc_url($download_url); ?>" style="flex-shrink: 0;">
+					<?php esc_html_e('Download CSV', 'leaky-paywall'); ?>
+				</a>
+			<?php endif; ?>
+		</div>
+<?php
+	}
+
 	public function show_subscribers_table()
 	{
 		$subscriber_table = $this->list_table ? $this->list_table : new LP_Subscriber_List_Table();
@@ -222,6 +322,8 @@ class Leaky_Paywall_Admin_Subscriber
 		<div class="add-new-sub-container" style="float: right; margin-bottom: 20px;">
 			<a class="button button-primary" href="#" id="lp-open-add-subscriber-modal">+ <?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></a>
 		</div>
+
+		<?php $this->render_attributed_filter_notice(); ?>
 
 		<style>
 			.lp-table-scroll-outer {

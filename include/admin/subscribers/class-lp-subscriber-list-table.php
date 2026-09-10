@@ -287,6 +287,37 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			unset( $args['meta_query'] );
 		}
 
+		// Drill-through from the dashboard's Top Content cards: restrict the
+		// list to the subscribers whose signup was attributed to one article.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$article_filter = isset( $_GET['filter-article'] ) ? absint( $_GET['filter-article'] ) : 0;
+		$article_type   = ( isset( $_GET['conversion_type'] ) && 'paid' === $_GET['conversion_type'] ) ? 'paid' : 'free';
+		$article_period = isset( $_GET['nag_period'] ) ? sanitize_text_field( wp_unslash( $_GET['nag_period'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( $article_filter && leaky_paywall_is_pro() ) {
+
+			$attributed_ids = leaky_paywall_get_attributed_subscriber_ids( $article_filter, $article_type, $article_period );
+
+			// An empty `include` is ignored by WP_User_Query and would list
+			// every subscriber. Force an empty result instead.
+			if ( empty( $attributed_ids ) ) {
+				$attributed_ids = array( 0 );
+			}
+
+			// A numeric search already set `include`; intersect rather than
+			// overwrite so both constraints hold.
+			if ( ! empty( $args['include'] ) ) {
+				$args['include'] = array_values( array_intersect( (array) $args['include'], $attributed_ids ) );
+
+				if ( empty( $args['include'] ) ) {
+					$args['include'] = array( 0 );
+				}
+			} else {
+				$args['include'] = $attributed_ids;
+			}
+		}
+
 		$wp_user_search = new WP_User_Query( $args );
 		$results        = $wp_user_search->get_results();
 

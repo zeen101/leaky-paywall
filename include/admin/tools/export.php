@@ -17,6 +17,7 @@ class Leaky_Paywall_Export {
 	public function __construct() {
 		add_action( 'wp_ajax_leaky_paywall_reporting_tool_process', array( $this, 'process_requests' ) );
 		add_action( 'admin_post_leaky_paywall_download_export', array( $this, 'download_export' ) );
+		add_action( 'admin_post_leaky_paywall_download_attributed', array( $this, 'download_attributed' ) );
 	}
 
 	/**
@@ -59,63 +60,9 @@ class Leaky_Paywall_Export {
 
 		$users = $this->reporting_tool_query( $fields, $step );
 
-		$meta = array(
-			'level_id',
-			'hash',
-			'subscriber_id',
-			'price',
-			'description',
-			'plan',
-			'created',
-			'expires',
-			'payment_gateway',
-			'payment_status',
-		);
-
-		$meta = apply_filters( 'leaky_paywall_reporting_tool_meta', $meta );
-
-		$custom_meta_fields = array();
-		if ( is_plugin_active( 'leaky-paywall-custom-subscriber-fields/issuem-leaky-paywall-subscriber-meta.php' ) ) {
-			global $dl_pluginissuem_leaky_paywall_subscriber_meta;
-			$custom_meta_fields = $dl_pluginissuem_leaky_paywall_subscriber_meta->get_settings();
-		}
-
 		if ( ! empty( $users ) ) {
 
-			$user_meta = array();
-
-			foreach ( $users as $user ) {
-				$user_meta[ $user->ID ]['user_id']    = $user->ID;
-				$user_meta[ $user->ID ]['user_login']  = $user->data->user_login;
-				$user_meta[ $user->ID ]['user_email']  = $user->data->user_email;
-				$user_meta[ $user->ID ]['first_name']  = $user->first_name;
-				$user_meta[ $user->ID ]['last_name']   = $user->last_name;
-
-				foreach ( $meta as $key ) {
-					$user_meta[ $user->ID ][ $key ] = lp_get_subscriber_meta( $key, $user );
-				}
-
-				if ( leaky_paywall_user_has_access( $user ) ) {
-					$user_meta[ $user->ID ]['has_access'] = 'yes';
-				} else {
-					$user_meta[ $user->ID ]['has_access'] = 'no';
-				}
-
-				if ( ! empty( $custom_meta_fields['meta_keys'] ) ) {
-					$mode = leaky_paywall_get_current_mode();
-					$site = leaky_paywall_get_current_site();
-
-					foreach ( $custom_meta_fields['meta_keys'] as $meta_key ) {
-						$user_meta[ $user->ID ][ $meta_key['name'] ] = get_user_meta(
-							$user->ID,
-							'_issuem_leaky_paywall_' . $mode . '_subscriber_meta_' . sanitize_title_with_dashes( $meta_key['name'] ) . $site,
-							true
-						);
-					}
-				}
-
-				$user_meta = apply_filters( 'leaky_paywall_reporting_tool_user_meta', $user_meta, $user->ID );
-			}
+			$user_meta = self::build_user_rows( $users );
 
 			if ( ! empty( $user_meta ) ) {
 				$this->export_file( $user_meta, $step, $token );
@@ -148,6 +95,172 @@ class Leaky_Paywall_Export {
 
 			wp_send_json( $response );
 		}
+	}
+
+	/**
+	 * Stream the subscribers attributed to one article straight to the browser.
+	 *
+	 * The batched Tools > Export exists because a whole-site export can run to
+	 * hundreds of thousands of rows. A single article's conversions are bounded,
+	 * so this drill-through download streams in chunks instead: the publisher
+	 * clicks Download on the filtered Subscribers screen and gets a file, with
+	 * no intermediate screen and nothing written to disk.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return void
+	 */
+	public function download_attributed() {
+
+		if ( ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
+			wp_die( esc_html__( 'You do not have permission to download subscriber exports.', 'leaky-paywall' ), '', array( 'response' => 403 ) );
+		}
+
+		check_admin_referer( 'leaky_paywall_download_attributed' );
+
+		if ( ! leaky_paywall_is_pro() ) {
+			wp_die( esc_html__( 'Exporting the subscribers behind a conversion count is a Pro feature.', 'leaky-paywall' ), '', array( 'response' => 403 ) );
+		}
+
+		$post_id = isset( $_GET['filter-article'] ) ? absint( $_GET['filter-article'] ) : 0;
+		$type    = ( isset( $_GET['conversion_type'] ) && 'paid' === $_GET['conversion_type'] ) ? 'paid' : 'free';
+		$period  = isset( $_GET['nag_period'] ) ? sanitize_text_field( wp_unslash( $_GET['nag_period'] ) ) : '';
+
+		$user_ids = leaky_paywall_get_attributed_subscriber_ids( $post_id, $type, $period );
+
+		if ( empty( $user_ids ) ) {
+			wp_die( esc_html__( 'There are no subscribers to export for that article.', 'leaky-paywall' ), '', array( 'response' => 404 ) );
+		}
+
+		$slug     = sanitize_title( get_the_title( $post_id ) );
+		$filename = 'leaky-paywall-' . $type . '-conversions-' . ( $slug ? $slug . '-' : '' ) . gmdate( 'Y-m-d' ) . '.csv';
+
+		// Compression and stray buffers corrupt a streamed file.
+		if ( function_exists( 'apache_setenv' ) ) {
+			@apache_setenv( 'no-gzip', '1' ); // phpcs:ignore
+		}
+
+		@ini_set( 'zlib.output_compression', 'Off' ); // phpcs:ignore
+
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+
+		nocache_headers();
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+
+		$out            = fopen( 'php://output', 'w' ); // phpcs:ignore
+		$wrote_header   = false;
+
+		// Chunked so a heavily converting article never loads every subscriber
+		// and all their meta at once.
+		foreach ( array_chunk( $user_ids, 200 ) as $chunk ) {
+
+			$users = get_users(
+				array(
+					'include' => $chunk,
+					'number'  => count( $chunk ),
+					'orderby' => 'ID',
+				)
+			);
+
+			if ( empty( $users ) ) {
+				continue;
+			}
+
+			$rows = self::build_user_rows( $users );
+
+			foreach ( $rows as $row ) {
+
+				if ( ! $wrote_header ) {
+					fputcsv( $out, array_keys( $row ) ); // phpcs:ignore
+					$wrote_header = true;
+				}
+
+				fputcsv( $out, $row ); // phpcs:ignore
+			}
+
+			flush();
+		}
+
+		fclose( $out ); // phpcs:ignore
+
+		exit;
+	}
+
+	/**
+	 * Build the CSV rows for a set of subscribers.
+	 *
+	 * Extracted so the Tools > Export batches and the per-article download from
+	 * the Subscribers screen produce identical columns, including anything added
+	 * by the custom subscriber fields add-on or the filters below.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array<\WP_User> $users Users to build rows for.
+	 * @return array<int, array<string, mixed>> Keyed by user ID.
+	 */
+	public static function build_user_rows( $users ) {
+
+		$meta = array(
+			'level_id',
+			'hash',
+			'subscriber_id',
+			'price',
+			'description',
+			'plan',
+			'created',
+			'expires',
+			'payment_gateway',
+			'payment_status',
+		);
+
+		$meta = apply_filters( 'leaky_paywall_reporting_tool_meta', $meta );
+
+		$custom_meta_fields = array();
+		if ( is_plugin_active( 'leaky-paywall-custom-subscriber-fields/issuem-leaky-paywall-subscriber-meta.php' ) ) {
+			global $dl_pluginissuem_leaky_paywall_subscriber_meta;
+			$custom_meta_fields = $dl_pluginissuem_leaky_paywall_subscriber_meta->get_settings();
+		}
+
+		$user_meta = array();
+
+		foreach ( $users as $user ) {
+			$user_meta[ $user->ID ]['user_id']     = $user->ID;
+			$user_meta[ $user->ID ]['user_login']  = $user->data->user_login;
+			$user_meta[ $user->ID ]['user_email']  = $user->data->user_email;
+			$user_meta[ $user->ID ]['first_name']  = $user->first_name;
+			$user_meta[ $user->ID ]['last_name']   = $user->last_name;
+
+			foreach ( $meta as $key ) {
+				$user_meta[ $user->ID ][ $key ] = lp_get_subscriber_meta( $key, $user );
+			}
+
+			if ( leaky_paywall_user_has_access( $user ) ) {
+				$user_meta[ $user->ID ]['has_access'] = 'yes';
+			} else {
+				$user_meta[ $user->ID ]['has_access'] = 'no';
+			}
+
+			if ( ! empty( $custom_meta_fields['meta_keys'] ) ) {
+				$mode = leaky_paywall_get_current_mode();
+				$site = leaky_paywall_get_current_site();
+
+				foreach ( $custom_meta_fields['meta_keys'] as $meta_key ) {
+					$user_meta[ $user->ID ][ $meta_key['name'] ] = get_user_meta(
+						$user->ID,
+						'_issuem_leaky_paywall_' . $mode . '_subscriber_meta_' . sanitize_title_with_dashes( $meta_key['name'] ) . $site,
+						true
+					);
+				}
+			}
+
+			$user_meta = apply_filters( 'leaky_paywall_reporting_tool_user_meta', $user_meta, $user->ID );
+		}
+
+		return $user_meta;
 	}
 
 	/**

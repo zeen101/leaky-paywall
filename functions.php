@@ -5747,3 +5747,118 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		return $interval_text;
 	}
+
+/**
+ * Subscribers whose signup was attributed to a single post or page.
+ *
+ * Attribution lives on the `lp_transaction` record as `_nag_location_id`,
+ * written at registration from the article the reader was on. The joins and
+ * conditions mirror Leaky_Paywall_Dashboard::get_top_converting_content() so
+ * every surface that drills into a conversion count agrees with the card that
+ * produced it, including the period window and the exclusion of trials from
+ * free conversions.
+ *
+ * @since 5.2.0
+ *
+ * @param int    $post_id The attributed post ID.
+ * @param string $type    Either 'free' or 'paid'.
+ * @param string $period  Dashboard period slug, or '' for all time.
+ * @return array{emails: array<string>, user_ids: array<int>} Attributed emails and the users they resolve to.
+ */
+function leaky_paywall_get_attributed_conversions( $post_id, $type = 'free', $period = '' ) {
+
+	global $wpdb;
+
+	$empty = array(
+		'emails'   => array(),
+		'user_ids' => array(),
+	);
+
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return $empty;
+	}
+
+	$price_cond  = 'paid' === $type ? '> 0' : '= 0';
+	$trial_join  = 'free' === $type
+		? "LEFT JOIN {$wpdb->postmeta} pm_trial ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'"
+		: '';
+	$trial_where = 'free' === $type ? 'AND pm_trial.post_id IS NULL' : '';
+
+	$period_where = '';
+	$params       = array( $post_id );
+
+	if ( $period && function_exists( 'leaky_paywall_insights_get_period_start_datetime' ) ) {
+		$period_where = 'AND p.post_date > %s';
+		$params[]     = leaky_paywall_insights_get_period_start_datetime( $period );
+	}
+
+	// The interpolated fragments are built from a hardcoded 'free' / 'paid'
+	// switch, never from request data. Every value is a placeholder.
+	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$emails = $wpdb->get_col(
+		$wpdb->prepare(
+			"SELECT DISTINCT pm_email.meta_value
+			 FROM {$wpdb->posts} p
+			 INNER JOIN {$wpdb->postmeta} pm_nag
+				 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
+			 INNER JOIN {$wpdb->postmeta} pm_email
+				 ON p.ID = pm_email.post_id AND pm_email.meta_key = '_email'
+			 INNER JOIN {$wpdb->postmeta} pm_price
+				 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+			 INNER JOIN {$wpdb->postmeta} pm_status
+				 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
+			 {$trial_join}
+			 WHERE p.post_type = 'lp_transaction'
+			 AND pm_nag.meta_value = %d
+			 AND pm_status.meta_value != 'incomplete'
+			 AND CAST(pm_price.meta_value AS DECIMAL(10,2)) {$price_cond}
+			 {$trial_where}
+			 {$period_where}",
+			$params
+		)
+	);
+	// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+	if ( empty( $emails ) ) {
+		return $empty;
+	}
+
+	// Transactions record the subscriber by email, not user ID. A converted
+	// reader who has since been deleted from WordPress leaves their
+	// transaction behind, so the resolved list is often shorter than the count
+	// on the dashboard. That gap is surfaced in the UI rather than hidden, and
+	// deleted users are deliberately not resurrected from the transaction.
+	$user_ids = array();
+
+	foreach ( $emails as $email ) {
+		$user = get_user_by( 'email', $email );
+
+		if ( $user ) {
+			$user_ids[] = (int) $user->ID;
+		}
+	}
+
+	return array(
+		'emails'   => array_values( array_unique( $emails ) ),
+		'user_ids' => array_values( array_unique( $user_ids ) ),
+	);
+}
+
+/**
+ * User IDs of the subscribers attributed to a post.
+ *
+ * @since 5.2.0
+ *
+ * @param int    $post_id The attributed post ID.
+ * @param string $type    Either 'free' or 'paid'.
+ * @param string $period  Dashboard period slug, or '' for all time.
+ * @return array<int>
+ */
+function leaky_paywall_get_attributed_subscriber_ids( $post_id, $type = 'free', $period = '' ) {
+
+	$attributed = leaky_paywall_get_attributed_conversions( $post_id, $type, $period );
+
+	return $attributed['user_ids'];
+}
