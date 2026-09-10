@@ -452,6 +452,13 @@ input[type="submit"].lp-inline-button {
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* A subscriber with no status at all should show nothing, not an empty pill. */
+.lp-status-badge:empty {
+  display: none;
 }
 
 .lp-status-badge--active {
@@ -459,17 +466,24 @@ input[type="submit"].lp-inline-button {
   color: #155724;
 }
 
+.lp-status-badge--pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
 .lp-status-badge--pending_cancel {
   background: #fff3cd;
   color: #856404;
 }
 
-.lp-status-badge--trial {
+.lp-status-badge--trial,
+.lp-status-badge--trialing {
   background: #d1ecf1;
   color: #0c5460;
 }
 
-.lp-status-badge--canceled {
+.lp-status-badge--canceled,
+.lp-status-badge--inactive {
   background: #e2e3e5;
   color: #383d41;
 }
