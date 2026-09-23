@@ -29,6 +29,8 @@ class LP_Transaction {
 
 	private $is_recurring;
 
+	private $payment_type;
+
 	private $subscriber_id;
 
 	private $tax_amount;
@@ -49,7 +51,10 @@ class LP_Transaction {
 		$this->payment_status         = $args['payment_status'];
 		$this->level_id               = $args['level_id'];
 		$this->currency               = isset( $args['currency'] ) ? $args['currency'] : '';
-		$this->is_recurring           = isset( $args['is_recurring'] ) ? true : false;
+		// Truthiness rather than isset(): isset() is true for an explicit
+		// is_recurring => false, which would label an initial payment a renewal.
+		$this->is_recurring           = ! empty( $args['is_recurring'] );
+		$this->payment_type           = isset( $args['payment_type'] ) ? sanitize_key( $args['payment_type'] ) : '';
 		$this->subscriber_id          = isset( $args['subscriber_id'] ) ? $args['subscriber_id'] : '';
 		$this->tax_amount             = isset( $args['tax_amount'] ) ? $args['tax_amount'] : '';
 		$this->subtotal               = isset( $args['subtotal'] ) ? $args['subtotal'] : '';
@@ -102,6 +107,12 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
 		update_post_meta( $transaction_id, '_is_recurring', $this->is_recurring );
 		update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+
+		// Only written when a caller states the type. Absence means "derive it",
+		// which is what every transaction recorded before this existed does.
+		if ( $this->payment_type ) {
+			update_post_meta( $transaction_id, '_payment_type', $this->payment_type );
+		}
 
 		if ( $this->subscriber_id ) {
 			update_post_meta( $transaction_id, '_subscriber_id', $this->subscriber_id );

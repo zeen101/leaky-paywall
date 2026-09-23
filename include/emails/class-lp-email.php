@@ -273,18 +273,24 @@ class LP_Email {
 	/**
 	 * Wrap a finished email body in the branded HTML template.
 	 *
-	 * Every LP email calls this just before wp_mail(). Extensions can opt an
-	 * email out with the leaky_paywall_use_email_template filter.
+	 * Every LP email calls this just before wp_mail(). Publishers can turn the
+	 * template off for the whole site with the Email Template setting, and
+	 * extensions can opt a single email out with the
+	 * leaky_paywall_use_email_template filter.
 	 *
 	 * @param string $message The email body HTML.
 	 * @return string
 	 */
 	public function wrap( $message ) {
-		if ( ! apply_filters( 'leaky_paywall_use_email_template', true, $this->id, $this->recipient_type ) ) {
+		if ( ! function_exists( 'leaky_paywall_get_email_template' ) ) {
 			return $message;
 		}
 
-		if ( ! function_exists( 'leaky_paywall_get_email_template' ) ) {
+		if ( ! leaky_paywall_email_template_is_enabled() ) {
+			return $message;
+		}
+
+		if ( ! apply_filters( 'leaky_paywall_use_email_template', true, $this->id, $this->recipient_type ) ) {
 			return $message;
 		}
 

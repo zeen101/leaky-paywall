@@ -1733,6 +1733,11 @@ input[type="submit"].lp-inline-button {
   font-weight: 500;
 }
 
+.lp-txn-type--level-change {
+  color: #553c9a;
+  font-weight: 500;
+}
+
 /* Hide the "Add New Transaction" button */
 
 .post-type-lp_transaction.edit-php .wrap > a.page-title-action {

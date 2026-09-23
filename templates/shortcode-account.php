@@ -258,6 +258,16 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_k
 				<?php
 				if ( leaky_paywall_user_can_bypass_paywall_by_role( $user ) ) {
 					echo '<h3 class="leaky-paywall-account-section-title">' . esc_html__( 'Your user role can see all content.', 'leaky-paywall' ) . '</h3>';
+				} elseif ( ! leaky_paywall_show_subscription_table( $user ) ) {
+
+					// A free registration only ever reads "active, never
+					// expires", which tells the reader they are already done.
+					// Recognize them instead, then offer the upgrade.
+					echo wp_kses_post( leaky_paywall_subscriber_since_notice( $user ) );
+					echo wp_kses_post( leaky_paywall_upgrade_prompt( $user ) );
+
+					do_action( 'leaky_paywall_after_profile_overview' );
+
 				} else {
 					?>
 					<h3 class="leaky-paywall-account-section-title your-plan-title"><?php esc_html_e( 'Your plan', 'leaky-paywall' ); ?></h3>

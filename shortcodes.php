@@ -304,7 +304,15 @@ function do_leaky_paywall_profile()
 	/* Translators: %1$s - user login, %2$s - logout url */
 	echo '<p class="leaky-paywall-logout-link">' . sprintf(__('Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall') . '</p>', esc_html($user->user_login), esc_url(wp_logout_url(get_page_link($settings['page_for_login']))));
 
-	echo '<h2 class="leaky-paywall-profile-subscription-title">' . esc_html__('Your Subscription', 'leaky-paywall') . '</h2>';
+	$lp_show_subscription_table = leaky_paywall_show_subscription_table($user);
+
+	if ($lp_show_subscription_table) {
+		echo '<h2 class="leaky-paywall-profile-subscription-title">' . esc_html__('Your Subscription', 'leaky-paywall') . '</h2>';
+	} else {
+		// A free registration only ever reads "active, never expires", which
+		// tells the reader they are already done. Recognize them instead.
+		echo wp_kses_post(leaky_paywall_subscriber_since_notice($user));
+	}
 
 	do_action('leaky_paywall_profile_your_subscription_start');
 
@@ -331,7 +339,9 @@ function do_leaky_paywall_profile()
 
 	$profile_table .= '</table>';
 
-	echo wp_kses_post(apply_filters('leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings));
+	if ($lp_show_subscription_table) {
+		echo wp_kses_post(apply_filters('leaky_paywall_profile_table', $profile_table, $user, $site, $mode, $settings));
+	}
 
 	do_action('leaky_paywall_profile_your_subscription_end');
 
@@ -493,6 +503,8 @@ function do_leaky_paywall_profile()
 
 	echo '<p class="submit"><input type="submit" id="submit" class="button button-primary" value="' . esc_attr__('Save Profile Changes', 'leaky-paywall') . '"  /></p>';
 	echo '</form>';
+
+	echo wp_kses_post(leaky_paywall_upgrade_prompt($user));
 
 	$_lp_delete_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 	if ( 'stripe' === $_lp_delete_gateway ) {

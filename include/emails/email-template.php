@@ -16,6 +16,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Whether the branded email template should be applied to LP emails.
+ *
+ * Publishers who send their own fully designed email HTML can turn the
+ * template off in Leaky Paywall > Settings > Emails. A missing setting counts
+ * as on, so installs that upgraded before the defaults were merged keep the
+ * behavior they already had.
+ *
+ * @return bool
+ */
+function leaky_paywall_email_template_is_enabled() {
+
+	$settings = get_leaky_paywall_settings();
+
+	$enabled = ! isset( $settings['email_template_enabled'] ) || 'off' !== $settings['email_template_enabled'];
+
+	/**
+	 * Filter whether the branded email template is enabled site-wide.
+	 *
+	 * @param bool $enabled Whether the template is on.
+	 */
+	return (bool) apply_filters( 'leaky_paywall_email_template_is_enabled', $enabled );
+}
+
+/**
  * Resolve %sitename% / %siteurl% / %year% in the footer text.
  *
  * @param string $text Raw footer text.

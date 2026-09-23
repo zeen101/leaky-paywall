@@ -64,6 +64,10 @@ class LP_List_Builder
                 --lplb-button-color: <?php echo esc_attr($button_color); ?>;
                 --lplb-button-text-color: <?php echo esc_attr($button_text_color); ?>;
             }
+
+            /* Inline so the overlay stays hidden even when a performance plugin defers lp-list-builder.css. */
+            #lplb-mask, #lplb-portal { visibility: hidden; pointer-events: none; }
+            #lplb-mask.is-visible, #lplb-portal.is-visible { visibility: visible; pointer-events: auto; }
         </style>
 
         <div id="lplb-mask"></div>

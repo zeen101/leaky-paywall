@@ -1315,6 +1315,12 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 				continue;
 			}
 
+			// Describes the transaction, not the subscriber. Read by LP_Transaction
+			// and deliberately not kept as subscriber meta.
+			if ( 'payment_type' === $key ) {
+				continue;
+			}
+
 			update_user_meta($user_id, '_issuem_leaky_paywall_' . $mode . '_' . $key . $site, $value);
 		}
 
@@ -5635,6 +5641,83 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		return $transaction_id;
 	}
 
+	/**
+	 * What kind of payment a transaction represents.
+	 *
+	 * Reads the type a caller recorded and falls back to deriving it, so
+	 * transactions saved before types were stored keep the label they have
+	 * always shown.
+	 *
+	 * @since 5.1.10
+	 *
+	 * @param int $transaction_id The transaction post ID.
+	 * @return string One of refund, renewal, level_change, initial, one_time.
+	 */
+	function leaky_paywall_get_transaction_payment_type( $transaction_id ) {
+
+		if ( 'refund' === get_post_meta( $transaction_id, '_status', true ) ) {
+			return 'refund';
+		}
+
+		$stored = get_post_meta( $transaction_id, '_payment_type', true );
+
+		if ( $stored ) {
+			return $stored;
+		}
+
+		if ( get_post_meta( $transaction_id, '_is_recurring', true ) ) {
+			return 'renewal';
+		}
+
+		$level = get_leaky_paywall_subscription_level( get_post_meta( $transaction_id, '_level_id', true ) );
+
+		// Deliberately just a presence check, matching what the transaction
+		// screens did before this was centralized. A level storing recurring as
+		// 'off' is still counted as a subscription here.
+		if ( ! empty( $level['recurring'] ) ) {
+			return 'initial';
+		}
+
+		return 'one_time';
+	}
+
+	/**
+	 * Translated label for a transaction's payment type.
+	 *
+	 * @since 5.1.10
+	 *
+	 * @param int $transaction_id The transaction post ID.
+	 * @return string
+	 */
+	function leaky_paywall_get_transaction_payment_type_label( $transaction_id ) {
+
+		$type   = leaky_paywall_get_transaction_payment_type( $transaction_id );
+		$labels = leaky_paywall_get_transaction_payment_type_labels();
+
+		return isset( $labels[ $type ] ) ? $labels[ $type ] : $labels['one_time'];
+	}
+
+	/**
+	 * Labels for each payment type, keyed by type.
+	 *
+	 * @since 5.1.10
+	 *
+	 * @return array
+	 */
+	function leaky_paywall_get_transaction_payment_type_labels() {
+
+		return apply_filters(
+			'leaky_paywall_transaction_payment_type_labels',
+			array(
+				'refund'       => __( 'Refund', 'leaky-paywall' ),
+				'renewal'      => __( 'Subscription Renewal', 'leaky-paywall' ),
+				'level_change' => __( 'Level Change', 'leaky-paywall' ),
+				'initial'      => __( 'Initial Subscription Payment', 'leaky-paywall' ),
+				'one_time'     => __( 'One Time', 'leaky-paywall' ),
+			)
+		);
+	}
+
 
 	/**
 	 * Check login fail
@@ -5861,4 +5944,217 @@ function leaky_paywall_get_attributed_subscriber_ids( $post_id, $type = 'free', 
 	$attributed = leaky_paywall_get_attributed_conversions( $post_id, $type, $period );
 
 	return $attributed['user_ids'];
+}
+
+
+/**
+ * Does this site have a level a reader could actually buy?
+ *
+ * Used to decide whether a free subscriber is offered an upgrade. Publishers
+ * running free registration only have nowhere to send them, so the prompt
+ * stays hidden rather than pointing at an empty subscribe page.
+ *
+ * Purchasable means chargeable, visible on the subscribe page, and reachable:
+ * a paid level with no enabled gateway is not an upgrade path.
+ *
+ * @since 5.2.0
+ *
+ * @return bool
+ */
+function leaky_paywall_has_purchasable_level() {
+
+	static $has_level = null;
+
+	if ( null !== $has_level ) {
+		return $has_level;
+	}
+
+	$has_level = false;
+	$settings  = get_leaky_paywall_settings();
+
+	if ( empty( $settings['page_for_subscription'] ) || empty( $settings['levels'] ) ) {
+		$has_level = apply_filters( 'leaky_paywall_has_purchasable_level', $has_level );
+		return $has_level;
+	}
+
+	$gateways = leaky_paywall_get_enabled_payment_gateways();
+
+	if ( empty( $gateways ) ) {
+		$has_level = apply_filters( 'leaky_paywall_has_purchasable_level', $has_level );
+		return $has_level;
+	}
+
+	global $blog_id;
+
+	// Iterate values only. Level ID 0 is a valid level, and on some sites it
+	// is the paid one, so never guard these on the ID.
+	foreach ( (array) $settings['levels'] as $level ) {
+
+		if ( ! empty( $level['deleted'] ) ) {
+			continue;
+		}
+
+		// Hidden from the subscribe page, so linking there would show nothing.
+		if ( isset( $level['hide_subscribe_card'] ) && 'on' === $level['hide_subscribe_card'] ) {
+			continue;
+		}
+
+		if ( is_multisite_premium() && ! empty( $level['site'] ) && 'all' !== $level['site'] && $blog_id !== $level['site'] ) {
+			continue;
+		}
+
+		// Registration treats anything under Stripe's 0.50 minimum as a free
+		// level (include/registration-functions.php), so it is not an upgrade.
+		$is_purchasable = isset( $level['price'] ) && floatval( $level['price'] ) >= 0.5;
+
+		// Seam for levels whose price is not stored on the level, such as the
+		// Name Your Price extension, which leaves price empty and charges a
+		// per-reader amount instead.
+		$is_purchasable = apply_filters( 'leaky_paywall_level_is_purchasable', $is_purchasable, $level );
+
+		if ( ! $is_purchasable ) {
+			continue;
+		}
+
+		$has_level = true;
+		break;
+	}
+
+	$has_level = apply_filters( 'leaky_paywall_has_purchasable_level', $has_level );
+
+	return $has_level;
+}
+
+/**
+ * Is this subscriber on a free registration?
+ *
+ * @since 5.2.0
+ *
+ * @param WP_User|null $user The user. Defaults to the current user.
+ * @return bool
+ */
+function leaky_paywall_subscriber_is_free( $user = null ) {
+
+	if ( ! $user ) {
+		$user = wp_get_current_user();
+	}
+
+	if ( empty( $user->ID ) ) {
+		return false;
+	}
+
+	return 'free_registration' === lp_get_subscriber_meta( 'payment_gateway', $user );
+}
+
+/**
+ * When this subscriber started, formatted for display.
+ *
+ * Falls back to the WordPress registration date when the subscriber has no
+ * created meta, which is the same pattern the admin subscriber screen uses.
+ *
+ * @since 5.2.0
+ *
+ * @param WP_User|null $user   The user. Defaults to the current user.
+ * @param string       $format A date format. Defaults to the year.
+ * @return string Formatted date, or an empty string if it cannot be determined.
+ */
+function leaky_paywall_get_subscriber_since( $user = null, $format = 'Y' ) {
+
+	if ( ! $user ) {
+		$user = wp_get_current_user();
+	}
+
+	if ( empty( $user->ID ) ) {
+		return '';
+	}
+
+	$created = lp_get_subscriber_meta( 'created', $user );
+
+	if ( empty( $created ) || '0000-00-00 00:00:00' === $created ) {
+		$created = $user->user_registered;
+	}
+
+	if ( empty( $created ) || '0000-00-00 00:00:00' === $created ) {
+		return '';
+	}
+
+	return mysql2date( $format, $created );
+}
+
+/**
+ * A line recognizing how long a free subscriber has been reading.
+ *
+ * Shown in place of the subscription table for free registrations, where the
+ * table only confirms the reader already has permanent access.
+ *
+ * @since 5.2.0
+ *
+ * @param WP_User|null $user The user. Defaults to the current user.
+ * @return string HTML, or an empty string when the start date is unknown.
+ */
+function leaky_paywall_subscriber_since_notice( $user = null ) {
+
+	$since = leaky_paywall_get_subscriber_since( $user );
+
+	if ( empty( $since ) ) {
+		return '';
+	}
+
+	/* Translators: %s - the year the reader created their account. */
+	$text = sprintf( __( 'You have been reading since %s.', 'leaky-paywall' ), $since );
+	$text = apply_filters( 'leaky_paywall_subscriber_since_text', $text, $since, $user );
+
+	return '<p class="leaky-paywall-subscriber-since">' . esc_html( $text ) . '</p>';
+}
+
+/**
+ * The upgrade prompt shown to a free subscriber on their account page.
+ *
+ * Returns nothing unless the reader is on a free registration and the site has
+ * something for them to buy.
+ *
+ * @since 5.2.0
+ *
+ * @param WP_User|null $user The user. Defaults to the current user.
+ * @return string HTML, or an empty string when no upgrade is available.
+ */
+function leaky_paywall_upgrade_prompt( $user = null ) {
+
+	if ( ! leaky_paywall_subscriber_is_free( $user ) || ! leaky_paywall_has_purchasable_level() ) {
+		return '';
+	}
+
+	$settings = get_leaky_paywall_settings();
+
+	$heading     = apply_filters( 'leaky_paywall_upgrade_prompt_heading', __( 'Get full access', 'leaky-paywall' ) );
+	$description = apply_filters( 'leaky_paywall_upgrade_prompt_description', __( 'Read everything we publish and support our work.', 'leaky-paywall' ) );
+	$button_text = apply_filters( 'leaky_paywall_upgrade_prompt_button_text', __( 'See subscription options', 'leaky-paywall' ) );
+	$url         = apply_filters( 'leaky_paywall_upgrade_prompt_url', get_page_link( $settings['page_for_subscription'] ) );
+
+	$prompt  = '<div class="leaky-paywall-upgrade-prompt">';
+	$prompt .= '<h2 class="leaky-paywall-upgrade-prompt-heading">' . esc_html( $heading ) . '</h2>';
+	$prompt .= '<p class="leaky-paywall-upgrade-prompt-description">' . esc_html( $description ) . '</p>';
+	$prompt .= '<p class="leaky-paywall-upgrade-prompt-action"><a class="leaky-paywall-upgrade-prompt-button" href="' . esc_url( $url ) . '">' . esc_html( $button_text ) . '</a></p>';
+	$prompt .= '</div>';
+
+	return apply_filters( 'leaky_paywall_upgrade_prompt', $prompt, $user );
+}
+
+/**
+ * Should the subscription table be shown to this subscriber?
+ *
+ * Free registrations get the "reading since" line instead, because the table
+ * only tells them their free access is active and never expires. Filter this
+ * to true to bring the table back.
+ *
+ * @since 5.2.0
+ *
+ * @param WP_User|null $user The user. Defaults to the current user.
+ * @return bool
+ */
+function leaky_paywall_show_subscription_table( $user = null ) {
+
+	$show = ! leaky_paywall_subscriber_is_free( $user );
+
+	return (bool) apply_filters( 'leaky_paywall_show_free_subscriber_plan_table', $show, $user );
 }

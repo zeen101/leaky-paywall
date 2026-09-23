@@ -137,7 +137,6 @@ class LP_Transaction_Post_Type
 		$last_name    = get_post_meta( $post->ID, '_last_name', true );
 		$email        = get_post_meta( $post->ID, '_email', true );
 		$price        = get_post_meta( $post->ID, '_price', true );
-		$is_recurring = get_post_meta( $post->ID, '_is_recurring', true );
 		$status       = get_post_meta( $post->ID, '_status', true );
 		$txn_status   = get_post_meta( $post->ID, '_transaction_status', true );
 		$nag_location = get_post_meta( $post->ID, '_nag_location_id', true );
@@ -175,12 +174,8 @@ class LP_Transaction_Post_Type
 			<span class="lp-status-badge <?php echo esc_attr( $badge_class ); ?>">
 				<?php echo $is_refund ? esc_html__( 'Refund', 'leaky-paywall' ) : esc_html( $display_status ); ?>
 			</span>
-			<?php if ( ! $is_refund ) :
-				if ( $is_recurring ) : ?>
-				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Subscription Renewal', 'leaky-paywall' ); ?></span>
-				<?php elseif ( isset( $level['recurring'] ) && $level['recurring'] ) : ?>
-				<span class="lp-status-badge lp-status-badge--recurring"><?php esc_html_e( 'Initial Subscription Payment', 'leaky-paywall' ); ?></span>
-				<?php endif; ?>
+			<?php if ( ! $is_refund ) : ?>
+				<span class="lp-status-badge lp-status-badge--recurring"><?php echo esc_html( leaky_paywall_get_transaction_payment_type_label( $post->ID ) ); ?></span>
 			<?php endif; ?>
 		</div>
 
@@ -299,7 +294,6 @@ class LP_Transaction_Post_Type
 		$gateway        = get_post_meta( $post->ID, '_gateway', true );
 		$gateway_txn_id = get_post_meta( $post->ID, '_gateway_txn_id', true );
 		$email          = get_post_meta( $post->ID, '_email', true );
-		$is_recurring   = get_post_meta( $post->ID, '_is_recurring', true );
 		$status         = get_post_meta( $post->ID, '_status', true );
 		$customer_ip    = get_post_meta( $post->ID, '_customer_ip', true );
 		$mode           = leaky_paywall_get_current_mode();
@@ -327,18 +321,7 @@ class LP_Transaction_Post_Type
 		}
 
 		// Payment type.
-		$level_id     = get_post_meta( $post->ID, '_level_id', true );
-		$level        = get_leaky_paywall_subscription_level( $level_id );
-
-		if ( $is_refund ) {
-			$payment_type = __( 'Refund', 'leaky-paywall' );
-		} elseif ( $is_recurring ) {
-			$payment_type = __( 'Subscription Renewal', 'leaky-paywall' );
-		} elseif ( isset( $level['recurring'] ) && $level['recurring'] ) {
-			$payment_type = __( 'Initial Subscription Payment', 'leaky-paywall' );
-		} else {
-			$payment_type = __( 'One Time', 'leaky-paywall' );
-		}
+		$payment_type = leaky_paywall_get_transaction_payment_type_label( $post->ID );
 
 		// Stripe Customer ID — stored on transaction, fallback to user meta for older transactions.
 		$subscriber_id = get_post_meta( $post->ID, '_subscriber_id', true );
@@ -532,15 +515,17 @@ class LP_Transaction_Post_Type
 				break;
 
 			case 'type':
-				$status = get_post_meta($post_id, '_status', true);
-				if ('refund' === $status) {
-					echo '<span class="lp-status-badge lp-status-badge--refund">' . esc_html__('Refund', 'leaky-paywall') . '</span>';
-				} elseif (get_post_meta($post_id, '_is_recurring', true)) {
-					echo '<span class="lp-txn-type--renewal">' . esc_html__('Subscription Renewal', 'leaky-paywall') . '</span>';
-				} elseif (isset($level['recurring']) && $level['recurring']) {
-					echo esc_html__('Initial Subscription Payment', 'leaky-paywall');
+				$payment_type = leaky_paywall_get_transaction_payment_type($post_id);
+				$type_label   = leaky_paywall_get_transaction_payment_type_label($post_id);
+
+				if ('refund' === $payment_type) {
+					echo '<span class="lp-status-badge lp-status-badge--refund">' . esc_html($type_label) . '</span>';
+				} elseif ('renewal' === $payment_type) {
+					echo '<span class="lp-txn-type--renewal">' . esc_html($type_label) . '</span>';
+				} elseif ('level_change' === $payment_type) {
+					echo '<span class="lp-txn-type--level-change">' . esc_html($type_label) . '</span>';
 				} else {
-					echo esc_html__('One Time', 'leaky-paywall');
+					echo esc_html($type_label);
 				}
 				break;
 		}
@@ -582,6 +567,7 @@ class LP_Transaction_Post_Type
 			'free'     => esc_html__('Free', 'leaky-paywall'),
 			'refund'   => esc_html__('Refund', 'leaky-paywall'),
 			'renewal'  => esc_html__('Renewal', 'leaky-paywall'),
+			'level_change' => esc_html__('Level Change', 'leaky-paywall'),
 		);
 		$payment_type_options = apply_filters('leaky_paywall_transaction_payment_type_filters', $payment_type_options);
 		?>
@@ -723,9 +709,30 @@ class LP_Transaction_Post_Type
 					);
 					break;
 				case 'renewal':
+					// Level changes are recurring too, so they are excluded here
+					// to keep this list to actual renewals.
 					$meta_query[] = array(
 						'key'     => '_is_recurring',
 						'value'   => '1',
+						'compare' => '=',
+					);
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_payment_type',
+							'compare' => 'NOT EXISTS',
+						),
+						array(
+							'key'     => '_payment_type',
+							'value'   => 'level_change',
+							'compare' => '!=',
+						),
+					);
+					break;
+				case 'level_change':
+					$meta_query[] = array(
+						'key'     => '_payment_type',
+						'value'   => 'level_change',
 						'compare' => '=',
 					);
 					break;

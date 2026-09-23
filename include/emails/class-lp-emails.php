@@ -144,11 +144,43 @@ class LP_Emails {
 				</td>
 			</tr>
 			<?php
-			$email_logo   = isset( $settings['email_logo'] ) ? $settings['email_logo'] : '';
-			$email_accent = isset( $settings['email_accent_color'] ) && $settings['email_accent_color'] ? $settings['email_accent_color'] : '#1e293b';
-			$email_footer = isset( $settings['email_footer_text'] ) ? $settings['email_footer_text'] : '';
+			$email_logo     = isset( $settings['email_logo'] ) ? $settings['email_logo'] : '';
+			$email_accent   = isset( $settings['email_accent_color'] ) && $settings['email_accent_color'] ? $settings['email_accent_color'] : '#1e293b';
+			$email_footer   = isset( $settings['email_footer_text'] ) ? $settings['email_footer_text'] : '';
+			$email_template = leaky_paywall_email_template_is_enabled();
 			?>
 			<tr>
+				<th><?php esc_html_e( 'Email Template', 'leaky-paywall' ); ?></th>
+				<td>
+					<label for="email_template_enabled">
+						<input type="checkbox" id="email_template_enabled" name="email_template_enabled"
+							value="on" <?php checked( true, $email_template ); ?> />
+						<?php esc_html_e( 'Apply the Leaky Paywall email template', 'leaky-paywall' ); ?>
+					</label>
+					<p class="description">
+						<?php esc_html_e( 'Wraps every Leaky Paywall email in a branded shell with your logo, accent color, and footer. Turn this off if you send your own fully designed email HTML.', 'leaky-paywall' ); ?>
+					</p>
+					<script>
+					( function() {
+						var toggle = document.getElementById( 'email_template_enabled' );
+						if ( ! toggle ) { return; }
+						function sync() {
+							var rows = document.querySelectorAll( '.lp-email-branding-row' );
+							for ( var i = 0; i < rows.length; i++ ) {
+								rows[ i ].style.opacity = toggle.checked ? '' : '0.5';
+								var fields = rows[ i ].querySelectorAll( 'input, textarea, button' );
+								for ( var j = 0; j < fields.length; j++ ) {
+									fields[ j ].disabled = ! toggle.checked;
+								}
+							}
+						}
+						toggle.addEventListener( 'change', sync );
+						sync();
+					} )();
+					</script>
+				</td>
+			</tr>
+			<tr class="lp-email-branding-row">
 				<th><?php esc_html_e( 'Email Logo', 'leaky-paywall' ); ?></th>
 				<td>
 					<input type="text" id="email_logo" name="email_logo" class="regular-text"
@@ -185,7 +217,7 @@ class LP_Emails {
 					</script>
 				</td>
 			</tr>
-			<tr>
+			<tr class="lp-email-branding-row">
 				<th><?php esc_html_e( 'Accent Color', 'leaky-paywall' ); ?></th>
 				<td>
 					<input type="color" id="email_accent_color" name="email_accent_color"
@@ -201,7 +233,7 @@ class LP_Emails {
 					</script>
 				</td>
 			</tr>
-			<tr>
+			<tr class="lp-email-branding-row">
 				<th><?php esc_html_e( 'Footer Text', 'leaky-paywall' ); ?></th>
 				<td>
 					<textarea id="email_footer_text" name="email_footer_text" class="large-text" rows="3"
@@ -344,6 +376,8 @@ class LP_Emails {
 		// The settings form nonce is verified in
 		// Leaky_Paywall_Settings::process_settings_update() before this runs.
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		$settings['email_template_enabled'] = empty( $_POST['email_template_enabled'] ) ? 'off' : 'on';
+
 		if ( isset( $_POST['email_logo'] ) ) {
 			$settings['email_logo'] = esc_url_raw( wp_unslash( $_POST['email_logo'] ) );
 		}

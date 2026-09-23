@@ -132,9 +132,25 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		$payment_intent_id = isset($_POST['payment-intent-id']) ? sanitize_text_field(wp_unslash($_POST['payment-intent-id'])) : '';
 
+		// A plan switch is completed by the form rather than by a PaymentIntent
+		// confirmed in the browser, so the id of the charge it generated is stored
+		// on the pending registration instead of posted back. Without it the
+		// transaction is saved with no gateway transaction id, which is what made
+		// a mid-trial upgrade look like a payment that Stripe has no record of.
+		//
+		// Deliberately kept out of $payment_intent_id: that drives the access gate
+		// below, and holding back an existing subscriber because their switch
+		// invoice is still settling would revoke access they already have. An
+		// unpaid switch invoice is left to dunning, like any other renewal.
+		$switch_txn_id = (string) get_post_meta( $incomplete_user[0]->ID, '_stripe_switch_txn_id', true );
+
+		// An existing subscriber moving to another level is a level change, not a
+		// first payment, and the transaction is labelled from this.
+		$is_level_change = (bool) get_post_meta( $incomplete_user[0]->ID, '_stripe_level_change', true );
+
 		// Use the actual Stripe amount if a subscription change stored it.
 		$stripe_amount = get_post_meta( $incomplete_user[0]->ID, '_stripe_amount_paid', true );
-		$price = $stripe_amount ? $stripe_amount : $this->level_price;
+		$price = '' !== $stripe_amount ? $stripe_amount : $this->level_price;
 
 		// Only grant access up front when the payment is actually confirmed (or genuinely
 		// in-flight). Historically this defaulted to 'active' and relied on a
@@ -176,7 +192,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			'plan'                   => $this->plan_id,
 			'recurring'              => $this->recurring,
 			'currency'               => $this->currency,
-			'payment_gateway_txn_id' => $payment_intent_id,
+			'payment_gateway_txn_id' => $payment_intent_id ? $payment_intent_id : $switch_txn_id,
+			'payment_type'           => $is_level_change ? 'level_change' : '',
 		);
 
 		do_action('leaky_paywall_stripe_signup', $gateway_data);

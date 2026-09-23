@@ -1646,6 +1646,7 @@ The %sitename% Team';
 				'site_name'                             => get_option('blogname'), /* Site Specific */
 				'from_name'                             => get_option('blogname'), /* Site Specific */
 				'from_email'                            => get_option('admin_email'), /* Site Specific */
+				'email_template_enabled'                => 'on',
 				'email_logo'                            => '',
 				'email_accent_color'                    => '#1e293b',
 				'email_footer_text'                     => '',

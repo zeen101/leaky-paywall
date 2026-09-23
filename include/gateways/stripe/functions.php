@@ -435,23 +435,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 			//      publishers or write to the wrong account.
 			foreach ( $subscriptions->data as $subscription ) {
 
-				$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', array(
-					'items' => array(
-						array(
-							'id'    => $subscription->items->data[0]->id,
-							'price' => $plan_id,
-						),
-					),
-					'proration_behavior' => 'always_invoice',
-				), $level );
-
-				// If the sub was set to cancel at period end, clear that flag
-				// so the plan switch doesn't inherit the cancellation intent.
-				if ( ! empty( $subscription->cancel_at_period_end ) ) {
-					$update_args['cancel_at_period_end'] = false;
-				}
-
-				$update_args['expand'] = array( 'latest_invoice' );
+				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $subscription, $plan_id, $level );
 
 				$sub = $stripe->subscriptions->update(
 					$subscription->id,
@@ -481,6 +465,173 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 	);
 
 	wp_send_json( $return );
+}
+
+/**
+ * Build the args for switching an existing Stripe subscription onto a new plan.
+ *
+ * A subscription that is still trialing needs its trial ended as part of the
+ * switch. Stripe does not prorate during a trial and swapping a subscription
+ * item does not end one, so without this the price change is a billing no-op:
+ * the subscriber is moved onto the new plan but keeps free access until the
+ * original trial end, and their first real charge lands on that old date. A
+ * mid-trial upgrade then looks like a surprise duplicate charge months later,
+ * because the site recorded a payment on the day of the upgrade.
+ *
+ * The trial is only ended when nothing else has claimed it. Extensions filter
+ * these args, and a target level that carries its own trial (a free trial, a
+ * delayed billing start, a delay coupon) sets trial_end or trial_period_days
+ * itself; ending the trial here would bill immediately for a level meant to
+ * bill later.
+ *
+ * @since 5.1.10
+ *
+ * @param object $existing_sub The subscription being switched.
+ * @param string $plan_id      Stripe price id to switch to.
+ * @param array  $level        Target subscription level.
+ * @param array  $overrides    Args to override the defaults with, merged before
+ *                             the filter runs so extensions see real values.
+ *                             Recurring Payments passes the publisher's
+ *                             proration setting this way.
+ * @return array
+ */
+function leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level, $overrides = array() ) {
+
+	$defaults = array(
+		'items'              => array(
+			array(
+				'id'    => $existing_sub->items->data[0]->id,
+				'price' => $plan_id,
+			),
+		),
+		'proration_behavior' => 'always_invoice',
+	);
+
+	if ( ! empty( $overrides ) && is_array( $overrides ) ) {
+		$defaults = array_merge( $defaults, $overrides );
+	}
+
+	$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', $defaults, $level );
+
+	// Both keys count as a claim on the trial: the Trials extension sets
+	// trial_end, the Coupons extension sets trial_period_days for a delay coupon,
+	// and Stripe rejects a request carrying trial_end alongside it.
+	$trial_claimed = isset( $update_args['trial_end'] ) || isset( $update_args['trial_period_days'] );
+
+	if ( isset( $existing_sub->status ) && 'trialing' === $existing_sub->status && ! $trial_claimed ) {
+		$update_args['trial_end'] = 'now';
+	}
+
+	// If the sub was set to cancel at period end, clear that flag so the plan
+	// switch doesn't inherit the cancellation intent.
+	if ( ! empty( $existing_sub->cancel_at_period_end ) ) {
+		$update_args['cancel_at_period_end'] = false;
+	}
+
+	// Set after the filter so the invoice is always available to read back.
+	$update_args['expand'] = array( 'latest_invoice.payment_intent' );
+
+	return $update_args;
+}
+
+/**
+ * Pull the invoice a plan switch generated off the updated subscription.
+ *
+ * A trialing subscription already carries a zero-amount invoice, so the invoice
+ * id is compared against the pre-update one: if the switch didn't generate a
+ * new invoice there is nothing to record.
+ *
+ * @since 5.1.10
+ *
+ * @param object $sub              Updated Stripe Subscription, latest_invoice expanded.
+ * @param string $previous_invoice Invoice id the subscription carried before the switch.
+ * @return object|null
+ */
+function leaky_paywall_get_stripe_switch_invoice( $sub, $previous_invoice = '' ) {
+
+	$invoice = isset( $sub->latest_invoice ) ? $sub->latest_invoice : null;
+
+	if ( ! is_object( $invoice ) || ! isset( $invoice->id ) ) {
+		return null;
+	}
+
+	if ( $previous_invoice && $invoice->id === $previous_invoice ) {
+		return null;
+	}
+
+	return $invoice;
+}
+
+/**
+ * Record what Stripe actually invoiced for a plan switch on the pending
+ * registration, so the transaction reflects the real invoice rather than the
+ * level's list price.
+ *
+ * A switch is completed by the registration form rather than by a PaymentIntent
+ * confirmed in the browser, so without this the transaction is written from the
+ * level price with no gateway transaction id: a full-price payment on the
+ * subscriber's record that never happened in Stripe.
+ *
+ * @since 5.1.10
+ *
+ * Also flags the registration as a level change so the transaction is labelled
+ * as one instead of an initial subscription payment.
+ *
+ * @param object|null $invoice Invoice the switch generated, null if it made none.
+ * @param string      $email   Registering email address.
+ * @return void
+ */
+function leaky_paywall_store_stripe_switch_payment( $invoice, $email ) {
+
+	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $email );
+
+	if ( ! $incomplete_id ) {
+		return;
+	}
+
+	// Recorded even when the switch generated no invoice, so the transaction is
+	// still labelled a level change rather than an initial payment.
+	update_post_meta( $incomplete_id, '_stripe_level_change', 1 );
+
+	if ( ! is_object( $invoice ) ) {
+		return;
+	}
+
+	// amount_paid is zero while an invoice is still open (off-session charge
+	// needing authentication, or a declined card), so fall back to what is owed
+	// rather than recording a free upgrade.
+	$amount = ! empty( $invoice->amount_paid )
+		? $invoice->amount_paid
+		: ( isset( $invoice->amount_due ) ? $invoice->amount_due : 0 );
+
+	update_post_meta( $incomplete_id, '_stripe_amount_paid', number_format( $amount / 100, 2, '.', '' ) );
+
+	$intent_id = leaky_paywall_get_stripe_invoice_payment_intent_id( $invoice );
+
+	if ( $intent_id ) {
+		update_post_meta( $incomplete_id, '_stripe_switch_txn_id', $intent_id );
+	}
+}
+
+/**
+ * Read the PaymentIntent id off an invoice, expanded or not.
+ *
+ * @since 5.1.10
+ *
+ * @param object $invoice Stripe Invoice.
+ * @return string
+ */
+function leaky_paywall_get_stripe_invoice_payment_intent_id( $invoice ) {
+
+	if ( ! isset( $invoice->payment_intent ) ) {
+		return '';
+	}
+
+	if ( is_object( $invoice->payment_intent ) ) {
+		return isset( $invoice->payment_intent->id ) ? $invoice->payment_intent->id : '';
+	}
+
+	return is_string( $invoice->payment_intent ) ? $invoice->payment_intent : '';
 }
 
 function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
@@ -518,28 +669,20 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		} else {
 			// Update existing subscription to new plan with immediate proration.
 			foreach ( $subscriptions->data as $existing_sub ) {
-				$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', array(
-					'items' => array(
-						array(
-							'id'    => $existing_sub->items->data[0]->id,
-							'price' => $plan_id,
-						),
-					),
-					'proration_behavior' => 'always_invoice',
-				), $level );
+				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level );
 
-				// If the subscription was set to cancel at period end (pending_cancel),
-				// clear that flag so the plan switch doesn't inherit the cancellation intent.
+				// Clearing a pending cancellation is a resubscribe, so restore access.
 				if ( ! empty( $existing_sub->cancel_at_period_end ) ) {
-					$update_args['cancel_at_period_end'] = false;
-
 					$switching_user = get_user_by( 'email', $fields['email_address'] );
 					if ( $switching_user ) {
 						leaky_paywall_set_subscriber_status( $switching_user->ID, 'active', 'plan_switch' );
 					}
 				}
 
-				$update_args['expand'] = array( 'latest_invoice' );
+				// Unexpanded on the list response, so this is the invoice id.
+				$previous_invoice = isset( $existing_sub->latest_invoice ) && is_string( $existing_sub->latest_invoice )
+					? $existing_sub->latest_invoice
+					: '';
 
 				$sub = $stripe->subscriptions->update(
 					$existing_sub->id,
@@ -547,17 +690,25 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 					leaky_paywall_get_stripe_connect_params()
 				);
 
-				// Store the actual amount Stripe charged on the incomplete user.
-				if ( isset( $sub->latest_invoice->amount_paid ) ) {
-					$actual_price = $sub->latest_invoice->amount_paid / 100;
-					$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $fields['email_address'] );
-					if ( $incomplete_id ) {
-						update_post_meta( $incomplete_id, '_stripe_amount_paid', number_format( $actual_price, 2, '.', '' ) );
-					}
+				$switch_invoice = leaky_paywall_get_stripe_switch_invoice( $sub, $previous_invoice );
+
+				// Record what Stripe actually invoiced so the transaction isn't
+				// written from the level's list price with no transaction id.
+				leaky_paywall_store_stripe_switch_payment( $switch_invoice, $fields['email_address'] );
+
+				// The switch invoice is charged off-session, so it can land
+				// unpaid (declined card, or one that needs authentication). That
+				// is the same position a failed renewal leaves a subscriber in,
+				// so it is left to Stripe dunning and the invoice webhooks rather
+				// than blocking the switch here. Logged because the transaction
+				// records the amount owed, not an amount collected.
+				if ( $switch_invoice && empty( $switch_invoice->amount_paid ) && ! empty( $switch_invoice->amount_due ) ) {
+					leaky_paywall_log( $switch_invoice->id, 'stripe subscription - plan switch invoice not paid yet for ' . $customer_id );
 				}
 
 				do_action( 'leaky_paywall_after_update_stripe_subscription', $cu, $sub, $level );
 			}
+
 			return 'subscription_updated';
 		}
 	} catch (\Throwable $th) {

@@ -695,3 +695,35 @@
 .zeen101-modal .modal__overlay {
   will-change: transform;
 }
+/* Free subscriber recognition and upgrade prompt on the account page. */
+
+.leaky-paywall-subscriber-since {
+	margin: 0 0 1.5em;
+	opacity: .8;
+}
+
+.leaky-paywall-upgrade-prompt {
+	margin: 2em 0;
+	padding-top: 1.5em;
+	border-top: 1px solid rgba(0, 0, 0, .15);
+}
+
+.leaky-paywall-upgrade-prompt-heading {
+	margin: 0 0 .25em;
+}
+
+.leaky-paywall-upgrade-prompt-description {
+	margin: 0 0 1em;
+}
+
+.leaky-paywall-upgrade-prompt-action {
+	margin: 0;
+}
+
+.leaky-paywall-upgrade-prompt-button {
+	display: inline-block;
+	padding: 8px 18px;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	text-decoration: none;
+}
