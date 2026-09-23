@@ -71,6 +71,12 @@ class Leaky_Paywall {
 	 */
 	public function process_rest_content_restrictions() {
 
+		// rest_api_init also fires on normal page loads when a plugin calls
+		// rest_get_server() early. Only filter content for real REST requests.
+		if ( ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return;
+		}
+
 		$restrictions = new Leaky_Paywall_Restrictions();
 		add_filter( 'the_content', array( $restrictions, 'process_rest_content_restrictions' ) );
 
