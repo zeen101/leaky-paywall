@@ -232,6 +232,18 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 
 == Changelog ==
 
+= 5.2.0 =
+* New: See who converted on each article. The Top Content cards on the dashboard now link their conversion counts through to those exact subscribers, and you can download that list as a CSV from the Subscribers screen. Works for both free and paid conversions. (Pro)
+* New: Upgrade prompt for free subscribers. Readers on a free registration now see how long they have been reading and an invitation to subscribe on their account page, in place of a subscription table that only told them their free access never expires. It appears only when you have a paid level a reader can actually buy, and you can set the heading, description, and button wording under Leaky Paywall > Settings > General.
+* New: Email Template switch. Leaky Paywall > Settings > Emails now has a setting to turn the branded email template off, for publishers who send their own fully designed email HTML. It stays on for existing sites.
+* New: Level Change transaction type. A subscriber moving between levels is now recorded and labelled as a level change rather than an initial payment, with its own filter on the transactions screen.
+* Improvement: More subscriber statuses have their own colored badge in the admin, including pending, trialing, past due, pending cancellation, and inactive.
+* Improvement: The List Builder overlay no longer flashes on screen when a performance plugin defers Leaky Paywall's stylesheet.
+* Fix: Upgrading during a free trial did not start billing. The subscriber was moved onto the new plan but kept free access until the original trial end, and their first charge landed on that old date, while the site recorded a payment that Stripe had never taken. Trials now end as part of the switch.
+* Fix: A plan change recorded the level's list price with no Stripe transaction ID, instead of what Stripe actually invoiced. Level changes now record the real invoice amount and payment.
+* Fix: A plan change or renewal covered entirely by Stripe account credit was treated as a completed payment, activating the subscriber and extending their expiration. Switching plans while a renewal was unpaid could grant a free paid term.
+* Fix: On sites where another plugin starts the REST API early, Leaky Paywall applied its restrictions during normal page loads, which could show a second paywall notice and count the article twice against the meter.
+
 = 5.1.9 =
 * New: Payment Receipt email. Leaky Paywall now emails subscribers a branded receipt for every payment, including automatic subscription renewals. It is on by default for new installs. On existing sites it starts switched off with a dashboard notice so you can turn it on when you are ready. You can resend a receipt from any transaction.
 * New: Branded email template. Add your logo, an accent color, and footer text under Leaky Paywall > Settings > Emails and it applies to every email Leaky Paywall sends. Each email now has a Send Test Email button.

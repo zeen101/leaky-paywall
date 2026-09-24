@@ -5648,7 +5648,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	 * transactions saved before types were stored keep the label they have
 	 * always shown.
 	 *
-	 * @since 5.1.10
+	 * @since 5.2.0
 	 *
 	 * @param int $transaction_id The transaction post ID.
 	 * @return string One of refund, renewal, level_change, initial, one_time.
@@ -5684,7 +5684,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	/**
 	 * Translated label for a transaction's payment type.
 	 *
-	 * @since 5.1.10
+	 * @since 5.2.0
 	 *
 	 * @param int $transaction_id The transaction post ID.
 	 * @return string
@@ -5700,7 +5700,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	/**
 	 * Labels for each payment type, keyed by type.
 	 *
-	 * @since 5.1.10
+	 * @since 5.2.0
 	 *
 	 * @return array
 	 */
@@ -5845,7 +5845,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
  *
  * @param int    $post_id The attributed post ID.
  * @param string $type    Either 'free' or 'paid'.
- * @param string $period  Dashboard period slug, or '' for all time.
+ * @param string $period  Dashboard period slug. Empty falls back to the
+ *                        dashboard's own default window, so a drill-through
+ *                        that lost the period still matches the card it came
+ *                        from instead of widening to all time.
  * @return array{emails: array<string>, user_ids: array<int>} Attributed emails and the users they resolve to.
  */
 function leaky_paywall_get_attributed_conversions( $post_id, $type = 'free', $period = '' ) {
@@ -5869,13 +5872,20 @@ function leaky_paywall_get_attributed_conversions( $post_id, $type = 'free', $pe
 		: '';
 	$trial_where = 'free' === $type ? 'AND pm_trial.post_id IS NULL' : '';
 
-	$period_where = '';
-	$params       = array( $post_id );
-
-	if ( $period && function_exists( 'leaky_paywall_insights_get_period_start_datetime' ) ) {
-		$period_where = 'AND p.post_date > %s';
-		$params[]     = leaky_paywall_insights_get_period_start_datetime( $period );
+	// A missing period means the request lost the window, never that the
+	// publisher asked for all time. Fall back to the same default the dashboard
+	// starts on (Leaky_Paywall_Dashboard::dashboard_page()) rather than letting
+	// it reach the period resolver, which answers an unrecognised slug with its
+	// own -4 weeks and would put this query on a different window than the card.
+	if ( '' === $period ) {
+		$period = '30 days';
 	}
+
+	// Applied unconditionally, exactly as the dashboard card does. Applying it
+	// only when $period was truthy made a dropped period silently mean "all
+	// time", so the filtered list and the CSV covered a different set of people
+	// than the count that was clicked.
+	$params = array( $post_id, leaky_paywall_insights_get_period_start_datetime( $period ) );
 
 	// The interpolated fragments are built from a hardcoded 'free' / 'paid'
 	// switch, never from request data. Every value is a placeholder.
@@ -5897,8 +5907,8 @@ function leaky_paywall_get_attributed_conversions( $post_id, $type = 'free', $pe
 			 AND pm_nag.meta_value = %d
 			 AND pm_status.meta_value != 'incomplete'
 			 AND CAST(pm_price.meta_value AS DECIMAL(10,2)) {$price_cond}
-			 {$trial_where}
-			 {$period_where}",
+			 AND p.post_date > %s
+			 {$trial_where}",
 			$params
 		)
 	);
@@ -5936,7 +5946,8 @@ function leaky_paywall_get_attributed_conversions( $post_id, $type = 'free', $pe
  *
  * @param int    $post_id The attributed post ID.
  * @param string $type    Either 'free' or 'paid'.
- * @param string $period  Dashboard period slug, or '' for all time.
+ * @param string $period  Dashboard period slug. See
+ *                        leaky_paywall_get_attributed_conversions().
  * @return array<int>
  */
 function leaky_paywall_get_attributed_subscriber_ids( $post_id, $type = 'free', $period = '' ) {
@@ -6108,6 +6119,40 @@ function leaky_paywall_subscriber_since_notice( $user = null ) {
 }
 
 /**
+ * One piece of the account page upgrade prompt's wording.
+ *
+ * Publishers set these under Leaky Paywall > Settings > General. A blank
+ * setting falls back to the built-in wording, so clearing a field restores the
+ * default rather than rendering an empty heading or an unlabelled button.
+ *
+ * The leaky_paywall_upgrade_prompt_* filters still run on top of whatever this
+ * returns, so a site already overriding the wording in code keeps doing so.
+ *
+ * @since 5.2.0
+ *
+ * @param string $key One of heading, description, button_text.
+ * @return string
+ */
+function leaky_paywall_get_upgrade_prompt_text( $key ) {
+
+	$defaults = array(
+		'heading'     => __( 'Get full access', 'leaky-paywall' ),
+		'description' => __( 'Read everything we publish and support our work.', 'leaky-paywall' ),
+		'button_text' => __( 'See subscription options', 'leaky-paywall' ),
+	);
+
+	if ( ! isset( $defaults[ $key ] ) ) {
+		return '';
+	}
+
+	$settings = get_leaky_paywall_settings();
+	$setting  = 'account_upgrade_prompt_' . $key;
+	$stored   = isset( $settings[ $setting ] ) ? trim( $settings[ $setting ] ) : '';
+
+	return '' !== $stored ? $stored : $defaults[ $key ];
+}
+
+/**
  * The upgrade prompt shown to a free subscriber on their account page.
  *
  * Returns nothing unless the reader is on a free registration and the site has
@@ -6126,9 +6171,9 @@ function leaky_paywall_upgrade_prompt( $user = null ) {
 
 	$settings = get_leaky_paywall_settings();
 
-	$heading     = apply_filters( 'leaky_paywall_upgrade_prompt_heading', __( 'Get full access', 'leaky-paywall' ) );
-	$description = apply_filters( 'leaky_paywall_upgrade_prompt_description', __( 'Read everything we publish and support our work.', 'leaky-paywall' ) );
-	$button_text = apply_filters( 'leaky_paywall_upgrade_prompt_button_text', __( 'See subscription options', 'leaky-paywall' ) );
+	$heading     = apply_filters( 'leaky_paywall_upgrade_prompt_heading', leaky_paywall_get_upgrade_prompt_text( 'heading' ) );
+	$description = apply_filters( 'leaky_paywall_upgrade_prompt_description', leaky_paywall_get_upgrade_prompt_text( 'description' ) );
+	$button_text = apply_filters( 'leaky_paywall_upgrade_prompt_button_text', leaky_paywall_get_upgrade_prompt_text( 'button_text' ) );
 	$url         = apply_filters( 'leaky_paywall_upgrade_prompt_url', get_page_link( $settings['page_for_subscription'] ) );
 
 	$prompt  = '<div class="leaky-paywall-upgrade-prompt">';

@@ -484,7 +484,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
  * itself; ending the trial here would bill immediately for a level meant to
  * bill later.
  *
- * @since 5.1.10
+ * @since 5.2.0
  *
  * @param object $existing_sub The subscription being switched.
  * @param string $plan_id      Stripe price id to switch to.
@@ -541,7 +541,7 @@ function leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan
  * id is compared against the pre-update one: if the switch didn't generate a
  * new invoice there is nothing to record.
  *
- * @since 5.1.10
+ * @since 5.2.0
  *
  * @param object $sub              Updated Stripe Subscription, latest_invoice expanded.
  * @param string $previous_invoice Invoice id the subscription carried before the switch.
@@ -572,7 +572,7 @@ function leaky_paywall_get_stripe_switch_invoice( $sub, $previous_invoice = '' )
  * level price with no gateway transaction id: a full-price payment on the
  * subscriber's record that never happened in Stripe.
  *
- * @since 5.1.10
+ * @since 5.2.0
  *
  * Also flags the registration as a level change so the transaction is labelled
  * as one instead of an initial subscription payment.
@@ -616,7 +616,7 @@ function leaky_paywall_store_stripe_switch_payment( $invoice, $email ) {
 /**
  * Read the PaymentIntent id off an invoice, expanded or not.
  *
- * @since 5.1.10
+ * @since 5.2.0
  *
  * @param object $invoice Stripe Invoice.
  * @return string
@@ -919,7 +919,7 @@ function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
  * A genuine free period (100%-off coupon) has total 0 and still passes, as does
  * a payment made outside Stripe (paid_out_of_band).
  *
- * @since 5.1.10
+ * @since 5.2.0
  *
  * @param object $invoice The Stripe invoice object from the webhook event.
  * @return bool True if the invoice should drive access; false if it was settled

@@ -329,6 +329,27 @@ class Leaky_Paywall_Settings
 					</tr>
 
 					<tr>
+						<th><?php esc_html_e('Account Upgrade Prompt', 'leaky-paywall'); ?></th>
+						<td>
+							<p>
+								<label for="account_upgrade_prompt_heading"><?php esc_html_e('Heading', 'leaky-paywall'); ?></label><br />
+								<input type="text" id="account_upgrade_prompt_heading" class="regular-text" name="account_upgrade_prompt_heading" value="<?php echo esc_attr(leaky_paywall_get_upgrade_prompt_text('heading')); ?>" />
+							</p>
+							<p>
+								<label for="account_upgrade_prompt_description"><?php esc_html_e('Description', 'leaky-paywall'); ?></label><br />
+								<input type="text" id="account_upgrade_prompt_description" class="large-text" name="account_upgrade_prompt_description" value="<?php echo esc_attr(leaky_paywall_get_upgrade_prompt_text('description')); ?>" />
+							</p>
+							<p>
+								<label for="account_upgrade_prompt_button_text"><?php esc_html_e('Button', 'leaky-paywall'); ?></label><br />
+								<input type="text" id="account_upgrade_prompt_button_text" class="regular-text" name="account_upgrade_prompt_button_text" value="<?php echo esc_attr(leaky_paywall_get_upgrade_prompt_text('button_text')); ?>" />
+							</p>
+							<p class="description">
+								<?php esc_html_e('Shown to free subscribers on their account page, and only when you have a paid level they can buy. Clear a field to go back to the default wording.', 'leaky-paywall'); ?>
+							</p>
+						</td>
+					</tr>
+
+					<tr>
 						<th><?php esc_html_e('CSS Style', 'leaky-paywall'); ?></th>
 						<td>
 							<select id='css_style' name='css_style'>
@@ -1637,6 +1658,9 @@ The %sitename% Team';
 				'cookie_expiration_interval'            => 'day',
 				'subscribe_login_message'               => __('<a href="{{SUBSCRIBE_URL}}">Subscribe</a> or <a href="{{LOGIN_URL}}">log in</a> to read the rest of this content.', 'leaky-paywall'),
 				'subscribe_upgrade_message'             => __('You must <a href="{{SUBSCRIBE_URL}}">upgrade your account</a> to read the rest of this content.', 'leaky-paywall'),
+				'account_upgrade_prompt_heading'        => __('Get full access', 'leaky-paywall'),
+				'account_upgrade_prompt_description'    => __('Read everything we publish and support our work.', 'leaky-paywall'),
+				'account_upgrade_prompt_button_text'    => __('See subscription options', 'leaky-paywall'),
 				'css_style'                             => 'default',
 				'enable_user_delete_account'            => 'off',
 				'remove_username_field'                 => 'off',
@@ -1836,6 +1860,15 @@ The %sitename% Team';
 
 				if (!empty($_POST['subscribe_upgrade_message'])) {
 					$settings['subscribe_upgrade_message'] = wp_kses(wp_unslash($_POST['subscribe_upgrade_message']), $this->allowed_html());
+				}
+
+				// isset rather than !empty, so clearing a field is saved as empty
+				// and leaky_paywall_get_upgrade_prompt_text() falls back to the
+				// default wording instead of the old value sticking.
+				foreach (array('account_upgrade_prompt_heading', 'account_upgrade_prompt_description', 'account_upgrade_prompt_button_text') as $lp_prompt_key) {
+					if (isset($_POST[$lp_prompt_key])) {
+						$settings[$lp_prompt_key] = sanitize_text_field(wp_unslash($_POST[$lp_prompt_key]));
+					}
 				}
 
 				if (!empty($_POST['css_style'])) {
