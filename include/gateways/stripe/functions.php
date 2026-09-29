@@ -997,6 +997,33 @@ function leaky_paywall_get_stripe_amount( $amount ) {
 }
 
 /**
+ * The LP status for a subscriber whose Stripe subscription is trialing.
+ *
+ * Stripe reports any subscription with a trial_end as trialing, including a
+ * paid subscription whose billing date was moved with trial_end. Only a
+ * subscriber on a level with trials enabled (Trials extension) is a real
+ * trial. Everyone else is a paying subscriber and stays active.
+ *
+ * @param WP_User $user Subscriber.
+ * @return string 'trial' or 'active'.
+ */
+function leaky_paywall_stripe_trialing_status( $user ) {
+
+	$status = 'active';
+
+	if ( function_exists( 'leaky_paywall_trials_is_enabled' ) ) {
+		$level_id = lp_get_subscriber_meta( 'level_id', $user );
+		$level    = ( '' !== $level_id && false !== $level_id ) ? get_leaky_paywall_subscription_level( $level_id ) : false;
+
+		if ( is_array( $level ) && leaky_paywall_trials_is_enabled( $level ) ) {
+			$status = 'trial';
+		}
+	}
+
+	return $status;
+}
+
+/**
  * Attach the customer's IP to a Stripe args array via `metadata.customer_ip`.
  *
  * Applied at every PaymentIntent + Checkout Session creation site so the IP
@@ -1151,7 +1178,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 			} elseif ( $subscription->status == 'active' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_sync' );
 			} elseif ( $subscription->status == 'trialing' ) {
-				leaky_paywall_set_subscriber_status( $user->ID, 'trial', 'stripe_sync' );
+				leaky_paywall_set_subscriber_status( $user->ID, leaky_paywall_stripe_trialing_status( $user ), 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
 				// Distinguish voluntary "cancel at period end" from involuntary
 				// cancellations (failed payment, admin cancel, fraud). Stripe leaves
