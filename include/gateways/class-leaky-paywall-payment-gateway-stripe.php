@@ -175,6 +175,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			} catch ( \Throwable $e ) {
 				leaky_paywall_log_error( $e->getMessage(), 'stripe signup - payment intent status check failed for ' . $this->email );
 			}
+		} elseif ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
+			// A recurring signup posts no PaymentIntent (the payment belongs to the
+			// subscription's first invoice), so the check above never ran for one and
+			// any form that reached here was activated. Check the subscription instead.
+			// Keyed off the level rather than the posted 'recurring' field, which the
+			// visitor controls.
+			if ( ! leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id ) ) {
+				$payment_status = 'pending';
+			}
 		}
 
 		$gateway_data = array(
@@ -532,20 +541,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'customer.subscription.updated':
 
 				if ( 'canceled' === $stripe_object->status ) {
-					// Only respect current_period_end as a grace window for voluntary
-					// cancels. For failed-payment / admin / fraud cancellations,
-					// current_period_end points at a future billing period the
-					// subscriber never paid for. See sync function for full rationale.
-					$voluntary = ! empty( $stripe_object->cancel_at_period_end );
-					if ( ! $voluntary && isset( $stripe_object->cancellation_details->reason ) ) {
-						$voluntary = ( 'cancellation_requested' === $stripe_object->cancellation_details->reason );
-					}
+					// Only respect current_period_end as a grace window for a voluntary
+					// cancel of a paid period. For failed-payment / admin / fraud
+					// cancellations, or an unpaid renewal, current_period_end points at
+					// a billing period the subscriber never paid for.
+					$paid_through = leaky_paywall_stripe_canceled_paid_through( $stripe_object );
 
 					$expires_key = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
-					if ( $voluntary && ! empty( $stripe_object->current_period_end ) && $stripe_object->current_period_end > time() ) {
+					if ( $paid_through ) {
 						leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_webhook' );
-						update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end ) );
+						update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $paid_through ) );
 					} else {
 						leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_webhook' );
 						$current_expires    = get_user_meta( $user->ID, $expires_key, true );
@@ -605,8 +611,8 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 					} else {
 						leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 					}
-				} elseif ( ! empty( $stripe_object->cancel_at_period_end ) ) {
-					// cancel_at_period_end: user keeps access until period ends.
+				} elseif ( leaky_paywall_stripe_subscription_cancels( $stripe_object ) ) {
+					// cancel_at_period_end or cancel_at: user keeps access until period ends.
 					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_webhook' );
 					do_action('leaky_paywall_cancelled_subscriber', $user, 'stripe');
 				}
@@ -630,20 +636,17 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			case 'customer.subscription.deleted':
 				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_webhook' );
 
-				// Only honor current_period_end as a grace window for voluntary
-				// cancels. Involuntary deletions (payment_failed dunning,
-				// admin/fraud cancel) leave current_period_end set to a future
-				// billing period the subscriber never paid for; honoring it gave
-				// them up to a year of free access.
-				$voluntary = ! empty( $stripe_object->cancel_at_period_end );
-				if ( ! $voluntary && isset( $stripe_object->cancellation_details->reason ) ) {
-					$voluntary = ( 'cancellation_requested' === $stripe_object->cancellation_details->reason );
-				}
+				// Only honor current_period_end as a grace window for a voluntary
+				// cancel of a paid period. Involuntary deletions (payment_failed
+				// dunning, admin/fraud cancel) and unpaid renewals leave
+				// current_period_end set to a future billing period the subscriber
+				// never paid for; honoring it gave them up to a year of free access.
+				$paid_through = leaky_paywall_stripe_canceled_paid_through( $stripe_object );
 
 				$expires_key = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
-				if ( $voluntary && ! empty( $stripe_object->current_period_end ) ) {
-					update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $stripe_object->current_period_end ) );
+				if ( $paid_through ) {
+					update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $paid_through ) );
 				} else {
 					$current_expires    = get_user_meta( $user->ID, $expires_key, true );
 					$current_expires_ts = $current_expires ? strtotime( $current_expires ) : 0;

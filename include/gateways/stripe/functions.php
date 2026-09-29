@@ -522,10 +522,14 @@ function leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan
 		$update_args['trial_end'] = 'now';
 	}
 
-	// If the sub was set to cancel at period end, clear that flag so the plan
-	// switch doesn't inherit the cancellation intent.
+	// If the sub was set to cancel, clear that so the plan switch doesn't
+	// inherit the cancellation intent. The two fields can't be sent together,
+	// and clearing cancel_at_period_end also clears the cancel_at Stripe
+	// derived from it, so only unset cancel_at when it was set on its own.
 	if ( ! empty( $existing_sub->cancel_at_period_end ) ) {
 		$update_args['cancel_at_period_end'] = false;
+	} elseif ( ! empty( $existing_sub->cancel_at ) ) {
+		$update_args['cancel_at'] = '';
 	}
 
 	// Set after the filter so the invoice is always available to read back.
@@ -634,6 +638,106 @@ function leaky_paywall_get_stripe_invoice_payment_intent_id( $invoice ) {
 	return is_string( $invoice->payment_intent ) ? $invoice->payment_intent : '';
 }
 
+/**
+ * Client secret for an incomplete subscription's first payment, if it can still be confirmed.
+ *
+ * @since 5.2.1
+ *
+ * @param string               $subscription_id Stripe Subscription id.
+ * @param \Stripe\StripeClient $stripe          Initialized Stripe client.
+ * @return string Empty when the payment can no longer be confirmed or the lookup fails.
+ */
+function leaky_paywall_get_stripe_incomplete_subscription_client_secret( $subscription_id, $stripe ) {
+
+	try {
+		$subscription = $stripe->subscriptions->retrieve(
+			$subscription_id,
+			array( 'expand' => array( 'latest_invoice.payment_intent' ) ),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'stripe subscription - could not retrieve incomplete subscription ' . $subscription_id );
+		return '';
+	}
+
+	$intent = isset( $subscription->latest_invoice->payment_intent ) ? $subscription->latest_invoice->payment_intent : null;
+
+	if ( 'incomplete' !== $subscription->status || ! is_object( $intent ) || empty( $intent->client_secret ) ) {
+		return '';
+	}
+
+	$confirmable_statuses = array( 'requires_payment_method', 'requires_confirmation', 'requires_action' );
+
+	return in_array( $intent->status, $confirmable_statuses, true ) ? $intent->client_secret : '';
+}
+
+/**
+ * Whether a recurring signup's subscription has been paid for, or is being paid.
+ *
+ * Only an unpaid first invoice counts against the signup: a customer whose
+ * subscriptions are all incomplete (unconfirmed) or incomplete_expired, or who
+ * has none at all. Anything else, including a failed lookup, is treated as confirmed so
+ * trials, full-discount coupons, plan switches and in-flight ACH payments are
+ * activated as before.
+ *
+ * Matched on status rather than price, because the Coupons extension swaps the
+ * price the subscription is created with.
+ *
+ * @since 5.2.1
+ *
+ * @param string $customer_id Stripe Customer id.
+ * @return bool
+ */
+function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id ) {
+
+	if ( ! $customer_id ) {
+		return true;
+	}
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$subscriptions = $stripe->subscriptions->all(
+			array(
+				'customer' => $customer_id,
+				'limit'    => 10,
+				'expand'   => array( 'data.latest_invoice.payment_intent' ),
+			),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'stripe signup - subscription status check failed for ' . $customer_id );
+		return true;
+	}
+
+	if ( empty( $subscriptions->data ) ) {
+		return false;
+	}
+
+	$confirmed_statuses = array( 'succeeded', 'processing', 'requires_capture' );
+
+	foreach ( $subscriptions->data as $subscription ) {
+
+		if ( 'incomplete' !== $subscription->status ) {
+			if ( 'incomplete_expired' !== $subscription->status ) {
+				return true;
+			}
+			continue;
+		}
+
+		// ACH leaves the subscription incomplete while the payment is processing,
+		// and a confirmed card can land here before Stripe flips it to active.
+		$intent = isset( $subscription->latest_invoice->payment_intent ) ? $subscription->latest_invoice->payment_intent : null;
+
+		if ( is_object( $intent ) && in_array( $intent->status, $confirmed_statuses, true ) ) {
+			return true;
+		}
+	}
+
+	// Only unpaid or expired first invoices left.
+	return false;
+}
+
 function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 
 	$level_id          = $fields['level_id'];
@@ -660,8 +764,44 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 	try {
 		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
 		leaky_paywall_log($cu, 'stripe subscription for ' . $customer_id);
-		$subscriptions = $stripe->subscriptions->all(array('limit' => '1', 'customer' => $customer_id), leaky_paywall_get_stripe_connect_params());
+		$customer_subscriptions = $stripe->subscriptions->all(array('limit' => '10', 'customer' => $customer_id), leaky_paywall_get_stripe_connect_params());
 		leaky_paywall_log('after get subs', 'stripe subscription for ' . $customer_id);
+
+		// An incomplete subscription never collected a payment, so it is not a
+		// plan to switch. Treating one as a switch returned 'subscription_updated',
+		// which submits the form without the card ever being confirmed: a visitor
+		// who went back and resubmitted the first step was activated without
+		// paying. Only paid-for subscriptions are switched. An abandoned attempt at
+		// the same price is picked up again so the card form confirms that same
+		// invoice; any other is left for Stripe to expire.
+		$switchable_subscription = null;
+		$incomplete_subscription = null;
+
+		foreach ( $customer_subscriptions->data as $customer_subscription ) {
+			if ( in_array( $customer_subscription->status, array( 'incomplete', 'incomplete_expired' ), true ) ) {
+				$incomplete_price = isset( $customer_subscription->items->data[0]->price->id ) ? $customer_subscription->items->data[0]->price->id : '';
+				if ( ! $incomplete_subscription && 'incomplete' === $customer_subscription->status && $incomplete_price === $plan_id ) {
+					$incomplete_subscription = $customer_subscription;
+				}
+				continue;
+			}
+
+			if ( ! $switchable_subscription ) {
+				$switchable_subscription = $customer_subscription;
+			}
+		}
+
+		$subscriptions       = new stdClass();
+		$subscriptions->data = $switchable_subscription ? array( $switchable_subscription ) : array();
+
+		if ( empty( $subscriptions->data ) && $incomplete_subscription ) {
+			$client_secret = leaky_paywall_get_stripe_incomplete_subscription_client_secret( $incomplete_subscription->id, $stripe );
+
+			if ( $client_secret ) {
+				leaky_paywall_log( $incomplete_subscription->id, 'stripe subscription - reusing incomplete subscription for ' . $customer_id );
+				return $client_secret;
+			}
+		}
 
 		if (empty($subscriptions->data)) {
 			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
@@ -672,7 +812,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level );
 
 				// Clearing a pending cancellation is a resubscribe, so restore access.
-				if ( ! empty( $existing_sub->cancel_at_period_end ) ) {
+				if ( leaky_paywall_stripe_subscription_cancels( $existing_sub ) ) {
 					$switching_user = get_user_by( 'email', $fields['email_address'] );
 					if ( $switching_user ) {
 						leaky_paywall_set_subscriber_status( $switching_user->ID, 'active', 'plan_switch' );
@@ -997,33 +1137,6 @@ function leaky_paywall_get_stripe_amount( $amount ) {
 }
 
 /**
- * The LP status for a subscriber whose Stripe subscription is trialing.
- *
- * Stripe reports any subscription with a trial_end as trialing, including a
- * paid subscription whose billing date was moved with trial_end. Only a
- * subscriber on a level with trials enabled (Trials extension) is a real
- * trial. Everyone else is a paying subscriber and stays active.
- *
- * @param WP_User $user Subscriber.
- * @return string 'trial' or 'active'.
- */
-function leaky_paywall_stripe_trialing_status( $user ) {
-
-	$status = 'active';
-
-	if ( function_exists( 'leaky_paywall_trials_is_enabled' ) ) {
-		$level_id = lp_get_subscriber_meta( 'level_id', $user );
-		$level    = ( '' !== $level_id && false !== $level_id ) ? get_leaky_paywall_subscription_level( $level_id ) : false;
-
-		if ( is_array( $level ) && leaky_paywall_trials_is_enabled( $level ) ) {
-			$status = 'trial';
-		}
-	}
-
-	return $status;
-}
-
-/**
  * Attach the customer's IP to a Stripe args array via `metadata.customer_ip`.
  *
  * Applied at every PaymentIntent + Checkout Session creation site so the IP
@@ -1062,6 +1175,95 @@ function leaky_paywall_add_customer_ip_to_stripe_metadata( array $args ) {
 	return $args;
 }
 
+
+/**
+ * Whether a Stripe subscription is set to cancel, by either field Stripe uses.
+ *
+ * The customer portal and API can schedule a cancel with `cancel_at` (a
+ * timestamp) while leaving `cancel_at_period_end` false, so checking only the
+ * boolean misses those cancels.
+ *
+ * @param object $subscription Stripe Subscription.
+ * @return bool
+ */
+function leaky_paywall_stripe_subscription_cancels( $subscription ) {
+	return ! empty( $subscription->cancel_at_period_end ) || ! empty( $subscription->cancel_at );
+}
+
+/**
+ * The LP status for a subscriber whose Stripe subscription is trialing.
+ *
+ * Stripe reports any subscription with a trial_end as trialing, including a
+ * paid subscription whose billing date was moved with trial_end. Only a
+ * subscriber on a level with trials enabled (Trials extension) is a real
+ * trial. Everyone else is a paying subscriber and stays active.
+ *
+ * @param WP_User $user Subscriber.
+ * @return string 'trial' or 'active'.
+ */
+function leaky_paywall_stripe_trialing_status( $user ) {
+
+	$status = 'active';
+
+	if ( function_exists( 'leaky_paywall_trials_is_enabled' ) ) {
+		$level_id = lp_get_subscriber_meta( 'level_id', $user );
+		$level    = ( '' !== $level_id && false !== $level_id ) ? get_leaky_paywall_subscription_level( $level_id ) : false;
+
+		if ( is_array( $level ) && leaky_paywall_trials_is_enabled( $level ) ) {
+			$status = 'trial';
+		}
+	}
+
+	return $status;
+}
+
+/**
+ * The timestamp a canceled Stripe subscription is paid through, or 0 for none.
+ *
+ * A canceled subscription keeps access until current_period_end only when the
+ * subscriber chose to cancel AND that period was actually paid for. Stripe
+ * leaves current_period_end on the next billing period even when its invoice
+ * was never paid, so a voluntary cancel of a past_due subscription (a failed
+ * renewal, or a migration schedule that restarted a canceled reader) would
+ * otherwise grant up to a year of free access.
+ *
+ * @param object $subscription Stripe Subscription (latest_invoice may be an id or expanded).
+ * @return int Unix timestamp, or 0 when access should end now.
+ */
+function leaky_paywall_stripe_canceled_paid_through( $subscription ) {
+	$period_end = ! empty( $subscription->current_period_end ) ? (int) $subscription->current_period_end : 0;
+
+	if ( ! $period_end || $period_end <= time() ) {
+		return 0;
+	}
+
+	$voluntary = leaky_paywall_stripe_subscription_cancels( $subscription )
+		|| ( isset( $subscription->cancellation_details->reason ) && 'cancellation_requested' === $subscription->cancellation_details->reason );
+
+	if ( ! $voluntary ) {
+		return 0;
+	}
+
+	$invoice = isset( $subscription->latest_invoice ) ? $subscription->latest_invoice : null;
+
+	if ( empty( $invoice ) ) {
+		return 0;
+	}
+
+	if ( is_string( $invoice ) ) {
+		try {
+			$stripe  = leaky_paywall_initialize_stripe_api();
+			$invoice = $stripe->invoices->retrieve( $invoice, [], leaky_paywall_get_stripe_connect_params() );
+		} catch ( \Throwable $th ) {
+			// Can't confirm payment. Keep the pre-check behavior rather than cut
+			// off a subscriber who may well have paid.
+			leaky_paywall_log_error( $th->getMessage(), 'lp stripe - could not retrieve latest invoice for canceled subscription ' . $subscription->id );
+			return $period_end;
+		}
+	}
+
+	return ( isset( $invoice->status ) && 'paid' === $invoice->status ) ? $period_end : 0;
+}
 
 function leaky_paywall_sync_stripe_subscription( $user ) {
 
@@ -1173,30 +1375,24 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				update_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_plan' . $site, $plan);
 			}
 
-			if ( $subscription->status == 'active' && ! empty( $subscription->cancel_at_period_end ) ) {
+			if ( $subscription->status == 'active' && leaky_paywall_stripe_subscription_cancels( $subscription ) ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
 			} elseif ( $subscription->status == 'active' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_sync' );
 			} elseif ( $subscription->status == 'trialing' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, leaky_paywall_stripe_trialing_status( $user ), 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
-				// Distinguish voluntary "cancel at period end" from involuntary
-				// cancellations (failed payment, admin cancel, fraud). Stripe leaves
-				// current_period_end set to the NEXT billing cycle even when a renewal
-				// payment fails — trusting that date for involuntary cancels gave
-				// subscribers up to a year of free access. Only respect
-				// current_period_end as a grace window when the cancel was the
-				// subscriber's own choice.
-				$voluntary = ! empty( $subscription->cancel_at_period_end );
-				if ( ! $voluntary && isset( $subscription->cancellation_details->reason ) ) {
-					$voluntary = ( 'cancellation_requested' === $subscription->cancellation_details->reason );
-				}
+				// Keep access to current_period_end only for a voluntary cancel of a
+				// period that was actually paid. Stripe leaves current_period_end on
+				// the NEXT billing cycle even when that renewal was never paid, and
+				// trusting it gave subscribers up to a year of free access.
+				$paid_through = leaky_paywall_stripe_canceled_paid_through( $subscription );
 
 				$expires_key = '_issuem_leaky_paywall_' . $mode . '_expires' . $site;
 
-				if ( $voluntary && $current_period_end && $current_period_end > time() ) {
+				if ( $paid_through ) {
 					leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
-					update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $current_period_end ) );
+					update_user_meta( $user->ID, $expires_key, date_i18n( 'Y-m-d 23:59:59', $paid_through ) );
 				} else {
 					leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_sync' );
 					// Clamp expires to NOW so a stale future date from an unpaid

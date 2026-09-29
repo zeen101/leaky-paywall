@@ -3336,7 +3336,15 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		// This step is API-heavy — up to 4 Stripe requests per user — so we
 		// process fewer per batch than the other steps and pace the calls, to
 		// keep well under conntrack/egress caps on managed hosts.
+		//
+		// Each user is synced once. The sync can legitimately leave a user
+		// canceled (a future not_started SubscriptionSchedule, no subscriptions,
+		// a Stripe error), and without the marker those users matched this query
+		// again every batch, so the migration never finished and kept making
+		// Stripe calls for the same users indefinitely. Users still canceled after
+		// their sync are handled by steps 2 and 4 below.
 		$stripe_batch          = 25;
+		$synced_key            = '_issuem_leaky_paywall_' . $mode . '_status_migration_v2_synced' . $site;
 		$canceled_stripe_users = get_users( array(
 			'number'     => $stripe_batch,
 			'meta_query' => array(
@@ -3351,10 +3359,16 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					'value'   => 'cus_',
 					'compare' => 'LIKE',
 				),
+				array(
+					'key'     => $synced_key,
+					'compare' => 'NOT EXISTS',
+				),
 			),
 		) );
 
 		foreach ( $canceled_stripe_users as $user ) {
+			update_user_meta( $user->ID, $synced_key, gmdate( 'Y-m-d H:i:s' ) );
+
 			if ( function_exists( 'leaky_paywall_sync_stripe_subscription' ) ) {
 				leaky_paywall_sync_stripe_subscription( $user );
 				// Pace outbound API calls at ~5/user/sec so the migration
