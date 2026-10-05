@@ -243,6 +243,13 @@ function leaky_paywall_process_user_registration_validation() {
 		$user['last_name']  = $fields['last_name'];
 		$user['level_id']   = $level_id;
 		$user['need_new']   = false;
+
+		// The email input is disabled for a logged-in reader, and disabled fields
+		// are not serialized, so it never arrives in the form data. Everything
+		// downstream that looks up the pending registration by email (the plan
+		// switch amount and level-change flag, the duplicate signup check) found
+		// nothing, and a switch was recorded as a full-price initial payment.
+		$fields['email_address'] = $userdata->user_email;
 	} else {
 		$user['id']               = 0;
 		$user['login']            = 'off' === $settings['remove_username_field'] ? $fields['username'] : $fields['email_address'];

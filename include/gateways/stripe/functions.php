@@ -674,11 +674,11 @@ function leaky_paywall_get_stripe_incomplete_subscription_client_secret( $subscr
 /**
  * Whether a recurring signup's subscription has been paid for, or is being paid.
  *
- * Only an unpaid first invoice counts against the signup: a customer whose
- * subscriptions are all incomplete (unconfirmed) or incomplete_expired, or who
- * has none at all. Anything else, including a failed lookup, is treated as confirmed so
- * trials, full-discount coupons, plan switches and in-flight ACH payments are
- * activated as before.
+ * Confirmed when the customer has an active or trialing subscription, or an
+ * incomplete one whose first payment succeeded or is in flight (ACH), so trials,
+ * full-discount coupons, plan switches and in-flight ACH payments are activated
+ * as before. Unpaid first invoices and delinquent (past_due, unpaid) earlier
+ * subscriptions do not count. A failed lookup is treated as confirmed.
  *
  * Matched on status rather than price, because the Coupons extension swaps the
  * price the subscription is created with.
@@ -718,10 +718,14 @@ function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id 
 
 	foreach ( $subscriptions->data as $subscription ) {
 
+		if ( in_array( $subscription->status, array( 'active', 'trialing' ), true ) ) {
+			return true;
+		}
+
+		// A delinquent subscription is an earlier one that stopped being paid,
+		// not this signup's. Counting it let a lapsed reader's resubscribe through
+		// unpaid.
 		if ( 'incomplete' !== $subscription->status ) {
-			if ( 'incomplete_expired' !== $subscription->status ) {
-				return true;
-			}
 			continue;
 		}
 
@@ -734,8 +738,147 @@ function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id 
 		}
 	}
 
-	// Only unpaid or expired first invoices left.
+	// Only unpaid first invoices or delinquent subscriptions left.
 	return false;
+}
+
+/**
+ * Whether a Stripe subscription has stopped being paid.
+ *
+ * @since 5.2.1
+ *
+ * @param object $subscription Stripe Subscription.
+ * @return bool
+ */
+function leaky_paywall_stripe_subscription_is_delinquent( $subscription ) {
+	return isset( $subscription->status ) && in_array( $subscription->status, array( 'past_due', 'unpaid' ), true );
+}
+
+/**
+ * Whether a customer has a live subscription other than the given one.
+ *
+ * The webhook resolves the subscriber from the Stripe customer, not the
+ * subscription, so an event about one subscription can otherwise act on a
+ * subscriber whose access comes from another.
+ *
+ * @since 5.2.1
+ *
+ * @param string $customer_id     Stripe Customer id.
+ * @param string $subscription_id Subscription to leave out.
+ * @param array  $statuses        Statuses that count as live.
+ * @return bool True when one exists, or when Stripe cannot be reached.
+ */
+function leaky_paywall_stripe_customer_has_other_live_subscription( $customer_id, $subscription_id, $statuses = array( 'active', 'trialing' ) ) {
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$customer_subscriptions = $stripe->subscriptions->all(
+			array(
+				'customer' => $customer_id,
+				'status'   => 'all',
+				'limit'    => 100,
+			),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'lp stripe - error listing subscriptions for ' . $customer_id );
+		return true;
+	}
+
+	foreach ( $customer_subscriptions->data as $customer_subscription ) {
+		if ( $customer_subscription->id === $subscription_id ) {
+			continue;
+		}
+
+		if ( in_array( $customer_subscription->status, $statuses, true ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Cancel the delinquent subscriptions a customer's paid resubscribe replaced.
+ *
+ * A lapsed reader who resubscribes gets a new subscription carrying the id of
+ * the past_due one in lp_replaces_subscription metadata (see
+ * leaky_paywall_create_stripe_subscription()). Once the new one is live the old
+ * one is left with nothing to collect for, and would otherwise keep retrying
+ * its open invoice and could charge the reader twice. Its open invoices are
+ * voided and it is canceled.
+ *
+ * Safe to call repeatedly: only a replaced subscription that is still
+ * delinquent is touched.
+ *
+ * @since 5.2.1
+ *
+ * @param string $customer_id Stripe Customer id.
+ * @return void
+ */
+function leaky_paywall_stripe_retire_replaced_subscriptions( $customer_id ) {
+
+	if ( ! $customer_id ) {
+		return;
+	}
+
+	$stripe         = leaky_paywall_initialize_stripe_api();
+	$connect_params = leaky_paywall_get_stripe_connect_params();
+
+	try {
+		$subscriptions = $stripe->subscriptions->all(
+			array(
+				'customer' => $customer_id,
+				'limit'    => 10,
+			),
+			$connect_params
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'stripe subscription - could not list subscriptions to retire for ' . $customer_id );
+		return;
+	}
+
+	foreach ( $subscriptions->data as $subscription ) {
+
+		if ( ! in_array( $subscription->status, array( 'active', 'trialing' ), true ) ) {
+			continue;
+		}
+
+		$replaced_id = isset( $subscription->metadata->lp_replaces_subscription ) ? $subscription->metadata->lp_replaces_subscription : '';
+
+		if ( ! $replaced_id || $replaced_id === $subscription->id ) {
+			continue;
+		}
+
+		try {
+			$replaced = $stripe->subscriptions->retrieve( $replaced_id, array(), $connect_params );
+
+			if ( $replaced->customer !== $customer_id || ! leaky_paywall_stripe_subscription_is_delinquent( $replaced ) ) {
+				continue;
+			}
+
+			// Voided first so a retry can't land between the cancel and the void.
+			$open_invoices = $stripe->invoices->all(
+				array(
+					'subscription' => $replaced_id,
+					'status'       => 'open',
+					'limit'        => 100,
+				),
+				$connect_params
+			);
+
+			foreach ( $open_invoices->data as $open_invoice ) {
+				$stripe->invoices->voidInvoice( $open_invoice->id, array(), $connect_params );
+			}
+
+			$stripe->subscriptions->cancel( $replaced_id, array(), $connect_params );
+
+			leaky_paywall_log( $replaced_id, 'stripe subscription - delinquent subscription retired, replaced by ' . $subscription->id );
+		} catch ( \Throwable $th ) {
+			leaky_paywall_log_error( $th->getMessage(), 'stripe subscription - could not retire replaced subscription ' . $replaced_id );
+		}
+	}
 }
 
 function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
@@ -774,14 +917,30 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		// paying. Only paid-for subscriptions are switched. An abandoned attempt at
 		// the same price is picked up again so the card form confirms that same
 		// invoice; any other is left for Stripe to expire.
+		//
+		// A past_due or unpaid subscription is not switched either. The switch
+		// invoice is charged off-session to the card that is already failing, the
+		// form submits without the reader paying anything, and a lapsed reader got
+		// their access back for free. They start a new subscription instead and pay
+		// for it here; the delinquent one is recorded on it and retired once the
+		// new one is paid (leaky_paywall_stripe_retire_replaced_subscriptions()), so
+		// abandoning the form leaves their existing dunning untouched.
 		$switchable_subscription = null;
 		$incomplete_subscription = null;
+		$replaced_subscription   = null;
 
 		foreach ( $customer_subscriptions->data as $customer_subscription ) {
 			if ( in_array( $customer_subscription->status, array( 'incomplete', 'incomplete_expired' ), true ) ) {
 				$incomplete_price = isset( $customer_subscription->items->data[0]->price->id ) ? $customer_subscription->items->data[0]->price->id : '';
 				if ( ! $incomplete_subscription && 'incomplete' === $customer_subscription->status && $incomplete_price === $plan_id ) {
 					$incomplete_subscription = $customer_subscription;
+				}
+				continue;
+			}
+
+			if ( leaky_paywall_stripe_subscription_is_delinquent( $customer_subscription ) ) {
+				if ( ! $replaced_subscription ) {
+					$replaced_subscription = $customer_subscription;
 				}
 				continue;
 			}
@@ -799,12 +958,34 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 
 			if ( $client_secret ) {
 				leaky_paywall_log( $incomplete_subscription->id, 'stripe subscription - reusing incomplete subscription for ' . $customer_id );
+
+				// An attempt started before this release carries no replacement marker.
+				// Not worth failing the signup over: without it the old subscription
+				// is only left to its own dunning.
+				if ( $replaced_subscription && empty( $incomplete_subscription->metadata->lp_replaces_subscription ) ) {
+					try {
+						$stripe->subscriptions->update(
+							$incomplete_subscription->id,
+							array( 'metadata' => array( 'lp_replaces_subscription' => $replaced_subscription->id ) ),
+							leaky_paywall_get_stripe_connect_params()
+						);
+					} catch ( \Throwable $th ) {
+						leaky_paywall_log_error( $th->getMessage(), 'stripe subscription - could not mark ' . $incomplete_subscription->id . ' as replacing ' . $replaced_subscription->id );
+					}
+				}
+
 				return $client_secret;
 			}
 		}
 
 		if (empty($subscriptions->data)) {
 			leaky_paywall_log('empty sub data', 'stripe subscription for ' . $customer_id);
+
+			if ( $replaced_subscription ) {
+				$subscription_array['metadata']['lp_replaces_subscription'] = $replaced_subscription->id;
+				leaky_paywall_log( $replaced_subscription->id, 'stripe subscription - delinquent subscription not switched, new subscription replaces it for ' . $customer_id );
+			}
+
 			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), leaky_paywall_get_stripe_connect_params() );
 		} else {
 			// Update existing subscription to new plan with immediate proration.
@@ -2300,15 +2481,33 @@ function leaky_paywall_stripe_tax_preview() {
 						wp_send_json_error( 'Could not retrieve Stripe plan.' );
 					}
 
+					$subscription_args = array(
+						'customer'         => $customer_id,
+						'items'            => array( array( 'price' => $stripe_plan->id ) ),
+						'automatic_tax'    => array( 'enabled' => true ),
+						'payment_behavior' => 'default_incomplete',
+						'payment_settings' => array( 'save_default_payment_method' => 'on_subscription' ),
+						'expand'           => array( 'latest_invoice.payment_intent' ),
+					);
+
+					// A lapsed reader resubscribing: mark the delinquent subscription so
+					// it is retired once this one is paid, as in
+					// leaky_paywall_create_stripe_subscription(). Otherwise it keeps
+					// retrying its open invoice alongside the new subscription.
+					$customer_subscriptions = $stripe->subscriptions->all(
+						array( 'customer' => $customer_id, 'limit' => 10 ),
+						leaky_paywall_get_stripe_connect_params()
+					);
+
+					foreach ( $customer_subscriptions->data as $customer_subscription ) {
+						if ( leaky_paywall_stripe_subscription_is_delinquent( $customer_subscription ) ) {
+							$subscription_args['metadata'] = array( 'lp_replaces_subscription' => $customer_subscription->id );
+							break;
+						}
+					}
+
 					$subscription = $stripe->subscriptions->create(
-						array(
-							'customer'         => $customer_id,
-							'items'            => array( array( 'price' => $stripe_plan->id ) ),
-							'automatic_tax'    => array( 'enabled' => true ),
-							'payment_behavior' => 'default_incomplete',
-							'payment_settings' => array( 'save_default_payment_method' => 'on_subscription' ),
-							'expand'           => array( 'latest_invoice.payment_intent' ),
-						),
+						$subscription_args,
 						leaky_paywall_get_stripe_connect_params()
 					);
 

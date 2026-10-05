@@ -181,8 +181,16 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			// any form that reached here was activated. Check the subscription instead.
 			// Keyed off the level rather than the posted 'recurring' field, which the
 			// visitor controls.
-			if ( ! leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id ) ) {
+			//
+			// Not for a plan switch: that was a paid-up subscription, and a switch
+			// invoice that fails can leave it past_due, which is dunning's to handle
+			// (see $switch_txn_id above). The flag is only ever set server side.
+			if ( ! $is_level_change && ! leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id ) ) {
 				$payment_status = 'pending';
+			}
+
+			if ( 'active' === $payment_status ) {
+				leaky_paywall_stripe_retire_replaced_subscriptions( $customer_id );
 			}
 		}
 
@@ -498,6 +506,9 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 
+				// Covers a resubscribe whose browser never got back to the form.
+				leaky_paywall_stripe_retire_replaced_subscriptions( $stripe_object->customer );
+
 				if ($stripe_object->subscription !== null ) {
 					// get the subscription and sync expiration date
 					try {
@@ -540,7 +551,10 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			case 'customer.subscription.updated':
 
-				if ( 'canceled' === $stripe_object->status ) {
+				if ( 'canceled' === $stripe_object->status && leaky_paywall_stripe_customer_has_other_live_subscription( $stripe_object->customer, $stripe_object->id ) ) {
+					// See customer.subscription.deleted.
+					leaky_paywall_log( $stripe_object->id, 'stripe webhook - canceled subscription ignored, customer has another live subscription' );
+				} elseif ( 'canceled' === $stripe_object->status ) {
 					// Only respect current_period_end as a grace window for a voluntary
 					// cancel of a paid period. For failed-payment / admin / fraud
 					// cancellations, or an unpaid renewal, current_period_end points at
@@ -634,6 +648,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'customer.subscription.deleted':
+				// A retired subscription (a lapsed reader's old one, canceled once
+				// their resubscribe was paid) must not expire the reader who just paid.
+				if ( leaky_paywall_stripe_customer_has_other_live_subscription( $stripe_object->customer, $stripe_object->id ) ) {
+					leaky_paywall_log( $stripe_object->id, 'stripe webhook - subscription.deleted ignored, customer has another live subscription' );
+					break;
+				}
+
 				leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'stripe_webhook' );
 
 				// Only honor current_period_end as a grace window for a voluntary
@@ -658,6 +679,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'payment_intent.canceled':
+				// Voiding an invoice cancels its PaymentIntent, which is how a lapsed
+				// reader's old subscription is retired once their resubscribe is paid
+				// (leaky_paywall_stripe_retire_replaced_subscriptions()). An abandoned
+				// payment can't take away access a live subscription is paying for.
+				if ( leaky_paywall_stripe_customer_has_other_live_subscription( $stripe_object->customer, '' ) ) {
+					leaky_paywall_log( $stripe_object->id, 'stripe webhook - payment_intent.canceled ignored, customer has a live subscription' );
+					break;
+				}
+
 				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
 				break;
 
