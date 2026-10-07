@@ -536,18 +536,41 @@ function leaky_paywall_process_user_registration_validation() {
 	$stripe = leaky_paywall_initialize_stripe_api();
 	// $customer_params = apply_filters('leaky_paywall_process_stripe_payment_customer_params', [], $level);
 
+	$cu = null;
+
 	if ( ! empty( $subscriber_id ) && 'stripe' === $subscriber_payment_gateway ) {
 
 		// retrieve Stripe customer.
 		try {
 			$cu = $stripe->customers->retrieve( $subscriber_id, [], leaky_paywall_get_stripe_connect_params() );
+		} catch ( \Stripe\Exception\InvalidRequestException $th ) {
+			// The saved customer isn't in this Stripe account (an imported id, a
+			// different connected account), so it can't be billed here. Start a new
+			// customer below rather than stop the reader at checkout. The new id
+			// replaces the stale one when the signup completes.
+			if ( 'resource_missing' === $th->getStripeCode() ) {
+				leaky_paywall_log_error( $subscriber_id . ' for ' . $user['email'], 'stripe signup - saved customer not found, creating a new one' );
+			} else {
+				leaky_paywall_log_error( $th->getMessage(), 'lp error - Could not retrieve Stripe customer' );
+				$errors['stripe_customer'] = array(
+					'message' => __( 'Could not retrieve customer.', 'leaky-paywall' ),
+				);
+			}
 		} catch ( \Throwable $th ) {
 			leaky_paywall_log_error($th->getMessage(), 'lp error - Could not retrieve Stripe customer');
 			$errors['stripe_customer'] = array(
 				'message' => __( 'Could not retrieve customer.', 'leaky-paywall' ),
 			);
 		}
-	} else {
+
+		// Stripe returns a deleted customer instead of an error.
+		if ( $cu && ! empty( $cu->deleted ) ) {
+			leaky_paywall_log_error( $subscriber_id . ' for ' . $user['email'], 'stripe signup - saved customer was deleted, creating a new one' );
+			$cu = null;
+		}
+	}
+
+	if ( ! $cu && empty( $errors['stripe_customer'] ) ) {
 
 		// create Stripe customer.
 		$customer_array = array(
