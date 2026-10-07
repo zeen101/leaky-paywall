@@ -743,6 +743,68 @@ function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id 
 }
 
 /**
+ * Find a confirmed one-time payment from this customer that no signup has used yet.
+ *
+ * For a paid one-time signup that posted no PaymentIntent id. The automatic tax
+ * flow pays through an invoice created in step 2, so its form never carries the
+ * id. The customer id comes from the stored registration, not the request.
+ *
+ * @since 5.2.1
+ *
+ * @param string $customer_id Stripe Customer id.
+ * @return string PaymentIntent id, or '' when there is none or the lookup fails.
+ */
+function leaky_paywall_stripe_find_unused_one_time_payment( $customer_id ) {
+
+	if ( ! $customer_id ) {
+		return '';
+	}
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$intents = $stripe->paymentIntents->all(
+			array(
+				'customer' => $customer_id,
+				'limit'    => 5,
+				'created'  => array( 'gte' => time() - DAY_IN_SECONDS ),
+			),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'stripe signup - one-time payment lookup failed for ' . $customer_id );
+		return '';
+	}
+
+	$confirmed_statuses = array( 'succeeded', 'processing', 'requires_capture' );
+
+	foreach ( $intents->data as $intent ) {
+
+		if ( ! in_array( $intent->status, $confirmed_statuses, true ) ) {
+			continue;
+		}
+
+		$used = get_posts(
+			array(
+				'post_type'      => 'lp_transaction',
+				'post_status'    => 'any',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					array( 'key' => '_gateway_txn_id', 'value' => $intent->id ),
+				),
+			)
+		);
+
+		if ( empty( $used ) ) {
+			return $intent->id;
+		}
+	}
+
+	return '';
+}
+
+/**
  * Whether a Stripe subscription has stopped being paid.
  *
  * @since 5.2.1

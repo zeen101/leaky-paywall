@@ -161,9 +161,21 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		// confirmed, start the subscriber as 'pending' (no access) and let the existing
 		// payment_intent.succeeded / invoice.payment_succeeded webhook flip them to active
 		// the moment payment actually lands. Falls back to 'active' when there is no
-		// PaymentIntent (free levels, coupons, trials) or the lookup fails, preserving prior
-		// behavior for those flows.
+		// PaymentIntent (free levels, trials) or the lookup fails, except for a paid
+		// one-time level, below.
 		$payment_status = 'active';
+
+		// A paid one-time level is paid through the PaymentIntent the form posts, so
+		// access waits until that PaymentIntent is confirmed for this customer. The
+		// posted id is visitor controlled: a missing id, a failed lookup or another
+		// customer's PaymentIntent start the subscriber pending, and the
+		// payment_intent.succeeded webhook activates them once a real payment lands.
+		// Uses the stored level price, never a posted one. A fully discounted coupon
+		// goes through free registration, not this gateway.
+		$is_paid_one_time = ! $is_level_change
+			&& ( ! isset( $level['recurring'] ) || 'on' !== $level['recurring'] )
+			&& isset( $level['price'] ) && (float) $level['price'] >= 0.5;
+
 		if ( $payment_intent_id ) {
 			try {
 				$stripe = leaky_paywall_initialize_stripe_api();
@@ -172,8 +184,26 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				if ( is_object( $intent ) && ! in_array( $intent->status, $confirmed_statuses, true ) ) {
 					$payment_status = 'pending';
 				}
+
+				if ( $is_paid_one_time && ( ! is_object( $intent ) || empty( $intent->customer ) || $intent->customer !== $customer_id ) ) {
+					leaky_paywall_log_error( $payment_intent_id, 'stripe signup - payment intent does not belong to customer ' . $customer_id . ' for ' . $this->email );
+					$payment_status = 'pending';
+				}
 			} catch ( \Throwable $e ) {
 				leaky_paywall_log_error( $e->getMessage(), 'stripe signup - payment intent status check failed for ' . $this->email );
+
+				if ( $is_paid_one_time ) {
+					$payment_status = 'pending';
+				}
+			}
+		} elseif ( $is_paid_one_time ) {
+			// The automatic tax flow pays through an invoice and posts no id. Look
+			// for the payment on the customer instead of trusting the form.
+			$payment_intent_id = leaky_paywall_stripe_find_unused_one_time_payment( $customer_id );
+
+			if ( ! $payment_intent_id ) {
+				leaky_paywall_log_error( $this->email, 'stripe signup - no confirmed payment found for a paid one-time level' );
+				$payment_status = 'pending';
 			}
 		} elseif ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) {
 			// A recurring signup posts no PaymentIntent (the payment belongs to the
