@@ -1888,10 +1888,6 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 		return null;
 	}
 
-	// Clean up incomplete user immediately so the other handler bails on lookup
-	// if it races in here. Belt-and-suspenders with the dedup above.
-	leaky_paywall_cleanup_incomplete_user( $cu->email );
-
 	$user    = get_user_by( 'email', $user_data['email'] );
 	$level   = get_leaky_paywall_subscription_level( $user_data['level_id'] );
 	$plan_id = '';
@@ -1943,10 +1939,17 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 		$user_id = leaky_paywall_new_subscriber( null, $user_data['email'], $pi->customer, $subscriber_data );
 	}
 
-	if ( ! $user_id ) {
-		leaky_paywall_log_error( $pi->customer, "stripe {$source} - failed to create/update WP user" );
+	// The incomplete user is only removed once the account exists. Removing it
+	// first meant one refused account creation (a security plugin, the host)
+	// consumed the registration: the reader had paid, no path could retry, and
+	// nobody was told. The claim above still keeps the other paths out.
+	if ( leaky_paywall_subscriber_account_failed( $user_id ) ) {
+		leaky_paywall_release_registration_claim( $pi->id );
+		leaky_paywall_notify_account_creation_failed( $user_data['email'], $user_id, $pi->customer, "stripe {$source}" );
 		return null;
 	}
+
+	leaky_paywall_cleanup_incomplete_user( $cu->email );
 
 	$subscriber_data['user_id'] = $user_id;
 

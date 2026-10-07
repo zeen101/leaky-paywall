@@ -171,7 +171,13 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 		$user_id = leaky_paywall_new_subscriber( null, $subscriber_data['subscriber_email'], $subscriber_data['subscriber_id'], $subscriber_data );
 	}
 
-	if ( empty( $user_id ) ) {
+	// A WP_Error used to get past the empty() check, so a refused account went
+	// on to record a transaction and delete the incomplete user.
+	if ( leaky_paywall_subscriber_account_failed( $user_id ) ) {
+		if ( ! leaky_paywall_is_free_registration( $subscriber_data ) ) {
+			leaky_paywall_notify_account_creation_failed( $subscriber_data['subscriber_email'], $user_id, isset( $subscriber_data['subscriber_id'] ) ? $subscriber_data['subscriber_id'] : '', 'registration form' );
+		}
+
 		leaky_paywall_errors()->add( 'user_not_created', __( 'A user could not be created. Please check your details and try again.', 'leaky-paywall' ), 'register' );
 		return;
 	}
@@ -1523,6 +1529,125 @@ function leaky_paywall_claim_registration( $key ) {
 	return ! $already_claimed;
 }
 
+/**
+ * Give up a registration claim so another finalize path can try again.
+ *
+ * Used when the claimant could not create the subscriber's account. Without it
+ * the claim marker turns every later attempt away for a day, including the
+ * webhook that would otherwise have retried.
+ *
+ * @since 5.2.1
+ *
+ * @param string $key The key passed to leaky_paywall_claim_registration().
+ * @return void
+ */
+function leaky_paywall_release_registration_claim( $key ) {
+
+	$key = (string) $key;
+
+	if ( '' === $key ) {
+		return;
+	}
+
+	delete_transient( 'lp_reg_claimed_' . md5( $key ) );
+}
+
+/**
+ * Whether creating or updating a subscriber's WordPress account failed.
+ *
+ * leaky_paywall_new_subscriber() returns a WP_Error when wp_insert_user()
+ * refuses (a security plugin, the host, a duplicate login), and empty() does
+ * not catch an object.
+ *
+ * @since 5.2.1
+ *
+ * @param mixed $user_id What leaky_paywall_new_subscriber() or leaky_paywall_update_subscriber() returned.
+ * @return bool
+ */
+function leaky_paywall_subscriber_account_failed( $user_id ) {
+	return empty( $user_id ) || is_wp_error( $user_id );
+}
+
+/**
+ * Tell the site admin that a reader paid but their account could not be created.
+ *
+ * The reader has been charged and cannot log in, and nothing else surfaces it:
+ * the publisher otherwise hears about it from the reader, days later. Sent to
+ * the admin new subscriber email's recipients, whether or not that email is
+ * enabled, at most once a day per reader.
+ *
+ * @since 5.2.1
+ *
+ * @param string $email       The reader's email address.
+ * @param mixed  $result      What the account creation returned (a WP_Error, or empty).
+ * @param string $customer_id Gateway customer id, when known.
+ * @param string $source      Where the registration was being finalized, for the log.
+ * @return void
+ */
+function leaky_paywall_notify_account_creation_failed( $email, $result, $customer_id = '', $source = '' ) {
+
+	$reason = is_wp_error( $result )
+		? $result->get_error_message() . ' (' . $result->get_error_code() . ')'
+		: __( 'No user was returned.', 'leaky-paywall' );
+
+	leaky_paywall_log_error(
+		array(
+			'email'       => $email,
+			'customer_id' => $customer_id,
+			'reason'      => $reason,
+		),
+		'paid registration - account could not be created (' . $source . ')'
+	);
+
+	do_action( 'leaky_paywall_subscriber_account_creation_failed', $email, $result, $customer_id, $source );
+
+	if ( ! apply_filters( 'leaky_paywall_send_account_creation_failed_email', true, $email, $result ) ) {
+		return;
+	}
+
+	// Several paths can fail for one payment (form, redirect, two webhooks).
+	$sent_key = 'lp_acct_fail_' . md5( strtolower( (string) $email ) );
+
+	if ( get_transient( $sent_key ) ) {
+		return;
+	}
+
+	$email_object = class_exists( 'LP_Emails' ) ? LP_Emails::instance()->get_email( 'admin_new_subscriber' ) : null;
+	$recipients   = $email_object && ! empty( $email_object->recipients ) ? $email_object->recipients : get_option( 'admin_email' );
+
+	if ( empty( $recipients ) ) {
+		return;
+	}
+
+	$site_name = stripslashes_deep( html_entity_decode( get_bloginfo( 'name' ), ENT_COMPAT, 'UTF-8' ) );
+
+	/* translators: %s: site name */
+	$subject = sprintf( __( 'A subscriber paid but their account could not be created on %s', 'leaky-paywall' ), $site_name );
+
+	$message  = '<p>' . esc_html__( 'A reader completed a payment, but WordPress refused to create their account, so they cannot log in.', 'leaky-paywall' ) . '</p>';
+	$message .= '<ul>';
+	$message .= '<li><strong>' . esc_html__( 'Email:', 'leaky-paywall' ) . '</strong> ' . esc_html( $email ) . '</li>';
+
+	if ( $customer_id ) {
+		$message .= '<li><strong>' . esc_html__( 'Customer ID:', 'leaky-paywall' ) . '</strong> ' . esc_html( $customer_id ) . '</li>';
+	}
+
+	$message .= '<li><strong>' . esc_html__( 'Reason:', 'leaky-paywall' ) . '</strong> ' . esc_html( $reason ) . '</li>';
+	$message .= '</ul>';
+	$message .= '<p>' . esc_html__( 'Add them under Leaky Paywall > Subscribers > Add Subscriber, using the customer ID above so their renewals stay linked. If this keeps happening, another plugin or your host is blocking new accounts.', 'leaky-paywall' ) . '</p>';
+
+	if ( $email_object ) {
+		$message = $email_object->wrap( $message );
+		$headers = $email_object->get_headers();
+	} else {
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+	}
+
+	if ( wp_mail( $recipients, $subject, $message, $headers ) ) {
+		set_transient( $sent_key, time(), DAY_IN_SECONDS );
+	}
+}
+
 function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 
 	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $email );
@@ -1607,6 +1732,13 @@ function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 		$subscriber_data['need_new'] = true;
 		$user_id = leaky_paywall_new_subscriber(NULL, $user_data['email'], $subscriber_id, $subscriber_data);
 
+	}
+
+	// Keep the incomplete user so a later attempt can still finish the
+	// registration, and record no transaction for an account that doesn't exist.
+	if ( leaky_paywall_subscriber_account_failed( $user_id ) ) {
+		leaky_paywall_notify_account_creation_failed( $user_data['email'], $user_id, $subscriber_id, 'stripe webhook' );
+		return false;
 	}
 
 	$subscriber_data['user_id'] = $user_id;

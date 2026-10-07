@@ -403,6 +403,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 							// not clear the result.
 							$is_incomplete = leaky_paywall_create_subscriber_from_incomplete_user( $email ) || $is_incomplete;
 						}
+
+						// Nothing was finalized (no incomplete user, or the account
+						// could not be created), so don't hold the payment against the
+						// payment_intent.succeeded path.
+						if ( ! $is_incomplete ) {
+							leaky_paywall_release_registration_claim( $pi_id );
+						}
 					}
 
 				}
