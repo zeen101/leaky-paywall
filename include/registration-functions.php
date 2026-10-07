@@ -229,14 +229,29 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
  */
 function leaky_paywall_process_user_registration_validation() {
 
-	if ( ! check_ajax_referer( 'lp_register_nonce', 'register_nonce', false ) ) {
-		$errors['nonce'] = array(
-			'message' => __( 'There was an error. Please try again.', 'leaky-paywall' ),
-		);
-	}
-
 	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
 	parse_str( $form_data, $fields );
+
+	// Verified against the registration form's own nonce, which arrives in the
+	// serialized form data. This used to call check_ajax_referer() for a field the
+	// script never sends, and the error it set was then reset below, so step 1
+	// (which creates Stripe customers) ran without any nonce check. A page served
+	// from cache past the nonce lifetime now stops here, before any payment,
+	// rather than at the step 2 form nonce after the card is charged.
+	if (
+		empty( $fields['leaky_paywall_register_nonce'] )
+		|| ! wp_verify_nonce( sanitize_key( $fields['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
+	) {
+		wp_send_json(
+			array(
+				'errors' => array(
+					'nonce' => array(
+						'message' => __( 'This page has expired. Please refresh the page and try again.', 'leaky-paywall' ),
+					),
+				),
+			)
+		);
+	}
 
 	$user     = array();
 	$errors   = array();
