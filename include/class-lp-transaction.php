@@ -106,7 +106,10 @@ class LP_Transaction {
 		update_post_meta( $transaction_id, '_currency', $this->currency );
 		update_post_meta( $transaction_id, '_status', $this->payment_status );
 		update_post_meta( $transaction_id, '_is_recurring', $this->is_recurring );
-		update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+		// A signup whose payment is not confirmed yet is recorded as pending, so it
+		// gets no receipt until leaky_paywall_send_emails_awaiting_payment()
+		// completes it when the payment lands.
+		update_post_meta( $transaction_id, '_transaction_status', 'pending' === $this->payment_status ? 'pending' : 'complete' );
 
 		// Only written when a caller states the type. Absence means "derive it",
 		// which is what every transaction recorded before this existed does.

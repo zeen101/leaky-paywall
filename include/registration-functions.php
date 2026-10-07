@@ -196,8 +196,14 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 
 	leaky_paywall_cleanup_incomplete_user( $subscriber_data['email'] );
 
-	// Send email notifications.
-	leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
+	// Send email notifications. A paid signup that is still waiting on its payment
+	// gets them once the payment lands, not a welcome to access it doesn't have.
+	if ( isset( $subscriber_data['payment_status'] ) && 'pending' === $subscriber_data['payment_status'] && ! leaky_paywall_is_free_registration( $subscriber_data ) ) {
+		update_user_meta( $user_id, '_leaky_paywall_emails_awaiting_payment', $status );
+		leaky_paywall_log( $subscriber_data['subscriber_email'], 'registration - payment pending, welcome emails held until it lands' );
+	} else {
+		leaky_paywall_email_subscription_status( $user_id, $status, $subscriber_data );
+	}
 
 	// log the user in.
 	leaky_paywall_log_in_user( $user_id );
@@ -1647,6 +1653,81 @@ function leaky_paywall_notify_account_creation_failed( $email, $result, $custome
 		set_transient( $sent_key, time(), DAY_IN_SECONDS );
 	}
 }
+
+/**
+ * Send the signup emails held back while a paid signup waited on its payment.
+ *
+ * leaky_paywall_subscriber_registration() holds the welcome and admin emails when
+ * a paid signup finishes before its payment is confirmed, and records the
+ * transaction as pending so no receipt goes out. When the reader gains access
+ * they get the emails. The transaction is completed and the receipt sent only
+ * when the gateway confirmed the payment, so an admin activating an unpaid
+ * reader does not send a receipt for money that was never collected.
+ *
+ * The welcome email is sent from this later request, so %password% is empty.
+ * The reader chose that password at signup.
+ *
+ * @since 5.2.1
+ *
+ * @param string $new_status The status that grants access.
+ * @param int    $user_id    WordPress user ID.
+ * @param string $source     What changed the status.
+ * @return void
+ */
+function leaky_paywall_send_emails_awaiting_payment( $new_status, $user_id, $source ) {
+
+	$email_status = get_user_meta( $user_id, '_leaky_paywall_emails_awaiting_payment', true );
+
+	if ( ! $email_status ) {
+		return;
+	}
+
+	// Cleared first, so a second status change in this request can't send twice.
+	delete_user_meta( $user_id, '_leaky_paywall_emails_awaiting_payment' );
+
+	$user = get_user_by( 'id', $user_id );
+
+	if ( ! $user ) {
+		return;
+	}
+
+	$payment_sources = apply_filters( 'leaky_paywall_payment_confirmed_status_sources', array( 'stripe_webhook' ) );
+
+	if ( in_array( $source, $payment_sources, true ) ) {
+
+		$pending_transactions = get_posts(
+			array(
+				'post_type'      => 'lp_transaction',
+				'post_status'    => 'publish',
+				'posts_per_page' => 5,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					array( 'key' => '_email', 'value' => $user->user_email ),
+					array( 'key' => '_transaction_status', 'value' => 'pending' ),
+				),
+			)
+		);
+
+		foreach ( $pending_transactions as $transaction_id ) {
+			update_post_meta( $transaction_id, '_transaction_status', 'complete' );
+			update_post_meta( $transaction_id, '_status', $new_status );
+			leaky_paywall_maybe_send_payment_receipt( $transaction_id );
+		}
+	}
+
+	// Double Opt-In with "delay welcome email" sends the welcome itself when the
+	// reader verifies.
+	if ( 'doi_activation' === $source && function_exists( 'get_leaky_paywall_double_opt_in_settings' ) ) {
+		$doi_settings = get_leaky_paywall_double_opt_in_settings();
+
+		if ( isset( $doi_settings['delay_welcome_email'] ) && 'on' === $doi_settings['delay_welcome_email'] ) {
+			return;
+		}
+	}
+
+	leaky_paywall_email_subscription_status( $user_id, $email_status );
+}
+add_action( 'leaky_paywall_status_gained_access', 'leaky_paywall_send_emails_awaiting_payment', 10, 3 );
 
 function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 
