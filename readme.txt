@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.2.0
+Stable tag: 5.2.1
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,17 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.2.1 =
+* Security: The Stripe registration form now verifies its security token on the first step, before a Stripe customer is created.
+* Security: A one-time purchase is only activated when Stripe confirms a payment from that subscriber's own customer record. A missing, failed or mismatched payment now leaves the subscriber pending until the payment arrives.
+* Fix: Stripe subscription signups no longer activate before the first payment is confirmed, and subscribers whose subscription is canceled in Stripe now lose access.
+* Fix: Readers with a past due subscription who resubscribe now pay for a new subscription instead of being switched onto the unpaid one, and the old subscription and its unpaid invoice are cleaned up.
+* Fix: Logged in subscribers who switch plans are now charged and recorded with the correct switch amount.
+* Fix: Stripe subscriptions that report as trialing are only marked as a trial in Leaky Paywall when the level has a trial.
+* Fix: When WordPress refuses to create a paying subscriber's account, the registration is kept so it can be completed later, and the site admin is emailed with the subscriber's details.
+* Fix: The welcome email, admin new subscriber email and payment receipt are now sent when a pending payment completes, instead of before it is confirmed.
+* Fix: A logged in reader whose saved Stripe customer no longer exists can now check out, and a new Stripe customer is created for them.
 
 = 5.2.0 =
 * New: See who converted on each article. The Top Content cards on the dashboard now link their conversion counts through to those exact subscribers, and you can download that list as a CSV from the Subscribers screen. Works for both free and paid conversions. (Pro)
