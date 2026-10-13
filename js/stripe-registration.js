@@ -91,16 +91,19 @@
                             value.message +
                             "</p>"
                         );
-                        $("#leaky-paywall-registration-next").text( leaky_paywall_stripe_registration_ajax.next_text ).prop('disabled', false);
-                        $("#leaky-paywall-registration-errors").show();
-
-                        $("html, body").animate(
-                        {
-                            scrollTop: $(".leaky-paywall-registration-error").offset().top,
-                        },
-                        1000
-                        );
                     });
+
+                    // Once, after all the errors are added. Inside the loop each
+                    // error queued its own one-second scroll and locked the page.
+                    $("#leaky-paywall-registration-next").text( leaky_paywall_stripe_registration_ajax.next_text ).prop('disabled', false);
+                    $("#leaky-paywall-registration-errors").show();
+
+                    $("html, body").animate(
+                    {
+                        scrollTop: $(".leaky-paywall-registration-error").offset().top,
+                    },
+                    1000
+                    );
 
                 } else {
 
