@@ -740,6 +740,7 @@ class Leaky_Paywall_Restrictions {
 			'response' => array(
 				'show_paywall' => true,
 				'nag_type'     => $this->nag_type,
+				'paid_only'    => leaky_paywall_post_is_paid_only( $this->post_id ),
 			),
 		);
 

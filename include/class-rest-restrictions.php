@@ -270,6 +270,7 @@ class Leaky_Paywall_REST_Restrictions {
 			'viewed_content'        => $this->get_content_viewed_by_user(),
 			'subscriber_level_ids'  => $this->get_level_ids(),
 			'nag_type'              => $this->nag_type,
+			'paid_only'             => leaky_paywall_post_is_paid_only( $this->post_id ),
 		);
 
 		do_action( 'leaky_paywall_is_restricted_content', $this->post_id, $this->nag_type );

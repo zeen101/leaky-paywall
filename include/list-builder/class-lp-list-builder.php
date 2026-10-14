@@ -86,11 +86,13 @@ class LP_List_Builder
 
         $signup_enabled = self::is_signup_enabled();
 
-        // With the signup off, logged-out readers get the upgrade panel, and
-        // some of them already subscribe.
+        // Logged-out readers get the upgrade panel with the signup off, or on
+        // a post only paid levels can read, and some of them already subscribe.
         $login_url = '';
 
-        if ( ! $signup_enabled && ! is_user_logged_in() ) {
+        $paid_only = is_singular() && leaky_paywall_post_is_paid_only( get_queried_object_id() );
+
+        if ( ( ! $signup_enabled || $paid_only ) && ! is_user_logged_in() ) {
             $login_url = ! empty( $lp_settings['page_for_login'] ) ? get_permalink( $lp_settings['page_for_login'] ) : wp_login_url();
         }
 

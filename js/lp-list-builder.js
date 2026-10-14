@@ -363,7 +363,10 @@
           var nagType = e.detail.response.nag_type;
           // With the signup off, logged-out readers get the upgrade panel too.
           var signupOff = window.LP_LIST_BUILDER.signupEnabled === false;
-          var isUpgrade = nagType === 'upgrade' || (nagType && nagType.indexOf('targeted') === 0) || (nagType === 'subscribe' && signupOff);
+          // A free account never unlocks a post only paid levels can read, so
+          // offer the upgrade instead of the signup.
+          var paidOnly  = nagType === 'subscribe' && !!e.detail.response.paid_only;
+          var isUpgrade = nagType === 'upgrade' || (nagType && nagType.indexOf('targeted') === 0) || (nagType === 'subscribe' && signupOff) || paidOnly;
 
           if (nagType !== 'subscribe' && !isUpgrade) {
               return;
@@ -373,7 +376,10 @@
           var upgradePanel   = document.getElementById('lplb-upgrade-panel');
 
           if (isUpgrade) {
-              if (!window.LP_LIST_BUILDER.upgradeEnabled) { return; }
+              // On a paid-only post the panel is the paywall itself: the check
+              // has already handed the post to this modal, so it opens even
+              // with the logged-in upgrade modal switched off.
+              if (!window.LP_LIST_BUILDER.upgradeEnabled && !paidOnly) { return; }
               if (subscribePanel) subscribePanel.style.display = 'none';
               if (upgradePanel)   upgradePanel.style.display   = '';
           } else {

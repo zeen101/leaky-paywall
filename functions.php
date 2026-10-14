@@ -809,6 +809,39 @@ function leaky_paywall_restrict_feed_content( $content, $feed_type = '' ) {
 add_filter( 'the_content_feed', 'leaky_paywall_restrict_feed_content', 10, 2 );
 
 /**
+ * Whether a post's visibility is "only be visible to" paid levels only.
+ *
+ * A free account never unlocks such a post, so List Builder offers an
+ * upgrade on it rather than a free signup. Judged by price, not ID:
+ * level 0 can be a paid level.
+ *
+ * @since 5.2.2
+ *
+ * @param int $post_id Post ID.
+ * @return bool
+ */
+function leaky_paywall_post_is_paid_only( $post_id ) {
+
+	$visibility = get_post_meta( absint( $post_id ), '_issuem_leaky_paywall_visibility', true );
+
+	if ( ! is_array( $visibility ) || empty( $visibility['visibility_type'] ) || 'only' !== $visibility['visibility_type'] || empty( $visibility['only_visible'] ) ) {
+		return false;
+	}
+
+	$settings = get_leaky_paywall_settings();
+
+	foreach ( (array) $visibility['only_visible'] as $level_id ) {
+		$level = isset( $settings['levels'][ $level_id ] ) ? $settings['levels'][ $level_id ] : null;
+
+		if ( ! $level || empty( $level['price'] ) || floatval( $level['price'] ) <= 0 ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * Work out leaky_paywall_post_is_hard_restricted() without the cache.
  *
  * Follows the order Leaky_Paywall_Restrictions uses for a logged-out
@@ -837,23 +870,7 @@ function leaky_paywall_compute_post_is_hard_restricted( $post_id, $settings ) {
 	}
 
 	if ( 'only' === $type ) {
-
-		$level_ids = ! empty( $visibility['only_visible'] ) ? (array) $visibility['only_visible'] : array();
-
-		if ( empty( $level_ids ) ) {
-			return false;
-		}
-
-		// By price, not ID: level 0 can be a paid level.
-		foreach ( $level_ids as $level_id ) {
-			$level = isset( $settings['levels'][ $level_id ] ) ? $settings['levels'][ $level_id ] : null;
-
-			if ( ! $level || empty( $level['price'] ) || floatval( $level['price'] ) <= 0 ) {
-				return false;
-			}
-		}
-
-		return true;
+		return leaky_paywall_post_is_paid_only( $post_id );
 	}
 
 	// The first rule that applies to the post decides, in the order
