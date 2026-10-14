@@ -753,6 +753,11 @@ class Leaky_Paywall_Restrictions {
 						'function open() {' .
 							'if (!window.LP_LIST_BUILDER_READY) { return; }' .
 							'document.dispatchEvent(new CustomEvent("leaky_paywall_shown", { detail: ' . wp_json_encode( $detail ) . ', bubbles: true, cancelable: true }));' .
+							// Only once the modal is up: the in-content nag is the
+							// fallback for when List Builder doesn't open it.
+							'var portal = document.getElementById("lplb-portal");' .
+							'if (!portal || !portal.classList.contains("is-visible")) { return; }' .
+							'document.querySelectorAll(".leaky_paywall_message_wrap").forEach(function (nag) { nag.style.display = "none"; });' .
 						'}' .
 						'if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", open); } else { open(); }' .
 					'})();',
