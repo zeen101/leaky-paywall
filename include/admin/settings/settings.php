@@ -735,7 +735,7 @@ class Leaky_Paywall_Settings
 							),
 							'server'    => array(
 								__( 'Server', 'leaky-paywall' ),
-								__( 'Every restricted post is restricted on the server. If your site uses page caching, the paywall can show to the wrong visitors.', 'leaky-paywall' ),
+								__( 'Every restricted post is checked on the server, so its full text never reaches the page source. Not suited to page caching: a cached page can show the paywall to subscribers or the full post to visitors.', 'leaky-paywall' ),
 							),
 						);
 
@@ -750,6 +750,12 @@ class Leaky_Paywall_Settings
 							</p>
 							<?php
 						}
+
+						?>
+						<p class="description">
+							<?php esc_html_e( 'Note: a post restricted on the server shows search engines and AI crawlers only its teaser, the same as a visitor without access. To let search engines index the full text, turn on Search Engine Bot Bypass below. AI crawlers are not let through. With JavaScript, crawlers can read the full text in the page source.', 'leaky-paywall' ); ?>
+						</p>
+						<?php
 
 						if ( $this->check_for_caching() && 'server' === $restriction_method ) {
 						?>
