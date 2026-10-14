@@ -189,6 +189,14 @@ class Leaky_Paywall_Restrictions {
 		// Allow search engine bots to bypass the paywall for indexing.
 		$settings = get_leaky_paywall_settings();
 		if ( ! empty( $settings['search_engine_bot_bypass'] ) && 'on' === $settings['search_engine_bot_bypass'] && leaky_paywall_is_search_engine_bot() ) {
+
+			// The bot gets the full text. Keep that page out of the page
+			// cache, or a bot visiting first would have the full article
+			// served to everyone after it.
+			if ( ! $this->is_rest && $this->post_is_restricted_by_rules() ) {
+				leaky_paywall_prevent_page_caching( 'search engine bot bypass' );
+			}
+
 			return false;
 		}
 

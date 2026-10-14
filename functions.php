@@ -567,6 +567,169 @@ function leaky_paywall_post_is_hard_restricted( $post_id ) {
 }
 
 /**
+ * Whether any restriction rule applies to a post, by post type and
+ * taxonomy, as content_restricted_by_settings() decides it.
+ *
+ * Worked out here rather than called, since that method caches its
+ * answer for 15 minutes and ignores changes to the rules meanwhile.
+ *
+ * @since 5.2.2
+ *
+ * @param int   $post_id  Post ID.
+ * @param array $settings Leaky Paywall settings.
+ * @return bool
+ */
+function leaky_paywall_post_matches_restriction_rule( $post_id, $settings ) {
+
+	$restrictions = new Leaky_Paywall_Restrictions( $post_id );
+	$post_type    = get_post_type( $post_id );
+	$rules        = isset( $settings['restrictions']['post_types'] ) ? (array) $settings['restrictions']['post_types'] : array();
+
+	foreach ( $rules as $rule ) {
+		if ( is_array( $rule ) && isset( $rule['post_type'] ) && $rule['post_type'] === $post_type ) {
+			$taxonomy = isset( $rule['taxonomy'] ) ? $rule['taxonomy'] : 'all';
+
+			if ( 'all' === $taxonomy || $restrictions->content_taxonomy_matches( $taxonomy, $post_id ) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Whether a logged-out visitor would ever meet the paywall on a post,
+ * metered or not.
+ *
+ * Decided by post, like leaky_paywall_post_is_hard_restricted(), for
+ * places with no visitor to check, such as feeds.
+ *
+ * @since 5.2.2
+ *
+ * @param int $post_id Post ID.
+ * @return bool
+ */
+function leaky_paywall_post_is_restricted_for_logged_out( $post_id ) {
+
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	$restrictions = new Leaky_Paywall_Restrictions( $post_id );
+
+	if ( $restrictions->is_unblockable_content() || $restrictions->content_matches_restriction_exceptions() ) {
+		return false;
+	}
+
+	$visibility = get_post_meta( $post_id, '_issuem_leaky_paywall_visibility', true );
+	$type       = ( is_array( $visibility ) && ! empty( $visibility['visibility_type'] ) ) ? $visibility['visibility_type'] : 'default';
+
+	if ( 'always' === $type && ! empty( $visibility['always_visible'] ) && in_array( -1, array_map( 'intval', (array) $visibility['always_visible'] ), true ) ) {
+		return false; // Visible to everyone.
+	}
+
+	if ( 'only' === $type && ! empty( $visibility['only_visible'] ) ) {
+		return true; // Logged-out visitors hold no level.
+	}
+
+	return leaky_paywall_post_matches_restriction_rule( $post_id, get_leaky_paywall_settings() );
+}
+
+/**
+ * Keep the current page out of page caches.
+ *
+ * For a response that shows a visitor more than the cached page should,
+ * such as the full text given to a search engine bot.
+ *
+ * @since 5.2.2
+ *
+ * @param string $reason Why, for caches that log it.
+ */
+function leaky_paywall_prevent_page_caching( $reason = '' ) {
+
+	if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
+
+	if ( ! headers_sent() ) {
+		nocache_headers();
+	}
+
+	// LiteSpeed Cache does not read DONOTCACHEPAGE.
+	do_action( 'litespeed_control_set_nocache', 'Leaky Paywall: ' . $reason );
+
+	/**
+	 * Fires when Leaky Paywall keeps a page out of the cache, for caches
+	 * that need their own call.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param string $reason Why.
+	 */
+	do_action( 'leaky_paywall_prevent_page_caching', $reason );
+}
+
+/**
+ * Keep restricted posts out of full-text feeds.
+ *
+ * Restriction runs only on single posts, so with "For each post in a
+ * feed, include: Full text" a feed carried every restricted post in
+ * full, whichever restriction method the site uses. Feeds are read
+ * logged out, so a post a logged-out visitor would meet the paywall on
+ * goes out as its excerpt and a link instead.
+ *
+ * @since 5.2.2
+ *
+ * @param string $content   Post content for the feed.
+ * @param string $feed_type Feed type.
+ * @return string
+ */
+function leaky_paywall_restrict_feed_content( $content, $feed_type = '' ) {
+
+	$post_id = get_the_ID();
+
+	/**
+	 * Filters whether restricted posts are cut down in feeds. Return
+	 * false to send them in full, e.g. for a feed only partners read.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param bool   $restrict  Whether to cut restricted posts down.
+	 * @param int    $post_id   Post ID.
+	 * @param string $feed_type Feed type.
+	 */
+	if ( ! $post_id || ! apply_filters( 'leaky_paywall_restrict_feeds', true, $post_id, $feed_type ) ) {
+		return $content;
+	}
+
+	if ( ! leaky_paywall_post_is_restricted_for_logged_out( $post_id ) ) {
+		return $content;
+	}
+
+	$excerpt = get_the_excerpt( $post_id );
+	$link    = sprintf(
+		'<p><a href="%1$s">%2$s</a></p>',
+		esc_url( get_permalink( $post_id ) ),
+		esc_html__( 'Read the full article', 'leaky-paywall' )
+	);
+
+	/**
+	 * Filters what a feed shows for a restricted post.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param string $restricted Excerpt and link.
+	 * @param string $content    The full content it replaces.
+	 * @param int    $post_id    Post ID.
+	 */
+	return apply_filters( 'leaky_paywall_restricted_feed_content', wpautop( esc_html( $excerpt ) ) . $link, $content, $post_id );
+}
+add_filter( 'the_content_feed', 'leaky_paywall_restrict_feed_content', 10, 2 );
+
+/**
  * Work out leaky_paywall_post_is_hard_restricted() without the cache.
  *
  * Follows the order Leaky_Paywall_Restrictions uses for a logged-out
@@ -621,23 +784,7 @@ function leaky_paywall_compute_post_is_hard_restricted( $post_id, $settings ) {
 	$combined  = isset( $settings['enable_combined_restrictions'] ) && 'on' === $settings['enable_combined_restrictions'];
 	$rules     = isset( $settings['restrictions']['post_types'] ) ? (array) $settings['restrictions']['post_types'] : array();
 
-	// Not restricted at all unless a rule matches it by post type and
-	// taxonomy, as in content_restricted_by_settings(). Checked here rather
-	// than called, since that method caches its answer for 15 minutes.
-	$matched = false;
-
-	foreach ( $rules as $rule ) {
-		if ( is_array( $rule ) && isset( $rule['post_type'] ) && $rule['post_type'] === $post_type ) {
-			$taxonomy = isset( $rule['taxonomy'] ) ? $rule['taxonomy'] : 'all';
-
-			if ( 'all' === $taxonomy || $restrictions->content_taxonomy_matches( $taxonomy, $post_id ) ) {
-				$matched = true;
-				break;
-			}
-		}
-	}
-
-	if ( ! $matched ) {
+	if ( ! leaky_paywall_post_matches_restriction_rule( $post_id, $settings ) ) {
 		return false;
 	}
 
