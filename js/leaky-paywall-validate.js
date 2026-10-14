@@ -128,4 +128,46 @@
       }
     }
   });
+
+  // A page served from a page cache keeps the nonces it was rendered with,
+  // and WordPress rejects them after 12 to 24 hours. When this copy is old
+  // enough that they might have expired, fetch fresh ones before anyone
+  // submits. A nonce lasts at least 12 hours, so a copy under 6 hours old
+  // still has 6 left and makes no request.
+  $(document).ready(function () {
+    var config = window.leaky_paywall_validate_ajax || {};
+    var created = parseInt(config.nonces_created, 10) || 0;
+    var stripe = window.leaky_paywall_stripe_registration_ajax;
+    var fields = $('input[name="leaky_paywall_register_nonce"]');
+
+    if (!created || Date.now() / 1000 - created < 6 * 3600) {
+      return;
+    }
+
+    // Only pages with the registration form: all three are sent from it.
+    // The Stripe script is on every page, so it doesn't count.
+    if (!fields.length) {
+      return;
+    }
+
+    $.post(config.ajaxurl, { action: "leaky_paywall_refresh_nonces" }, function (resp) {
+      if (!resp || !resp.success || !resp.data) {
+        return;
+      }
+
+      if (resp.data.register) {
+        fields.val(resp.data.register);
+      }
+
+      if (resp.data.register_ajax) {
+        config.register_nonce = resp.data.register_ajax;
+      }
+
+      if (stripe && resp.data.tax_preview) {
+        stripe.tax_preview_nonce = resp.data.tax_preview;
+      }
+
+      document.dispatchEvent(new CustomEvent("leaky_paywall_nonces_refreshed", { detail: resp.data }));
+    });
+  });
 })(jQuery);

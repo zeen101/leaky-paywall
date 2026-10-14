@@ -536,7 +536,10 @@ class Leaky_Paywall {
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php', 'relative' ),
 				'register_nonce' => wp_create_nonce( 'lp_register_nonce' ),
-				'password_text' =>  esc_html__('Passwords do not match.', 'leaky-paywall')
+				'password_text' =>  esc_html__('Passwords do not match.', 'leaky-paywall'),
+				// When this page's nonces were made, so a copy served from a
+				// page cache can tell they may have expired.
+				'nonces_created' => time(),
 			)
 		);
 

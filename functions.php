@@ -428,6 +428,45 @@ add_action( 'save_post', 'leaky_paywall_flush_restriction_caches' );
 add_action( 'set_object_terms', 'leaky_paywall_flush_restriction_caches' );
 
 /**
+ * Fresh copies of the nonces Leaky Paywall's front-end forms send.
+ *
+ * A page served from a page cache keeps the nonces it was rendered with,
+ * and WordPress rejects a nonce after 12 to 24 hours, so a registration
+ * form on a cached page failed with "There was an error" once the copy
+ * was old enough. leaky-paywall-validate.js asks for these when the page
+ * is old and puts them in place before the reader submits.
+ *
+ * Runs through admin-ajax, which page caches never store, and returns
+ * nonces for whoever asks: logged-in readers get their own.
+ *
+ * @since 5.2.2
+ */
+function leaky_paywall_ajax_refresh_nonces() {
+
+	nocache_headers();
+
+	/**
+	 * Filters the nonces a cached page can refresh, keyed by name.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param array $nonces Name => nonce.
+	 */
+	$nonces = apply_filters(
+		'leaky_paywall_refreshed_nonces',
+		array(
+			'register'       => wp_create_nonce( 'leaky-paywall-register-nonce' ),
+			'register_ajax'  => wp_create_nonce( 'lp_register_nonce' ),
+			'tax_preview'    => wp_create_nonce( 'lp_tax_preview' ),
+		)
+	);
+
+	wp_send_json_success( $nonces );
+}
+add_action( 'wp_ajax_leaky_paywall_refresh_nonces', 'leaky_paywall_ajax_refresh_nonces' );
+add_action( 'wp_ajax_nopriv_leaky_paywall_refresh_nonces', 'leaky_paywall_ajax_refresh_nonces' );
+
+/**
  * The site's restriction mode: 'server', 'js' or 'automatic'.
  *
  * The Restriction Method setting. 'automatic' restricts hard-paywalled
