@@ -275,8 +275,8 @@ $leaky_paywall_settings(document).ready(function ($) {
     }
   });
 
-  $("#enable_js_cookie_restrictions").click(function () {
-    if ($(this).is(":checked")) {
+  $('input[name="restriction_method"]').on("change", function () {
+    if ("server" !== $(this).val()) {
       $(".restriction-options-post-container").removeClass("hide-setting");
       $(".restriction-options-page-container").removeClass("hide-setting");
     } else {

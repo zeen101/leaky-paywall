@@ -270,6 +270,7 @@ class Leaky_Paywall_Onboarding {
 				),
 			);
 
+			$settings['restriction_method']            = 'automatic';
 			$settings['enable_js_cookie_restrictions'] = 'on';
 
 			if ( ! empty( $_POST['paid_level_price'] ) && floatval( $_POST['paid_level_price'] ) > 0 ) {

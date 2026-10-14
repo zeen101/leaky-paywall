@@ -430,10 +430,10 @@ add_action( 'set_object_terms', 'leaky_paywall_flush_restriction_caches' );
 /**
  * The site's restriction mode: 'server', 'js' or 'automatic'.
  *
- * The setting is still the on/off "Alternative restriction handling"
- * checkbox, so this returns 'server' or 'js' unless a filter asks for
- * 'automatic', which restricts hard-paywalled posts on the server and
- * leaves metered posts to JavaScript.
+ * The Restriction Method setting. 'automatic' restricts hard-paywalled
+ * posts on the server and leaves metered posts to JavaScript. A site
+ * saved before the setting existed gets the method its old "Alternative
+ * Restriction Handling" checkbox gave it.
  *
  * @since 5.2.2
  *
@@ -442,7 +442,12 @@ add_action( 'set_object_terms', 'leaky_paywall_flush_restriction_caches' );
 function leaky_paywall_get_restriction_mode() {
 
 	$settings = get_leaky_paywall_settings();
-	$mode     = ( isset( $settings['enable_js_cookie_restrictions'] ) && 'on' === $settings['enable_js_cookie_restrictions'] ) ? 'js' : 'server';
+
+	if ( isset( $settings['restriction_method'] ) && in_array( $settings['restriction_method'], array( 'server', 'js', 'automatic' ), true ) ) {
+		$mode = $settings['restriction_method'];
+	} else {
+		$mode = ( isset( $settings['enable_js_cookie_restrictions'] ) && 'on' === $settings['enable_js_cookie_restrictions'] ) ? 'js' : 'server';
+	}
 
 	/**
 	 * Filters the restriction mode.

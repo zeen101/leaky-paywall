@@ -704,9 +704,67 @@ class Leaky_Paywall_Restrictions {
 			 * @param string $nag_type The nag shown: subscribe, upgrade, or targeted:{post_id}.
 			 */
 			do_action( 'leaky_paywall_is_restricted_content', $this->post_id, $this->nag_type );
+
+			$this->open_list_builder_for_nag();
 		}
 
 		return apply_filters( 'leaky_paywall_subscribe_or_login_message', $new_content, $message, $content, $this->post_id );
+	}
+
+	/**
+	 * Let List Builder open its modal over a nag rendered on the server.
+	 *
+	 * The modal opens on the leaky_paywall_shown event, which only the
+	 * JavaScript check used to fire, so a post restricted on the server
+	 * showed the in-content nag and never the modal. This fires the same
+	 * event once List Builder is running. The in-content nag stays under
+	 * it, so a reader still meets the paywall if List Builder never starts.
+	 *
+	 * Every logged-out visitor gets the same script, so the page can
+	 * still be cached.
+	 *
+	 * @since 5.2.2
+	 */
+	private function open_list_builder_for_nag() {
+
+		if ( ! class_exists( 'LP_List_Builder' ) || ! method_exists( 'LP_List_Builder', 'is_signup_enabled' ) ) {
+			return;
+		}
+
+		if ( ! LP_List_Builder::is_signup_enabled() && ! LP_List_Builder::is_upgrade_enabled() ) {
+			return;
+		}
+
+		$detail = array(
+			'postId'   => (int) $this->post_id,
+			'response' => array(
+				'show_paywall' => true,
+				'nag_type'     => $this->nag_type,
+			),
+		);
+
+		add_action(
+			'wp_footer',
+			function () use ( $detail ) {
+				// After the footer scripts, so lp-list-builder.js has run.
+				wp_print_inline_script_tag(
+					'(function () {' .
+						'function open() {' .
+							'if (!window.LP_LIST_BUILDER_READY) { return; }' .
+							'document.dispatchEvent(new CustomEvent("leaky_paywall_shown", { detail: ' . wp_json_encode( $detail ) . ', bubbles: true, cancelable: true }));' .
+						'}' .
+						'if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", open); } else { open(); }' .
+					'})();',
+					array_merge(
+						// The same attributes as Leaky Paywall's other scripts,
+						// so a consent tool set up for them lets this one run.
+						(array) apply_filters( 'leaky_paywall_script_tag_attributes', array(), 'leaky-paywall-open-list-builder', '' ),
+						array( 'id' => 'leaky-paywall-open-list-builder' )
+					)
+				);
+			},
+			100
+		);
 	}
 
 	/**

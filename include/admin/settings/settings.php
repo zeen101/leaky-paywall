@@ -720,34 +720,59 @@ class Leaky_Paywall_Settings
 				</tr>
 
 				<tr class="restriction-options">
-					<th><?php esc_html_e('Alternative Restriction Handling', 'leaky-paywall'); ?></th>
+					<th><?php esc_html_e('Restriction Method', 'leaky-paywall'); ?></th>
 					<td>
-						<input type="checkbox" id="enable_js_cookie_restrictions" name="enable_js_cookie_restrictions" <?php checked('on', $settings['enable_js_cookie_restrictions']); ?> /> <?php esc_html_e('Enable this if you are using a caching plugin or your host uses heavy caching and the paywall notice is not displaying correctly on your site.'); ?>
-
 						<?php
-						if ($this->check_for_caching() && 'on' !== $settings['enable_js_cookie_restrictions']) {
+						$restriction_method  = leaky_paywall_get_restriction_mode();
+						$restriction_methods = array(
+							'automatic' => array(
+								__( 'Automatic (recommended)', 'leaky-paywall' ),
+								__( 'Hard-paywalled posts are restricted on the server, so their full text never reaches the page source. Metered posts are checked in the browser, so the meter works with page caching.', 'leaky-paywall' ),
+							),
+							'js'        => array(
+								__( 'JavaScript', 'leaky-paywall' ),
+								__( 'Every restricted post is checked in the browser. Works with page caching, but the full text of every post is in the page source.', 'leaky-paywall' ),
+							),
+							'server'    => array(
+								__( 'Server', 'leaky-paywall' ),
+								__( 'Every restricted post is restricted on the server. If your site uses page caching, the paywall can show to the wrong visitors.', 'leaky-paywall' ),
+							),
+						);
+
+						foreach ( $restriction_methods as $value => $method ) {
+							?>
+							<p>
+								<label>
+									<input type="radio" name="restriction_method" value="<?php echo esc_attr( $value ); ?>" <?php checked( $restriction_method, $value ); ?> />
+									<strong><?php echo esc_html( $method[0] ); ?></strong>
+								</label>
+								<br><span class="description"><?php echo esc_html( $method[1] ); ?></span>
+							</p>
+							<?php
+						}
+
+						if ( $this->check_for_caching() && 'server' === $restriction_method ) {
 						?>
 							<div class="notice-info notice">
 								<p><strong><?php esc_html_e('Your subscription message might not be showing.', 'leaky-paywall'); ?></strong></p>
-								<p><?php esc_html_e('We noticed your site might use caching.  We recommend enabling the Alternative Restrction Handling setting below to ensure your paywall displays correctly.', 'leaky-paywall'); ?><br> <a target="_blank" href="https://docs.leakypaywall.com/article/72-caching-with-leaky-paywall-i-e-wp-engine">Please see our usage guide here.</a></p>
+								<p><?php esc_html_e('We noticed your site might use caching. We recommend the Automatic restriction method so your paywall displays correctly.', 'leaky-paywall'); ?><br> <a target="_blank" href="https://docs.leakypaywall.com/article/72-caching-with-leaky-paywall-i-e-wp-engine"><?php esc_html_e('Please see our usage guide here.', 'leaky-paywall'); ?></a></p>
 							</div>
 						<?php
 						}
 						?>
-
 					</td>
 				</tr>
 
-				<tr class="restriction-options-post-container <?php echo 'on' !== $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_html_e('Alternative Restrictions Post Container', 'leaky-paywall'); ?></th>
+				<tr class="restriction-options-post-container <?php echo 'server' === leaky_paywall_get_restriction_mode() ? 'hide-setting' : ''; ?>">
+					<th><?php esc_html_e('JavaScript Restrictions Post Container', 'leaky-paywall'); ?></th>
 					<td>
 						<input type="text" id="js_restrictions_post_container" class="large-text" name="js_restrictions_post_container" value="<?php echo esc_attr($settings['js_restrictions_post_container']); ?>" />
 						<p class="description"><?php esc_html_e('CSS selector of the container that contains the content on a post and custom post type.'); ?></p>
 					</td>
 				</tr>
 
-				<tr class="restriction-options-page-container <?php echo 'on' !== $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_html_e('Alternative Restrictions Page Container', 'leaky-paywall'); ?></th>
+				<tr class="restriction-options-page-container <?php echo 'server' === leaky_paywall_get_restriction_mode() ? 'hide-setting' : ''; ?>">
+					<th><?php esc_html_e('JavaScript Restrictions Page Container', 'leaky-paywall'); ?></th>
 					<td>
 						<input type="text" id="js_restrictions_page_container" class="large-text" name="js_restrictions_page_container" value="<?php echo esc_attr($settings['js_restrictions_page_container']); ?>" />
 						<p class="description"><?php esc_html_e('CSS selector of the container that contains the content on a page.'); ?></p>
@@ -1712,6 +1737,7 @@ The %sitename% Team';
 				'enable_combined_restrictions'          => 'off',
 				'combined_restrictions_total_allowed'   => '',
 				'enable_js_cookie_restrictions'         => 'on',
+				'restriction_method'                    => 'automatic',
 				'js_restrictions_post_container'        => 'article .entry-content',
 				'js_restrictions_page_container'        => 'article .entry-content',
 				'lead_in_elements'                      => 2,
@@ -1755,8 +1781,15 @@ The %sitename% Team';
 			);
 
 			$defaults = apply_filters('leaky_paywall_default_settings', $defaults);
-			$settings = get_option('issuem-leaky-paywall'); /* Site specific settings */
-			$settings = wp_parse_args($settings, $defaults);
+			$stored   = get_option('issuem-leaky-paywall'); /* Site specific settings */
+			$settings = wp_parse_args($stored, $defaults);
+
+			// Sites saved before the restriction method setting existed keep
+			// the method their checkbox gave them; only a new install starts
+			// on Automatic.
+			if ( is_array( $stored ) && ! isset( $stored['restriction_method'] ) ) {
+				$settings['restriction_method'] = 'on' === $settings['enable_js_cookie_restrictions'] ? 'js' : 'server';
+			}
 
 			if ($this->is_site_wide_enabled()) {
 				$site_wide_settings = get_site_option('issuem-leaky-paywall');
@@ -1986,10 +2019,15 @@ The %sitename% Team';
 					$settings['combined_restrictions_total_allowed'] = sanitize_text_field(wp_unslash($_POST['combined_restrictions_total_allowed']));
 				}
 
-				if (!empty($_POST['enable_js_cookie_restrictions'])) {
-					$settings['enable_js_cookie_restrictions'] = sanitize_text_field(wp_unslash($_POST['enable_js_cookie_restrictions']));
-				} else {
-					$settings['enable_js_cookie_restrictions'] = 'off';
+				if (isset($_POST['restriction_method'])) {
+					$restriction_method = sanitize_key(wp_unslash($_POST['restriction_method']));
+
+					if (in_array($restriction_method, array('automatic', 'js', 'server'), true)) {
+						$settings['restriction_method'] = $restriction_method;
+
+						// Kept in step for code that still reads the old checkbox.
+						$settings['enable_js_cookie_restrictions'] = 'server' === $restriction_method ? 'off' : 'on';
+					}
 				}
 
 				$settings['search_engine_bot_bypass'] = ! empty( $_POST['search_engine_bot_bypass'] ) ? 'on' : 'off';
