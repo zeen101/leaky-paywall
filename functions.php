@@ -422,9 +422,242 @@ function leaky_paywall_flush_restriction_caches( $post_id ) {
 
 	delete_transient( 'lp_restriction_exception_' . $post_id );
 	delete_transient( 'lp_restricted_' . $post_id );
+	delete_transient( 'lp_hard_restricted_' . $post_id );
 }
 add_action( 'save_post', 'leaky_paywall_flush_restriction_caches' );
 add_action( 'set_object_terms', 'leaky_paywall_flush_restriction_caches' );
+
+/**
+ * The site's restriction mode: 'server', 'js' or 'automatic'.
+ *
+ * The setting is still the on/off "Alternative restriction handling"
+ * checkbox, so this returns 'server' or 'js' unless a filter asks for
+ * 'automatic', which restricts hard-paywalled posts on the server and
+ * leaves metered posts to JavaScript.
+ *
+ * @since 5.2.2
+ *
+ * @return string
+ */
+function leaky_paywall_get_restriction_mode() {
+
+	$settings = get_leaky_paywall_settings();
+	$mode     = ( isset( $settings['enable_js_cookie_restrictions'] ) && 'on' === $settings['enable_js_cookie_restrictions'] ) ? 'js' : 'server';
+
+	/**
+	 * Filters the restriction mode.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param string $mode 'server', 'js' or 'automatic'.
+	 */
+	$mode = apply_filters( 'leaky_paywall_restriction_mode', $mode );
+
+	return in_array( $mode, array( 'server', 'js', 'automatic' ), true ) ? $mode : 'server';
+}
+
+/**
+ * How a post is restricted: 'server' or 'js'.
+ *
+ * The one place that decides, so server-side restriction and the
+ * JavaScript check can never both run on the same page.
+ *
+ * @since 5.2.2
+ *
+ * @param int $post_id Post being viewed, or 0 when not a single post.
+ * @return string
+ */
+function leaky_paywall_get_restriction_method( $post_id = 0 ) {
+
+	$mode = leaky_paywall_get_restriction_mode();
+
+	if ( 'automatic' === $mode ) {
+		$method = ( $post_id && leaky_paywall_post_is_hard_restricted( $post_id ) ) ? 'server' : 'js';
+	} else {
+		$method = $mode;
+	}
+
+	/**
+	 * Filters how a post is restricted.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param string $method  'server' or 'js'.
+	 * @param int    $post_id Post being viewed, or 0.
+	 * @param string $mode    The site's restriction mode.
+	 */
+	$method = apply_filters( 'leaky_paywall_restriction_method', $method, $post_id, $mode );
+
+	return 'js' === $method ? 'js' : 'server';
+}
+
+/**
+ * Whether no logged-out visitor can ever read a post.
+ *
+ * True when its visibility is "only" with paid levels only, or when the
+ * restriction rule that applies to it allows 0 free views. Every
+ * logged-out visitor then gets the same nag, so the post can be
+ * restricted on the server and still cached.
+ *
+ * Decided by post, never by visitor: is_content_restricted() depends on
+ * the current user, and one visitor's answer would be cached and served
+ * to everyone.
+ *
+ * @since 5.2.2
+ *
+ * @param int $post_id Post ID.
+ * @return bool
+ */
+function leaky_paywall_post_is_hard_restricted( $post_id ) {
+
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	$settings = get_leaky_paywall_settings();
+
+	// Part of the cached answer, so changing a rule, an exception or a
+	// level's price takes effect at once, not after the transient expires.
+	$prices = array();
+	foreach ( (array) $settings['levels'] as $level_id => $level ) {
+		$prices[ $level_id ] = isset( $level['price'] ) ? $level['price'] : '';
+	}
+
+	$fingerprint = md5(
+		wp_json_encode(
+			array(
+				$settings['restrictions'],
+				$settings['enable_combined_restrictions'],
+				$settings['combined_restrictions_total_allowed'],
+				$settings['post_category_exceptions'],
+				$settings['post_tag_exceptions'],
+				$prices,
+			)
+		)
+	);
+
+	$cache_key = 'lp_hard_restricted_' . $post_id;
+	$cached    = get_transient( $cache_key );
+
+	if ( is_array( $cached ) && isset( $cached['fingerprint'], $cached['hard'] ) && $cached['fingerprint'] === $fingerprint ) {
+		$hard = (bool) $cached['hard'];
+	} else {
+		$hard = leaky_paywall_compute_post_is_hard_restricted( $post_id, $settings );
+		set_transient(
+			$cache_key,
+			array(
+				'fingerprint' => $fingerprint,
+				'hard'        => $hard,
+			),
+			DAY_IN_SECONDS
+		);
+	}
+
+	/**
+	 * Filters whether a post is hard-restricted.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param bool $hard    Whether no logged-out visitor can read it.
+	 * @param int  $post_id Post ID.
+	 */
+	return (bool) apply_filters( 'leaky_paywall_post_is_hard_restricted', $hard, $post_id );
+}
+
+/**
+ * Work out leaky_paywall_post_is_hard_restricted() without the cache.
+ *
+ * Follows the order Leaky_Paywall_Restrictions uses for a logged-out
+ * visitor, without its current-user checks or its side effect of
+ * recording a view.
+ *
+ * @since 5.2.2
+ *
+ * @param int   $post_id  Post ID.
+ * @param array $settings Leaky Paywall settings.
+ * @return bool
+ */
+function leaky_paywall_compute_post_is_hard_restricted( $post_id, $settings ) {
+
+	$restrictions = new Leaky_Paywall_Restrictions( $post_id );
+
+	if ( $restrictions->is_unblockable_content() || $restrictions->content_matches_restriction_exceptions() ) {
+		return false;
+	}
+
+	$visibility = get_post_meta( $post_id, '_issuem_leaky_paywall_visibility', true );
+	$type       = ( is_array( $visibility ) && ! empty( $visibility['visibility_type'] ) ) ? $visibility['visibility_type'] : 'default';
+
+	if ( 'always' === $type && ! empty( $visibility['always_visible'] ) && in_array( -1, array_map( 'intval', (array) $visibility['always_visible'] ), true ) ) {
+		return false; // Visible to everyone.
+	}
+
+	if ( 'only' === $type ) {
+
+		$level_ids = ! empty( $visibility['only_visible'] ) ? (array) $visibility['only_visible'] : array();
+
+		if ( empty( $level_ids ) ) {
+			return false;
+		}
+
+		// By price, not ID: level 0 can be a paid level.
+		foreach ( $level_ids as $level_id ) {
+			$level = isset( $settings['levels'][ $level_id ] ) ? $settings['levels'][ $level_id ] : null;
+
+			if ( ! $level || empty( $level['price'] ) || floatval( $level['price'] ) <= 0 ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// The first rule that applies to the post decides, in the order
+	// allowed_value_exceeded() checks them. A logged-out visitor with no
+	// views is blocked only when it allows none.
+	$post_type = get_post_type( $post_id );
+	$combined  = isset( $settings['enable_combined_restrictions'] ) && 'on' === $settings['enable_combined_restrictions'];
+	$rules     = isset( $settings['restrictions']['post_types'] ) ? (array) $settings['restrictions']['post_types'] : array();
+
+	// Not restricted at all unless a rule matches it by post type and
+	// taxonomy, as in content_restricted_by_settings(). Checked here rather
+	// than called, since that method caches its answer for 15 minutes.
+	$matched = false;
+
+	foreach ( $rules as $rule ) {
+		if ( is_array( $rule ) && isset( $rule['post_type'] ) && $rule['post_type'] === $post_type ) {
+			$taxonomy = isset( $rule['taxonomy'] ) ? $rule['taxonomy'] : 'all';
+
+			if ( 'all' === $taxonomy || $restrictions->content_taxonomy_matches( $taxonomy, $post_id ) ) {
+				$matched = true;
+				break;
+			}
+		}
+	}
+
+	if ( ! $matched ) {
+		return false;
+	}
+
+	foreach ( $rules as $rule ) {
+
+		if ( ! is_array( $rule ) || ! isset( $rule['post_type'] ) || $rule['post_type'] !== $post_type ) {
+			continue;
+		}
+
+		$taxonomy = isset( $rule['taxonomy'] ) ? $rule['taxonomy'] : 'all';
+
+		if ( 'all' === $taxonomy || $restrictions->content_taxonomy_matches( $taxonomy, $post_id ) || $combined ) {
+			$allowed = $combined ? $settings['combined_restrictions_total_allowed'] : ( isset( $rule['allowed_value'] ) ? $rule['allowed_value'] : '' );
+
+			return is_numeric( $allowed ) && 0 === (int) $allowed;
+		}
+	}
+
+	return false;
+}
 
 /**
  * Set a subscriber's payment status and fire transition hooks.

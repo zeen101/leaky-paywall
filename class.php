@@ -100,14 +100,24 @@ class Leaky_Paywall {
 			return;
 		}
 
-		$settings = get_leaky_paywall_settings();
-
-		if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+		if ( 'js' === leaky_paywall_get_restriction_method( $this->get_restriction_post_id() ) ) {
 			return;
 		}
 
 		$restrictions = new Leaky_Paywall_Restrictions();
 		$restrictions->process_content_restrictions();
+	}
+
+	/**
+	 * The post a restriction method is chosen for: the one being viewed,
+	 * or 0 on anything that isn't a single post or page.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @return int
+	 */
+	private function get_restriction_post_id() {
+		return is_singular() ? (int) get_queried_object_id() : 0;
 	}
 
 	/**
@@ -467,7 +477,7 @@ class Leaky_Paywall {
 			wp_enqueue_style( 'issuem-leaky-paywall', LEAKY_PAYWALL_URL . '/css/issuem-leaky-paywall.css', '', LEAKY_PAYWALL_VERSION );
 		}
 
-		if ( 'on' === $settings['enable_js_cookie_restrictions'] ) {
+		if ( 'js' === leaky_paywall_get_restriction_method( $this->get_restriction_post_id() ) ) {
 
 			if ( is_home() || is_front_page() || is_archive() ) {
 				return;
