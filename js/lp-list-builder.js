@@ -397,4 +397,9 @@
           });
       });
 
+      // Tells leaky-paywall-check.js the modal is listening and will show the
+      // paywall. The config existing is not enough: a performance plugin can
+      // delay it until after this file has already bailed above.
+      window.LP_LIST_BUILDER_READY = true;
+
 })();

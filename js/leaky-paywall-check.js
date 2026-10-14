@@ -295,7 +295,10 @@
 
 					// If List Builder is active and handles this nag type,
 					// skip the in-content nag — the slider will handle display via the event.
-					var lb = window.LP_LIST_BUILDER;
+					// Only once its script is running: with the config alone (delayed by a
+					// performance plugin, say) nothing opens the slider and the reader
+					// would get the full article.
+					var lb = window.LP_LIST_BUILDER_READY ? window.LP_LIST_BUILDER : null;
 					var lbHandlesNag = lb && (
 						data.nag_type === 'subscribe' ||
 						(data.nag_type === 'upgrade' && lb.upgradeEnabled)
