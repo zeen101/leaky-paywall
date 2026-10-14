@@ -10,16 +10,45 @@ class LP_List_Builder
     {
         self::includes();
 
-        $settings = get_option('lp-listbuilder', []);
-
-        if (empty($settings['enabled']) || $settings['enabled'] !== 'on') {
+        // The modal runs when either part is on. With only the upgrade
+        // modal on, it is shown to every reader who hits the paywall,
+        // logged in or not, and the email signup is left out.
+        if (!self::is_signup_enabled() && !self::is_upgrade_enabled()) {
             return;
         }
 
         add_action('wp_footer', [$this, 'output_slider']);
         add_action('wp_enqueue_scripts', array($this, 'load_scripts'), 5);
-        add_action('rest_api_init', [$this, 'register_routes']);
-        add_action('after_setup_theme', [$this, 'maybe_hide_admin_bar']);
+
+        // Signup creates subscriber accounts; nothing else uses these.
+        if (self::is_signup_enabled()) {
+            add_action('rest_api_init', [$this, 'register_routes']);
+            add_action('after_setup_theme', [$this, 'maybe_hide_admin_bar']);
+        }
+    }
+
+    /**
+     * Whether the email signup modal for logged-out readers is on.
+     *
+     * @return bool
+     */
+    public static function is_signup_enabled()
+    {
+        $settings = get_option('lp-listbuilder', []);
+
+        return !empty($settings['enabled']) && 'on' === $settings['enabled'];
+    }
+
+    /**
+     * Whether the upgrade modal is on.
+     *
+     * @return bool
+     */
+    public static function is_upgrade_enabled()
+    {
+        $settings = get_option('lp-listbuilder', []);
+
+        return !empty($settings['upgrade_enabled']) && 'on' === $settings['upgrade_enabled'];
     }
 
     public function maybe_hide_admin_bar()
@@ -55,6 +84,16 @@ class LP_List_Builder
         $subscribe_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
         $subscribe_url = apply_filters( 'lp_list_builder_upgrade_url', $subscribe_url );
 
+        $signup_enabled = self::is_signup_enabled();
+
+        // With the signup off, logged-out readers get the upgrade panel, and
+        // some of them already subscribe.
+        $login_url = '';
+
+        if ( ! $signup_enabled && ! is_user_logged_in() ) {
+            $login_url = ! empty( $lp_settings['page_for_login'] ) ? get_permalink( $lp_settings['page_for_login'] ) : wp_login_url();
+        }
+
 ?>
 
         <style>
@@ -77,6 +116,7 @@ class LP_List_Builder
             <div class="Slider__Container">
                 <div class="Slider Slider--scrolled">
 
+                    <?php if ( $signup_enabled ) : ?>
                     <div id="lplb-subscribe-panel" class="Slider__InnerContainer Slider__InnerContainer--scrolled">
                         <h1 class="Slider__ExpandedHeader"><?php echo esc_html($heading); ?></h1>
                         <div class="Slider__ExpandedSubHeader"><?php echo esc_html($subheading); ?></div>
@@ -103,6 +143,7 @@ class LP_List_Builder
 
                         </div>
                     </div>
+                    <?php endif; ?>
 
                     <div id="lplb-upgrade-panel" class="Slider__InnerContainer Slider__InnerContainer--scrolled" style="display:none;">
                         <h1 class="Slider__ExpandedHeader"><?php echo esc_html($upgrade_heading); ?></h1>
@@ -111,6 +152,12 @@ class LP_List_Builder
                             <a href="<?php echo esc_url($subscribe_url); ?>" class="Slider__ExpandedButton" style="display:inline-block;text-align:center;text-decoration:none;">
                                 <?php echo esc_html($upgrade_button_text); ?>
                             </a>
+                        <?php endif; ?>
+                        <?php if ( $login_url ) : ?>
+                            <p class="lplb-upgrade-login" style="margin:12px 0 0;font-size:14px;text-align:center;">
+                                <?php esc_html_e( 'Already a subscriber?', 'leaky-paywall' ); ?>
+                                <a href="<?php echo esc_url( $login_url ); ?>"><?php esc_html_e( 'Log in here', 'leaky-paywall' ); ?></a>
+                            </p>
                         <?php endif; ?>
                     </div>
 
@@ -832,7 +879,6 @@ class LP_List_Builder
             true
         );
 
-        $lb_settings = get_option('lp-listbuilder', []);
         $lp_settings = get_leaky_paywall_settings();
         $subscribe_page_url = ! empty( $lp_settings['page_for_subscription'] ) ? get_permalink( $lp_settings['page_for_subscription'] ) : '';
 
@@ -846,7 +892,8 @@ class LP_List_Builder
             'pwResetVerifyUrl'  => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/verify')),
             'pwResetConfirmUrl' => esc_url_raw(rest_url('lp-list-builder/v1/password-reset/confirm')),
             'subscribeUrl'     => esc_url_raw( $subscribe_page_url ),
-            'upgradeEnabled'   => ( ! empty( $lb_settings['upgrade_enabled'] ) && 'on' === $lb_settings['upgrade_enabled'] ),
+            'upgradeEnabled'   => self::is_upgrade_enabled(),
+            'signupEnabled'    => self::is_signup_enabled(),
             'otpEnabled'       => self::is_otp_mode_enabled(),
         ]) . ';', 'before');
 

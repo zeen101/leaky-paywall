@@ -361,7 +361,9 @@
 
       document.addEventListener('leaky_paywall_shown', function(e) {
           var nagType = e.detail.response.nag_type;
-          var isUpgrade = nagType === 'upgrade' || (nagType && nagType.indexOf('targeted') === 0);
+          // With the signup off, logged-out readers get the upgrade panel too.
+          var signupOff = window.LP_LIST_BUILDER.signupEnabled === false;
+          var isUpgrade = nagType === 'upgrade' || (nagType && nagType.indexOf('targeted') === 0) || (nagType === 'subscribe' && signupOff);
 
           if (nagType !== 'subscribe' && !isUpgrade) {
               return;

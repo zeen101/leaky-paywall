@@ -113,6 +113,7 @@ class Leaky_Paywall_List_Builder_Settings
                 <td>
                     <input type="checkbox" id="lp_listbuilder_upgrade_enabled" name="lp_listbuilder_upgrade_enabled" value="on" <?php checked( $settings['upgrade_enabled'], 'on' ); ?> />
                     <label for="lp_listbuilder_upgrade_enabled"><?php esc_html_e( 'Show upgrade modal for logged-in subscribers who hit the paywall', 'leaky-paywall' ); ?></label>
+                    <p class="description"><?php esc_html_e( 'If the List Builder modal above is off, this modal is also shown to logged-out readers, with a link to log in.', 'leaky-paywall' ); ?></p>
                 </td>
             </tr>
 
