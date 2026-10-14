@@ -754,22 +754,12 @@ class Leaky_Paywall_Settings
 					</td>
 				</tr>
 
-				<tr class="restriction-options-lead-in-elements <?php echo 'on' !== $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
+				<tr class="restriction-options-lead-in-elements">
 					<th><?php esc_html_e('Lead In Elements', 'leaky-paywall'); ?></th>
 					<td>
 						<input type="number" id="lead_in_elements" class="small-text" name="lead_in_elements" min="0" value="<?php echo esc_attr($settings['lead_in_elements']); ?>">
 						<p class="description">
-							<?php esc_html_e('Number of HTML elements (paragraphs, images, etc.) to show before displaying the subscribe nag.', 'leaky-paywall'); ?>
-						</p>
-					</td>
-				</tr>
-
-				<tr class="custom-excerpt-length <?php echo 'on' === $settings['enable_js_cookie_restrictions'] ? 'hide-setting' : ''; ?>">
-					<th><?php esc_html_e('Custom Excerpt Length', 'leaky-paywall'); ?></th>
-					<td>
-						<input type="number" id="custom_excerpt_length" class="small-text" name="custom_excerpt_length" value="<?php echo esc_attr($settings['custom_excerpt_length']); ?>">
-						<p class="description">
-							<?php esc_html_e('Amount of content (in characters) to show before displaying the subscribe nag. If nothing is entered then the full excerpt is displayed.', 'leaky-paywall'); ?>
+							<?php esc_html_e('Number of HTML elements (paragraphs, images, etc.) to show before displaying the subscribe nag. Set to 0 to show only the nag.', 'leaky-paywall'); ?>
 						</p>
 					</td>
 				</tr>
@@ -2010,15 +2000,6 @@ The %sitename% Team';
 					$settings['bypass_paywall_restrictions'][] = 'administrator';
 				} else {
 					$settings['bypass_paywall_restrictions'] = array('administrator');
-				}
-
-				if (isset($_POST['custom_excerpt_length'])) {
-
-					if (strlen(sanitize_text_field(wp_unslash($_POST['custom_excerpt_length']))) > 0) {
-						$settings['custom_excerpt_length'] = intval($_POST['custom_excerpt_length']);
-					} else {
-						$settings['custom_excerpt_length'] = '';
-					}
 				}
 
 				if (isset($_POST['lead_in_elements'])) {

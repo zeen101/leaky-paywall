@@ -567,6 +567,80 @@ function leaky_paywall_post_is_hard_restricted( $post_id ) {
 }
 
 /**
+ * How many top-level elements of a restricted post to show above the nag.
+ *
+ * The "Lead In Elements" setting, used by both restriction methods so a
+ * post's teaser looks the same whichever one serves it.
+ *
+ * @since 5.2.2
+ *
+ * @return int
+ */
+function leaky_paywall_get_lead_in_elements() {
+
+	$settings = get_leaky_paywall_settings();
+	$count    = isset( $settings['lead_in_elements'] ) ? $settings['lead_in_elements'] : 2;
+
+	// Named for the JavaScript method, where it started; it now sets both.
+	return max( 0, intval( apply_filters( 'leaky_paywall_js_restriction_lead_in_elements', $count ) ) );
+}
+
+/**
+ * The first top-level elements of a post's HTML.
+ *
+ * The server-side match for getLeadInContent() in leaky-paywall-check.js,
+ * which keeps the first children of the content container. Text between
+ * elements is skipped there too.
+ *
+ * @since 5.2.2
+ *
+ * @param string $html  Rendered post content.
+ * @param int    $count How many elements to keep.
+ * @return string
+ */
+function leaky_paywall_get_lead_in_html( $html, $count ) {
+
+	$count = intval( $count );
+
+	if ( $count <= 0 || '' === trim( (string) $html ) || ! class_exists( 'DOMDocument' ) ) {
+		return '';
+	}
+
+	$doc      = new DOMDocument();
+	$previous = libxml_use_internal_errors( true );
+
+	// The meta tag keeps libxml from reading UTF-8 as Latin-1.
+	$doc->loadHTML( '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>' . $html . '</body></html>' );
+
+	libxml_clear_errors();
+	libxml_use_internal_errors( $previous );
+
+	$body = $doc->getElementsByTagName( 'body' )->item( 0 );
+
+	if ( ! $body ) {
+		return '';
+	}
+
+	$lead_in = '';
+	$kept    = 0;
+
+	foreach ( $body->childNodes as $node ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- DOM property.
+
+		if ( XML_ELEMENT_NODE !== $node->nodeType ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- DOM property.
+			continue;
+		}
+
+		$lead_in .= $doc->saveHTML( $node );
+
+		if ( ++$kept >= $count ) {
+			break;
+		}
+	}
+
+	return $lead_in;
+}
+
+/**
  * Whether any restriction rule applies to a post, by post type and
  * taxonomy, as content_restricted_by_settings() decides it.
  *

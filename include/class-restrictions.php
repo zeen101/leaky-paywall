@@ -670,12 +670,19 @@ class Leaky_Paywall_Restrictions {
 	 */
 	public function get_subscribe_nag( $content = '' ) {
 
+		$teaser_source = $content;
+
 		if ( ! $content ) {
-			$content = get_the_content( $this->post_id );
+			$content = get_the_content( null, false, $this->post_id );
+
+			// Not run through the_content, so give it the paragraphs and
+			// blocks the lead-in counts. Shortcodes are dropped, as before.
+			$teaser_source = has_blocks( $content ) ? do_blocks( $content ) : wpautop( $content );
+			$teaser_source = strip_shortcodes( $teaser_source );
 		}
 
 		$message     = $this->the_content_paywall_message();
-		$new_content = $this->get_nag_excerpt( $content ) . $message;
+		$new_content = $this->get_nag_excerpt( $teaser_source ) . $message;
 
 		// Record the impression and notify listeners now that
 		// the_content_paywall_message() has resolved $this->nag_type and the
@@ -703,20 +710,19 @@ class Leaky_Paywall_Restrictions {
 	}
 
 	/**
-	 * The paywall nag excerpt
+	 * The teaser shown above the nag: the post's first "Lead In Elements"
+	 * top-level elements with their formatting, the same as the
+	 * JavaScript method shows.
 	 *
-	 * @param string $content The content of the post.
+	 * This used to be the first "Custom Excerpt Length" characters as
+	 * plain text, so a post looked different depending on the method.
+	 *
+	 * @param string $content The post's rendered content.
 	 */
 	public function get_nag_excerpt( $content ) {
-		$settings = get_leaky_paywall_settings();
+		$excerpt = leaky_paywall_get_lead_in_html( $content, leaky_paywall_get_lead_in_elements() );
 
-		if ( isset( $settings['custom_excerpt_length'] ) && strlen( $settings['custom_excerpt_length'] ) > 0 ) {
-			$excerpt = substr( wp_strip_all_tags( get_the_content( get_the_ID() ) ), 0, intval( $settings['custom_excerpt_length'] ) );
-		} else {
-			$excerpt = substr( wp_strip_all_tags( $content ), 0, 100 );
-		}
-
-		return apply_filters( 'leaky_paywall_nag_excerpt', strip_shortcodes( $excerpt ), $this->post_id );
+		return apply_filters( 'leaky_paywall_nag_excerpt', $excerpt, $this->post_id );
 	}
 
 	/**
