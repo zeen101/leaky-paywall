@@ -958,7 +958,16 @@ class LP_Event_Tracking {
 	}
 }
 
-new LP_Event_Tracking();
+// On init, not while the plugin loads: the constructor reads the settings,
+// whose defaults are translated, and WordPress 6.7+ warns when a plugin's
+// translations load before init. Subscriber events fire later than this.
+add_action(
+	'init',
+	function () {
+		new LP_Event_Tracking();
+	},
+	0
+);
 
 /**
  * Send a custom event to Leaky Paywall Insights.

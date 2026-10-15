@@ -1685,7 +1685,7 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 	 * @param string     $login optional login name to use instead of email address.
 	 * @return mixed $wpdb insert ID or false
 	 */
-	function leaky_paywall_new_subscriber(string $hash = null, $email, $customer_id, $meta_args, $login = '')
+	function leaky_paywall_new_subscriber(?string $hash, $email, $customer_id, $meta_args, $login = '')
 	{
 
 		if (!is_email($email)) {
@@ -1862,7 +1862,7 @@ if (!function_exists('leaky_paywall_update_subscriber')) {
 	 * @param array      $meta_args Arguments passed from type of subscriber.
 	 * @return mixed $wpdb insert ID or false
 	 */
-	function leaky_paywall_update_subscriber(string $hash = null, $email, $customer_id, $meta_args)
+	function leaky_paywall_update_subscriber(?string $hash, $email, $customer_id, $meta_args)
 	{
 
 		if (!is_email($email)) {
