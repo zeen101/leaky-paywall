@@ -448,7 +448,7 @@ function leaky_paywall_create_stripe_checkout_subscription() {
 			//      publishers or write to the wrong account.
 			foreach ( $subscriptions->data as $subscription ) {
 
-				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $subscription, $plan_id, $level );
+				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $subscription, $plan_id, $level, array(), $fields );
 
 				$sub = $stripe->subscriptions->update(
 					$subscription->id,
@@ -506,9 +506,12 @@ function leaky_paywall_create_stripe_checkout_subscription() {
  *                             the filter runs so extensions see real values.
  *                             Recurring Payments passes the publisher's
  *                             proration setting this way.
+ * @param array  $fields       The registration form, when the switch comes from
+ *                             one, so extensions can act on what the reader
+ *                             entered (a coupon, say). Empty otherwise.
  * @return array
  */
-function leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level, $overrides = array() ) {
+function leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level, $overrides = array(), $fields = array() ) {
 
 	$defaults = array(
 		'items'              => array(
@@ -524,7 +527,7 @@ function leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan
 		$defaults = array_merge( $defaults, $overrides );
 	}
 
-	$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', $defaults, $level );
+	$update_args = apply_filters( 'leaky_paywall_before_update_stripe_subscription_args', $defaults, $level, is_array( $fields ) ? $fields : array() );
 
 	// Both keys count as a claim on the trial: the Trials extension sets
 	// trial_end, the Coupons extension sets trial_period_days for a delay coupon,
@@ -1065,7 +1068,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		} else {
 			// Update existing subscription to new plan with immediate proration.
 			foreach ( $subscriptions->data as $existing_sub ) {
-				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level );
+				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level, array(), $fields );
 
 				// Clearing a pending cancellation is a resubscribe, so restore access.
 				if ( leaky_paywall_stripe_subscription_cancels( $existing_sub ) ) {
