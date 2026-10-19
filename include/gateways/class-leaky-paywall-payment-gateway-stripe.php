@@ -241,8 +241,28 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 			// Not for a plan switch: that was a paid-up subscription, and a switch
 			// invoice that fails can leave it past_due, which is dunning's to handle
 			// (see $switch_txn_id above). The flag is only ever set server side.
-			if ( ! $is_level_change && ! leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id ) ) {
-				$payment_status = 'pending';
+			//
+			// The subscription checked is the one this signup created, not any the
+			// customer holds: a logged-in reader who already subscribes and signs
+			// up again without a plan switch (the automatic tax flow) had their
+			// existing subscription vouch for the new, unpaid one. A registration
+			// started before that subscription was recorded falls back to the
+			// customer's subscriptions created since it began.
+			if ( ! $is_level_change ) {
+				$signup_subscription_id = (string) get_post_meta( $incomplete_user[0]->ID, '_stripe_subscription_id', true );
+
+				if ( $signup_subscription_id ) {
+					$confirmed = leaky_paywall_stripe_signup_subscription_is_confirmed( $signup_subscription_id, $customer_id );
+				} else {
+					// A few minutes' allowance for the site's clock against Stripe's.
+					$started   = strtotime( $incomplete_user[0]->post_date_gmt . ' UTC' ) - 5 * MINUTE_IN_SECONDS;
+					$confirmed = leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id, $started );
+				}
+
+				if ( ! $confirmed ) {
+					leaky_paywall_log_error( $this->email . ( $signup_subscription_id ? ' (' . $signup_subscription_id . ')' : '' ), 'stripe signup - subscription not paid, subscriber starts pending' );
+					$payment_status = 'pending';
+				}
 			}
 
 			if ( 'active' === $payment_status ) {

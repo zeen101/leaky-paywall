@@ -1479,6 +1479,14 @@ function leaky_paywall_create_incomplete_user( $user_data, $customer_data, $fiel
 	update_post_meta( $incomplete_user, '_customer_data', $customer_data );
 	update_post_meta( $incomplete_user, '_field_data', $fields );
 	update_post_meta( $incomplete_user, '_email', $user_data['email'] );
+
+	// Lets the automatic tax step, which only knows the customer, find this
+	// registration to record the subscription it creates for it.
+	if ( is_object( $customer_data ) && ! empty( $customer_data->id ) ) {
+		update_post_meta( $incomplete_user, '_customer_id', $customer_data->id );
+	}
+
+	return $incomplete_user;
 }
 
 /**

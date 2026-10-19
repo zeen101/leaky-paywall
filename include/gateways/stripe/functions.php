@@ -702,9 +702,10 @@ function leaky_paywall_get_stripe_incomplete_subscription_client_secret( $subscr
  * @since 5.2.1
  *
  * @param string $customer_id Stripe Customer id.
+ * @param int    $since       Ignore subscriptions created before this Unix time.
  * @return bool
  */
-function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id ) {
+function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id, $since = 0 ) {
 
 	if ( ! $customer_id ) {
 		return true;
@@ -734,6 +735,14 @@ function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id 
 
 	foreach ( $subscriptions->data as $subscription ) {
 
+		// A subscription from before this signup started can't be its payment.
+		// A reader with one already active, signing up again where no plan
+		// switch happens (automatic tax), had the old one vouch for the new
+		// one and got the new level unpaid.
+		if ( $since && isset( $subscription->created ) && $subscription->created < $since ) {
+			continue;
+		}
+
 		if ( in_array( $subscription->status, array( 'active', 'trialing' ), true ) ) {
 			return true;
 		}
@@ -756,6 +765,104 @@ function leaky_paywall_stripe_customer_has_confirmed_subscription( $customer_id 
 
 	// Only unpaid first invoices or delinquent subscriptions left.
 	return false;
+}
+
+/**
+ * Whether the subscription created for one signup has been paid, or is being paid.
+ *
+ * The same test as leaky_paywall_stripe_customer_has_confirmed_subscription(),
+ * applied to the one subscription this signup made rather than to anything the
+ * customer holds. A failed lookup is treated as confirmed, as there.
+ *
+ * @since 5.3.1
+ *
+ * @param string $subscription_id Stripe Subscription id recorded for the signup.
+ * @param string $customer_id     Stripe Customer the signup belongs to.
+ * @return bool
+ */
+function leaky_paywall_stripe_signup_subscription_is_confirmed( $subscription_id, $customer_id ) {
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$subscription = $stripe->subscriptions->retrieve(
+			$subscription_id,
+			array( 'expand' => array( 'latest_invoice.payment_intent' ) ),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'stripe signup - subscription status check failed for ' . $subscription_id );
+		return true;
+	}
+
+	// Recorded server side, but never accept another customer's subscription.
+	if ( empty( $subscription->customer ) || $subscription->customer !== $customer_id ) {
+		return false;
+	}
+
+	if ( in_array( $subscription->status, array( 'active', 'trialing' ), true ) ) {
+		return true;
+	}
+
+	if ( 'incomplete' !== $subscription->status ) {
+		return false;
+	}
+
+	$intent = isset( $subscription->latest_invoice->payment_intent ) ? $subscription->latest_invoice->payment_intent : null;
+
+	return is_object( $intent ) && in_array( $intent->status, array( 'succeeded', 'processing', 'requires_capture' ), true );
+}
+
+/**
+ * Record which Stripe subscription a signup created, on its pending registration.
+ *
+ * The form is checked against this subscription when it is submitted, so
+ * another subscription the customer already holds can't stand in for it.
+ *
+ * @since 5.3.1
+ *
+ * @param int    $incomplete_id   Incomplete user (pending registration) id.
+ * @param string $subscription_id Stripe Subscription id.
+ */
+function leaky_paywall_stripe_remember_signup_subscription( $incomplete_id, $subscription_id ) {
+
+	if ( ! $incomplete_id || ! $subscription_id ) {
+		return;
+	}
+
+	update_post_meta( $incomplete_id, '_stripe_subscription_id', $subscription_id );
+}
+
+/**
+ * Find the pending registration for a Stripe customer.
+ *
+ * For the automatic tax step, which posts the customer but not the email.
+ *
+ * @since 5.3.1
+ *
+ * @param string $customer_id Stripe Customer id.
+ * @return int Incomplete user id, or 0.
+ */
+function leaky_paywall_get_incomplete_user_from_customer( $customer_id ) {
+
+	if ( ! $customer_id ) {
+		return 0;
+	}
+
+	$incompletes = get_posts(
+		array(
+			'post_type'      => 'lp_incomplete_user',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'date_query'     => array(
+				array( 'after' => (int) apply_filters( 'leaky_paywall_incomplete_user_max_age_hours', 24 * 14 ) . ' hours ago' ),
+			),
+			'meta_key'       => '_customer_id',
+			'meta_value'     => $customer_id,
+		)
+	);
+
+	return ! empty( $incompletes ) ? (int) $incompletes[0] : 0;
 }
 
 /**
@@ -1037,6 +1144,8 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			if ( $client_secret ) {
 				leaky_paywall_log( $incomplete_subscription->id, 'stripe subscription - reusing incomplete subscription for ' . $customer_id );
 
+				leaky_paywall_stripe_remember_signup_subscription( leaky_paywall_get_incomplete_user_from_customer( $customer_id ), $incomplete_subscription->id );
+
 				// An attempt started before this release carries no replacement marker.
 				// Not worth failing the signup over: without it the old subscription
 				// is only left to its own dunning.
@@ -1065,6 +1174,8 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			}
 
 			$subscription = $stripe->subscriptions->create(apply_filters('leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields), leaky_paywall_get_stripe_connect_params() );
+
+			leaky_paywall_stripe_remember_signup_subscription( leaky_paywall_get_incomplete_user_from_customer( $customer_id ), $subscription->id );
 		} else {
 			// Update existing subscription to new plan with immediate proration.
 			foreach ( $subscriptions->data as $existing_sub ) {
@@ -2593,6 +2704,8 @@ function leaky_paywall_stripe_tax_preview() {
 					);
 
 					$client_secret = $subscription->latest_invoice->payment_intent->client_secret;
+
+					leaky_paywall_stripe_remember_signup_subscription( leaky_paywall_get_incomplete_user_from_customer( $customer_id ), $subscription->id );
 				} catch ( \Exception $e ) {
 					leaky_paywall_log_error( $e->getMessage(), 'stripe tax preview: could not create subscription' );
 					wp_send_json_error( 'Could not create subscription.' );
@@ -2608,6 +2721,8 @@ function leaky_paywall_stripe_tax_preview() {
 				if ( ! empty( $existing_sub->latest_invoice->payment_intent ) ) {
 					$client_secret = $existing_sub->latest_invoice->payment_intent->client_secret;
 				}
+
+				leaky_paywall_stripe_remember_signup_subscription( leaky_paywall_get_incomplete_user_from_customer( $customer_id ), $existing_sub->id );
 			}
 		}
 	}
