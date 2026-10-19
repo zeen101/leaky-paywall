@@ -96,6 +96,32 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		);
 
 		if (empty($incomplete_user)) {
+
+			// The Stripe webhook may have finished this signup while the form was
+			// still on its way, which removes the incomplete user. The reader has
+			// paid and has an account, so log them in rather than send them back
+			// to the form with an error.
+			$completed = $this->find_signup_completed_by_webhook();
+
+			if ($completed) {
+
+				if ($completed['verified']) {
+					$this->finish_signup_completed_by_webhook($completed);
+				}
+
+				leaky_paywall_log_error('signup already completed by the webhook for ' . $this->email . ', reader could not be verified', 'stripe signup - error 2');
+				leaky_paywall_errors()->add(
+					'signup_already_completed',
+					wp_kses_post(sprintf(
+						/* Translators: %s - login url */
+						__('Your payment was received and your account is ready. Please <a href="%s">log in</a>.', 'leaky-paywall'),
+						esc_url(get_page_link(get_leaky_paywall_settings()['page_for_login']))
+					)),
+					'register'
+				);
+				return;
+			}
+
 			leaky_paywall_log_error('incomplete user error for ' . $this->email, 'stripe signup - error 2');
 			leaky_paywall_errors()->add('incomplete_user_error', __('An error occurred, please try again.', 'leaky-paywall'), 'register');
 			return;
@@ -246,6 +272,118 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		do_action('leaky_paywall_stripe_signup', $gateway_data);
 
 		return apply_filters('leaky_paywall_stripe_gateway_data', $gateway_data, $this, $customer_data);
+	}
+
+	/**
+	 * Find a signup for this form that the Stripe webhook already completed
+	 *
+	 * The webhook finishes a signup on its own when the form is slow to
+	 * arrive (it waits a few seconds first), creating the account with the
+	 * password the reader chose at step one and removing the incomplete
+	 * user. The form then has nothing to finish.
+	 *
+	 * Matched on a Stripe transaction for this email and level from the last
+	 * hour. The reader is verified by the password they just submitted, or by
+	 * being logged in as that account, which is what logging in would ask of
+	 * them anyway.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @return array|false The user, transaction and whether the reader was verified, or false.
+	 */
+	private function find_signup_completed_by_webhook()
+	{
+
+		$user = get_user_by('email', $this->email);
+
+		if (!$user) {
+			return false;
+		}
+
+		$transactions = get_posts(
+			array(
+				'post_type'      => 'lp_transaction',
+				'posts_per_page' => 1,
+				'post_status'    => 'publish',
+				'date_query'     => array(
+					array(
+						'column' => 'post_date_gmt',
+						'after'  => gmdate('Y-m-d H:i:s', time() - HOUR_IN_SECONDS),
+					),
+				),
+				'meta_query'     => array(
+					array(
+						'key'   => '_email',
+						'value' => $user->user_email,
+					),
+					array(
+						'key'   => '_level_id',
+						'value' => $this->level_id,
+					),
+					array(
+						'key'   => '_gateway',
+						'value' => 'stripe',
+					),
+				),
+			)
+		);
+
+		if (empty($transactions)) {
+			return false;
+		}
+
+		if (is_user_logged_in()) {
+			$verified = get_current_user_id() === $user->ID;
+		} else {
+			// Compared as typed: the step one password was stored unsanitized, and
+			// sanitizing would change some valid passwords. Checked through
+			// wp_authenticate() so login limiters count a wrong guess here too.
+			$password = isset($_POST['password']) ? wp_unslash($_POST['password']) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce checked in process_signup(); a password is never sanitized.
+			$verified = false;
+
+			if ('' !== $password) {
+				$authenticated = wp_authenticate($user->user_login, $password);
+				$verified      = !is_wp_error($authenticated) && $authenticated->ID === $user->ID;
+			}
+		}
+
+		return array(
+			'user'        => $user,
+			'transaction' => $transactions[0],
+			'verified'    => $verified,
+		);
+	}
+
+	/**
+	 * Log the reader in and send them on, as a completed signup would
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param array $completed From find_signup_completed_by_webhook().
+	 */
+	private function finish_signup_completed_by_webhook($completed)
+	{
+
+		$user           = $completed['user'];
+		$transaction_id = $completed['transaction']->ID;
+
+		leaky_paywall_log($user->user_email . ' (transaction ' . $transaction_id . ')', 'stripe signup - already completed by the webhook, logging the reader in');
+
+		leaky_paywall_log_in_user($user->ID);
+
+		$restrictions = new Leaky_Paywall_Restrictions();
+		$restrictions->clear_cookie();
+
+		$subscriber_data = array(
+			'user_id'          => $user->ID,
+			'email'            => $user->user_email,
+			'subscriber_email' => $user->user_email,
+			'level_id'         => $this->level_id,
+			'transaction_id'   => $transaction_id,
+		);
+
+		wp_safe_redirect(leaky_paywall_get_redirect_url(get_leaky_paywall_settings(), $subscriber_data));
+		exit;
 	}
 
 	/**
