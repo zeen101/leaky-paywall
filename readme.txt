@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.2.1
+Stable tag: 5.3.0
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,24 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.0 =
+* New: Restriction Method setting under Leaky Paywall > Settings > Restrictions, with Automatic, JavaScript and Server options. Automatic restricts posts only paid levels can read on the server, so their full text never reaches the page source, and checks metered posts in the browser so the meter keeps working with page caching. New installs start on Automatic. Existing sites keep the method they had.
+* Improvement: The teaser above the paywall is now set by Lead In Elements for every restriction method. Custom Excerpt Length has been removed, so sites using the Server method will see their teaser change. Check a restricted post after updating and adjust Lead In Elements if needed.
+* Improvement: Restricted posts in RSS feeds now show the excerpt and a link to the full article instead of the full text.
+* Improvement: List Builder offers the upgrade panel on posts only paid levels can read, instead of a free signup that would not unlock them.
+* Improvement: The List Builder upgrade modal can now be used with the email signup turned off.
+* Improvement: Checkout problems that happen in the reader's browser, such as a declined card or a failed request, are now recorded in the Leaky Paywall debug log.
+* Fix: A reader who leaves checkout at the payment step can try again right away, instead of being blocked for an hour with a message to check their inbox.
+* Fix: The Stripe registration form no longer freezes on "Processing" when a request fails or times out. It shows an error and lets the reader try again.
+* Fix: A reader whose signup the Stripe webhook already completed is now logged in and taken to the confirmation page, instead of being sent back to the form with an error.
+* Fix: When a signup email already has an account, the message now links to the login and password reset pages.
+* Fix: Registration forms on pages served from a page cache no longer fail with "There was an error" once the cached copy is old.
+* Fix: A page shown in full to a search engine through Search Engine Bot Bypass is no longer cached and served to visitors.
+* Fix: Readers no longer get the full article when a speed plugin such as Perfmatters delays the List Builder script.
+* Fix: The in-content paywall is hidden when the List Builder modal opens over it, so readers no longer see both.
+* Fix: Registration errors scroll into view once, instead of locking the page for a second per error.
+* Fix: PHP 8.4 deprecation notices and the early translation loading notice in WordPress 6.7 and later.
 
 = 5.2.1 =
 * Security: The Stripe registration form now verifies its security token on the first step, before a Stripe customer is created.
