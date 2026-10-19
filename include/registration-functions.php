@@ -596,6 +596,9 @@ function leaky_paywall_process_user_registration_validation() {
 		}
 	}
 
+	// Only a customer the reader already had can hold a subscription to switch.
+	$customer_retrieved = (bool) $cu;
+
 	if ( ! $cu && empty( $errors['stripe_customer'] ) ) {
 
 		// create Stripe customer.
@@ -635,13 +638,24 @@ function leaky_paywall_process_user_registration_validation() {
 		// When automatic tax is enabled, defer subscription creation until the billing
 		// address is collected in step 2. The tax preview handler will create the subscription
 		// with automatic_tax enabled and return the client_secret.
+		//
+		// A reader who already subscribes is switched, never given a second
+		// subscription: deferring made the tax step create one, and they were
+		// billed for both. With an address on file the switch happens now, as it
+		// does without automatic tax. Without one the address step runs first and
+		// the reader's confirmation sends the form back here to switch.
 		if ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) {
-			$return = array(
-				'success'            => 1,
-				'customer_id'        => $cu->id,
-				'deferred_tax'       => true,
-			);
-			wp_send_json( $return );
+			$switchable = $customer_retrieved ? leaky_paywall_stripe_find_switchable_subscription( $cu->id ) : null;
+
+			if ( ! $switchable || ! leaky_paywall_stripe_customer_has_tax_address( $cu ) ) {
+				$return = array(
+					'success'            => 1,
+					'customer_id'        => $cu->id,
+					'deferred_tax'       => true,
+					'switch'             => (bool) $switchable,
+				);
+				wp_send_json( $return );
+			}
 		}
 
 		// Prevent duplicate signups across Stripe customers (e.g., guest retries on ACH).

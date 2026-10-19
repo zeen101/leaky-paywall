@@ -866,6 +866,93 @@ function leaky_paywall_get_incomplete_user_from_customer( $customer_id ) {
 }
 
 /**
+ * Whether a reader's subscription is one a new level should switch, not replace.
+ *
+ * The same rule leaky_paywall_create_stripe_subscription() applies: an unpaid
+ * first attempt (incomplete) is not a plan, and a delinquent one is replaced by
+ * a new subscription rather than switched onto the card that is failing.
+ *
+ * @since 5.3.2
+ *
+ * @param object $subscription Stripe Subscription.
+ * @return bool
+ */
+function leaky_paywall_stripe_subscription_is_switchable( $subscription ) {
+
+	if ( ! is_object( $subscription ) || in_array( $subscription->status, array( 'incomplete', 'incomplete_expired', 'canceled' ), true ) ) {
+		return false;
+	}
+
+	return ! leaky_paywall_stripe_subscription_is_delinquent( $subscription );
+}
+
+/**
+ * The subscription a customer's change of level should switch, if any.
+ *
+ * @since 5.3.2
+ *
+ * @param string $customer_id Stripe Customer id.
+ * @return object|null Stripe Subscription, or null.
+ */
+function leaky_paywall_stripe_find_switchable_subscription( $customer_id ) {
+
+	if ( ! $customer_id ) {
+		return null;
+	}
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	try {
+		$subscriptions = $stripe->subscriptions->all(
+			array( 'customer' => $customer_id, 'limit' => 10 ),
+			leaky_paywall_get_stripe_connect_params()
+		);
+	} catch ( \Throwable $th ) {
+		leaky_paywall_log_error( $th->getMessage(), 'stripe subscription - could not list subscriptions for ' . $customer_id );
+		return null;
+	}
+
+	foreach ( $subscriptions->data as $subscription ) {
+		if ( leaky_paywall_stripe_subscription_is_switchable( $subscription ) ) {
+			return $subscription;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Whether automatic tax can work out where a customer is from what Stripe holds.
+ *
+ * @since 5.3.2
+ *
+ * @param object $customer Stripe Customer.
+ * @return bool
+ */
+function leaky_paywall_stripe_customer_has_tax_address( $customer ) {
+
+	if ( ! is_object( $customer ) || empty( $customer->address ) || empty( $customer->address->country ) ) {
+		return false;
+	}
+
+	return ! empty( $customer->address->postal_code ) || ! empty( $customer->address->line1 );
+}
+
+/**
+ * Whether the site charges Stripe automatic tax at checkout.
+ *
+ * @since 5.3.2
+ *
+ * @return bool
+ */
+function leaky_paywall_stripe_automatic_tax_enabled() {
+
+	$settings = get_leaky_paywall_settings();
+
+	return 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'];
+}
+
+/**
  * Find a confirmed one-time payment from this customer that no signup has used yet.
  *
  * For a paid one-time signup that posted no PaymentIntent id. The automatic tax
@@ -1089,6 +1176,12 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		'expand' => ['latest_invoice.payment_intent'],
 	);
 
+	// With automatic tax on, step one only gets here for a reader whose address
+	// Stripe already holds, so the switch (or, if their subscription went away
+	// meanwhile, the new subscription) is taxed like any other.
+	$tax_args = leaky_paywall_stripe_automatic_tax_enabled() ? array( 'automatic_tax' => array( 'enabled' => true ) ) : array();
+	$subscription_array = array_merge( $subscription_array, $tax_args );
+
 	try {
 		leaky_paywall_log('before get subs', 'stripe subscription for ' . $customer_id);
 		leaky_paywall_log($cu, 'stripe subscription for ' . $customer_id);
@@ -1179,7 +1272,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		} else {
 			// Update existing subscription to new plan with immediate proration.
 			foreach ( $subscriptions->data as $existing_sub ) {
-				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level, array(), $fields );
+				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $existing_sub, $plan_id, $level, $tax_args, $fields );
 
 				// Clearing a pending cancellation is a resubscribe, so restore access.
 				if ( leaky_paywall_stripe_subscription_cancels( $existing_sub ) ) {
@@ -2647,6 +2740,60 @@ function leaky_paywall_stripe_tax_preview() {
 		} catch ( \Exception $e ) {
 			leaky_paywall_log_error( $e->getMessage(), 'stripe tax preview: could not update customer address' );
 			wp_send_json_error( 'Could not update billing address.' );
+		}
+
+		// A reader who already subscribes is switched, never given a second
+		// subscription. The switch charges their card on file at once, so it
+		// can't happen here, while they are still typing an address: show what
+		// it will charge today, with tax and proration, create nothing, and
+		// leave the switch to step one when they confirm.
+		$switchable = ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) ? leaky_paywall_stripe_find_switchable_subscription( $customer_id ) : null;
+
+		if ( $switchable ) {
+			try {
+				$stripe_plan = leaky_paywall_get_stripe_plan(
+					$level,
+					$level_id,
+					array(
+						'stripe_price' => number_format( (float) $level['price'], 2, '', '' ),
+						'currency'     => leaky_paywall_get_currency(),
+						'secret_key'   => leaky_paywall_get_stripe_secret_key(),
+					)
+				);
+
+				if ( ! $stripe_plan ) {
+					wp_send_json_error( 'Could not retrieve Stripe plan.' );
+				}
+
+				$preview = $stripe->invoices->upcoming(
+					array(
+						'customer'                        => $customer_id,
+						'subscription'                    => $switchable->id,
+						'subscription_items'              => array(
+							array(
+								'id'    => $switchable->items->data[0]->id,
+								'price' => $stripe_plan->id,
+							),
+						),
+						'subscription_proration_behavior' => 'always_invoice',
+						'automatic_tax'                   => array( 'enabled' => true ),
+					),
+					leaky_paywall_get_stripe_connect_params()
+				);
+
+				wp_send_json_success(
+					array(
+						'subtotal' => $preview->subtotal,
+						'tax'      => $preview->tax,
+						'total'    => $preview->total,
+						'currency' => strtoupper( $preview->currency ),
+						'switch'   => true,
+					)
+				);
+			} catch ( \Exception $e ) {
+				leaky_paywall_log_error( $e->getMessage(), 'stripe tax preview: could not preview plan switch' );
+				wp_send_json_error( $e->getMessage() );
+			}
 		}
 
 		// Create the subscription now that the customer has an address.

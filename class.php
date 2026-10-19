@@ -573,7 +573,9 @@ class Leaky_Paywall {
 					'tax_preview_nonce' => wp_create_nonce( 'lp_tax_preview' ),
 					'error_nonce' => wp_create_nonce( 'lp_checkout_error' ),
 					'request_timeout' => 45000,
+					'change_subscription_text' => esc_html__( 'Change Subscription', 'leaky-paywall' ),
 					'messages' => array(
+						'address_needed' => esc_html__( 'Please enter your billing address.', 'leaky-paywall' ),
 						'request_failed' => esc_html__( 'We could not reach the payment step. Please check your connection and try again.', 'leaky-paywall' ),
 						'timeout' => esc_html__( 'This is taking longer than it should. Please try again.', 'leaky-paywall' ),
 						'unexpected' => esc_html__( 'An unexpected error occurred. Please try again.', 'leaky-paywall' ),

@@ -93,6 +93,12 @@
                 const label = $(this).data('lp-label');
                 $(this).text( undefined === label ? leaky_paywall_stripe_registration_ajax.next_text : label ).prop('disabled', false);
             });
+
+            // An automatic tax plan switch confirms through step one from the
+            // payment step, so its button is the one waiting.
+            if ( taxSwitch ) {
+                $('#leaky-paywall-submit').text(leaky_paywall_stripe_registration_ajax.change_subscription_text).prop('disabled', false);
+            }
         }
 
         function showAccountErrors( $messages ) {
@@ -217,8 +223,11 @@
                 } else if (resp.deferred_tax) {
                     // subscription with automatic tax — defer subscription creation until address is entered
                     $("#stripe-customer-id").val(resp.customer_id);
+                    taxSwitch = !! resp.switch;
                     buildAddressOnly();
                     showPaymentForm();
+
+                    document.querySelector("#leaky-paywall-payment-form").addEventListener("submit", deferredTaxSubmit);
 
                 } else if (resp.customer_id) {
                     // subscription
@@ -383,6 +392,14 @@
                         jQuery('#lp-order-tax-amount').text(formatter(data.tax)).removeClass('lp-order-pending');
                         jQuery('#lp-order-total-amount').text(formatter(data.total));
 
+                        // A reader who already subscribes: the amounts are what
+                        // the switch charges today. No card form, the card on
+                        // file pays, and confirming switches the subscription.
+                        if (data.switch) {
+                            jQuery('#leaky-paywall-submit').text(leaky_paywall_stripe_registration_ajax.change_subscription_text);
+                            return;
+                        }
+
                         // Build payment form now that subscription is created with tax.
                         if (data.client_secret && !jQuery('#payment-element .StripeElement, #payment-element iframe').length) {
                             buildPaymentForm(data.client_secret);
@@ -397,6 +414,38 @@
                     jQuery('#lp-order-tax-amount').text('$0.00').removeClass('lp-order-pending');
                 }
             });
+        }
+
+        // Set when step one hands a reader who already subscribes to the address
+        // step: confirming switches their subscription instead of paying for a
+        // new one.
+        var taxSwitch = false;
+
+        // The automatic tax flow shows the address before there is anything to
+        // pay, and the card form only arrives with the tax step's reply. Until
+        // then a submit (Enter in the address) went straight to the server with
+        // no payment at all.
+        function deferredTaxSubmit(e) {
+            if ( taxSwitch ) {
+                e.preventDefault();
+
+                if ( ! billingAddress ) {
+                    showMessage( message('address_needed') );
+                    return;
+                }
+
+                // Step one switches the subscription now that Stripe has the
+                // address, and submits the form once it has.
+                isValidating = false;
+                jQuery('#leaky-paywall-submit').prop('disabled', true).text(leaky_paywall_stripe_registration_ajax.continue_text);
+                validateUserData();
+                return;
+            }
+
+            if ( ! jQuery('#payment-element .StripeElement, #payment-element iframe').length ) {
+                e.preventDefault();
+                showMessage( message('address_needed') );
+            }
         }
 
         function formatCurrency(currency) {
