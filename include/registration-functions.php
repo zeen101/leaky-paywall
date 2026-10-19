@@ -308,8 +308,19 @@ function leaky_paywall_process_user_registration_validation() {
 	}
 
 	if ( ! is_user_logged_in() && email_exists( $user['email'] ) ) {
+		// Readers with a free account often don't know they have one, or have
+		// forgotten the password, so give them both ways forward.
+		$login_url = ! empty( $settings['page_for_login'] ) ? get_page_link( $settings['page_for_login'] ) : wp_login_url();
+
 		$errors['email_exists'] = array(
-			'message' => __( 'Email already exists. Please log in.', 'leaky-paywall' ),
+			'message' => wp_kses_post(
+				sprintf(
+					/* Translators: 1: login url, 2: lost password url */
+					__( 'An account with this email already exists. <a href="%1$s">Log in</a> to subscribe, or <a href="%2$s">reset your password</a> if you don\'t remember it.', 'leaky-paywall' ),
+					esc_url( $login_url ),
+					esc_url( wp_lostpassword_url() )
+				)
+			),
 		);
 	}
 
