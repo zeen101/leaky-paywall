@@ -458,6 +458,7 @@ function leaky_paywall_ajax_refresh_nonces() {
 			'register'       => wp_create_nonce( 'leaky-paywall-register-nonce' ),
 			'register_ajax'  => wp_create_nonce( 'lp_register_nonce' ),
 			'tax_preview'    => wp_create_nonce( 'lp_tax_preview' ),
+			'checkout_error' => wp_create_nonce( 'lp_checkout_error' ),
 		)
 	);
 

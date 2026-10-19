@@ -167,6 +167,10 @@
         stripe.tax_preview_nonce = resp.data.tax_preview;
       }
 
+      if (stripe && resp.data.checkout_error) {
+        stripe.error_nonce = resp.data.checkout_error;
+      }
+
       document.dispatchEvent(new CustomEvent("leaky_paywall_nonces_refreshed", { detail: resp.data }));
     });
   });

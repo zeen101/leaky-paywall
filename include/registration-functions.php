@@ -734,6 +734,82 @@ add_action( 'wp_ajax_nopriv_leaky_paywall_process_user_registration_validation',
 add_action( 'wp_ajax_leaky_paywall_process_user_registration_validation', 'leaky_paywall_process_user_registration_validation' );
 
 /**
+ * Record a Stripe checkout failure that only the reader's browser saw
+ *
+ * When the step 1 request times out, is blocked before it reaches
+ * WordPress, or comes back as something other than JSON, nothing is
+ * written on the server, so the publisher only hears "the payment page
+ * froze". stripe-registration.js reports those failures here, along with
+ * Stripe errors at the payment step, so they show up in the debug log.
+ *
+ * Open to logged-out readers, so every field is checked against a short
+ * list or cut to length, and each IP address can write a limited number
+ * of entries an hour.
+ *
+ * @since 5.2.2
+ */
+function leaky_paywall_ajax_report_checkout_error() {
+
+	nocache_headers();
+
+	if ( ! check_ajax_referer( 'lp_checkout_error', 'nonce', false ) ) {
+		wp_send_json_error( null, 403 );
+	}
+
+	// Only used to key the hourly limit. admin-ajax responses aren't page cached.
+	$ip        = (string) filter_var( $_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP ); // phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$limit_key = 'lp_checkout_error_' . md5( $ip );
+	$reported  = (int) get_transient( $limit_key );
+
+	/**
+	 * Filters how many checkout failures one IP address can log an hour.
+	 *
+	 * @since 5.2.2
+	 *
+	 * @param int $limit Entries per hour.
+	 */
+	if ( $reported >= (int) apply_filters( 'leaky_paywall_checkout_error_report_limit', 20 ) ) {
+		wp_send_json_error( null, 429 );
+	}
+
+	set_transient( $limit_key, $reported + 1, HOUR_IN_SECONDS );
+
+	$stages  = array( 'account', 'checkout', 'payment' );
+	$reasons = array( 'timeout', 'request', 'parse', 'unrecognized', 'stripe', 'incomplete', 'exception' );
+
+	$field = function ( $key, $length = 100 ) {
+		$value = isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked above.
+		return substr( $value, 0, $length );
+	};
+
+	$stage  = $field( 'stage' );
+	$reason = $field( 'reason' );
+
+	if ( ! in_array( $stage, $stages, true ) || ! in_array( $reason, $reasons, true ) ) {
+		wp_send_json_error( null, 400 );
+	}
+
+	$data = array(
+		'stage'       => $stage,
+		'reason'      => $reason,
+		'http_status' => absint( $field( 'http_status', 3 ) ),
+		'detail'      => $field( 'detail', 300 ),
+		'email'       => sanitize_email( $field( 'email' ) ),
+		'level_id'    => $field( 'level_id', 10 ),
+		'customer_id' => $field( 'customer_id', 40 ),
+		'intent_id'   => $field( 'intent_id', 40 ),
+		'page'        => esc_url_raw( $field( 'page', 200 ) ),
+		'user_agent'  => isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 200 ) : '', // phpcs:ignore WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__HTTP_USER_AGENT__
+	);
+
+	leaky_paywall_log_error( array_filter( $data ), 'stripe checkout failed in the browser' );
+
+	wp_send_json_success();
+}
+add_action( 'wp_ajax_nopriv_leaky_paywall_report_checkout_error', 'leaky_paywall_ajax_report_checkout_error' );
+add_action( 'wp_ajax_leaky_paywall_report_checkout_error', 'leaky_paywall_ajax_report_checkout_error' );
+
+/**
  * Validate and setup the user data for registration
  *
  * @since  4.0.0
