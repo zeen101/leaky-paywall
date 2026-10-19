@@ -15,6 +15,10 @@
  * Prevents the "I hit submit, saw an error, hit submit again, got charged twice" trap
  * — common on ACH where the post-payment feedback lag tempts subscribers to retry.
  *
+ * An incomplete subscription only counts once its payment is under way. One whose
+ * card was never confirmed is an abandoned attempt, and counting it locked the
+ * reader out of checkout for the whole window with nothing to show for it.
+ *
  * Filterable window via leaky_paywall_duplicate_signup_window_minutes (default 60).
  * Set the filter to 0 to disable the check entirely.
  *
@@ -73,6 +77,7 @@ function leaky_paywall_check_recent_duplicate_signup( $email, $plan_id, $skip_cu
 					'customer' => $existing_customer->id,
 					'status'   => 'all',
 					'limit'    => 100,
+					'expand'   => array( 'data.latest_invoice.payment_intent' ),
 				),
 				$connect_params
 			);
@@ -84,10 +89,18 @@ function leaky_paywall_check_recent_duplicate_signup( $email, $plan_id, $skip_cu
 				if ( in_array( $sub->status, array( 'canceled', 'incomplete_expired' ), true ) ) {
 					continue;
 				}
+				// Processing is ACH in flight, the double charge this check exists for.
+				if ( 'incomplete' === $sub->status ) {
+					$intent = isset( $sub->latest_invoice->payment_intent ) ? $sub->latest_invoice->payment_intent : null;
+					if ( ! is_object( $intent ) || ! in_array( $intent->status, array( 'succeeded', 'processing', 'requires_capture' ), true ) ) {
+						continue;
+					}
+				}
 				$price_id = isset( $sub->items->data[0]->price->id )
 					? $sub->items->data[0]->price->id
 					: ( isset( $sub->items->data[0]->plan->id ) ? $sub->items->data[0]->plan->id : '' );
 				if ( $price_id === $plan_id ) {
+					leaky_paywall_log_error( $sub->id . ' on ' . $existing_customer->id . ', status ' . $sub->status, 'stripe signup - blocked as a duplicate of a recent signup' );
 					return true;
 				}
 			}
