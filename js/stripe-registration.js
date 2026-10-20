@@ -377,6 +377,9 @@
                     nonce: leaky_paywall_stripe_registration_ajax.tax_preview_nonce,
                     level_id: levelId,
                     customer_id: customerId,
+                    // The coupon and anything else on the form, as step one
+                    // sends it, so the subscription made here is the same.
+                    form_data: $("#leaky-paywall-payment-form").serialize(),
                     line1: address.line1 || '',
                     city: address.city || '',
                     state: address.state || '',

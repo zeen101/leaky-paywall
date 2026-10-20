@@ -866,6 +866,30 @@ function leaky_paywall_get_incomplete_user_from_customer( $customer_id ) {
 }
 
 /**
+ * The client secret the payment form confirms for a new subscription.
+ *
+ * The first invoice's PaymentIntent, or, when nothing is due yet (a delayed
+ * start), the SetupIntent that saves the card for later.
+ *
+ * @since 5.3.2
+ *
+ * @param object $subscription Stripe Subscription, latest_invoice.payment_intent and pending_setup_intent expanded.
+ * @return string
+ */
+function leaky_paywall_stripe_subscription_client_secret( $subscription ) {
+
+	if ( isset( $subscription->latest_invoice->payment_intent->client_secret ) ) {
+		return $subscription->latest_invoice->payment_intent->client_secret;
+	}
+
+	if ( isset( $subscription->pending_setup_intent->client_secret ) ) {
+		return $subscription->pending_setup_intent->client_secret;
+	}
+
+	return '';
+}
+
+/**
  * Whether a reader's subscription is one a new level should switch, not replace.
  *
  * The same rule leaky_paywall_create_stripe_subscription() applies: an unpaid
@@ -2727,12 +2751,20 @@ function leaky_paywall_stripe_tax_preview() {
 
 	$customer_id   = isset( $_POST['customer_id'] ) ? sanitize_text_field( wp_unslash( $_POST['customer_id'] ) ) : '';
 	$client_secret = '';
+	$first_invoice = null;
+
+	// The registration form, read the way step one reads it, so extensions
+	// such as Coupons shape the subscription made here as they do one made
+	// there. The level is the one this request is for, whatever the form says.
+	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
+	parse_str( $form_data, $fields );
+	$fields['level_id'] = (string) $level_id;
 
 	// Update the Stripe customer's address so automatic_tax can resolve their location
 	// when the subscription or payment intent is created/confirmed.
 	if ( ! empty( $customer_id ) ) {
 		try {
-			$stripe->customers->update(
+			$customer = $stripe->customers->update(
 				$customer_id,
 				array( 'address' => $address ),
 				leaky_paywall_get_stripe_connect_params()
@@ -2765,21 +2797,36 @@ function leaky_paywall_stripe_tax_preview() {
 					wp_send_json_error( 'Could not retrieve Stripe plan.' );
 				}
 
-				$preview = $stripe->invoices->upcoming(
+				// Run through the same filter as the switch itself, so a coupon's
+				// price or delay shows here as it will be charged.
+				$switch_args = apply_filters(
+					'leaky_paywall_before_update_stripe_subscription_args',
 					array(
-						'customer'                        => $customer_id,
-						'subscription'                    => $switchable->id,
-						'subscription_items'              => array(
+						'items'              => array(
 							array(
 								'id'    => $switchable->items->data[0]->id,
 								'price' => $stripe_plan->id,
 							),
 						),
-						'subscription_proration_behavior' => 'always_invoice',
-						'automatic_tax'                   => array( 'enabled' => true ),
+						'proration_behavior' => 'always_invoice',
 					),
-					leaky_paywall_get_stripe_connect_params()
+					$level,
+					$fields
 				);
+
+				$upcoming_args = array(
+					'customer'                        => $customer_id,
+					'subscription'                    => $switchable->id,
+					'subscription_items'              => $switch_args['items'],
+					'subscription_proration_behavior' => 'always_invoice',
+					'automatic_tax'                   => array( 'enabled' => true ),
+				);
+
+				if ( ! empty( $switch_args['trial_end'] ) ) {
+					$upcoming_args['subscription_trial_end'] = $switch_args['trial_end'];
+				}
+
+				$preview = $stripe->invoices->upcoming( $upcoming_args, leaky_paywall_get_stripe_connect_params() );
 
 				wp_send_json_success(
 					array(
@@ -2826,8 +2873,16 @@ function leaky_paywall_stripe_tax_preview() {
 						'automatic_tax'    => array( 'enabled' => true ),
 						'payment_behavior' => 'default_incomplete',
 						'payment_settings' => array( 'save_default_payment_method' => 'on_subscription' ),
-						'expand'           => array( 'latest_invoice.payment_intent' ),
+						'expand'           => array( 'latest_invoice.payment_intent', 'pending_setup_intent' ),
 					);
+
+					// The hooks a subscription made at step one goes through, so a
+					// coupon (a first payment credit, a discounted price, a delayed
+					// start) and the Stripe Connect fee apply here too. Without them
+					// every coupon was dropped once automatic tax was on.
+					do_action( 'leaky_paywall_before_create_stripe_subscription', $customer, $fields );
+
+					$subscription_args = apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_args, $level, $fields );
 
 					// A lapsed reader resubscribing: mark the delinquent subscription so
 					// it is retired once this one is paid, as in
@@ -2850,7 +2905,10 @@ function leaky_paywall_stripe_tax_preview() {
 						leaky_paywall_get_stripe_connect_params()
 					);
 
-					$client_secret = $subscription->latest_invoice->payment_intent->client_secret;
+					// A delayed start (a delay coupon or a trial) has nothing to pay
+					// now, so the card is saved through the setup intent instead.
+					$client_secret = leaky_paywall_stripe_subscription_client_secret( $subscription );
+					$first_invoice = is_object( $subscription->latest_invoice ) ? $subscription->latest_invoice : null;
 
 					leaky_paywall_stripe_remember_signup_subscription( leaky_paywall_get_incomplete_user_from_customer( $customer_id ), $subscription->id );
 				} catch ( \Exception $e ) {
@@ -2861,13 +2919,12 @@ function leaky_paywall_stripe_tax_preview() {
 				// Subscription already exists — retrieve its client_secret for the payment form.
 				$existing_sub = $stripe->subscriptions->retrieve(
 					$existing_subs->data[0]->id,
-					array( 'expand' => array( 'latest_invoice.payment_intent' ) ),
+					array( 'expand' => array( 'latest_invoice.payment_intent', 'pending_setup_intent' ) ),
 					leaky_paywall_get_stripe_connect_params()
 				);
 
-				if ( ! empty( $existing_sub->latest_invoice->payment_intent ) ) {
-					$client_secret = $existing_sub->latest_invoice->payment_intent->client_secret;
-				}
+				$client_secret = leaky_paywall_stripe_subscription_client_secret( $existing_sub );
+				$first_invoice = is_object( $existing_sub->latest_invoice ) ? $existing_sub->latest_invoice : null;
 
 				leaky_paywall_stripe_remember_signup_subscription( leaky_paywall_get_incomplete_user_from_customer( $customer_id ), $existing_sub->id );
 			}
@@ -2920,7 +2977,10 @@ function leaky_paywall_stripe_tax_preview() {
 			);
 		}
 
-		$preview = $stripe->invoices->upcoming(
+		// Once the subscription exists its first invoice is what the reader pays,
+		// coupon and tax included, so show that rather than a preview of the
+		// level's list price.
+		$preview = $first_invoice ? $first_invoice : $stripe->invoices->upcoming(
 			$preview_args,
 			leaky_paywall_get_stripe_connect_params()
 		);
