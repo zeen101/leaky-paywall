@@ -125,6 +125,7 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/pro-license-migration.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/license-page.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/extensions-page.php';
+		require_once LEAKY_PAYWALL_PATH . 'include/pro-updates.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/pro-prompts.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/config-notices.php';
 
