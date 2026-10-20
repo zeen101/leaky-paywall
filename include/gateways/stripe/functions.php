@@ -319,167 +319,6 @@ function leaky_paywall_process_apple_pay() {
 }
 
 
-add_action( 'wp_ajax_nopriv_leaky_paywall_create_stripe_checkout_subscription', 'leaky_paywall_create_stripe_checkout_subscription' );
-add_action( 'wp_ajax_leaky_paywall_create_stripe_checkout_subscription', 'leaky_paywall_create_stripe_checkout_subscription' );
-
-/**
- * Create a stripe subscription invoice
- */
-function leaky_paywall_create_stripe_checkout_subscription() {
-
-	$level_id          = isset( $_POST['level_id'] ) ? sanitize_text_field( wp_unslash( $_POST['level_id'] ) ) : '';
-	$level             = get_leaky_paywall_subscription_level( $level_id );
-	$customer_id       = isset( $_POST['customerId'] ) ? sanitize_text_field( wp_unslash( $_POST['customerId'] ) ) : '';
-	$payment_method_id = isset( $_POST['paymentMethodId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentMethodId'] ) ) : '';
-	$plan_id           = isset( $_POST['planId'] ) ? sanitize_text_field( wp_unslash( $_POST['planId'] ) ) : '';
-	$form_data         = isset( $_POST['formData'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['formData'] ) ) ) : '';
-	parse_str( $form_data, $fields );
-
-	if (
-		! isset( $fields['leaky_paywall_register_nonce'] )
-		|| ! wp_verify_nonce( sanitize_key( $fields['leaky_paywall_register_nonce'] ), 'leaky-paywall-register-nonce' )
-	) {
-		wp_send_json(
-			array(
-				'error' => __( 'There was an error. Please try again.', 'leaky-paywall' )
-			)
-		);
-	}
-
-	// Prevent duplicate subscriptions: if the logged-in user already has an active
-	// subscription at this level, stop before creating a new Stripe subscription.
-	if ( is_user_logged_in() && leaky_paywall_user_has_active_subscription_at_level( null, $level_id ) ) {
-		wp_send_json(
-			array(
-				'error' => __( 'You are already subscribed to this level.', 'leaky-paywall' ),
-			)
-		);
-	}
-
-	// Existing-subscriber customer reuse. Mirrors the Stripe Elements flow
-	// (see leaky_paywall_process_stripe_registration in registration-functions.php).
-	// A logged-in subscriber who signs up for a different level would otherwise
-	// end up with a brand-new Stripe customer + brand-new subscription, and their
-	// old subscription would be orphaned from LP's point of view and keep billing
-	// forever. Swap in their existing Stripe customer id here so the "update the
-	// customer's existing sub" branch below fires with proration instead of
-	// creating a duplicate. The freshly-created customer_id the client sent
-	// becomes an unused orphan in Stripe — harmless, and easier than trying to
-	// coordinate the JS to skip its own customer-create step.
-	if ( is_user_logged_in() ) {
-		$_lp_user             = wp_get_current_user();
-		$_lp_mode             = leaky_paywall_get_current_mode();
-		$_lp_site             = leaky_paywall_get_current_site();
-		$_lp_existing_cus_id  = get_user_meta( $_lp_user->ID, '_issuem_leaky_paywall_' . $_lp_mode . '_subscriber_id' . $_lp_site, true );
-		$_lp_existing_gateway = get_user_meta( $_lp_user->ID, '_issuem_leaky_paywall_' . $_lp_mode . '_payment_gateway' . $_lp_site, true );
-
-		if ( ! empty( $_lp_existing_cus_id )
-			&& in_array( $_lp_existing_gateway, array( 'stripe', 'stripe_checkout' ), true ) ) {
-			$customer_id = $_lp_existing_cus_id;
-		}
-	}
-
-	$stripe = leaky_paywall_initialize_stripe_api();
-
-	// Prevent duplicate signups across Stripe customers (e.g., guest retries on ACH).
-	$dedup_email = isset( $fields['email_address'] ) ? sanitize_email( $fields['email_address'] ) : '';
-	if ( leaky_paywall_check_recent_duplicate_signup( $dedup_email, $plan_id, $customer_id, $stripe ) ) {
-		wp_send_json(
-			array(
-				'error' => apply_filters(
-					'leaky_paywall_duplicate_signup_message',
-					__( 'It looks like a signup for this email was started a few minutes ago. Please check your inbox for confirmation, or contact us if you need help.', 'leaky-paywall' )
-				),
-			)
-		);
-	}
-
-	try {
-		$payment_method = $stripe->paymentMethods->retrieve( $payment_method_id, [], leaky_paywall_get_stripe_connect_params() );
-		$payment_method->attach( array( 'customer' => $customer_id ) );
-
-		$customer = $stripe->customers->retrieve( $customer_id, [], leaky_paywall_get_stripe_connect_params() );
-		$customer->invoice_settings->default_payment_method = $payment_method_id;
-		$customer->save();
-	} catch ( \Throwable $th ) {
-
-		leaky_paywall_log_error( $th->getMessage(), 'stripe checkout subscription - could not set default payment method' );
-
-		wp_send_json(
-			array(
-				'error' => $th->getMessage(),
-			)
-		);
-	}
-
-	do_action( 'leaky_paywall_after_create_recurring_customer', $customer );
-
-	$subscription_array = array(
-		'customer' => $customer_id,
-		'items'    => array(
-			array(
-				'price' => $plan_id,
-			),
-		),
-		'expand'   => array( 'latest_invoice.payment_intent' ),
-	);
-
-	// $subscription_params = apply_filters( 'leaky_paywall_stripe_subscription_params', [], $level, $fields );
-
-	try {
-		leaky_paywall_log( 'before get subs', 'stripe checkout subscription for ' . $customer_id );
-		leaky_paywall_log( $customer, 'stripe checkout subscription for ' . $customer_id );
-		$subscriptions = $stripe->subscriptions->all( array( 'limit' => '1', 'customer' => $customer_id ), leaky_paywall_get_stripe_connect_params() );
-		leaky_paywall_log( 'after get subs', 'stripe checkout subscription for ' . $customer_id );
-
-		if ( empty( $subscriptions->data ) ) {
-			leaky_paywall_log( 'empty sub data', 'stripe checkout subscription for ' . $customer_id );
-			$subscription = $stripe->subscriptions->create( apply_filters( 'leaky_paywall_stripe_subscription_args', $subscription_array, $level, $fields ), leaky_paywall_get_stripe_connect_params() );
-		} else {
-
-			// Update the existing subscription in place with immediate proration,
-			// matching the Elements flow. Two things the old code was missing:
-			//   1. proration_behavior — without this, Stripe defaults to
-			//      create_prorations (line items only, no immediate invoice), so
-			//      the subscriber wouldn't be charged the prorated difference
-			//      until their normal renewal date.
-			//   2. connect params — Stripe Connect accounts need on-behalf-of
-			//      routing on every write; missing it would fail on Connect
-			//      publishers or write to the wrong account.
-			foreach ( $subscriptions->data as $subscription ) {
-
-				$update_args = leaky_paywall_get_stripe_subscription_switch_args( $subscription, $plan_id, $level, array(), $fields );
-
-				$sub = $stripe->subscriptions->update(
-					$subscription->id,
-					$update_args,
-					leaky_paywall_get_stripe_connect_params()
-				);
-
-				do_action( 'leaky_paywall_after_update_stripe_subscription', $customer, $sub, $level );
-
-				// Overwrite loop var so the response returns the updated sub,
-				// not the pre-update snapshot.
-				$subscription = $sub;
-			}
-		}
-	} catch ( \Stripe\Exception\ApiErrorException $e ) {
-		leaky_paywall_log_error( $e->getMessage(), 'stripe checkout subscription error' );
-		leaky_paywall_log( $form_data, 'stripe checkout subscription form data error 2' );
-		wp_send_json(
-			array(
-				'error' => $e->getMessage(),
-			)
-		);
-	}
-
-	$return = array(
-		'subscription' => $subscription,
-	);
-
-	wp_send_json( $return );
-}
-
 /**
  * Build the args for switching an existing Stripe subscription onto a new plan.
  *
@@ -863,6 +702,37 @@ function leaky_paywall_get_incomplete_user_from_customer( $customer_id ) {
 	);
 
 	return ! empty( $incompletes ) ? (int) $incompletes[0] : 0;
+}
+
+/**
+ * Whether a Stripe customer belongs to a signup in progress on this site.
+ *
+ * Step one records the customer it creates or reuses on the pending
+ * registration, so a customer with no recent one isn't anybody's checkout.
+ * The logged-in reader's own customer always counts.
+ *
+ * @since 5.3.2
+ *
+ * @param string $customer_id Stripe Customer id.
+ * @return bool
+ */
+function leaky_paywall_stripe_customer_is_in_signup( $customer_id ) {
+
+	if ( ! $customer_id ) {
+		return false;
+	}
+
+	if ( is_user_logged_in() ) {
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+		$own  = get_user_meta( get_current_user_id(), '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
+
+		if ( $own && $own === $customer_id ) {
+			return true;
+		}
+	}
+
+	return (bool) leaky_paywall_get_incomplete_user_from_customer( $customer_id );
 }
 
 /**
@@ -2759,6 +2629,15 @@ function leaky_paywall_stripe_tax_preview() {
 	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
 	parse_str( $form_data, $fields );
 	$fields['level_id'] = (string) $level_id;
+
+	// The customer id comes from the browser, and logged-out visitors can call
+	// this, so anyone who had a customer's id could rewrite their billing
+	// address and create subscriptions on them. Only a customer a signup in
+	// progress is using, or the logged-in reader's own, is accepted.
+	if ( ! empty( $customer_id ) && ! leaky_paywall_stripe_customer_is_in_signup( $customer_id ) ) {
+		leaky_paywall_log_error( $customer_id, 'stripe tax preview - customer does not belong to a signup in progress' );
+		wp_send_json_error( 'Invalid customer.' );
+	}
 
 	// Update the Stripe customer's address so automatic_tax can resolve their location
 	// when the subscription or payment intent is created/confirmed.
