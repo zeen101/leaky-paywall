@@ -943,26 +943,15 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function stripe_elements($level_id)
 	{
 
-		$stripe_plan = '';
 		$level       = get_leaky_paywall_subscription_level($level_id);
 
 		if (0 == $level['price']) {
 			return;
 		}
 
-		$settings = get_leaky_paywall_settings();
-
-		$stripe_price = number_format((float) $level['price'], 2, '', '');
-
-		$plan_args = array(
-			'stripe_price' => $stripe_price,
-			'currency'     => leaky_paywall_get_currency(),
-			'secret_key'   => $this->secret_key,
-		);
-
-		if (isset($level['recurring']) && 'on' == $level['recurring']) {
-			$stripe_plan = leaky_paywall_get_stripe_plan($level, $level_id, $plan_args);
-		}
+		// The server works this out again when the form is submitted, so this
+		// field only has to match it; it is never trusted.
+		$plan_id = leaky_paywall_get_level_stripe_plan_id($level_id);
 
 		ob_start();
 ?>
@@ -977,7 +966,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		<div class="leaky-paywall-card-details">
 
-			<input type="hidden" id="plan-id" name="plan_id" value="<?php echo $stripe_plan ? esc_attr($stripe_plan->id) : ''; ?>" />
+			<input type="hidden" id="plan-id" name="plan_id" value="<?php echo esc_attr($plan_id); ?>" />
 			<input type="hidden" id="stripe-customer-id" value="">
 			<input type="hidden" id="payment-intent-client" value="">
 			<input type="hidden" id="payment-intent-id" name="payment-intent-id" value="">

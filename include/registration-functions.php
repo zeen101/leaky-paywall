@@ -89,7 +89,9 @@ function leaky_paywall_process_registration() {
 			'subscriber_id'   => '',
 			'created'         => gmdate( 'Y-m-d H:i:s' ),
 			'price'           => $level['price'],
-			'plan'            => isset( $_POST['plan_id'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_id'] ) ) : '',
+			// Stripe's price comes from the level, never from the form. See
+			// leaky_paywall_get_level_stripe_plan_id().
+			'plan'            => ( 'stripe' === $gateway && false !== $level_id ) ? leaky_paywall_get_level_stripe_plan_id( $level_id ) : ( isset( $_POST['plan_id'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_id'] ) ) : '' ),
 			'currency'        => leaky_paywall_get_currency(),
 			'interval_count'  => $level['interval_count'],
 			'interval'        => $level['interval'],
@@ -555,6 +557,11 @@ function leaky_paywall_process_user_registration_validation() {
 
 		wp_send_json( $return );
 	}
+
+	// The price comes from the level, never from the form, so the duplicate
+	// check, the incomplete user and the subscription all use the level's own
+	// price. See leaky_paywall_get_level_stripe_plan_id().
+	$fields['plan_id'] = leaky_paywall_get_level_stripe_plan_id( $level_id );
 
 	$subscriber_id              = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 	$subscriber_payment_gateway = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );

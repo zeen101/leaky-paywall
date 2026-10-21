@@ -1052,7 +1052,7 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 	$level_id          = $fields['level_id'];
 	$level             = get_leaky_paywall_subscription_level($level_id);
 	$customer_id       = $cu->id;
-	$plan_id           = $fields['plan_id'];
+	$plan_id           = leaky_paywall_get_level_stripe_plan_id( $level_id );
 
 	$stripe = leaky_paywall_initialize_stripe_api();
 
@@ -1230,6 +1230,49 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 
 }
 
+
+/**
+ * The Stripe price a recurring level is billed at.
+ *
+ * Worked out on the server from the level, the same way the registration form
+ * renders its plan_id field. The posted plan_id is not trusted: the level came
+ * from level_id and the price from plan_id with nothing checking they matched,
+ * so a form that changed one without the other (a theme script switching the
+ * level by country, or anyone editing the hidden field) bought one level at
+ * another level's price.
+ *
+ * @since 5.3.1
+ *
+ * @param int|string $level_id The level id.
+ * @return string Stripe price id, or '' for a free or one time level, or when no price could be found.
+ */
+function leaky_paywall_get_level_stripe_plan_id( $level_id ) {
+
+	// Step one of the form needs it more than once, and each lookup is a Stripe request.
+	static $plan_ids = array();
+
+	$level = get_leaky_paywall_subscription_level( $level_id );
+
+	if ( ! is_array( $level ) || ! isset( $level['recurring'] ) || 'on' !== $level['recurring'] || 0 == $level['price'] ) {
+		return '';
+	}
+
+	$plan_args = array(
+		'stripe_price' => number_format( (float) $level['price'], 2, '', '' ),
+		'currency'     => leaky_paywall_get_currency(),
+		'secret_key'   => leaky_paywall_get_stripe_secret_key(),
+	);
+
+	// Keyed on the price as well, since a coupon can change the level's price.
+	$key = $level_id . ':' . $plan_args['stripe_price'] . ':' . $plan_args['currency'];
+
+	if ( ! isset( $plan_ids[ $key ] ) ) {
+		$stripe_plan      = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
+		$plan_ids[ $key ] = is_object( $stripe_plan ) ? $stripe_plan->id : '';
+	}
+
+	return $plan_ids[ $key ];
+}
 
 /**
  * Get Stripe Plan
