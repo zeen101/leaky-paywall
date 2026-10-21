@@ -819,6 +819,7 @@ class Leaky_Paywall_Settings
 					<td>
 						<input type="checkbox" id="search_engine_bot_bypass" name="search_engine_bot_bypass" <?php checked( 'on', $settings['search_engine_bot_bypass'] ); ?> />
 						<?php esc_html_e( 'Allow search engine bots (Google, Bing, etc.) to bypass the paywall so content can be indexed.', 'leaky-paywall' ); ?>
+						<p class="description"><?php esc_html_e( 'This includes Google AI Overviews.', 'leaky-paywall' ); ?></p>
 					</td>
 				</tr>
 
