@@ -2312,14 +2312,20 @@ The %sitename% Team';
 			$text_fields     = array('label', 'deleted', 'price', 'subscription_length_type', 'interval_count', 'interval', 'hide_subscribe_card', 'hide_registration_form');
 			$textarea_fields = array('description', 'registration_form_description');
 
+			// Unslash the whole level, not just core's own fields. Extensions add
+			// their own fields to a level (Trials' redemption message, Per Level
+			// Emails' subject) and those were saved with WordPress' slashes, so an
+			// apostrophe showed as "You\'ve" and gained another backslash on every save.
+			$level = wp_unslash($level);
+
 			foreach ($level as $key => $value) {
 
 				if (in_array($key, $text_fields)) {
-					$level[$key] = sanitize_text_field(wp_unslash($value));
+					$level[$key] = sanitize_text_field($value);
 				}
 
 				if (in_array($key, $textarea_fields)) {
-					$level[$key] = wp_kses_post(wp_unslash($value));
+					$level[$key] = wp_kses_post($value);
 				}
 			}
 
