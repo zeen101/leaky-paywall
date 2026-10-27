@@ -2161,8 +2161,9 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	}
 
 	$user    = get_user_by( 'email', $user_data['email'] );
-	$level   = get_leaky_paywall_subscription_level( $user_data['level_id'] );
-	$plan_id = '';
+	$level      = get_leaky_paywall_subscription_level( $user_data['level_id'] );
+	$plan_id    = '';
+	$sub_status = '';
 
 	$existing_customer = (bool) $user;
 	$status            = $existing_customer ? 'update' : 'new';
@@ -2174,7 +2175,8 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 				leaky_paywall_get_stripe_connect_params()
 			);
 			foreach ( $subscriptions->data as $subscription ) {
-				$plan_id = $subscription->plan->id;
+				$plan_id    = $subscription->plan->id;
+				$sub_status = $subscription->status;
 			}
 		} catch ( \Throwable $th ) {
 			// Non-fatal — proceed without plan_id.
@@ -2222,6 +2224,12 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 	}
 
 	leaky_paywall_cleanup_incomplete_user( $cu->email );
+
+	// A delayed trial with a setup fee pays on this PaymentIntent but its
+	// subscription is trialing. Label it the way the account-page sync does.
+	if ( 'trialing' === $sub_status ) {
+		leaky_paywall_set_subscriber_status( $user_id, leaky_paywall_stripe_trialing_status( get_userdata( $user_id ) ), 'stripe_webhook' );
+	}
 
 	$subscriber_data['user_id'] = $user_id;
 

@@ -646,8 +646,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				do_action('leaky_paywall_failed_payment', $user);
 				break;
 			case 'charge.refunded':
-				// Deactivate the user.
-				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
+				// Stripe sends this for partial refunds too. Only a full refund
+				// ends access; a partial one is a goodwill credit on a paid period.
+				if ( ! empty( $stripe_object->refunded ) ) {
+					leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_webhook' );
+				} else {
+					leaky_paywall_log( $stripe_object->id, 'stripe webhook - partial refund, subscriber keeps access' );
+				}
 
 				// Record the refund as a negative-amount transaction.
 				$charge_id            = $stripe_object->id;
@@ -887,6 +892,13 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 				break;
 
 			case 'payment_intent.succeeded':
+				// An invoice's payment is settled by invoice.payment_succeeded, which
+				// also moves a trial to active when it converts. A delayed trial's
+				// setup fee would otherwise end the trial the moment it is paid.
+				if ( ! empty( $stripe_object->invoice ) && 'trial' === lp_get_subscriber_meta( 'payment_status', $user ) ) {
+					break;
+				}
+
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_webhook' );
 				break;
 
