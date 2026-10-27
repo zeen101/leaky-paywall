@@ -1662,7 +1662,49 @@ function leaky_paywall_stripe_canceled_paid_through( $subscription ) {
 		}
 	}
 
-	return ( isset( $invoice->status ) && 'paid' === $invoice->status ) ? $period_end : 0;
+	if ( ! isset( $invoice->status ) || 'paid' !== $invoice->status ) {
+		return 0;
+	}
+
+	// A refunded invoice stays "paid", but the period wasn't paid for.
+	return leaky_paywall_stripe_invoice_refunded( $invoice ) ? 0 : $period_end;
+}
+
+/**
+ * Whether the payment for a Stripe invoice was fully refunded.
+ *
+ * A refund leaves the invoice "paid" and the subscription active, so only the
+ * charge shows the money went back. A partial refund keeps access. An invoice
+ * with no charge (covered by credit, or $0) was never refunded.
+ *
+ * @param object|string|null $invoice Stripe Invoice (charge may be an id or expanded), or its id.
+ * @return bool
+ */
+function leaky_paywall_stripe_invoice_refunded( $invoice ) {
+	if ( empty( $invoice ) ) {
+		return false;
+	}
+
+	try {
+		$stripe = leaky_paywall_initialize_stripe_api();
+
+		if ( is_string( $invoice ) ) {
+			$invoice = $stripe->invoices->retrieve( $invoice, array( 'expand' => array( 'charge' ) ), leaky_paywall_get_stripe_connect_params() );
+		}
+
+		$charge = isset( $invoice->charge ) ? $invoice->charge : null;
+
+		if ( is_string( $charge ) && '' !== $charge ) {
+			$charge = $stripe->charges->retrieve( $charge, [], leaky_paywall_get_stripe_connect_params() );
+		}
+	} catch ( \Throwable $th ) {
+		// Can't tell. Treat it as not refunded rather than cut off a reader
+		// who may well have paid.
+		leaky_paywall_log_error( $th->getMessage(), 'lp stripe - could not check invoice refund' );
+		return false;
+	}
+
+	return is_object( $charge ) && ! empty( $charge->refunded );
 }
 
 function leaky_paywall_sync_stripe_subscription( $user ) {
@@ -1705,6 +1747,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				'customer' => $cus->id,
 				'limit'    => '1',
 				'status'   => $status_filter,
+				'expand'   => array( 'data.latest_invoice.charge' ),
 			), leaky_paywall_get_stripe_connect_params() );
 
 			if ( ! empty( $subscriptions->data ) ) {
@@ -1747,6 +1790,7 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				'customer' => $cus->id,
 				'limit'    => '1',
 				'status'   => 'all',
+				'expand'   => array( 'data.latest_invoice.charge' ),
 			), leaky_paywall_get_stripe_connect_params() );
 		}
 
@@ -1755,6 +1799,15 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 		}
 
 		foreach ($subscriptions->data as $subscription) {
+
+			// A refund leaves the subscription active, so this sync would put a
+			// refunded reader back to active / pending_cancel on their next
+			// account page view. The charge.refunded webhook deactivated them;
+			// keep it that way.
+			if ( 'active' === $subscription->status && leaky_paywall_stripe_invoice_refunded( isset( $subscription->latest_invoice ) ? $subscription->latest_invoice : null ) ) {
+				leaky_paywall_set_subscriber_status( $user->ID, 'deactivated', 'stripe_sync' );
+				continue;
+			}
 
 			$current_period_end = $subscription->current_period_end;
 			$plan = isset( $subscription->plan->id ) ? $subscription->plan->id : '';
