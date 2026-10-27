@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.0
+Stable tag: 5.3.1
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,18 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.1 =
+* Improvement: Logged-in subscribers can now switch plans when automatic tax is on. Their existing Stripe subscription is changed and tax is calculated on the new plan.
+* Improvement: Coupons now apply to Stripe subscriptions when automatic tax is on, and the order summary shows the discounted total with tax.
+* Improvement: With a Pro license, extension updates can now be installed from the Plugins page as well as from Leaky Paywall > Extensions.
+* Improvement: The Search Engine Bot Bypass setting now notes that it also applies to Google AI Overviews.
+* Fix: A Stripe subscriber who is refunded now stays deactivated, instead of getting access back the next time they or an admin open their account.
+* Fix: A forever coupon is kept when a subscriber switches plans. Requires Leaky Paywall Coupons 2.4.10.
+* Fix: Text with an apostrophe in an extension's level settings no longer gains a backslash each time the level is saved.
+* Security: A Stripe signup now gets access only once its own subscription is paid.
+* Security: Recurring Stripe levels are always charged the level's own price, so editing the registration form can no longer change the amount billed. Sites using Name Your Price on a recurring level need Name Your Price 1.2.3.
+* Security: The automatic tax step now only updates the Stripe customer of the signup in progress, and an unused Stripe Checkout request has been removed.
 
 = 5.3.0 =
 * New: Restriction Method setting under Leaky Paywall > Settings > Restrictions, with Automatic, JavaScript and Server options. Automatic restricts posts only paid levels can read on the server, so their full text never reaches the page source, and checks metered posts in the browser so the meter keeps working with page caching. New installs start on Automatic. Existing sites keep the method they had.
