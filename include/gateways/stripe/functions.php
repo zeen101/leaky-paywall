@@ -781,16 +781,45 @@ function leaky_paywall_stripe_subscription_is_switchable( $subscription ) {
 }
 
 /**
+ * Whether buying a level switches the reader's existing subscription.
+ *
+ * On by default: a reader who already subscribes and picks another level has
+ * that subscription moved to the new price. A site where one reader holds a
+ * subscription per publication turns it off, and every purchase then starts
+ * a subscription of its own.
+ *
+ * @since 5.3.2
+ *
+ * @param string     $customer_id Stripe Customer id.
+ * @param string|int $level_id    Level being bought.
+ * @return bool
+ */
+function leaky_paywall_stripe_switches_existing_subscription( $customer_id = '', $level_id = '' ) {
+
+	/**
+	 * Filters whether buying a level switches the reader's existing subscription.
+	 *
+	 * @since 5.3.2
+	 *
+	 * @param bool       $switch      True to switch it (default), false to add a new subscription.
+	 * @param string     $customer_id Stripe Customer id.
+	 * @param string|int $level_id    Level being bought.
+	 */
+	return (bool) apply_filters( 'leaky_paywall_stripe_switch_existing_subscription', true, $customer_id, $level_id );
+}
+
+/**
  * The subscription a customer's change of level should switch, if any.
  *
  * @since 5.3.2
  *
- * @param string $customer_id Stripe Customer id.
+ * @param string     $customer_id Stripe Customer id.
+ * @param string|int $level_id    Level being bought.
  * @return object|null Stripe Subscription, or null.
  */
-function leaky_paywall_stripe_find_switchable_subscription( $customer_id ) {
+function leaky_paywall_stripe_find_switchable_subscription( $customer_id, $level_id = '' ) {
 
-	if ( ! $customer_id ) {
+	if ( ! $customer_id || ! leaky_paywall_stripe_switches_existing_subscription( $customer_id, $level_id ) ) {
 		return null;
 	}
 
@@ -1097,6 +1126,12 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 		// for it here; the delinquent one is recorded on it and retired once the
 		// new one is paid (leaky_paywall_stripe_retire_replaced_subscriptions()), so
 		// abandoning the form leaves their existing dunning untouched.
+		//
+		// With switching turned off, each level is a subscription of its own: no
+		// subscription is switched, and only a delinquent one at this same price
+		// counts as replaced. A lapsed subscription to another publication is
+		// left to its own dunning rather than canceled once this one is paid.
+		$switch_existing         = leaky_paywall_stripe_switches_existing_subscription( $customer_id, $level_id );
 		$switchable_subscription = null;
 		$incomplete_subscription = null;
 		$replaced_subscription   = null;
@@ -1111,13 +1146,14 @@ function leaky_paywall_create_stripe_subscription( $cu, $fields ) {
 			}
 
 			if ( leaky_paywall_stripe_subscription_is_delinquent( $customer_subscription ) ) {
-				if ( ! $replaced_subscription ) {
+				$delinquent_price = isset( $customer_subscription->items->data[0]->price->id ) ? $customer_subscription->items->data[0]->price->id : '';
+				if ( ! $replaced_subscription && ( $switch_existing || $delinquent_price === $plan_id ) ) {
 					$replaced_subscription = $customer_subscription;
 				}
 				continue;
 			}
 
-			if ( ! $switchable_subscription ) {
+			if ( $switch_existing && ! $switchable_subscription ) {
 				$switchable_subscription = $customer_subscription;
 			}
 		}
@@ -2762,7 +2798,7 @@ function leaky_paywall_stripe_tax_preview() {
 		// can't happen here, while they are still typing an address: show what
 		// it will charge today, with tax and proration, create nothing, and
 		// leave the switch to step one when they confirm.
-		$switchable = ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) ? leaky_paywall_stripe_find_switchable_subscription( $customer_id ) : null;
+		$switchable = ( isset( $level['recurring'] ) && 'on' === $level['recurring'] ) ? leaky_paywall_stripe_find_switchable_subscription( $customer_id, $level_id ) : null;
 
 		if ( $switchable ) {
 			try {

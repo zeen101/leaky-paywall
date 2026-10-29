@@ -652,7 +652,7 @@ function leaky_paywall_process_user_registration_validation() {
 		// does without automatic tax. Without one the address step runs first and
 		// the reader's confirmation sends the form back here to switch.
 		if ( 'on' === $settings['stripe_automatic_tax'] && 'on' === $settings['stripe_billing_address'] ) {
-			$switchable = $customer_retrieved ? leaky_paywall_stripe_find_switchable_subscription( $cu->id ) : null;
+			$switchable = $customer_retrieved ? leaky_paywall_stripe_find_switchable_subscription( $cu->id, $level_id ) : null;
 
 			if ( ! $switchable || ! leaky_paywall_stripe_customer_has_tax_address( $cu ) ) {
 				$return = array(
