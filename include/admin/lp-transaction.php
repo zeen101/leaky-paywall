@@ -22,6 +22,8 @@ class LP_Transaction_Post_Type
 
 		add_filter('manage_edit-lp_transaction_columns', array($this, 'transaction_columns'));
 		add_action('manage_lp_transaction_posts_custom_column', array($this, 'transaction_custom_columns'), 10, 2);
+		add_filter('list_table_primary_column', array($this, 'primary_column'), 10, 2);
+		add_filter('post_row_actions', array($this, 'row_actions'), 10, 2);
 
 		add_action('restrict_manage_posts', array($this, 'add_filters'), 10, 2);
 		add_action('pre_get_posts', array($this, 'apply_filters'));
@@ -824,6 +826,44 @@ class LP_Transaction_Post_Type
 		}
 
 		return $months;
+	}
+
+	/**
+	 * Make Email the primary column, so row actions and the mobile toggle render.
+	 *
+	 * The list has no title column, and WordPress's fallback picks the first
+	 * column of the unfiltered posts table, which is title again. Without
+	 * this, no row actions (Send Receipt, extensions' actions) appear.
+	 *
+	 * @param string $column    The primary column.
+	 * @param string $screen_id The current screen ID.
+	 * @return string
+	 */
+	public function primary_column($column, $screen_id)
+	{
+		if ('edit-lp_transaction' === $screen_id) {
+			return 'email';
+		}
+
+		return $column;
+	}
+
+	/**
+	 * Remove Quick Edit and Trash from transaction rows. Transactions are
+	 * financial records: their date and status shouldn't be edited inline, and
+	 * deleting one stays available as a bulk action, as with WooCommerce orders.
+	 *
+	 * @param array   $actions Row actions.
+	 * @param WP_Post $post    The post.
+	 * @return array
+	 */
+	public function row_actions($actions, $post)
+	{
+		if ('lp_transaction' === $post->post_type) {
+			unset($actions['inline hide-if-no-js'], $actions['trash']);
+		}
+
+		return $actions;
 	}
 
 	/**
