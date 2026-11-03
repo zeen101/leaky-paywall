@@ -955,7 +955,7 @@ function do_leaky_paywall_register_form($atts)
 			if (0 != $level['price'] && !$one_page_form) {
 			?>
 				<p>
-					<button id="leaky-paywall-registration-next" type="button"><?php esc_html_e('Next', 'leaky-paywall'); ?></button>
+					<button id="leaky-paywall-registration-next" type="button"><?php echo esc_html(leaky_paywall_get_registration_next_text($level)); ?></button>
 				</p>
 			<?php
 			}
