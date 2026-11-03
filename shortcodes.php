@@ -886,7 +886,14 @@ function do_leaky_paywall_register_form($atts)
 
 			<div class="leaky-paywall-account-fields">
 
-				<h3><?php printf(esc_attr__('Account Details', 'leaky-paywall')); ?></h3>
+				<?php
+				// A logged-in reader has no password to set, and with the username
+				// field removed this section is empty. The bare heading above the
+				// Next button looked like the form had stalled.
+				if ( 'off' === $settings['remove_username_field'] || ! is_user_logged_in() ) :
+				?>
+					<h3><?php printf(esc_attr__('Account Details', 'leaky-paywall')); ?></h3>
+				<?php endif; ?>
 
 				<?php
 				if ('off' === $settings['remove_username_field']) {
