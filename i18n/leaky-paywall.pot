@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-04T20:56:09+00:00\n"
+"POT-Creation-Date: 2026-11-04T21:04:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -63,21 +63,21 @@ msgstr ""
 #: class.php:276
 #: functions.php:5276
 #: functions.php:5857
-#: include/admin/dashboard/dashboard.php:347
+#: include/admin/dashboard/dashboard.php:356
 msgid "Settings"
 msgstr ""
 
 #: class.php:278
 #: functions.php:5870
 #: include/admin/dashboard-widgets.php:298
-#: include/admin/dashboard/dashboard.php:349
+#: include/admin/dashboard/dashboard.php:358
 msgid "Subscribers"
 msgstr ""
 
 #: class.php:280
 #: functions.php:5884
 #: include/admin/dashboard-widgets.php:300
-#: include/admin/dashboard/dashboard.php:351
+#: include/admin/dashboard/dashboard.php:360
 #: include/admin/lp-transaction.php:73
 msgid "Transactions"
 msgstr ""
@@ -233,7 +233,7 @@ msgstr ""
 
 #: class.php:850
 #: class.php:921
-#: include/admin/dashboard/dashboard.php:257
+#: include/admin/dashboard/dashboard.php:266
 #: include/admin/extensions-page.php:231
 #: include/admin/extensions-page.php:351
 #: include/admin/license-page.php:135
@@ -636,7 +636,7 @@ msgstr ""
 #: functions.php:3229
 #: functions.php:5484
 #: include/admin/dashboard-widgets.php:201
-#: include/admin/dashboard/dashboard.php:436
+#: include/admin/dashboard/dashboard.php:445
 #: include/admin/lp-transaction.php:572
 #: include/emails/receipt-tags.php:61
 msgid "Free"
@@ -1597,7 +1597,7 @@ msgid "Level %s no longer exists"
 msgstr ""
 
 #: functions.php:5273
-#: include/admin/dashboard/dashboard.php:779
+#: include/admin/dashboard/dashboard.php:800
 #: include/admin/settings/settings.php:1000
 msgid "Upgrade to Pro"
 msgstr ""
@@ -1735,8 +1735,8 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:189
 #: include/admin/dashboard/dashboard.php:113
-#: include/admin/dashboard/dashboard.php:373
-#: include/admin/dashboard/dashboard.php:485
+#: include/admin/dashboard/dashboard.php:382
+#: include/admin/dashboard/dashboard.php:494
 msgid "Revenue"
 msgstr ""
 
@@ -1745,7 +1745,7 @@ msgid "Paywalls"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:197
-#: include/admin/dashboard/dashboard.php:424
+#: include/admin/dashboard/dashboard.php:433
 #: include/admin/lp-transaction.php:570
 msgid "Paid"
 msgstr ""
@@ -1761,17 +1761,17 @@ msgid "Conversions"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:219
-#: include/admin/dashboard/dashboard.php:817
+#: include/admin/dashboard/dashboard.php:838
 msgid "Rate"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:224
-#: include/admin/dashboard/dashboard.php:276
+#: include/admin/dashboard/dashboard.php:285
 msgid "Recent Subscribers"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:249
-#: include/admin/dashboard/dashboard.php:299
+#: include/admin/dashboard/dashboard.php:308
 #: include/admin/lp-transaction.php:359
 #: include/admin/subscribers/subscriber.php:856
 #: include/admin/subscribers/subscriber.php:912
@@ -1779,7 +1779,7 @@ msgid "Date"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:250
-#: include/admin/dashboard/dashboard.php:300
+#: include/admin/dashboard/dashboard.php:309
 #: include/admin/lp-transaction.php:238
 #: include/admin/lp-transaction.php:454
 #: include/admin/onboarding/class-onboarding.php:96
@@ -1792,8 +1792,8 @@ msgid "Email"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:251
-#: include/admin/dashboard/dashboard.php:256
-#: include/admin/dashboard/dashboard.php:301
+#: include/admin/dashboard/dashboard.php:265
+#: include/admin/dashboard/dashboard.php:310
 #: include/admin/lp-transaction.php:252
 #: include/admin/lp-transaction.php:455
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:40
@@ -1803,7 +1803,7 @@ msgid "Level"
 msgstr ""
 
 #: include/admin/dashboard-widgets.php:291
-#: include/admin/dashboard/dashboard.php:341
+#: include/admin/dashboard/dashboard.php:350
 msgid "No subscribers found."
 msgstr ""
 
@@ -1898,116 +1898,124 @@ msgstr ""
 msgid "Conversion Rate"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:173
+#: include/admin/dashboard/dashboard.php:180
 msgid "Top Content — Paid Conversions"
 msgstr ""
 
 #. translators: 1: attributed count, 2: total free signups, 3: unattributed count
-#: include/admin/dashboard/dashboard.php:188
+#: include/admin/dashboard/dashboard.php:195
 #, php-format
 msgid "%1$s of %2$s free signups this period are attributed to content. %3$s were direct or untracked (e.g. arrived via a tagged link or signed up off-article), so they do not appear above."
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:195
+#: include/admin/dashboard/dashboard.php:202
 msgid "Top Content — Free Conversions"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:210
+#: include/admin/dashboard/dashboard.php:219
 msgid "Paywall Displays by Type"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:215
+#: include/admin/dashboard/dashboard.php:224
 #: shortcodes.php:332
 msgid "Type"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:216
-#: include/admin/dashboard/dashboard.php:815
+#: include/admin/dashboard/dashboard.php:225
+#: include/admin/dashboard/dashboard.php:836
 #: include/admin/insights/insights.php:354
 #: include/admin/insights/insights.php:378
 msgid "Displays"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:229
-#: include/admin/dashboard/dashboard.php:847
+#: include/admin/dashboard/dashboard.php:238
+#: include/admin/dashboard/dashboard.php:864
 msgid "No paywall display data for this period."
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:237
+#: include/admin/dashboard/dashboard.php:246
 msgid "Active Subscriptions by Level"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:270
+#: include/admin/dashboard/dashboard.php:279
 msgid "No subscription levels found."
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:379
+#: include/admin/dashboard/dashboard.php:388
 msgid "New Signups"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:630
-#: include/admin/dashboard/dashboard.php:826
+#: include/admin/dashboard/dashboard.php:639
+#: include/admin/dashboard/dashboard.php:847
 msgid "(Untitled)"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:733
+#: include/admin/dashboard/dashboard.php:738
 msgid "No conversion data for this period."
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:753
-msgid "Install the Leaky Paywall Pro plugin to see your top 10 and the subscribers behind each count"
+#: include/admin/dashboard/dashboard.php:764
+msgid "See your top 10, and who converted, with Leaky Paywall Pro"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:760
-msgid "Upgrade to Pro to see your top 10 and the subscribers behind each count"
+#: include/admin/dashboard/dashboard.php:765
+msgid "See your top 10 with Leaky Paywall Pro"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:769
+#. translators: %d: number of rows shown
+#: include/admin/dashboard/dashboard.php:777
+#, php-format
+msgid "Showing your top %d."
+msgid_plural "Showing your top %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#: include/admin/dashboard/dashboard.php:790
 #: include/admin/settings/settings.php:990
 #: include/admin/subscribers/subscriber.php:328
 msgid "Close"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:770
+#: include/admin/dashboard/dashboard.php:791
 #: include/admin/settings/settings.php:991
 msgid "Go Pro. Get everything."
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:771
+#: include/admin/dashboard/dashboard.php:792
 msgid "Full subscriber analytics are just the start. Pro gives you the full platform — every extension, every integration, and personal support from our team."
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:773
+#: include/admin/dashboard/dashboard.php:794
 #: include/admin/settings/settings.php:995
 msgid "50+ extensions: corporate subs, ad-free plans, gift subs, group access, and more"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:774
+#: include/admin/dashboard/dashboard.php:795
 #: include/admin/settings/settings.php:996
 msgid "Subscriber insights: identify free readers ready for a promo, catch subscribers at risk of churn, drill into individual behavior, and more"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:775
+#: include/admin/dashboard/dashboard.php:796
 #: include/admin/settings/settings.php:997
 msgid "CRM and circulation integrations: Mailchimp, HubSpot, Kit, Simplecirc, Omeda, Darwin CX, and more"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:776
+#: include/admin/dashboard/dashboard.php:797
 #: include/admin/settings/settings.php:998
 msgid "1-on-1 onboarding and ongoing support"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:809
+#: include/admin/dashboard/dashboard.php:830
 #: include/admin/insights/insights.php:368
 msgid "Top Content by Paywall Displays"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:814
+#: include/admin/dashboard/dashboard.php:835
 #: include/admin/insights/insights.php:377
 msgid "Content"
 msgstr ""
 
-#: include/admin/dashboard/dashboard.php:816
+#: include/admin/dashboard/dashboard.php:837
 msgid "Conv."
 msgstr ""
 

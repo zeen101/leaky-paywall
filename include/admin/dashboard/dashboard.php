@@ -164,15 +164,22 @@ class Leaky_Paywall_Dashboard {
 			 * @param int $limit Number of items.
 			 */
 			$content_limit    = max( 1, (int) apply_filters( 'leaky_paywall_dashboard_top_content_limit', 3 ) );
-			$show_pro_row     = ! leaky_paywall_pro_plugin_is_active();
-			$top_paid_content = $this->get_top_converting_content( $period, 'paid', $content_limit );
-			$top_free_content = $this->get_top_converting_content( $period, 'free', $content_limit );
+
+			// One extra row is fetched to tell whether there is more to see, so
+			// the Pro prompt only shows on a card that is actually cut short.
+			$show_pro_prompt  = ! leaky_paywall_pro_plugin_is_active();
+			$top_paid_content = $this->get_top_converting_content( $period, 'paid', $content_limit + 1 );
+			$top_free_content = $this->get_top_converting_content( $period, 'free', $content_limit + 1 );
+			$paid_more        = $show_pro_prompt && count( $top_paid_content ) > $content_limit;
+			$free_more        = $show_pro_prompt && count( $top_free_content ) > $content_limit;
+			$top_paid_content = array_slice( $top_paid_content, 0, $content_limit );
+			$top_free_content = array_slice( $top_free_content, 0, $content_limit );
 			?>
 
 			<?php $this->render_top_content_card(
 				__( 'Top Content — Paid Conversions', 'leaky-paywall' ),
 				$top_paid_content,
-				$show_pro_row,
+				$paid_more ? $content_limit : 0,
 				array( 'Content', 'Conversions' ),
 				'',
 				'paid',
@@ -194,7 +201,7 @@ class Leaky_Paywall_Dashboard {
 			$this->render_top_content_card(
 				__( 'Top Content — Free Conversions', 'leaky-paywall' ),
 				$top_free_content,
-				$show_pro_row,
+				$free_more ? $content_limit : 0,
 				array( 'Content', 'Conversions' ),
 				$free_footer,
 				'free',
@@ -204,7 +211,9 @@ class Leaky_Paywall_Dashboard {
 			<!-- Paywall Insights -->
 			<?php
 			$by_nag_type = LP_Nag_Impressions::get_impressions_by_nag_type( $period );
-			$top_posts   = LP_Nag_Impressions::get_top_posts_with_conversions( $period, $content_limit );
+			$top_posts   = (array) LP_Nag_Impressions::get_top_posts_with_conversions( $period, $content_limit + 1 );
+			$posts_more  = $show_pro_prompt && count( $top_posts ) > $content_limit;
+			$top_posts   = array_slice( $top_posts, 0, $content_limit );
 			?>
 			<div class="lp-card">
 				<h3><?php esc_html_e( 'Paywall Displays by Type', 'leaky-paywall' ); ?></h3>
@@ -230,7 +239,7 @@ class Leaky_Paywall_Dashboard {
 				<?php endif; ?>
 			</div>
 
-			<?php $this->render_top_posts_card( $top_posts, $show_pro_row ); ?>
+			<?php $this->render_top_posts_card( $top_posts, $posts_more ? $content_limit : 0 ); ?>
 
 			<!-- Active Subscriptions by Level -->
 			<div class="lp-card">
@@ -688,7 +697,7 @@ class Leaky_Paywall_Dashboard {
 		);
 	}
 
-	private function render_top_content_card( $title, $items, $show_pro_row, $columns, $footer = '', $export_type = '', $period = '' ) {
+	private function render_top_content_card( $title, $items, $showing, $columns, $footer = '', $export_type = '', $period = '' ) {
 		?>
 		<div class="lp-card">
 			<h3><?php echo esc_html( $title ); ?></h3>
@@ -722,13 +731,9 @@ class Leaky_Paywall_Dashboard {
 							</td>
 						</tr>
 						<?php endforeach; ?>
-						<?php if ( $show_pro_row ) : ?>
-						<tr class="lp-pro-unlock-row">
-							<td colspan="2"><?php $this->render_pro_row_link(); ?></td>
-						</tr>
-						<?php endif; ?>
 					</tbody>
 				</table>
+				<?php $this->render_pro_footnote( $showing, true ); ?>
 			<?php else : ?>
 				<p class="lp-no-data"><?php esc_html_e( 'No conversion data for this period.', 'leaky-paywall' ); ?></p>
 			<?php endif; ?>
@@ -741,24 +746,40 @@ class Leaky_Paywall_Dashboard {
 	}
 
 	/**
-	 * The link under a Top Content card when the Pro plugin is not active:
-	 * the upgrade modal without a Pro license, the plugin download with one.
+	 * A quiet line under a Top Content card that has more rows than it shows,
+	 * when the Pro plugin is not active. Links to the plugin download with a
+	 * Pro license, or to the upgrade modal without one.
 	 *
 	 * @since 5.3.3
+	 *
+	 * @param int  $showing          Rows shown; 0 when the card is not cut short.
+	 * @param bool $with_subscribers Whether Pro also shows who converted on this card.
 	 */
-	private function render_pro_row_link() {
-		if ( leaky_paywall_is_pro() ) {
-			?>
-			<a href="<?php echo esc_url( leaky_paywall_pro_plugin_download_url() ); ?>" target="_blank" rel="noopener">
-				<?php esc_html_e( 'Install the Leaky Paywall Pro plugin to see your top 10 and the subscribers behind each count', 'leaky-paywall' ); ?>
-			</a>
-			<?php
+	private function render_pro_footnote( $showing, $with_subscribers ) {
+		if ( ! $showing ) {
 			return;
 		}
+
+		$link_text = $with_subscribers
+			? __( 'See your top 10, and who converted, with Leaky Paywall Pro', 'leaky-paywall' )
+			: __( 'See your top 10 with Leaky Paywall Pro', 'leaky-paywall' );
+
+		if ( leaky_paywall_is_pro() ) {
+			$link = '<a href="' . esc_url( leaky_paywall_pro_plugin_download_url() ) . '" target="_blank" rel="noopener">' . esc_html( $link_text ) . ' &rarr;</a>';
+		} else {
+			$link = '<a href="#" class="lp-dashboard-pro-trigger">' . esc_html( $link_text ) . ' &rarr;</a>';
+		}
 		?>
-		<a href="#" class="lp-dashboard-pro-trigger">
-			<?php esc_html_e( 'Upgrade to Pro to see your top 10 and the subscribers behind each count', 'leaky-paywall' ); ?>
-		</a>
+		<p class="lp-card-footnote lp-pro-footnote">
+			<?php
+			printf(
+				/* translators: %d: number of rows shown */
+				esc_html( _n( 'Showing your top %d.', 'Showing your top %d.', $showing, 'leaky-paywall' ) ),
+				(int) $showing
+			);
+			echo ' ' . wp_kses_post( $link );
+			?>
+		</p>
 		<?php
 	}
 
@@ -803,7 +824,7 @@ class Leaky_Paywall_Dashboard {
 		<?php
 	}
 
-	private function render_top_posts_card( $top_posts, $show_pro_row ) {
+	private function render_top_posts_card( $top_posts, $showing ) {
 		?>
 		<div class="lp-card">
 			<h3><?php esc_html_e( 'Top Content by Paywall Displays', 'leaky-paywall' ); ?></h3>
@@ -836,13 +857,9 @@ class Leaky_Paywall_Dashboard {
 							$i++;
 						endforeach;
 						?>
-						<?php if ( $show_pro_row ) : ?>
-						<tr class="lp-pro-unlock-row">
-							<td colspan="4"><?php $this->render_pro_row_link(); ?></td>
-						</tr>
-						<?php endif; ?>
 					</tbody>
 				</table>
+				<?php $this->render_pro_footnote( $showing, false ); ?>
 			<?php else : ?>
 				<p class="lp-no-data"><?php esc_html_e( 'No paywall display data for this period.', 'leaky-paywall' ); ?></p>
 			<?php endif; ?>
