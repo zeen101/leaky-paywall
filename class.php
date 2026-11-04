@@ -571,7 +571,7 @@ class Leaky_Paywall {
 					'ajaxurl'   => admin_url('admin-ajax.php', 'relative'),
 					'stripe_pk' => leaky_paywall_get_stripe_public_key(),
 					'continue_text' => esc_html__('Processing... Please Wait', 'leaky-paywall'),
-					'next_text' => esc_html__('Next', 'leaky-paywall'),
+					'next_text' => esc_html(leaky_paywall_get_registration_next_text()),
 					'billing_address' => $settings['stripe_billing_address'],
 					'redirect_url' => get_page_link($settings['page_for_profile']),
 					'client_id' => ( 'live' === leaky_paywall_get_current_mode() && ! empty( $settings['connected_account_id'] ) ) ? $settings['connected_account_id'] : '',

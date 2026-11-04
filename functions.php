@@ -5420,6 +5420,26 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 
 	/**
+	 * Label for the button that moves from account setup to payment on the
+	 * two-step registration form.
+	 *
+	 * @param array|null $level Leaky Paywall level being registered for, or null
+	 *                          when the label is needed without a level (the
+	 *                          Stripe script's fallback).
+	 * @return string
+	 */
+	function leaky_paywall_get_registration_next_text($level = null)
+	{
+		/**
+		 * Filter the label of the registration form's Next button.
+		 *
+		 * @param string     $text  Button label. Default "Continue to Payment".
+		 * @param array|null $level Level being registered for, or null.
+		 */
+		return (string) apply_filters('leaky_paywall_registration_next_text', __('Continue to Payment', 'leaky-paywall'), $level);
+	}
+
+	/**
 	 * Get level display price
 	 *
 	 * @param array $level Leaky Paywall level.
