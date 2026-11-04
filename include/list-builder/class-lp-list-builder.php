@@ -187,6 +187,16 @@ class LP_List_Builder
     }
 
     /**
+     * Minimum password length for List Builder signups and password resets.
+     *
+     * @return int
+     */
+    public static function get_min_password_length()
+    {
+        return max( 1, absint( apply_filters( 'lp_list_builder_min_password_length', 4 ) ) );
+    }
+
+    /**
      * REST handler: request an OTP code for the given email.
      *
      * Intentionally returns the same success response regardless of whether
@@ -324,11 +334,14 @@ class LP_List_Builder
             ], 400);
         }
 
-        if (! wp_unslash($password)) {
+        $min_length = self::get_min_password_length();
+
+        if (strlen((string) $password) < $min_length) {
             return new WP_REST_Response([
                 'ok'    => false,
                 'error' => 'weak_password',
-                'message'   => __( 'Password must be at least 4 characters.', 'leaky-paywall' ),
+                /* translators: %d: minimum password length */
+                'message'   => sprintf( __( 'Password must be at least %d characters.', 'leaky-paywall' ), $min_length ),
             ]);
         }
 
@@ -658,7 +671,7 @@ class LP_List_Builder
         $pass_param = $request->get_param('password');
         $password = (string) $pass_param;
 
-        if (empty($email) || !is_email($email) || empty($token) || strlen($password) < 4) {
+        if (empty($email) || !is_email($email) || empty($token) || strlen($password) < self::get_min_password_length()) {
             return new WP_REST_Response(['ok' => false, 'message' => __( 'Invalid request.', 'leaky-paywall' )], 400);
         }
 
@@ -768,7 +781,7 @@ class LP_List_Builder
             <div class="Slider__InputRow">
                 <label><?php esc_html_e( 'Password', 'leaky-paywall' ); ?></label>
                 <div class="TextField Slider__PasswordField">
-                    <input type="password" name="password" required autocomplete="new-password" minlength="4" />
+                    <input type="password" name="password" required autocomplete="new-password" minlength="<?php echo esc_attr( self::get_min_password_length() ); ?>" />
                 </div>
             </div>
 
@@ -856,7 +869,7 @@ class LP_List_Builder
                 <div class="TextField Slider__ResetNewField">
                     <input type="password"
                         name="password"
-                        minlength="4"
+                        minlength="<?php echo esc_attr( self::get_min_password_length() ); ?>"
                         required
                         autocomplete="new-password" />
                 </div>
