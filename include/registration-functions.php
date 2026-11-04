@@ -225,14 +225,46 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 }
 
 /**
+ * Sanitize the fields of a serialized registration form.
+ *
+ * The form arrives as one urlencoded string, so it has to be sanitized after
+ * parse_str() decodes it. Sanitizing the encoded string let percent-encoded
+ * markup through to the Stripe customer and the incomplete-user record.
+ * Passwords are left as entered.
+ *
+ * @param array $fields Parsed form fields.
+ * @return array
+ */
+function leaky_paywall_sanitize_registration_fields( $fields ) {
+
+	$sanitized = array();
+
+	foreach ( (array) $fields as $key => $value ) {
+
+		if ( is_array( $value ) ) {
+			$sanitized[ $key ] = leaky_paywall_sanitize_registration_fields( $value );
+		} elseif ( in_array( $key, array( 'password', 'confirm_password' ), true ) ) {
+			$sanitized[ $key ] = (string) $value;
+		} elseif ( 'email_address' === $key ) {
+			$sanitized[ $key ] = sanitize_email( $value );
+		} else {
+			$sanitized[ $key ] = sanitize_text_field( $value );
+		}
+	}
+
+	return $sanitized;
+}
+
+/**
  * Validate first step of multistep registration form
  *
  * @since  4.0.0
  */
 function leaky_paywall_process_user_registration_validation() {
 
-	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
-	parse_str( $form_data, $fields );
+	$form_data = isset( $_POST['form_data'] ) ? wp_unslash( $_POST['form_data'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each field is sanitized below, after decoding.
+	parse_str( (string) $form_data, $fields );
+	$fields = leaky_paywall_sanitize_registration_fields( $fields );
 
 	// Verified against the registration form's own nonce, which arrives in the
 	// serialized form data. This used to call check_ajax_referer() for a field the
@@ -789,7 +821,7 @@ function leaky_paywall_ajax_report_checkout_error() {
 	}
 
 	// Only used to key the hourly limit. admin-ajax responses aren't page cached.
-	$ip        = (string) filter_var( $_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP ); // phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$ip        = (string) filter_var( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ), FILTER_VALIDATE_IP ); // phpcs:ignore WordPressVIPMinimum.Variables.ServerVariables.UserControlledHeaders, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___SERVER__REMOTE_ADDR__, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$limit_key = 'lp_checkout_error_' . md5( $ip );
 	$reported  = (int) get_transient( $limit_key );
 
@@ -1496,6 +1528,10 @@ function leaky_paywall_create_incomplete_user( $user_data, $customer_data, $fiel
 
 	$incomplete_user = wp_insert_post( $data );
 
+	// The reader's password is needed again only if the account is created
+	// later from a webhook. Keep a hash for that and never the password itself.
+	list( $user_data, $fields ) = leaky_paywall_strip_stored_passwords( $user_data, $fields );
+
 	update_post_meta( $incomplete_user, '_user_data', $user_data );
 	update_post_meta( $incomplete_user, '_customer_data', $customer_data );
 	update_post_meta( $incomplete_user, '_field_data', $fields );
@@ -1990,6 +2026,12 @@ function leaky_paywall_create_subscriber_from_incomplete_user( $email ) {
 	}
 
 	leaky_paywall_cleanup_incomplete_user($user_data['email']);
+
+	// Only a hash of the password was kept, so the welcome email can't repeat it.
+	if ( empty( $subscriber_data['password'] ) ) {
+		$subscriber_data['password'] = leaky_paywall_password_chosen_label();
+	}
+
 	leaky_paywall_email_subscription_status($user_id, 'new', $subscriber_data);
 	leaky_paywall_sync_stripe_subscription($new_user);
 
@@ -2003,6 +2045,7 @@ add_action( 'wp_ajax_nopriv_leaky_paywall_store_nag_location', 'leaky_paywall_st
 add_action( 'wp_ajax_leaky_paywall_store_nag_location', 'leaky_paywall_store_nag_location' );
 
 function leaky_paywall_store_nag_location() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	$post_id = isset( $_REQUEST['post_id'] ) ? absint( $_REQUEST['post_id'] ) : '';
 
@@ -2011,3 +2054,4 @@ function leaky_paywall_store_nag_location() {
 	}
 
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended

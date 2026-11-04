@@ -32,6 +32,7 @@ class Leaky_Paywall_Tools {
 	 * Render the Tools page.
 	 */
 	public function tools_page() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 		$tabs        = $this->get_tabs();
 		$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'import';
@@ -72,6 +73,7 @@ class Leaky_Paywall_Tools {
 
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Render the tab navigation.
@@ -249,8 +251,8 @@ class Leaky_Paywall_Tools {
 							<?php
 							printf(
 								/* translators: %s: documentation URL */
-								__( 'For more details on what Leaky Paywall payment statuses mean, <a target="_blank" href="%s">please read our documentation</a>.', 'leaky-paywall' ),
-								'https://docs.leakypaywall.com/article/70-i-have-an-expired-subscriber-that-has-an-active-status-can-they-get-access'
+								wp_kses_post( __( 'For more details on what Leaky Paywall payment statuses mean, <a target="_blank" href="%s">please read our documentation</a>.', 'leaky-paywall' ) ),
+								esc_url( 'https://docs.leakypaywall.com/article/70-i-have-an-expired-subscriber-that-has-an-active-status-can-they-get-access' )
 							);
 							?>
 						</p>
@@ -331,6 +333,7 @@ class Leaky_Paywall_Tools {
 	 * Render the Debug Log tab.
 	 */
 	public function output_debug_log_tab() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 		global $lp_logs;
 
@@ -426,6 +429,7 @@ class Leaky_Paywall_Tools {
 			}
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 }
 
@@ -455,7 +459,7 @@ function leaky_paywall_tools_handle_debug_log() {
 		// Stream every generation, oldest first, so a rotation does not hide
 		// half the history from the person we asked for the log.
 		foreach ( $lp_logs->get_log_files() as $file ) {
-			readfile( $file );
+			readfile( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- streams LP's own log files to an admin download.
 		}
 
 		die( 'end of lp log' );

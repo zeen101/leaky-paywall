@@ -329,37 +329,19 @@
 	}
 }
 
-/* Pro gated content */
-.lp-pro-blurred-row td {
-	filter: blur(4px);
-	-webkit-user-select: none;
-	user-select: none;
-	pointer-events: none;
+/* Pro prompt under a Top Content card that has more rows than it shows */
+.lp-pro-footnote {
+	margin: 12px 0 0;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.5;
 }
 
-.lp-pro-unlock-row td {
-	text-align: center !important;
-	padding: 12px;
-	background: #faf5f3;
-	border-top: 1px solid #f0e0da;
-}
-
-.lp-pro-unlock-row a {
-	color: #E45637;
+.lp-pro-footnote a {
+	color: #2271b1;
 	text-decoration: none;
-	font-size: 13px;
-	font-weight: 500;
 }
 
-.lp-pro-unlock-row a:hover {
-	color: #c94a2e;
+.lp-pro-footnote a:hover {
 	text-decoration: underline;
-}
-
-.lp-pro-unlock-row .dashicons {
-	font-size: 14px;
-	width: 14px;
-	height: 14px;
-	vertical-align: text-bottom;
-	margin-right: 2px;
 }

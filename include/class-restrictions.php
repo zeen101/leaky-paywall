@@ -126,6 +126,7 @@ class Leaky_Paywall_Restrictions {
 	 * Check javascript restrictions
 	 */
 	public function check_js_restrictions() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$this->is_ajax = true;
 		$this->post_id = isset( $_REQUEST['post_id'] ) ? absint( $_REQUEST['post_id'] ) : '';
 
@@ -143,6 +144,7 @@ class Leaky_Paywall_Restrictions {
 		echo json_encode( $this->get_subscribe_nag() );
 		exit();
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Helper method when restrictions need to be checked manually (like custom fields).
@@ -1117,6 +1119,7 @@ class Leaky_Paywall_Restrictions {
 	 * @since 4.10.3
 	 */
 	public function pdf_access() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$settings       = get_leaky_paywall_settings();
 		$has_pdf_access = apply_filters( 'leaky_paywall_pdf_access', leaky_paywall_user_has_access() );
 
@@ -1137,6 +1140,7 @@ class Leaky_Paywall_Restrictions {
 			wp_die( wp_kses_post( apply_filters( 'leaky_paywall_unauthorized_pdf_download_output', $output ) ), esc_html( $settings['site_name'] ) . ' - Error' );
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Get restriction settings

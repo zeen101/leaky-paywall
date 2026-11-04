@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function lp_get_subscriber_meta( $key, $user = null ) {
 
 	if ( !$user ) {

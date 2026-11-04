@@ -41,7 +41,6 @@ class Leaky_Paywall {
 	 */
 	public function __construct() {
 
-		add_action( 'http_api_curl', array( $this, 'force_ssl_version' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_wp_enqueue_scripts' ) );
 		add_filter('script_loader_tag', array( $this, 'add_type_attribute' ) , 10, 3);
@@ -124,11 +123,13 @@ class Leaky_Paywall {
 	 * Process restrictions for IssueM PDFs
 	 */
 	public function process_pdf_restrictions() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( isset( $_GET['issuem-pdf-download'] ) ) {
 			$restrictions = new Leaky_Paywall_Restrictions();
 			$restrictions->pdf_access();
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Output JSON-LD schema markup for paywalled content
@@ -193,6 +194,7 @@ class Leaky_Paywall {
 	 * @since 4.10.3
 	 */
 	public function process_passwordless_login() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$settings = get_leaky_paywall_settings();
 
 		if ( ! empty( $settings['page_for_login'] ) && is_page( $settings['page_for_login'] ) ) {
@@ -227,6 +229,7 @@ class Leaky_Paywall {
 			}
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Restrict a PDF attachment url
@@ -322,7 +325,7 @@ class Leaky_Paywall {
 		}
 
 		if ( 'leaky-paywall_page_leaky-paywall-tools' === $hook_suffix ) {
-			wp_enqueue_style( 'jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
+			wp_enqueue_style( 'jquery-ui-css', LEAKY_PAYWALL_URL . 'css/jquery-ui-1.10.4-smoothness/jquery-ui.css', array(), '1.10.4' );
 		}
 
 		if ( 'toplevel_page_issuem-leaky-paywall' === $hook_suffix ) {
@@ -416,9 +419,12 @@ class Leaky_Paywall {
 	public function add_type_attribute( $tag, $handle, $src )
 	{
 
-		// Insights script gets the type="module" treatment.
+		// Insights script gets the type="module" treatment. Mark WordPress' own
+		// tag rather than printing a new one, so inline scripts attached to the
+		// handle are left as they are.
 		if ( 'leaky_paywall_insights' === $handle ) {
-			return '<script type="module" src="' . esc_url( $src ) . '"></script>';
+			$tag = preg_replace( '/(<script\b[^>]*?)\s+type=([\'"])[^\'"]*\2(?=[^>]*\ssrc=)/', '$1', $tag );
+			return preg_replace( '/<script\b(?=[^>]*\ssrc=)/', '<script type="module"', $tag, 1 );
 		}
 
 		// Let publishers inject extra attributes (e.g., data-cookieconsent="ignore"
@@ -662,7 +668,7 @@ class Leaky_Paywall {
 							'level_id'        => isset( $_POST['leaky-paywall-subscriber-level-id'] ) ? sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-level-id'] ) ) : '',
 							'subscriber_id'   => $subscriber_id,
 							'price'           => isset( $_POST['leaky-paywall-subscriber-price'] ) ? sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-price'] ) ) : '',
-							'description'     => __( 'Manual Addition', 'issuem-leaky-paywall' ),
+							'description'     => __( 'Manual Addition', 'leaky-paywall' ),
 							'expires'         => $expires,
 							'payment_gateway' => $payment_gateway,
 							'payment_status'  => isset( $_POST['leaky-paywall-subscriber-status'] ) ? sanitize_text_field( wp_unslash( $_POST['leaky-paywall-subscriber-status'] ) ) : '',
@@ -954,7 +960,7 @@ class Leaky_Paywall {
 					<!-- Now we can render the completed list table -->
 					<div class="tablenav top">
 						<?php $subscriber_table->user_views(); ?>
-						<?php $subscriber_table->search_box( __( 'Search Subscribers' ), 'leaky-paywall' ); ?>
+						<?php $subscriber_table->search_box( __( 'Search Subscribers', 'leaky-paywall' ), 'leaky-paywall' ); ?>
 					</div>
 					<?php $subscriber_table->display(); ?>
 				</form>
@@ -1143,37 +1149,6 @@ class Leaky_Paywall {
 	public function ajax_add_subscriber() {
 		$admin_subscriber = new Leaky_Paywall_Admin_Subscriber();
 		$admin_subscriber->ajax_add_subscriber();
-	}
-
-	/**
-	 * Force SSL version to TLS1.2 when using cURL
-	 *
-	 * Thanks roykho (WooCommerce Commit)
-	 * Thanks olivierbellone (Stripe Engineer)
-	 *
-	 * @param resource $curl the handle.
-	 * @return null
-	 */
-	public function force_ssl_version( $curl ) {
-		if ( ! $curl ) {
-			return;
-		}
-
-		if ( OPENSSL_VERSION_NUMBER >= 0x1000100f ) {
-			if ( ! defined( 'CURL_SSLVERSION_TLSV1_2' ) ) {
-				// Note the value 6 comes from its position in the enum that
-				// defines it in cURL's source code.
-				define( 'CURL_SSLVERSION_TLSV1_2', 6 ); // constant not defined in PHP < 5.5.
-			}
-
-			curl_setopt( $curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSV1_2 );
-		} else {
-			if ( ! defined( 'CURL_SSLVERSION_TLSV1' ) ) {
-				define( 'CURL_SSLVERSION_TLSV1', 1 ); // constant not defined in PHP < 5.5.
-			}
-
-			curl_setopt( $curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSV1 );
-		}
 	}
 
 	/**

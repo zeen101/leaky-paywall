@@ -6,17 +6,21 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /*
 Plugin Name: Leaky Paywall
 Plugin URI: https://leakypaywall.com/
 Description: The first and most flexible metered paywall for WordPress. Sell subscriptions without sacrificing search and social visibility.
 Author: Leaky Paywall
-Version: 5.3.1
+Version: 5.3.3
 Author URI: https://leakypaywall.com/
 Tags: paywall, subscriptions, metered, membership, pay wall, content monetization, metered access, metered pay wall, paid content
 Text Domain: leaky-paywall
 Domain Path: /i18n
-Requires at least: 5.6
+Requires at least: 5.7
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -29,7 +33,7 @@ if ( ! defined( 'ZEEN101_STORE_URL' ) ) {
 
 define( 'LEAKY_PAYWALL_NAME', 'Leaky Paywall for WordPress' );
 define( 'LEAKY_PAYWALL_SLUG', 'leaky-paywall' );
-define( 'LEAKY_PAYWALL_VERSION', '5.3.1' );
+define( 'LEAKY_PAYWALL_VERSION', '5.3.3' );
 define( 'LEAKY_PAYWALL_DB_VERSION', '1.0.5' );
 define( 'LEAKY_PAYWALL_URL', plugin_dir_url( __FILE__ ) );
 define( 'LEAKY_PAYWALL_PATH', plugin_dir_path( __FILE__ ) );
@@ -125,7 +129,6 @@ function leaky_paywall_plugins_loaded() {
 		require_once LEAKY_PAYWALL_PATH . 'include/pro-license-migration.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/license-page.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/extensions-page.php';
-		require_once LEAKY_PAYWALL_PATH . 'include/pro-updates.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/pro-prompts.php';
 		require_once LEAKY_PAYWALL_PATH . 'include/admin/config-notices.php';
 
@@ -140,6 +143,7 @@ function leaky_paywall_plugins_loaded() {
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-logging.php';
 		include LEAKY_PAYWALL_PATH . 'include/class-lp-nag-impressions.php';
 		include LEAKY_PAYWALL_PATH . 'include/incomplete-user-cleanup.php';
+		include LEAKY_PAYWALL_PATH . 'include/password-scrub.php';
 
 
 		// gateways.

@@ -1,9 +1,9 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
-Requires at least: 5.6
+Requires at least: 5.7
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.1
+Stable tag: 5.3.3
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,19 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.3 =
+* Security: PayPal payment notifications are now verified with PayPal before they are acted on.
+* Security: Improved how account details entered at checkout are stored while a payment completes.
+* Security: General security hardening across the admin screens, settings, registration and payment gateways.
+* Improvement: One-click extension installs and updates, and the Pro conversion reports (top 10 content, the subscribers behind each conversion, and their CSV download), now come from the new Leaky Paywall Pro plugin. Pro customers can download it from their account. Leaky Paywall shows your top 3 content items.
+* Improvement: The date picker on the Tools page now loads its styles from the plugin instead of from Google's servers.
+* Fix: A subscriber created without a password now gets the password they chose at checkout, or a random one they can reset.
+* Fix: Leaky Paywall no longer changes the TLS setting for every outgoing request your site makes.
+* Requires WordPress 5.7 or later.
+
+= 5.3.2 =
+* Security: Fixed a stored cross-site scripting issue in the registration form (CVE-2026-104336). Names and other registration fields are now sanitized before they are saved or sent to Stripe, and the Incomplete Users screen escapes the details it displays. Thanks to 0xabdoulaye for responsibly disclosing this through Wordfence.
 
 = 5.3.1 =
 * Improvement: Logged-in subscribers can now switch plans when automatic tax is on. Their existing Stripe subscription is changed and tax is calculated on the new plan.

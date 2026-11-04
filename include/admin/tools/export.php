@@ -17,7 +17,6 @@ class Leaky_Paywall_Export {
 	public function __construct() {
 		add_action( 'wp_ajax_leaky_paywall_reporting_tool_process', array( $this, 'process_requests' ) );
 		add_action( 'admin_post_leaky_paywall_download_export', array( $this, 'download_export' ) );
-		add_action( 'admin_post_leaky_paywall_download_attributed', array( $this, 'download_attributed' ) );
 	}
 
 	/**
@@ -40,7 +39,7 @@ class Leaky_Paywall_Export {
 			return;
 		}
 
-		$step = sanitize_text_field( $_POST['step'] );
+		$step = isset( $_POST['step'] ) ? sanitize_text_field( wp_unslash( $_POST['step'] ) ) : '';
 
 		if ( 'done' === $step ) {
 			wp_send_json( array( 'step' => 'done' ) );
@@ -95,99 +94,6 @@ class Leaky_Paywall_Export {
 
 			wp_send_json( $response );
 		}
-	}
-
-	/**
-	 * Stream the subscribers attributed to one article straight to the browser.
-	 *
-	 * The batched Tools > Export exists because a whole-site export can run to
-	 * hundreds of thousands of rows. A single article's conversions are bounded,
-	 * so this drill-through download streams in chunks instead: the publisher
-	 * clicks Download on the filtered Subscribers screen and gets a file, with
-	 * no intermediate screen and nothing written to disk.
-	 *
-	 * @since 5.2.0
-	 *
-	 * @return void
-	 */
-	public function download_attributed() {
-
-		if ( ! current_user_can( apply_filters( 'manage_leaky_paywall_settings', 'manage_options' ) ) ) {
-			wp_die( esc_html__( 'You do not have permission to download subscriber exports.', 'leaky-paywall' ), '', array( 'response' => 403 ) );
-		}
-
-		check_admin_referer( 'leaky_paywall_download_attributed' );
-
-		if ( ! leaky_paywall_is_pro() ) {
-			wp_die( esc_html__( 'Exporting the subscribers behind a conversion count is a Pro feature.', 'leaky-paywall' ), '', array( 'response' => 403 ) );
-		}
-
-		$post_id = isset( $_GET['filter-article'] ) ? absint( $_GET['filter-article'] ) : 0;
-		$type    = ( isset( $_GET['conversion_type'] ) && 'paid' === $_GET['conversion_type'] ) ? 'paid' : 'free';
-		$period  = isset( $_GET['nag_period'] ) ? sanitize_text_field( wp_unslash( $_GET['nag_period'] ) ) : '';
-
-		$user_ids = leaky_paywall_get_attributed_subscriber_ids( $post_id, $type, $period );
-
-		if ( empty( $user_ids ) ) {
-			wp_die( esc_html__( 'There are no subscribers to export for that article.', 'leaky-paywall' ), '', array( 'response' => 404 ) );
-		}
-
-		$slug     = sanitize_title( get_the_title( $post_id ) );
-		$filename = 'leaky-paywall-' . $type . '-conversions-' . ( $slug ? $slug . '-' : '' ) . gmdate( 'Y-m-d' ) . '.csv';
-
-		// Compression and stray buffers corrupt a streamed file.
-		if ( function_exists( 'apache_setenv' ) ) {
-			@apache_setenv( 'no-gzip', '1' ); // phpcs:ignore
-		}
-
-		@ini_set( 'zlib.output_compression', 'Off' ); // phpcs:ignore
-
-		while ( ob_get_level() > 0 ) {
-			ob_end_clean();
-		}
-
-		nocache_headers();
-
-		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-
-		$out            = fopen( 'php://output', 'w' ); // phpcs:ignore
-		$wrote_header   = false;
-
-		// Chunked so a heavily converting article never loads every subscriber
-		// and all their meta at once.
-		foreach ( array_chunk( $user_ids, 200 ) as $chunk ) {
-
-			$users = get_users(
-				array(
-					'include' => $chunk,
-					'number'  => count( $chunk ),
-					'orderby' => 'ID',
-				)
-			);
-
-			if ( empty( $users ) ) {
-				continue;
-			}
-
-			$rows = self::build_user_rows( $users );
-
-			foreach ( $rows as $row ) {
-
-				if ( ! $wrote_header ) {
-					fputcsv( $out, array_keys( $row ) ); // phpcs:ignore
-					$wrote_header = true;
-				}
-
-				fputcsv( $out, $row ); // phpcs:ignore
-			}
-
-			flush();
-		}
-
-		fclose( $out ); // phpcs:ignore
-
-		exit;
 	}
 
 	/**
@@ -387,13 +293,13 @@ class Leaky_Paywall_Export {
 		header( 'Content-Disposition: attachment; filename="leaky-paywall-subscribers-' . gmdate( 'Y-m-d' ) . '.csv"' );
 		header( 'Content-Length: ' . $size );
 
-		$sent = readfile( $file );
+		$sent = readfile( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- streams the finished export to the browser without loading it into memory.
 
 		// Only discard it once the whole file went out. A truncated stream
 		// leaves the export in place so the admin can retry without re-running
 		// the query.
 		if ( $sent === $size ) {
-			@unlink( $file );
+			wp_delete_file( $file );
 			self::delete_token();
 		}
 
@@ -412,7 +318,7 @@ class Leaky_Paywall_Export {
 		self::get_export_dir();
 
 		$filename = self::get_export_path( $token );
-		$f        = fopen( $filename, 1 == $step ? 'w' : 'a' );
+		$f        = fopen( $filename, 1 == $step ? 'w' : 'a' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- appends each export batch with fputcsv(); WP_Filesystem has no append.
 
 		if ( ! $f ) {
 			wp_send_json( array( 'error' => __( 'The export file could not be written. Please check that your uploads directory is writable.', 'leaky-paywall' ) ) );
@@ -435,7 +341,7 @@ class Leaky_Paywall_Export {
 			fputcsv( $f, $row );
 		}
 
-		fclose( $f );
+		fclose( $f ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- see fopen above.
 
 		wp_send_json(
 			array(
@@ -609,7 +515,7 @@ function leaky_paywall_delete_export_files() {
 	}
 
 	foreach ( $files as $file ) {
-		if ( @unlink( $file ) ) {
+		if ( leaky_paywall_delete_file( $file ) ) {
 			++$deleted;
 		}
 	}
@@ -642,7 +548,7 @@ function leaky_paywall_cleanup_subscriber_exports() {
 			continue;
 		}
 
-		if ( @unlink( $file ) ) {
+		if ( leaky_paywall_delete_file( $file ) ) {
 			++$deleted;
 		}
 	}

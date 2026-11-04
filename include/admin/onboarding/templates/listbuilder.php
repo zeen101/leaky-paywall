@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div id="leaky-paywall-onboarding--listbuilder" class="leaky-paywall-onboarding--step">
 	<form method="post" action="<?php echo esc_url(admin_url('admin.php?page=leaky-paywall-setup&step=listbuilder')); ?>">
 		<?php wp_nonce_field('leaky_paywall_onboarding_listbuilder', 'leaky_paywall_onboarding_listbuilder'); ?>

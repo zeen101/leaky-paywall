@@ -18,6 +18,7 @@ class LP_Email_New_Subscriber extends LP_Email {
 		$this->description     = __( 'Sent to the subscriber after they sign up.', 'leaky-paywall' );
 		$this->recipient_type  = 'subscriber';
 		$this->default_enabled = 'yes';
+		/* translators: %sitename% is an email tag replaced with the site name. Keep it as is. */
 		$this->default_subject = __( 'Welcome to %sitename%', 'leaky-paywall' );
 		$this->default_body    = $this->get_default_body();
 		$this->template_tags   = array( '%blogname%', '%sitename%', '%username%', '%useremail%', '%password%', '%firstname%', '%lastname%', '%displayname%' );

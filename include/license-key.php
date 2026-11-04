@@ -6,6 +6,10 @@
  * @since 4.4.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! class_exists( 'Leaky_Paywall_License_Key' ) ) {
 	/**
 	 * This class registers the Leaky Paywall license key activate/deactive functionality

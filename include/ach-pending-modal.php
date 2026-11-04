@@ -22,6 +22,7 @@ add_action( 'wp_footer', 'leaky_paywall_render_ach_pending_modal' );
  * Decide whether to render the ACH-pending modal and emit it.
  */
 function leaky_paywall_render_ach_pending_modal() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	if ( empty( $_GET['lp_txn_id'] ) ) {
 		return;
@@ -63,6 +64,7 @@ function leaky_paywall_render_ach_pending_modal() {
 
 	leaky_paywall_print_ach_pending_modal_markup();
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 /**
  * Retrieve the PaymentIntent's payment_method type from Stripe and cache it on

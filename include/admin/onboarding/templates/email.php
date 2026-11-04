@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $settings        = get_leaky_paywall_settings();
 $default_subject = $settings['new_email_subject'];
 $default_body    = $settings['new_email_body'];

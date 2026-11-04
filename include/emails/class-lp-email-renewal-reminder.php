@@ -54,8 +54,9 @@ class LP_Email_Renewal_Reminder extends LP_Email {
 	 * @return array
 	 */
 	protected function save_extra_settings( $settings ) {
-		$settings['days_before'] = isset( $_POST[ $this->id . '_days_before' ] )
-			? absint( $_POST[ $this->id . '_days_before' ] )
+		// Called from process_admin_options(), inside the nonce-verified settings save.
+		$settings['days_before'] = isset( $_POST[ $this->id . '_days_before' ] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			? absint( wp_unslash( $_POST[ $this->id . '_days_before' ] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			: '7';
 
 		return $settings;

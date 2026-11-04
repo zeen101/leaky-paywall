@@ -7,6 +7,10 @@
  * @package Leaky Paywall
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
@@ -30,6 +34,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 * Prepare items for table
 	 */
 	public function prepare_items() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		global $wpdb;
 
 		/**
@@ -166,12 +171,13 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			)
 		);
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * No items text
 	 */
 	public function no_items() {
-		esc_attr_e( 'No Leaky Paywall subscribers found.' );
+		esc_attr_e( 'No Leaky Paywall subscribers found.', 'leaky-paywall' );
 	}
 
 	/**
@@ -213,18 +219,20 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 * Select for user type
 	 */
 	public function user_views() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$user_type = ! empty( $_GET['user-type'] ) ? sanitize_text_field( wp_unslash( $_GET['user-type'] ) ) : 'lpsubs';
 
 		echo '<div class="alignleft actions">';
-		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_html__( 'Select User Type' ) . '</label>';
+		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_html__( 'Select User Type', 'leaky-paywall' ) . '</label>';
 		echo '<select name="user-type" id="user-type-selector">';
-		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_html__( 'Leaky Paywall Subscribers' ) . '</option>';
-		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_html__( 'All WordPress Users' ) . '</option>';
+		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_html__( 'Leaky Paywall Subscribers', 'leaky-paywall' ) . '</option>';
+		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_html__( 'All WordPress Users', 'leaky-paywall' ) . '</option>';
 		echo '</select>';
 
-		submit_button( __( 'Apply' ), 'secondary', false, false );
+		submit_button( __( 'Apply', 'leaky-paywall' ), 'secondary', false, false );
 		echo '</div>';
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Display subscriber table navigation
@@ -232,6 +240,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 * @param string $which The location of the nav.
 	 */
 	public function extra_tablenav( $which ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( 'top' !== $which ) {
 			return;
 		}
@@ -290,11 +299,13 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Display rows in subscriber table
 	 */
 	public function display_rows() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$settings = get_leaky_paywall_settings();
 		$mode     = leaky_paywall_get_current_mode();
 		$site     = leaky_paywall_get_current_site();
@@ -373,7 +384,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							$subscriber_id = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_subscriber_id' . $site, true );
 
 							echo '<td class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">';
-							echo '<strong><a href="' . $edit_link . '">' . esc_html( $user->user_email ) . '</a></strong>';
+							echo '<strong><a href="' . esc_url( $edit_link ) . '">' . esc_html( $user->user_email ) . '</a></strong>';
 
 							// Row actions.
 							$actions = array();
@@ -396,7 +407,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 							foreach ( $actions as $action => $link ) {
 								$action_links[] = '<span class="' . esc_attr( $action ) . '">' . $link . '</span>';
 							}
-							echo implode( ' | ', $action_links );
+							echo wp_kses_post( implode( ' | ', $action_links ) );
 							echo '</div>';
 
 							echo '</td>';
@@ -555,6 +566,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 			<?php
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 
 	/**
@@ -566,6 +578,7 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 	 * @param string $input_id ID attribute value for the search input field.
 	 */
 	public function search_box( $text, $input_id ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( empty( $_REQUEST['s'] ) && ! $this->has_items() ) {
 			return;
 		}
@@ -596,4 +609,5 @@ class Leaky_Paywall_Subscriber_List_Table extends WP_List_Table {
 		</p>
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 }

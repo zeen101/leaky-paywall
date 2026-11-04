@@ -2,9 +2,14 @@
 /**
  * Leaky Paywall > Extensions admin page.
  *
- * Renders the extension catalog fetched from leakypaywall.com and provides
- * one-click install / activate / update for Pro subscribers. Free installs
- * see the full catalog with Get Pro CTAs.
+ * Renders the extension catalog fetched from leakypaywall.com and activates
+ * installed extensions. Free installs see the full catalog with Get Pro CTAs.
+ *
+ * Core never downloads or installs extensions: WordPress.org-hosted plugins
+ * may not install software from another server. One-click install and update
+ * come from the Leaky Paywall Pro plugin, through the
+ * `leaky_paywall_extension_card_button` filter and the
+ * `leaky_paywall_extensions_page_after` action.
  *
  * @package Leaky Paywall
  * @since 5.2.0
@@ -21,7 +26,6 @@ class Leaky_Paywall_Extensions_Page {
 	const UPGRADE_URL       = 'https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=plugin&utm_medium=extensions_page&utm_content=card&utm_campaign=upgrade';
 
 	public function __construct() {
-		add_action( 'wp_ajax_leaky_paywall_install_extension', array( $this, 'ajax_install' ) );
 		add_action( 'wp_ajax_leaky_paywall_activate_extension', array( $this, 'ajax_activate' ) );
 	}
 
@@ -69,6 +73,13 @@ class Leaky_Paywall_Extensions_Page {
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=leaky-paywall-license' ) ); ?>"><?php esc_html_e( 'Add your license →', 'leaky-paywall' ); ?></a>
 					</p>
 				</div>
+			<?php elseif ( ! leaky_paywall_pro_plugin_is_active() ) : ?>
+				<div class="notice notice-info inline">
+					<p>
+						<?php esc_html_e( 'Install the Leaky Paywall Pro plugin to install and update these extensions with one click.', 'leaky-paywall' ); ?>
+						<a href="<?php echo esc_url( leaky_paywall_pro_plugin_download_url() ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Download it from your account →', 'leaky-paywall' ); ?></a>
+					</p>
+				</div>
 			<?php endif; ?>
 
 			<?php if ( empty( $catalog ) ) : ?>
@@ -98,6 +109,16 @@ class Leaky_Paywall_Extensions_Page {
 
 		<?php $this->render_inline_assets(); ?>
 		<?php
+
+		/**
+		 * Fires after the Extensions page renders. The Leaky Paywall Pro plugin
+		 * prints its install and update script here.
+		 *
+		 * @since 5.3.3
+		 *
+		 * @param array $catalog The extension catalog.
+		 */
+		do_action( 'leaky_paywall_extensions_page_after', $catalog );
 	}
 
 	/**
@@ -173,7 +194,22 @@ class Leaky_Paywall_Extensions_Page {
 
 			<div class="lp-ext-card__footer">
 				<span class="lp-ext-msg"></span>
-				<?php echo $this->render_button( $state, $slug, $can_install ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within render_button. ?>
+				<?php
+				/**
+				 * Filters an extension card's action button. The Leaky Paywall Pro
+				 * plugin uses it to add one-click install and update.
+				 *
+				 * @since 5.3.3
+				 *
+				 * @param string $button     Button HTML.
+				 * @param string $state      available, update, installed_inactive or active.
+				 * @param string $slug       Extension slug.
+				 * @param array  $ext        Catalog entry.
+				 * @param bool   $pro_active Whether a valid Pro license is active.
+				 */
+				$button = apply_filters( 'leaky_paywall_extension_card_button', $this->render_button( $state, $slug, $can_install ), $state, $slug, $ext, $pro_active );
+				echo wp_kses_post( $button );
+				?>
 			</div>
 
 			<?php if ( $learn_more ) : ?>
@@ -194,83 +230,13 @@ class Leaky_Paywall_Extensions_Page {
 			case 'active':
 				return '<span class="button button-disabled" disabled>' . esc_html__( 'Active', 'leaky-paywall' ) . '</span>';
 			case 'update':
-				return '<button type="button" class="button button-primary lp-ext-action" data-action="install" data-slug="' . esc_attr( $slug ) . '">' . esc_html__( 'Update', 'leaky-paywall' ) . '</button>';
+				return '<a href="' . esc_url( leaky_paywall_pro_plugin_download_url() ) . '" target="_blank" rel="noopener" class="button button-primary">' . esc_html__( 'Download update', 'leaky-paywall' ) . '</a>';
 			case 'installed_inactive':
 				return '<button type="button" class="button lp-ext-action" data-action="activate" data-slug="' . esc_attr( $slug ) . '">' . esc_html__( 'Activate', 'leaky-paywall' ) . '</button>';
 			case 'available':
 			default:
-				return '<button type="button" class="button button-primary lp-ext-action" data-action="install" data-slug="' . esc_attr( $slug ) . '">' . esc_html__( 'Install', 'leaky-paywall' ) . '</button>';
+				return '<a href="' . esc_url( leaky_paywall_pro_plugin_download_url() ) . '" target="_blank" rel="noopener" class="button button-primary">' . esc_html__( 'Download', 'leaky-paywall' ) . '</a>';
 		}
-	}
-
-	/**
-	 * AJAX: install (or update) an extension by slug.
-	 */
-	public function ajax_install() {
-		check_ajax_referer( 'leaky_paywall_extensions', 'nonce' );
-
-		if ( ! current_user_can( 'install_plugins' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to install plugins.', 'leaky-paywall' ) ) );
-		}
-
-		$slug = isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
-		if ( '' === $slug ) {
-			wp_send_json_error( array( 'message' => __( 'Missing extension.', 'leaky-paywall' ) ) );
-		}
-
-		// Authoritative requires_pro check from the catalog — don't trust the client.
-		$entry = $this->get_catalog_entry( $slug );
-		if ( ! $entry ) {
-			wp_send_json_error( array( 'message' => __( 'Unknown extension.', 'leaky-paywall' ) ) );
-		}
-
-		if ( ! empty( $entry['requires_pro'] ) && ! leaky_paywall_pro_is_active() ) {
-			wp_send_json_error( array( 'message' => __( 'A valid Leaky Paywall Pro license is required to install this extension.', 'leaky-paywall' ) ) );
-		}
-
-		$tmp = Leaky_Paywall_Store_Client::download_to_temp( leaky_paywall_get_pro_license_key(), $slug );
-		if ( is_wp_error( $tmp ) ) {
-			wp_send_json_error( array( 'message' => $tmp->get_error_message() ) );
-		}
-
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		require_once ABSPATH . 'wp-admin/includes/misc.php';
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-		$skin     = new Automatic_Upgrader_Skin();
-		$upgrader = new Plugin_Upgrader( $skin );
-
-		// overwrite_package allows "Update" to replace the existing directory.
-		$result = $upgrader->install( $tmp, array( 'overwrite_package' => true ) );
-
-		@unlink( $tmp );
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
-		}
-
-		if ( true !== $result ) {
-			wp_send_json_error( array(
-				'message' => __( 'The extension could not be installed.', 'leaky-paywall' ),
-				'log'     => $skin->get_upgrade_messages(),
-			) );
-		}
-
-		$plugin_file = $this->get_plugin_file_by_slug( $slug );
-
-		// When the publisher clicks Update on an already-active extension,
-		// Plugin_Upgrader::install() with overwrite_package replaces the files
-		// but leaves active_plugins untouched, so the extension stays active.
-		// Report that back so the UI can preserve the active state instead of
-		// dropping back to an Activate button.
-		$still_active = $plugin_file && is_plugin_active( $plugin_file );
-
-		wp_send_json_success( array(
-			'message'     => __( 'Installed.', 'leaky-paywall' ),
-			'plugin_file' => $plugin_file,
-			'state'       => $still_active ? 'active' : 'installed_inactive',
-		) );
 	}
 
 	/**
@@ -307,7 +273,7 @@ class Leaky_Paywall_Extensions_Page {
 		) );
 	}
 
-	private function get_catalog_entry( $slug ) {
+	public function get_catalog_entry( $slug ) {
 		foreach ( $this->get_catalog() as $ext ) {
 			if ( isset( $ext['slug'] ) && sanitize_title( $ext['slug'] ) === $slug ) {
 				return $ext;
@@ -316,7 +282,7 @@ class Leaky_Paywall_Extensions_Page {
 		return null;
 	}
 
-	private function get_plugin_file_by_slug( $slug ) {
+	public function get_plugin_file_by_slug( $slug ) {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -373,40 +339,7 @@ class Leaky_Paywall_Extensions_Page {
 
 				btn.setAttribute( 'disabled', 'disabled' );
 
-				if ( 'install' === action ) {
-					setMsg( card, <?php echo wp_json_encode( __( 'Installing…', 'leaky-paywall' ) ); ?> );
-					post( 'leaky_paywall_install_extension', slug, function( json ) {
-						if ( ! json.success ) {
-							setMsg( card, ( json.data && json.data.message ) || 'Error' );
-							btn.removeAttribute( 'disabled' );
-							return;
-						}
-
-						setMsg( card, '' );
-						var returnedState = json.data && json.data.state;
-
-						if ( 'active' === returnedState ) {
-							// Updating an already-active extension — files
-							// were replaced but the plugin is still active.
-							// Swap to the disabled "Active" badge instead of
-							// dropping back to an Activate button.
-							var wrap  = btn.parentNode;
-							var badge = document.createElement( 'span' );
-							badge.className   = 'button button-disabled';
-							badge.textContent = <?php echo wp_json_encode( __( 'Active', 'leaky-paywall' ) ); ?>;
-							btn.remove();
-							wrap.appendChild( badge );
-							card.setAttribute( 'data-state', 'active' );
-						} else {
-							// Fresh install — show an Activate button.
-							btn.removeAttribute( 'disabled' );
-							btn.setAttribute( 'data-action', 'activate' );
-							btn.classList.remove( 'button-primary' );
-							btn.textContent = <?php echo wp_json_encode( __( 'Activate', 'leaky-paywall' ) ); ?>;
-							card.setAttribute( 'data-state', 'installed_inactive' );
-						}
-					} );
-				} else if ( 'activate' === action ) {
+				if ( 'activate' === action ) {
 					setMsg( card, <?php echo wp_json_encode( __( 'Activating…', 'leaky-paywall' ) ); ?> );
 					post( 'leaky_paywall_activate_extension', slug, function( json ) {
 						if ( json.success ) {

@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! function_exists( 'leaky_paywall_errors' ) ) {
 	/**
 	 * Stores error messages

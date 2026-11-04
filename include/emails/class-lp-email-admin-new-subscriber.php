@@ -168,7 +168,7 @@ class LP_Email_Admin_New_Subscriber extends LP_Email {
 		}
 
 		if ( ! empty( $_COOKIE['lp_utm'] ) ) {
-			$utm = json_decode( stripslashes( $_COOKIE['lp_utm'] ), true );
+			$utm = json_decode( wp_unslash( $_COOKIE['lp_utm'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded JSON; each UTM value is sanitized where it is used.
 			if ( is_array( $utm ) ) {
 				$utm_labels = array(
 					'utm_source'   => 'UTM source',

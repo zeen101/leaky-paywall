@@ -36,7 +36,7 @@ class Leaky_Paywall_Import {
 			return;
 		}
 
-		$file_id = absint( $_POST['leaky_paywall_bulk_import_user_csv_file_id'] );
+		$file_id = isset( $_POST['leaky_paywall_bulk_import_user_csv_file_id'] ) ? absint( wp_unslash( $_POST['leaky_paywall_bulk_import_user_csv_file_id'] ) ) : 0;
 
 		if ( ! $file_id ) {
 			echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'No file uploaded for bulk upload.', 'leaky-paywall' ) . '</strong></p></div>';

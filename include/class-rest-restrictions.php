@@ -9,6 +9,10 @@
  * @since 4.23.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * REST API Restrictions Class
  */
@@ -141,7 +145,7 @@ class Leaky_Paywall_REST_Restrictions {
 			return $result;
 		}
 
-		$route = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+		$route = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		if ( false === strpos( $route, self::NAMESPACE . self::ROUTE ) ) {
 			return $result;
 		}

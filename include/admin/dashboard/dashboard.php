@@ -13,8 +13,9 @@ if ( ! defined( 'WPINC' ) ) {
 class Leaky_Paywall_Dashboard {
 
 	public function dashboard_page() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
-		$period = isset( $_GET['period'] ) ? sanitize_text_field( $_GET['period'] ) : '30 days';
+		$period = isset( $_GET['period'] ) ? sanitize_text_field( wp_unslash($_GET['period']) ) : '30 days';
 		$allowed_periods = array( 'today', '7 days', '30 days', '3 months' );
 		if ( ! in_array( $period, $allowed_periods, true ) ) {
 			$period = '30 days';
@@ -64,7 +65,9 @@ class Leaky_Paywall_Dashboard {
 				<li><strong><?php esc_html_e( 'Paywall Displays', 'leaky-paywall' ); ?></strong> — <?php esc_html_e( 'see how often your paywall appears and its conversion rate', 'leaky-paywall' ); ?></li>
 				<li><strong><?php esc_html_e( 'Top Converting Content', 'leaky-paywall' ); ?></strong> — <?php esc_html_e( 'discover which articles drive the most subscriptions', 'leaky-paywall' ); ?></li>
 			</ul>
-			<p><?php printf( esc_html__( 'You can fine-tune your subscription levels, restrictions, and payment settings anytime from %sSettings%s.', 'leaky-paywall' ), '<a href="' . esc_url( admin_url( 'admin.php?page=leaky-paywall-settings' ) ) . '">', '</a>' ); ?></p>
+			<p><?php printf(
+				/* translators: 1: opening link tag, 2: closing link tag */
+				esc_html__( 'You can fine-tune your subscription levels, restrictions, and payment settings anytime from %1$sSettings%2$s.', 'leaky-paywall' ), '<a href="' . esc_url( admin_url( 'admin.php?page=leaky-paywall-settings' ) ) . '">', '</a>' ); ?></p>
 		</div>
 		<?php endif; ?>
 
@@ -151,15 +154,32 @@ class Leaky_Paywall_Dashboard {
 			<!-- Top Converting Content -->
 			<?php
 			$is_pro           = leaky_paywall_is_pro();
-			$content_limit    = $is_pro ? 10 : 3;
-			$top_paid_content = $this->get_top_converting_content( $period, 'paid', $content_limit );
-			$top_free_content = $this->get_top_converting_content( $period, 'free', $content_limit );
+
+			/**
+			 * Filters how many items the Top Content cards list. The Leaky
+			 * Paywall Pro plugin raises it.
+			 *
+			 * @since 5.3.3
+			 *
+			 * @param int $limit Number of items.
+			 */
+			$content_limit    = max( 1, (int) apply_filters( 'leaky_paywall_dashboard_top_content_limit', 3 ) );
+
+			// One extra row is fetched to tell whether there is more to see, so
+			// the Pro prompt only shows on a card that is actually cut short.
+			$show_pro_prompt  = ! leaky_paywall_pro_plugin_is_active();
+			$top_paid_content = $this->get_top_converting_content( $period, 'paid', $content_limit + 1 );
+			$top_free_content = $this->get_top_converting_content( $period, 'free', $content_limit + 1 );
+			$paid_more        = $show_pro_prompt && count( $top_paid_content ) > $content_limit;
+			$free_more        = $show_pro_prompt && count( $top_free_content ) > $content_limit;
+			$top_paid_content = array_slice( $top_paid_content, 0, $content_limit );
+			$top_free_content = array_slice( $top_free_content, 0, $content_limit );
 			?>
 
 			<?php $this->render_top_content_card(
 				__( 'Top Content — Paid Conversions', 'leaky-paywall' ),
 				$top_paid_content,
-				$is_pro,
+				$paid_more ? $content_limit : 0,
 				array( 'Content', 'Conversions' ),
 				'',
 				'paid',
@@ -181,7 +201,7 @@ class Leaky_Paywall_Dashboard {
 			$this->render_top_content_card(
 				__( 'Top Content — Free Conversions', 'leaky-paywall' ),
 				$top_free_content,
-				$is_pro,
+				$free_more ? $content_limit : 0,
 				array( 'Content', 'Conversions' ),
 				$free_footer,
 				'free',
@@ -191,7 +211,9 @@ class Leaky_Paywall_Dashboard {
 			<!-- Paywall Insights -->
 			<?php
 			$by_nag_type = LP_Nag_Impressions::get_impressions_by_nag_type( $period );
-			$top_posts   = LP_Nag_Impressions::get_top_posts_with_conversions( $period, $is_pro ? 10 : 3 );
+			$top_posts   = (array) LP_Nag_Impressions::get_top_posts_with_conversions( $period, $content_limit + 1 );
+			$posts_more  = $show_pro_prompt && count( $top_posts ) > $content_limit;
+			$top_posts   = array_slice( $top_posts, 0, $content_limit );
 			?>
 			<div class="lp-card">
 				<h3><?php esc_html_e( 'Paywall Displays by Type', 'leaky-paywall' ); ?></h3>
@@ -217,7 +239,7 @@ class Leaky_Paywall_Dashboard {
 				<?php endif; ?>
 			</div>
 
-			<?php $this->render_top_posts_card( $top_posts, $is_pro ); ?>
+			<?php $this->render_top_posts_card( $top_posts, $posts_more ? $content_limit : 0 ); ?>
 
 			<!-- Active Subscriptions by Level -->
 			<div class="lp-card">
@@ -348,6 +370,7 @@ class Leaky_Paywall_Dashboard {
 
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	private function display_charts( $insights, $period ) {
 		$signup_paid_data = $insights->get_signup_paid_data( $period );
@@ -374,7 +397,7 @@ class Leaky_Paywall_Dashboard {
 			var signupFree = <?php echo wp_json_encode( $signup_free_data ); ?>;
 			<?php do_action( 'leaky_paywall_dashboard_signup_chart_data', $insights, $period ); ?>
 			var revenueData = <?php echo wp_json_encode( $revenue_data ); ?>;
-			var currency = '<?php echo $currency_symbol; ?>';
+			var currency = <?php echo wp_json_encode( $currency_symbol ); ?>;
 
 			var sharedScales = {
 				x: {
@@ -565,15 +588,13 @@ class Leaky_Paywall_Dashboard {
 		// Use the same explicit window the signup charts use, so the two cards
 		// count the identical period (see leaky_paywall_insights_get_period_start_datetime).
 		$after_date  = leaky_paywall_insights_get_period_start_datetime( $period );
-		$price_cond  = 'paid' === $type ? '> 0' : '= 0';
+		$type        = 'paid' === $type ? 'paid' : 'free';
 		$limit       = absint( $limit );
 
-		// Free conversions exclude trials, mirroring get_signup_free_data() so the
-		// Top Content list reconciles with the New Signups (Free) chart.
-		$trial_join  = 'free' === $type
-			? "LEFT JOIN {$wpdb->postmeta} pm_trial ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'"
-			: '';
-		$trial_where = 'free' === $type ? 'AND pm_trial.post_id IS NULL' : '';
+		// Paid means a price above zero, free a price of zero. Free conversions
+		// also exclude trials, mirroring get_signup_free_data() so the Top
+		// Content list reconciles with the New Signups (Free) chart. Both are
+		// switched on the type inside the query, so it has no SQL fragments.
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
@@ -585,17 +606,23 @@ class Leaky_Paywall_Dashboard {
 					 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
 				 INNER JOIN {$wpdb->postmeta} pm_nag
 					 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
-				 {$trial_join}
+				 LEFT JOIN {$wpdb->postmeta} pm_trial
+					 ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'
 				 WHERE p.post_type = 'lp_transaction'
 				 AND p.post_date > %s
 				 AND pm_status.meta_value != 'incomplete'
-				 AND CAST(pm_price.meta_value AS DECIMAL(10,2)) {$price_cond}
+				 AND (
+					 ( %s = 'paid' AND CAST(pm_price.meta_value AS DECIMAL(10,2)) > 0 )
+					 OR ( %s = 'free' AND CAST(pm_price.meta_value AS DECIMAL(10,2)) = 0 AND pm_trial.post_id IS NULL )
+				 )
 				 AND pm_nag.meta_value != ''
-				 {$trial_where}
 				 GROUP BY pm_nag.meta_value
 				 ORDER BY total DESC
-				 LIMIT {$limit}",
-				$after_date
+				 LIMIT %d",
+				$after_date,
+				$type,
+				$type,
+				$limit
 			)
 		);
 
@@ -670,7 +697,7 @@ class Leaky_Paywall_Dashboard {
 		);
 	}
 
-	private function render_top_content_card( $title, $items, $is_pro, $columns, $footer = '', $export_type = '', $period = '' ) {
+	private function render_top_content_card( $title, $items, $showing, $columns, $footer = '', $export_type = '', $period = '' ) {
 		?>
 		<div class="lp-card">
 			<h3><?php echo esc_html( $title ); ?></h3>
@@ -684,42 +711,29 @@ class Leaky_Paywall_Dashboard {
 					</thead>
 					<tbody>
 						<?php foreach ( $items as $i => $item ) : ?>
-						<tr<?php echo ( ! $is_pro && $i >= 1 ) ? ' class="lp-pro-blurred-row"' : ''; ?>>
+						<tr>
 							<td><a href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['title'] ); ?></a></td>
 							<td style="text-align: right;">
-								<?php if ( $is_pro && $export_type && ! empty( $item['post_id'] ) ) : ?>
-									<?php
-									// Drill through to the subscribers themselves. The
-									// list view names the filter, reconciles the count,
-									// and offers the CSV from there.
-									$drilldown_url = add_query_arg(
-										array(
-											'page'            => 'leaky-paywall-subscribers',
-											'filter-article'  => (int) $item['post_id'],
-											'conversion_type' => $export_type,
-											'nag_period'      => $period,
-										),
-										admin_url( 'admin.php' )
-									);
-									?>
-									<a href="<?php echo esc_url( $drilldown_url ); ?>" title="<?php esc_attr_e( 'View these subscribers', 'leaky-paywall' ); ?>"><?php echo absint( $item['count'] ); ?></a>
-								<?php else : ?>
-									<?php echo absint( $item['count'] ); ?>
-								<?php endif; ?>
+								<?php
+								/**
+								 * Filters a Top Content card's count cell. The Leaky
+								 * Paywall Pro plugin links it to the subscribers.
+								 *
+								 * @since 5.3.3
+								 *
+								 * @param string $count_html  The count.
+								 * @param array  $item        The content item.
+								 * @param string $export_type 'free' or 'paid'.
+								 * @param string $period      Dashboard period.
+								 */
+								echo wp_kses_post( apply_filters( 'leaky_paywall_dashboard_top_content_count', esc_html( number_format_i18n( absint( $item['count'] ) ) ), $item, $export_type, $period ) );
+								?>
 							</td>
 						</tr>
 						<?php endforeach; ?>
-						<?php if ( ! $is_pro ) : ?>
-						<tr class="lp-pro-unlock-row">
-							<td colspan="2">
-								<a href="#" class="lp-dashboard-pro-trigger">
-									<span class="dashicons dashicons-lock"></span> <?php esc_html_e( 'Upgrade to Pro for full data', 'leaky-paywall' ); ?>
-								</a>
-							</td>
-						</tr>
-						<?php endif; ?>
 					</tbody>
 				</table>
+				<?php $this->render_pro_footnote( $showing, true ); ?>
 			<?php else : ?>
 				<p class="lp-no-data"><?php esc_html_e( 'No conversion data for this period.', 'leaky-paywall' ); ?></p>
 			<?php endif; ?>
@@ -728,6 +742,44 @@ class Leaky_Paywall_Dashboard {
 				<p class="lp-card-footnote" style="margin-top: 12px; color: #646970; font-size: 12px;"><?php echo wp_kses_post( $footer ); ?></p>
 			<?php endif; ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * A quiet line under a Top Content card that has more rows than it shows,
+	 * when the Pro plugin is not active. Links to the plugin download with a
+	 * Pro license, or to the upgrade modal without one.
+	 *
+	 * @since 5.3.3
+	 *
+	 * @param int  $showing          Rows shown; 0 when the card is not cut short.
+	 * @param bool $with_subscribers Whether Pro also shows who converted on this card.
+	 */
+	private function render_pro_footnote( $showing, $with_subscribers ) {
+		if ( ! $showing ) {
+			return;
+		}
+
+		$link_text = $with_subscribers
+			? __( 'See your top 10, and who converted, with Leaky Paywall Pro', 'leaky-paywall' )
+			: __( 'See your top 10 with Leaky Paywall Pro', 'leaky-paywall' );
+
+		if ( leaky_paywall_is_pro() ) {
+			$link = '<a href="' . esc_url( leaky_paywall_pro_plugin_download_url() ) . '" target="_blank" rel="noopener">' . esc_html( $link_text ) . ' &rarr;</a>';
+		} else {
+			$link = '<a href="#" class="lp-dashboard-pro-trigger">' . esc_html( $link_text ) . ' &rarr;</a>';
+		}
+		?>
+		<p class="lp-card-footnote lp-pro-footnote">
+			<?php
+			printf(
+				/* translators: %d: number of rows shown */
+				esc_html( _n( 'Showing your top %d.', 'Showing your top %d.', $showing, 'leaky-paywall' ) ),
+				(int) $showing
+			);
+			echo ' ' . wp_kses_post( $link );
+			?>
+		</p>
 		<?php
 	}
 
@@ -772,7 +824,7 @@ class Leaky_Paywall_Dashboard {
 		<?php
 	}
 
-	private function render_top_posts_card( $top_posts, $is_pro ) {
+	private function render_top_posts_card( $top_posts, $showing ) {
 		?>
 		<div class="lp-card">
 			<h3><?php esc_html_e( 'Top Content by Paywall Displays', 'leaky-paywall' ); ?></h3>
@@ -795,7 +847,7 @@ class Leaky_Paywall_Dashboard {
 								$title = __( '(Untitled)', 'leaky-paywall' );
 							}
 						?>
-						<tr<?php echo ( ! $is_pro && $i >= 1 ) ? ' class="lp-pro-blurred-row"' : ''; ?>>
+						<tr>
 							<td><a href="<?php echo esc_url( get_the_permalink( $row->post_id ) ); ?>"><?php echo esc_html( $title ); ?></a></td>
 							<td style="text-align: right;"><?php echo esc_html( number_format( $row->impressions ) ); ?></td>
 							<td style="text-align: right;"><?php echo esc_html( number_format( $row->conversions ) ); ?></td>
@@ -805,17 +857,9 @@ class Leaky_Paywall_Dashboard {
 							$i++;
 						endforeach;
 						?>
-						<?php if ( ! $is_pro ) : ?>
-						<tr class="lp-pro-unlock-row">
-							<td colspan="4">
-								<a href="#" class="lp-dashboard-pro-trigger">
-									<span class="dashicons dashicons-lock"></span> <?php esc_html_e( 'Upgrade to Pro for full data', 'leaky-paywall' ); ?>
-								</a>
-							</td>
-						</tr>
-						<?php endif; ?>
 					</tbody>
 				</table>
+				<?php $this->render_pro_footnote( $showing, false ); ?>
 			<?php else : ?>
 				<p class="lp-no-data"><?php esc_html_e( 'No paywall display data for this period.', 'leaky-paywall' ); ?></p>
 			<?php endif; ?>

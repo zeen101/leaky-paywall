@@ -218,9 +218,9 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_k
 		if ( empty( $expires ) || '0000-00-00 00:00:00' === $expiration ) {
 			$cancel_text = '';
 		} elseif ( 'past_due' === $payment_status ) {
-			$cancel_text = sprintf( esc_attr__( 'Your recent payment failed. Please <a href="%s">update your payment method</a> to keep your subscription active.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
+			$cancel_text = sprintf( /* translators: %s: subscription page URL */ esc_attr__( 'Your recent payment failed. Please <a href="%s">update your payment method</a> to keep your subscription active.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		} elseif ( 'pending_cancel' == $payment_status ) {
-			$cancel_text = sprintf( esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
+			$cancel_text = sprintf( /* translators: %s: subscription page URL */ esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		} elseif ( strcasecmp( 'active', $payment_status ) == 0 && $plan && 'Canceled' !== $plan ) {
 			$subscriber_id   = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_subscriber_id' . $site, true );
 			$payment_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $lp_mode . '_payment_gateway' . $site, true );
@@ -232,7 +232,7 @@ if ( isset( $_POST['lp_update_card_form_field'] ) && wp_verify_nonce( sanitize_k
 				$cancel_url = '?lp_cancel=request&cancel&payment_gateway=' . $payment_gateway . '&subscriber_id=' . $subscriber_id;
 			}
 		} elseif ( ! empty( $plan ) && 'Canceled' == $plan ) {
-			$cancel_text = sprintf( esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
+			$cancel_text = sprintf( /* translators: %s: subscription page URL */ esc_attr__( 'You have canceled your subscription, but your account will remain active until your expiration date. To reactivate your subscription, please visit our <a href="%s">Subscription page</a>.', 'leaky-paywall' ), get_page_link( $settings['page_for_subscription'] ) );
 		}
 
 		switch ( $page_action ) {

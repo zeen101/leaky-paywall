@@ -7,6 +7,10 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if (!function_exists('get_leaky_paywall_settings')) {
 
 	/**
@@ -1338,7 +1342,7 @@ function leaky_paywall_get_customer_ip()
 
 		// X-Forwarded-For may be "client, proxy1, proxy2". The originating
 		// client is always the leftmost entry in the standard implementation.
-		$raw = trim(explode(',', (string) $_SERVER[$key])[0]);
+		$raw = trim(explode(',', sanitize_text_field(wp_unslash((string) $_SERVER[$key])))[0]);
 
 		if (filter_var($raw, FILTER_VALIDATE_IP)) {
 			$ip = $raw;
@@ -1740,10 +1744,17 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 				$user = get_user_by('login', $login);
 			}
 
-			if (isset($meta_args['password'])) {
+			// A password may arrive as typed, or only as a hash when the account
+			// is created later from a webhook. With neither, the reader gets a
+			// random one. An empty string used to become the actual password,
+			// which then could not be used to log in.
+			$password_hash = '';
+
+			if (!empty($meta_args['password'])) {
 				$password = $meta_args['password'];
 			} else {
-				$password = wp_generate_password();
+				$password      = wp_generate_password(24);
+				$password_hash = !empty($meta_args['password_hash']) ? $meta_args['password_hash'] : leaky_paywall_get_stored_password_hash($email);
 			}
 
 			$user_data = array(
@@ -1789,6 +1800,10 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 			}
 
 			leaky_paywall_log($logged_userdata, 'leaky paywall - new subscriber created');
+
+			if (!empty($password_hash)) {
+				leaky_paywall_set_password_hash($user_id, $password_hash);
+			}
 		}
 
 		leaky_paywall_ensure_blog_membership($user_id);
@@ -1815,8 +1830,8 @@ if (!function_exists('leaky_paywall_new_subscriber')) {
 
 		foreach ($meta as $key => $value) {
 
-			// do not want to store their password as plain text.
-			if ('confirm_password' === $key || 'password' === $key) {
+			// do not want to store their password, or its hash, as meta.
+			if ('confirm_password' === $key || 'password' === $key || 'password_hash' === $key) {
 				continue;
 			}
 
@@ -2337,7 +2352,7 @@ function build_leaky_paywall_subscription_levels_row_summary($level, $row_key)
 		<td><?php echo esc_html($level['price']); ?></td>
 		<td><?php echo esc_html($duration); ?></td>
 		<td><?php echo ! empty( $level['recurring'] ) && 'on' === $level['recurring'] ? 'recurring' : 'one time'; ?></td>
-		<td><?php echo $page_for_register; ?></td>
+		<td><?php echo esc_url( $page_for_register ); ?></td>
 	</tr>
 
 	<?php
@@ -2913,7 +2928,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 	function leaky_paywall_get_restriction_row_post_type_taxonomies()
 	{
 
-		if (!wp_verify_nonce(sanitize_key($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+		if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_key(wp_unslash($_POST['nonce'])), 'leaky-paywall-js-nonce')) {
 			die(esc_html__('Failed Security Check', 'leaky-paywall'));
 		}
 
@@ -2975,7 +2990,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		function build_leaky_paywall_default_restriction_row_ajax()
 		{
 
-			if (!wp_verify_nonce(sanitize_key($_POST['nonce']), 'leaky-paywall-js-nonce')) {
+			if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_key(wp_unslash($_POST['nonce'])), 'leaky-paywall-js-nonce')) {
 				die(esc_html__('Failed Security Check', 'leaky-paywall'));
 			}
 
@@ -4630,7 +4645,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 			),
 			'RWF' => array(
 				'symbol'  => 'R&#8355;',
-				'label'   => __('Rwandan Franc'),
+				'label'   => __('Rwandan Franc', 'leaky-paywall'),
 				'country' => '',
 			),
 			'SAR' => array(
@@ -4902,7 +4917,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$header = null;
 		$data   = array();
-		$handle = fopen($filename, 'r');
+		$handle = fopen($filename, 'r'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- fgetcsv() needs a stream handle on the uploaded import file.
 
 		if (false !== $handle) {
 			$row = fgetcsv($handle, 1000, $delimiter);
@@ -4915,7 +4930,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 					$data[] = array_combine($header, $row);
 				}
 			}
-			fclose($handle);
+			fclose($handle); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- see fopen above.
 		}
 		return $data;
 	}
@@ -4932,9 +4947,14 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$value = '';
 
+		// Refills a form after a failed submission; the value is only echoed
+		// back, escaped, into the same form. The submission's nonce is checked
+		// where it is processed.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if (isset($_POST[$input]) && sanitize_text_field(wp_unslash($_POST[$input]))) {
 			$value = sanitize_text_field(wp_unslash($_POST[$input]));
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ($echo) {
 			echo esc_attr($value);
@@ -5041,7 +5061,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		$keys = apply_filters(
 			'leaky_paywall_log_scrubbed_keys',
-			array('password', 'confirm_password', 'user_pass', 'pass', 'pwd')
+			array('password', 'confirm_password', 'password_hash', 'user_pass', 'pass', 'pwd')
 		);
 
 		if (is_object($data)) {
@@ -5250,10 +5270,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$action_link = '';
 
 		if ( ! leaky_paywall_is_pro() ) {
-			$action_link .= '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro') . '</a></span>  | ';
+			$action_link .= '<span class="lp-pro-upgrade"><a target="_blank" href="https://leakypaywall.com/upgrade-to-leaky-paywall-pro/?utm_source=WordPress&utm_medium=all-plugins&utm_content=upgrade-to-pro&utm_campaign=lp">' . __('Upgrade to Pro', 'leaky-paywall') . '</a></span>  | ';
 		}
 
-		$action_link .= '<a href="admin.php?page=leaky-paywall-settings">' . __('Settings') . '</a>';
+		$action_link .= '<a href="admin.php?page=leaky-paywall-settings">' . __('Settings', 'leaky-paywall') . '</a>';
 		$action_link .= '  |  <a href="admin.php?page=leaky-paywall-license">' . __('License', 'leaky-paywall') . '</a>';
 		array_unshift($links, $action_link);
 		return $links;
@@ -5823,7 +5843,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'title' => 'Leaky Paywall',
 				'href'  => admin_url() . 'admin.php?page=issuem-leaky-paywall',
 				'meta'  => array(
-					'title' => __('Leaky Paywall'),
+					'title' => __('Leaky Paywall', 'leaky-paywall'),
 				),
 			)
 		);
@@ -5834,7 +5854,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'title'  => 'Settings',
 				'href'   => admin_url() . 'admin.php?page=leaky-paywall-settings',
 				'meta'   => array(
-					'title'  => __('Settings'),
+					'title'  => __('Settings', 'leaky-paywall'),
 					'target' => '',
 					'class'  => 'my_menu_item_class',
 				),
@@ -5847,7 +5867,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'title'  => 'Subscribers',
 				'href'   => admin_url() . 'admin.php?page=leaky-paywall-subscribers',
 				'meta'   => array(
-					'title'  => __('Subscribers'),
+					'title'  => __('Subscribers', 'leaky-paywall'),
 					'target' => '',
 					'class'  => 'my_menu_item_class',
 				),
@@ -5861,7 +5881,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'title'  => 'Transactions',
 				'href'   => admin_url() . 'edit.php?post_type=lp_transaction',
 				'meta'   => array(
-					'title'  => __('Transactions'),
+					'title'  => __('Transactions', 'leaky-paywall'),
 					'target' => '',
 					'class'  => 'my_menu_item_class',
 				),
@@ -5875,7 +5895,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'title'  => 'Tools',
 				'href'   => admin_url( 'admin.php?page=leaky-paywall-tools' ),
 				'meta'   => array(
-					'title'  => __('Tools'),
+					'title'  => __('Tools', 'leaky-paywall'),
 					'target' => '',
 					'class'  => 'my_menu_item_class',
 				),
@@ -5889,7 +5909,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				'title'  => 'Extensions',
 				'href'   => admin_url( 'admin.php?page=leaky-paywall-extensions' ),
 				'meta'   => array(
-					'title'  => __('Extensions'),
+					'title'  => __('Extensions', 'leaky-paywall'),
 					'target' => '',
 					'class'  => 'my_menu_item_class',
 				),
@@ -5952,7 +5972,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 				<div class="leaky-paywall-message-content">
 					<p><strong><?php echo esc_html__('Congrats!', 'leaky-paywall'); ?></strong> 🥳<?php esc_html_e('You have more than 100 subscribers with Leaky Paywall. Please help us by leaving a review on WordPress.org. We read every review and use your feedback to make Leaky Paywall better for everyone!', 'leaky-paywall'); ?></p>
 					<p class="leaky-paywall-message-actions">
-						<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/?filter=5/#new-post" target="_blank" class="button button-primary"><?php esc_html_e('Leave a Review', 'leaky-paywall'); ?></a>
+						<a href="https://wordpress.org/support/plugin/leaky-paywall/reviews/#new-post" target="_blank" class="button button-primary"><?php esc_html_e('Leave a Review', 'leaky-paywall'); ?></a>
 						<a href="<?php echo esc_url_raw($dismiss_url); ?>" class="button leaky-paywall-button-notice-dismiss"><?php esc_html_e('Hide', 'leaky-paywall'); ?></a>
 					</p>
 				</div>
@@ -6285,19 +6305,19 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
 		{
-			$ip = sanitize_text_field($_SERVER['HTTP_CLIENT_IP']);
+			$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
 		} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
 		{
 
-			$ip_array = array_values(array_filter(explode(',', sanitize_text_field($_SERVER['HTTP_X_FORWARDED_FOR']))));
+			$ip_array = array_values(array_filter(explode(',', sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR'])))));
 
 			if (is_array($ip_array)) {
 				$ip = $ip_array[0];
 			} else {
-				$ip = sanitize_text_field($_SERVER['HTTP_X_FORWARDED_FOR']);
+				$ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
 			}
 		} else {
-			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
+			$ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 		}
 
 		if (!filter_var($ip, FILTER_VALIDATE_IP)) {
@@ -6360,133 +6380,6 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 
 		return $interval_text;
 	}
-
-/**
- * Subscribers whose signup was attributed to a single post or page.
- *
- * Attribution lives on the `lp_transaction` record as `_nag_location_id`,
- * written at registration from the article the reader was on. The joins and
- * conditions mirror Leaky_Paywall_Dashboard::get_top_converting_content() so
- * every surface that drills into a conversion count agrees with the card that
- * produced it, including the period window and the exclusion of trials from
- * free conversions.
- *
- * @since 5.2.0
- *
- * @param int    $post_id The attributed post ID.
- * @param string $type    Either 'free' or 'paid'.
- * @param string $period  Dashboard period slug. Empty falls back to the
- *                        dashboard's own default window, so a drill-through
- *                        that lost the period still matches the card it came
- *                        from instead of widening to all time.
- * @return array{emails: array<string>, user_ids: array<int>} Attributed emails and the users they resolve to.
- */
-function leaky_paywall_get_attributed_conversions( $post_id, $type = 'free', $period = '' ) {
-
-	global $wpdb;
-
-	$empty = array(
-		'emails'   => array(),
-		'user_ids' => array(),
-	);
-
-	$post_id = absint( $post_id );
-
-	if ( ! $post_id ) {
-		return $empty;
-	}
-
-	$price_cond  = 'paid' === $type ? '> 0' : '= 0';
-	$trial_join  = 'free' === $type
-		? "LEFT JOIN {$wpdb->postmeta} pm_trial ON p.ID = pm_trial.post_id AND pm_trial.meta_key = '_trial_type'"
-		: '';
-	$trial_where = 'free' === $type ? 'AND pm_trial.post_id IS NULL' : '';
-
-	// A missing period means the request lost the window, never that the
-	// publisher asked for all time. Fall back to the same default the dashboard
-	// starts on (Leaky_Paywall_Dashboard::dashboard_page()) rather than letting
-	// it reach the period resolver, which answers an unrecognised slug with its
-	// own -4 weeks and would put this query on a different window than the card.
-	if ( '' === $period ) {
-		$period = '30 days';
-	}
-
-	// Applied unconditionally, exactly as the dashboard card does. Applying it
-	// only when $period was truthy made a dropped period silently mean "all
-	// time", so the filtered list and the CSV covered a different set of people
-	// than the count that was clicked.
-	$params = array( $post_id, leaky_paywall_insights_get_period_start_datetime( $period ) );
-
-	// The interpolated fragments are built from a hardcoded 'free' / 'paid'
-	// switch, never from request data. Every value is a placeholder.
-	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$emails = $wpdb->get_col(
-		$wpdb->prepare(
-			"SELECT DISTINCT pm_email.meta_value
-			 FROM {$wpdb->posts} p
-			 INNER JOIN {$wpdb->postmeta} pm_nag
-				 ON p.ID = pm_nag.post_id AND pm_nag.meta_key = '_nag_location_id'
-			 INNER JOIN {$wpdb->postmeta} pm_email
-				 ON p.ID = pm_email.post_id AND pm_email.meta_key = '_email'
-			 INNER JOIN {$wpdb->postmeta} pm_price
-				 ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
-			 INNER JOIN {$wpdb->postmeta} pm_status
-				 ON p.ID = pm_status.post_id AND pm_status.meta_key = '_status'
-			 {$trial_join}
-			 WHERE p.post_type = 'lp_transaction'
-			 AND pm_nag.meta_value = %d
-			 AND pm_status.meta_value != 'incomplete'
-			 AND CAST(pm_price.meta_value AS DECIMAL(10,2)) {$price_cond}
-			 AND p.post_date > %s
-			 {$trial_where}",
-			$params
-		)
-	);
-	// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-
-	if ( empty( $emails ) ) {
-		return $empty;
-	}
-
-	// Transactions record the subscriber by email, not user ID. A converted
-	// reader who has since been deleted from WordPress leaves their
-	// transaction behind, so the resolved list is often shorter than the count
-	// on the dashboard. That gap is surfaced in the UI rather than hidden, and
-	// deleted users are deliberately not resurrected from the transaction.
-	$user_ids = array();
-
-	foreach ( $emails as $email ) {
-		$user = get_user_by( 'email', $email );
-
-		if ( $user ) {
-			$user_ids[] = (int) $user->ID;
-		}
-	}
-
-	return array(
-		'emails'   => array_values( array_unique( $emails ) ),
-		'user_ids' => array_values( array_unique( $user_ids ) ),
-	);
-}
-
-/**
- * User IDs of the subscribers attributed to a post.
- *
- * @since 5.2.0
- *
- * @param int    $post_id The attributed post ID.
- * @param string $type    Either 'free' or 'paid'.
- * @param string $period  Dashboard period slug. See
- *                        leaky_paywall_get_attributed_conversions().
- * @return array<int>
- */
-function leaky_paywall_get_attributed_subscriber_ids( $post_id, $type = 'free', $period = '' ) {
-
-	$attributed = leaky_paywall_get_attributed_conversions( $post_id, $type, $period );
-
-	return $attributed['user_ids'];
-}
-
 
 /**
  * Does this site have a level a reader could actually buy?
@@ -6732,4 +6625,118 @@ function leaky_paywall_show_subscription_table( $user = null ) {
 	$show = ! leaky_paywall_subscriber_is_free( $user );
 
 	return (bool) apply_filters( 'leaky_paywall_show_free_subscriber_plan_table', $show, $user );
+}
+
+/**
+ * Delete a file LP wrote, and report whether it is gone.
+ *
+ * wp_delete_file() is the WordPress way to delete a file but returns nothing
+ * before WordPress 6.4, so callers that report what they removed check that
+ * the file no longer exists.
+ *
+ * @since 5.3.3
+ *
+ * @param string $file Absolute path.
+ * @return bool True when the file no longer exists.
+ */
+function leaky_paywall_delete_file( $file ) {
+	wp_delete_file( $file );
+
+	return ! file_exists( $file );
+}
+
+/**
+ * Remove the reader's password from registration data before it is saved,
+ * keeping a hash so the account can still be created with it later.
+ *
+ * @since 5.3.3
+ *
+ * @param array $user_data Registration user data.
+ * @param array $fields    Registration form fields.
+ * @return array{0: array, 1: array} The cleaned user data and fields.
+ */
+function leaky_paywall_strip_stored_passwords( $user_data, $fields = array() ) {
+
+	$user_data = is_array( $user_data ) ? $user_data : array();
+	$fields    = is_array( $fields ) ? $fields : array();
+
+	$password = '';
+
+	if ( ! empty( $user_data['password'] ) ) {
+		$password = (string) $user_data['password'];
+	} elseif ( ! empty( $fields['password'] ) ) {
+		$password = (string) $fields['password'];
+	}
+
+	if ( '' !== $password && empty( $user_data['password_hash'] ) ) {
+		$user_data['password_hash'] = wp_hash_password( $password );
+	}
+
+	unset( $user_data['password'], $user_data['confirm_password'], $fields['password'], $fields['confirm_password'] );
+
+	return array( $user_data, $fields );
+}
+
+/**
+ * The password hash kept for a registration still waiting on payment.
+ *
+ * @since 5.3.3
+ *
+ * @param string $email Subscriber email.
+ * @return string Hash, or an empty string.
+ */
+function leaky_paywall_get_stored_password_hash( $email ) {
+
+	if ( ! function_exists( 'leaky_paywall_get_incomplete_user_from_email' ) ) {
+		return '';
+	}
+
+	$incomplete_id = leaky_paywall_get_incomplete_user_from_email( $email );
+
+	if ( ! $incomplete_id ) {
+		return '';
+	}
+
+	$user_data = get_post_meta( $incomplete_id, '_user_data', true );
+
+	if ( ! empty( $user_data['password_hash'] ) ) {
+		return (string) $user_data['password_hash'];
+	}
+
+	// Saved before 5.3.3, in plain text.
+	if ( ! empty( $user_data['password'] ) ) {
+		return wp_hash_password( (string) $user_data['password'] );
+	}
+
+	return '';
+}
+
+/**
+ * Give a user an already-hashed password.
+ *
+ * wp_set_password() takes the password itself, so the hash is written
+ * directly, the way WordPress core stores it.
+ *
+ * @since 5.3.3
+ *
+ * @param int    $user_id User ID.
+ * @param string $hash    Hash from wp_hash_password().
+ * @return void
+ */
+function leaky_paywall_set_password_hash( $user_id, $hash ) {
+	global $wpdb;
+
+	$wpdb->update( $wpdb->users, array( 'user_pass' => $hash, 'user_activation_key' => '' ), array( 'ID' => (int) $user_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the only way to store a password that arrives already hashed.
+
+	clean_user_cache( (int) $user_id );
+}
+
+/**
+ * Stands in for %password% in a welcome email when only a hash was kept.
+ *
+ * @since 5.3.3
+ * @return string
+ */
+function leaky_paywall_password_chosen_label() {
+	return apply_filters( 'leaky_paywall_password_chosen_label', __( 'the password you chose when you signed up', 'leaky-paywall' ) );
 }

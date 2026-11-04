@@ -14,6 +14,7 @@ class Leaky_Paywall_Insights
 
 	public function insights_page()
 	{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 ?>
 
 		<div id="lp-header" class="lp-header">
@@ -49,6 +50,7 @@ class Leaky_Paywall_Insights
 
 		echo '</div>';
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	public function output_data($current_tab)
 	{
@@ -79,7 +81,7 @@ class Leaky_Paywall_Insights
 	{
 
 		if (isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce(sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
-			$period = isset($_POST['filter-date-range']) ? sanitize_text_field($_POST['filter-date-range']) : '30 days';
+			$period = isset($_POST['filter-date-range']) ? sanitize_text_field(wp_unslash($_POST['filter-date-range'])) : '30 days';
 		} else {
 			$period = '30 days';
 		}
@@ -224,7 +226,7 @@ class Leaky_Paywall_Insights
 	{
 
 		if (isset($_POST['lp_insights_filter_date_field']) && wp_verify_nonce(sanitize_key($_POST['lp_insights_filter_date_field']), 'lp_insights_filter_date')) {
-			$period = isset($_POST['filter-date-range']) ? sanitize_text_field($_POST['filter-date-range']) : '30 days';
+			$period = isset($_POST['filter-date-range']) ? sanitize_text_field(wp_unslash($_POST['filter-date-range'])) : '30 days';
 		} else {
 			$period = '30 days';
 		}
@@ -303,7 +305,7 @@ class Leaky_Paywall_Insights
 	public function paywall_insights()
 	{
 		if ( isset( $_POST['lp_insights_filter_date_field'] ) && wp_verify_nonce( sanitize_key( $_POST['lp_insights_filter_date_field'] ), 'lp_insights_filter_date' ) ) {
-			$period = isset( $_POST['filter-date-range'] ) ? sanitize_text_field( $_POST['filter-date-range'] ) : '30 days';
+			$period = isset( $_POST['filter-date-range'] ) ? sanitize_text_field( wp_unslash($_POST['filter-date-range']) ) : '30 days';
 		} else {
 			$period = '30 days';
 		}
@@ -524,7 +526,7 @@ class Leaky_Paywall_Insights
 				}
 
 				$time = strtotime( $transaction->post_date );
-				$day  = date( 'M j', $time );
+				$day  = gmdate( 'M j', $time );
 				$data[ $day ][] = $transaction->post_title;
 			}
 		}
@@ -572,7 +574,7 @@ class Leaky_Paywall_Insights
 		if ( ! empty( $transactions ) ) {
 			foreach ( $transactions as $transaction ) {
 				$time = strtotime( $transaction->post_date );
-				$day  = date( 'M j', $time );
+				$day  = gmdate( 'M j', $time );
 				$data[ $day ][] = $transaction->post_title;
 			}
 		}
@@ -632,7 +634,7 @@ class Leaky_Paywall_Insights
 		$d = array();
 
 		for ( $i = 0; $i < $args_period; $i++ ) {
-			$day = date( 'M j', strtotime( '-' . $i . ' days' ) );
+			$day = gmdate( 'M j', strtotime( '-' . $i . ' days' ) );
 			$d[] = array( 'day' => $day, 'count' => 0 );
 		}
 

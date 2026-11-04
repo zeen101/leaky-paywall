@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 add_action( 'wp_ajax_lp_reports_get_data', 'lp_reports_get_data' );
 
 function lp_reports_get_data() {
@@ -8,7 +12,7 @@ function lp_reports_get_data() {
         wp_send_json( array( 'error' => 'There was an error.' ) );
     }
 
-    $period = isset( $_POST['period'] ) ? sanitize_text_field( $_POST['period'] ) : '';
+    $period = isset( $_POST['period'] ) ? sanitize_text_field( wp_unslash($_POST['period']) ) : '';
 
     // get total revenue data
     $revenue = leaky_paywall_insights_get_total_revenue( $period );

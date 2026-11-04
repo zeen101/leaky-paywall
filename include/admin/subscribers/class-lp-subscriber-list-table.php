@@ -96,6 +96,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 	 * Prepare items for display.
 	 */
 	public function prepare_items() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$columns  = $this->get_columns();
 		$hidden   = $this->get_hidden_columns();
 		$sortable = $this->get_sortable_columns();
@@ -287,36 +288,18 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			unset( $args['meta_query'] );
 		}
 
-		// Drill-through from the dashboard's Top Content cards: restrict the
-		// list to the subscribers whose signup was attributed to one article.
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$article_filter = isset( $_GET['filter-article'] ) ? absint( $_GET['filter-article'] ) : 0;
-		$article_type   = ( isset( $_GET['conversion_type'] ) && 'paid' === $_GET['conversion_type'] ) ? 'paid' : 'free';
-		$article_period = isset( $_GET['nag_period'] ) ? sanitize_text_field( wp_unslash( $_GET['nag_period'] ) ) : '';
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-		if ( $article_filter && leaky_paywall_is_pro() ) {
-
-			$attributed_ids = leaky_paywall_get_attributed_subscriber_ids( $article_filter, $article_type, $article_period );
-
-			// An empty `include` is ignored by WP_User_Query and would list
-			// every subscriber. Force an empty result instead.
-			if ( empty( $attributed_ids ) ) {
-				$attributed_ids = array( 0 );
-			}
-
-			// A numeric search already set `include`; intersect rather than
-			// overwrite so both constraints hold.
-			if ( ! empty( $args['include'] ) ) {
-				$args['include'] = array_values( array_intersect( (array) $args['include'], $attributed_ids ) );
-
-				if ( empty( $args['include'] ) ) {
-					$args['include'] = array( 0 );
-				}
-			} else {
-				$args['include'] = $attributed_ids;
-			}
-		}
+		/**
+		 * Filters the WP_User_Query arguments for the subscriber list. The
+		 * Leaky Paywall Pro plugin uses it to narrow the list to the
+		 * subscribers a single article converted.
+		 *
+		 * @since 5.3.3
+		 *
+		 * @param array  $args WP_User_Query arguments.
+		 * @param string $mode 'live' or 'test'.
+		 * @param string $site Site suffix for multisite meta keys.
+		 */
+		$args = apply_filters( 'leaky_paywall_subscriber_table_args', $args, $mode, $site );
 
 		$wp_user_search = new WP_User_Query( $args );
 		$results        = $wp_user_search->get_results();
@@ -337,6 +320,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 			'per_page'    => $users_per_page,
 		) );
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Apply the free-text search: user table columns OR'd with subscriber meta.
@@ -537,17 +521,19 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 	 * User type selector.
 	 */
 	public function user_views() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$user_type = ! empty( $_GET['user-type'] ) ? sanitize_text_field( wp_unslash( $_GET['user-type'] ) ) : 'lpsubs';
 
 		echo '<div class="alignleft actions">';
-		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_html__( 'Select User Type' ) . '</label>';
+		echo '<label for="user-type-selector" class="screen-reader-text">' . esc_html__( 'Select User Type', 'leaky-paywall' ) . '</label>';
 		echo '<select name="user-type" id="user-type-selector">';
-		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_html__( 'Leaky Paywall Subscribers' ) . '</option>';
-		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_html__( 'All WordPress Users' ) . '</option>';
+		echo '<option value="lpsubs" ' . selected( 'lpsubs', $user_type, false ) . '>' . esc_html__( 'Leaky Paywall Subscribers', 'leaky-paywall' ) . '</option>';
+		echo '<option value="wpusers" ' . selected( 'wpusers', $user_type, false ) . '>' . esc_html__( 'All WordPress Users', 'leaky-paywall' ) . '</option>';
 		echo '</select>';
-		submit_button( __( 'Apply' ), 'secondary', false, false );
+		submit_button( __( 'Apply', 'leaky-paywall' ), 'secondary', false, false );
 		echo '</div>';
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Filter dropdowns above the table.
@@ -555,6 +541,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 	 * @param string $which Top or bottom.
 	 */
 	protected function extra_tablenav( $which ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( 'top' !== $which ) {
 			return;
 		}
@@ -680,6 +667,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 		</script>
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Search box that searches across all fields.
@@ -688,6 +676,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 	 * @param string $input_id Input ID prefix.
 	 */
 	public function search_box( $text, $input_id ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( empty( $_REQUEST['s'] ) && ! $this->has_items() ) {
 			return;
 		}
@@ -709,6 +698,7 @@ class LP_Subscriber_List_Table extends WP_List_Table {
 		</p>
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Empty state.

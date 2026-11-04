@@ -47,15 +47,15 @@ class Leaky_Paywall_List_Builder_Settings
                 <th colspan="2"><h4 style="margin:0;"><?php esc_html_e( 'Logged-Out Messaging', 'leaky-paywall' ); ?></h4></th>
             </tr>
             <tr>
-                <th rowspan="1"> <?php _e('Enable', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Enable', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="checkbox" id="lp_listbuilder_enabled" name="lp_listbuilder_enabled" value="on" <?php checked($settings['enabled'], 'on'); ?> />
-                    <label for="lp_listbuilder_enabled"><?php _e('Enable the List Builder modal on restricted content', 'leaky-paywall'); ?></label>
+                    <label for="lp_listbuilder_enabled"><?php esc_html_e('Enable the List Builder modal on restricted content', 'leaky-paywall'); ?></label>
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Subscription Level', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Subscription Level', 'leaky-paywall'); ?></th>
                 <td>
                     <?php $lp_settings = get_leaky_paywall_settings(); ?>
                     <select id="lp_listbuilder_level_id" name="lp_listbuilder_level_id">
@@ -65,26 +65,26 @@ class Leaky_Paywall_List_Builder_Settings
                             <option value="<?php echo esc_attr($key); ?>" <?php selected($settings['level_id'], $key); ?>><?php echo esc_html(stripslashes($level['label'])); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="description"><?php _e('The subscription level assigned to new users who register through the List Builder. Must be a free level.', 'leaky-paywall'); ?></p>
+                    <p class="description"><?php esc_html_e('The subscription level assigned to new users who register through the List Builder. Must be a free level.', 'leaky-paywall'); ?></p>
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Heading', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Heading', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="text" id="heading" class="large-text" name="heading" value="<?php echo esc_attr($settings['heading']); ?>" />
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Subheading', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Subheading', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="text" id="subheading" class="large-text" name="subheading" value="<?php echo esc_attr($settings['subheading']); ?>" />
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Terms and Conditions', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Terms and Conditions', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="text" id="terms_and_conditions" class="large-text" name="terms_and_conditions" value="<?php echo esc_attr($settings['terms_and_conditions']); ?>" />
                 </td>
@@ -144,28 +144,28 @@ class Leaky_Paywall_List_Builder_Settings
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Background Color', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Background Color', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="color" id="background_color" name="background_color" value="<?php echo esc_attr($settings['background_color']); ?>" />
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Text Color', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Text Color', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="color" id="text_color" name="text_color" value="<?php echo esc_attr($settings['text_color']); ?>" />
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Button Color', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Button Color', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="color" id="button_color" name="button_color" value="<?php echo esc_attr($settings['button_color']); ?>" />
                 </td>
             </tr>
 
             <tr>
-                <th rowspan="1"> <?php _e('Button Text Color', 'leaky-paywall'); ?></th>
+                <th rowspan="1"> <?php esc_html_e('Button Text Color', 'leaky-paywall'); ?></th>
                 <td>
                     <input type="color" id="button_text_color" name="button_text_color" value="<?php echo esc_attr($settings['button_text_color']); ?>" />
                 </td>
@@ -189,6 +189,10 @@ class Leaky_Paywall_List_Builder_Settings
 
         $settings = $this->get_settings();
 
+        // Runs on leaky_paywall_update_settings, which Leaky_Paywall_Settings
+        // fires only after verifying the settings nonce and manage_options.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+
         $settings['enabled'] = isset($_POST['lp_listbuilder_enabled']) ? 'on' : '';
 
         if (isset($_POST['lp_listbuilder_level_id'])) {
@@ -210,19 +214,19 @@ class Leaky_Paywall_List_Builder_Settings
         $settings['require_email_verification'] = isset( $_POST['lp_listbuilder_require_email_verification'] ) ? 'on' : '';
 
         if (isset($_POST['background_color'])) {
-            $settings['background_color'] = sanitize_hex_color($_POST['background_color']);
+            $settings['background_color'] = sanitize_hex_color(wp_unslash($_POST['background_color']));
         }
 
         if (isset($_POST['text_color'])) {
-            $settings['text_color'] = sanitize_hex_color($_POST['text_color']);
+            $settings['text_color'] = sanitize_hex_color(wp_unslash($_POST['text_color']));
         }
 
         if (isset($_POST['button_color'])) {
-            $settings['button_color'] = sanitize_hex_color($_POST['button_color']);
+            $settings['button_color'] = sanitize_hex_color(wp_unslash($_POST['button_color']));
         }
 
         if (isset($_POST['button_text_color'])) {
-            $settings['button_text_color'] = sanitize_hex_color($_POST['button_text_color']);
+            $settings['button_text_color'] = sanitize_hex_color(wp_unslash($_POST['button_text_color']));
         }
 
         $settings['upgrade_enabled'] = isset($_POST['lp_listbuilder_upgrade_enabled']) ? 'on' : '';
@@ -238,6 +242,8 @@ class Leaky_Paywall_List_Builder_Settings
         if (isset($_POST['upgrade_button_text'])) {
             $settings['upgrade_button_text'] = sanitize_text_field(wp_unslash($_POST['upgrade_button_text']));
         }
+
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         $this->update_settings($settings);
     }

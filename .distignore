@@ -17,6 +17,19 @@
 /.gitmodules
 /.distignore
 
+# stripe-php's own development files. The submodule is the full stripe-php
+# repo; only the library ships (lib/, data/, init.php, VERSION, LICENSE...).
+/include/stripe/.*
+/include/stripe/tests
+/include/stripe/examples
+/include/stripe/build.php
+/include/stripe/update_certs.php
+/include/stripe/Makefile
+/include/stripe/CODE_OF_CONDUCT.md
+/include/stripe/phpdoc.dist.xml
+/include/stripe/phpstan*
+/include/stripe/phpunit*
+
 # Release + dev tooling (not shipped to users)
 /bin
 /node_modules

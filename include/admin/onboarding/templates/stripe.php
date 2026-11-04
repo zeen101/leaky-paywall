@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $onboarding = new Leaky_Paywall_Onboarding();
 $connect_url = $onboarding->get_connect_url();
 ?>

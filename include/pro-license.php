@@ -291,3 +291,27 @@ function leaky_paywall_pro_is_active() {
 function leaky_paywall_get_pro_license_key() {
 	return Leaky_Paywall_Pro_License::get_key();
 }
+
+/**
+ * Public helper: is the Leaky Paywall Pro plugin installed and active?
+ *
+ * The Pro license and the Pro plugin are separate. The license is entered in
+ * core; installing and updating extensions, and the Pro-only reports, live in
+ * the Pro plugin, which WordPress.org-hosted core does not include.
+ *
+ * @since 5.3.3
+ * @return bool
+ */
+function leaky_paywall_pro_plugin_is_active() {
+	return defined( 'LEAKY_PAYWALL_PRO_VERSION' );
+}
+
+/**
+ * Where a Pro customer downloads the Leaky Paywall Pro plugin.
+ *
+ * @since 5.3.3
+ * @return string
+ */
+function leaky_paywall_pro_plugin_download_url() {
+	return apply_filters( 'leaky_paywall_pro_plugin_download_url', 'https://leakypaywall.com/my-account/#tabs-2' );
+}

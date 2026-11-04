@@ -5,6 +5,10 @@
  * @package Leaky Paywall
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Load the base class
  */
@@ -90,7 +94,13 @@ class LP_Incomplete_User {
 
 						if ( !empty( $user_data ) ) {
 							foreach ( $user_data as $key => $value ) {
-								echo '<p><strong>' . esc_html( $key ) . '</strong>: ' . esc_html( $value ) . '</p>';
+								// Never show a password, or its hash, even on records saved
+								// before 5.3.3 that still hold one.
+								if ( in_array( $key, array( 'password', 'confirm_password', 'password_hash' ), true ) ) {
+									continue;
+								}
+
+								echo '<p><strong>' . esc_html( $key ) . '</strong>: ' . esc_html( is_scalar( $value ) ? $value : wp_json_encode( $value ) ) . '</p>';
 							}
 						}
 						
@@ -104,9 +114,7 @@ class LP_Incomplete_User {
 					</th>
 					<td>
 						<?php
-						echo '<pre>';
-						print_r( $customer_data );
-						echo '</pre>';
+						echo '<pre>' . esc_html( print_r( $customer_data, true ) ) . '</pre>'; // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
 						?>
 					</td>
 				</tr>

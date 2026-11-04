@@ -6,6 +6,10 @@
  * @since 4.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Load additional gateway include files
  *
@@ -232,6 +236,7 @@ add_action( 'init', 'leaky_paywall_process_gateway_webhooks', -99999 );
  * @return      void
  */
 function leaky_paywall_process_gateway_confirmations() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	if ( empty( $_GET['leaky-paywall-confirm'] ) ) {
 		return;
@@ -254,6 +259,7 @@ function leaky_paywall_process_gateway_confirmations() {
 	}
 
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 add_action( 'wp', 'leaky_paywall_process_gateway_confirmations', -99999 );
 
 

@@ -6,6 +6,10 @@
  * @package Leaky Paywall
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Load the base class
  */
@@ -225,11 +229,11 @@ class LP_Transaction_Post_Type
 			<h3><?php esc_html_e( 'Customer', 'leaky-paywall' ); ?></h3>
 			<div class="lp-transaction-fields">
 				<?php
-				$full_name = trim( esc_html( $first_name ) . ' ' . esc_html( $last_name ) );
+				$full_name = trim( $first_name . ' ' . $last_name );
 				if ( $full_name ) :
 				?>
 					<span class="lp-field-label"><?php esc_html_e( 'Name', 'leaky-paywall' ); ?></span>
-					<span class="lp-field-value"><?php echo $full_name; ?></span>
+					<span class="lp-field-value"><?php echo esc_html( $full_name ); ?></span>
 				<?php endif; ?>
 
 				<?php if ( $email ) : ?>
@@ -449,12 +453,12 @@ class LP_Transaction_Post_Type
 
 		$columns = array(
 			'cb'      => '<input type="checkbox" />',
-			'email'   => __('Email'),
-			'level'   => __('Level'),
-			'price'   => __('Price'),
-			'created' => __('Created'),
-			'status'  => __('Status'),
-			'type'    => __('Payment Type'),
+			'email'   => __('Email', 'leaky-paywall'),
+			'level'   => __('Level', 'leaky-paywall'),
+			'price'   => __('Price', 'leaky-paywall'),
+			'created' => __('Created', 'leaky-paywall'),
+			'status'  => __('Status', 'leaky-paywall'),
+			'type'    => __('Payment Type', 'leaky-paywall'),
 		);
 
 		return $columns;
@@ -493,11 +497,11 @@ class LP_Transaction_Post_Type
 					$display_total = floatval( $sub_total ) + floatval( $tax_amt );
 					echo esc_html( leaky_paywall_get_current_currency_symbol() . number_format( $display_total, 2 ) );
 				} elseif (is_numeric($price)) {
-					$formatted = esc_html(leaky_paywall_get_current_currency_symbol() . number_format($price, 2));
+					$formatted = leaky_paywall_get_current_currency_symbol() . number_format($price, 2);
 					if ($price < 0) {
-						echo '<span class="lp-txn-price--negative">' . $formatted . '</span>';
+						echo '<span class="lp-txn-price--negative">' . esc_html( $formatted ) . '</span>';
 					} else {
-						echo $formatted;
+						echo esc_html( $formatted );
 					}
 				} else {
 					echo esc_html(leaky_paywall_get_current_currency_symbol() . $price);
@@ -540,14 +544,15 @@ class LP_Transaction_Post_Type
 	 */
 	public function add_filters($post_type, $which)
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ('lp_transaction' !== $post_type) {
 			return;
 		}
 
-		$current_type    = isset($_GET['lp_payment_type']) ? sanitize_text_field($_GET['lp_payment_type']) : '';
-		$current_level   = isset($_GET['lp_level']) ? sanitize_text_field($_GET['lp_level']) : '';
-		$current_gateway = isset($_GET['lp_gateway']) ? sanitize_text_field($_GET['lp_gateway']) : '';
-		$current_date    = isset($_GET['lp_date_range']) ? sanitize_text_field($_GET['lp_date_range']) : '';
+		$current_type    = isset($_GET['lp_payment_type']) ? sanitize_text_field(wp_unslash($_GET['lp_payment_type'])) : '';
+		$current_level   = isset($_GET['lp_level']) ? sanitize_text_field(wp_unslash($_GET['lp_level'])) : '';
+		$current_gateway = isset($_GET['lp_gateway']) ? sanitize_text_field(wp_unslash($_GET['lp_gateway'])) : '';
+		$current_date    = isset($_GET['lp_date_range']) ? sanitize_text_field(wp_unslash($_GET['lp_date_range'])) : '';
 
 		// Date range filter.
 		?>
@@ -619,6 +624,7 @@ class LP_Transaction_Post_Type
 			<?php
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Modify the query based on the selected filters.
@@ -627,6 +633,7 @@ class LP_Transaction_Post_Type
 	 */
 	public function apply_filters($query)
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		global $pagenow;
 
 		if (!is_admin() || 'edit.php' !== $pagenow || !$query->is_main_query()) {
@@ -644,7 +651,7 @@ class LP_Transaction_Post_Type
 
 		// Payment type filter.
 		if (!empty($_GET['lp_payment_type'])) {
-			$type = sanitize_text_field($_GET['lp_payment_type']);
+			$type = sanitize_text_field(wp_unslash($_GET['lp_payment_type']));
 
 			switch ($type) {
 				case 'paid':
@@ -745,7 +752,7 @@ class LP_Transaction_Post_Type
 		if (isset($_GET['lp_level']) && '' !== $_GET['lp_level']) {
 			$meta_query[] = array(
 				'key'     => '_level_id',
-				'value'   => sanitize_text_field($_GET['lp_level']),
+				'value'   => sanitize_text_field(wp_unslash($_GET['lp_level'])),
 				'compare' => '=',
 			);
 		}
@@ -754,7 +761,7 @@ class LP_Transaction_Post_Type
 		if (!empty($_GET['lp_gateway'])) {
 			$meta_query[] = array(
 				'key'     => '_gateway',
-				'value'   => sanitize_text_field($_GET['lp_gateway']),
+				'value'   => sanitize_text_field(wp_unslash($_GET['lp_gateway'])),
 				'compare' => '=',
 			);
 		}
@@ -765,7 +772,7 @@ class LP_Transaction_Post_Type
 
 		// Date range filter.
 		if (!empty($_GET['lp_date_range'])) {
-			$range = sanitize_text_field($_GET['lp_date_range']);
+			$range = sanitize_text_field(wp_unslash($_GET['lp_date_range']));
 			$after = '';
 
 			switch ($range) {
@@ -811,6 +818,7 @@ class LP_Transaction_Post_Type
 			$query->set('orderby', 'meta_value_num');
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Remove the default WordPress months dropdown for transactions.
