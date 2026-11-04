@@ -2722,8 +2722,9 @@ function leaky_paywall_stripe_tax_preview() {
 	// The registration form, read the way step one reads it, so extensions
 	// such as Coupons shape the subscription made here as they do one made
 	// there. The level is the one this request is for, whatever the form says.
-	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
-	parse_str( $form_data, $fields );
+	$form_data = isset( $_POST['form_data'] ) ? wp_unslash( $_POST['form_data'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each field is sanitized below, after decoding.
+	parse_str( (string) $form_data, $fields );
+	$fields             = leaky_paywall_sanitize_registration_fields( $fields );
 	$fields['level_id'] = (string) $level_id;
 
 	// The customer id comes from the browser, and logged-out visitors can call

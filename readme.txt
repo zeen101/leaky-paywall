@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.1
+Stable tag: 5.3.2
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,9 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.2 =
+* Security: Fixed a stored cross-site scripting issue in the registration form (CVE-2026-104336). Names and other registration fields are now sanitized before they are saved or sent to Stripe, and the Incomplete Users screen escapes the details it displays. Thanks to 0xabdoulaye for responsibly disclosing this through Wordfence.
 
 = 5.3.1 =
 * Improvement: Logged-in subscribers can now switch plans when automatic tax is on. Their existing Stripe subscription is changed and tax is calculated on the new plan.

@@ -225,14 +225,46 @@ function leaky_paywall_subscriber_registration( $subscriber_data ) {
 }
 
 /**
+ * Sanitize the fields of a serialized registration form.
+ *
+ * The form arrives as one urlencoded string, so it has to be sanitized after
+ * parse_str() decodes it. Sanitizing the encoded string let percent-encoded
+ * markup through to the Stripe customer and the incomplete-user record.
+ * Passwords are left as entered.
+ *
+ * @param array $fields Parsed form fields.
+ * @return array
+ */
+function leaky_paywall_sanitize_registration_fields( $fields ) {
+
+	$sanitized = array();
+
+	foreach ( (array) $fields as $key => $value ) {
+
+		if ( is_array( $value ) ) {
+			$sanitized[ $key ] = leaky_paywall_sanitize_registration_fields( $value );
+		} elseif ( in_array( $key, array( 'password', 'confirm_password' ), true ) ) {
+			$sanitized[ $key ] = (string) $value;
+		} elseif ( 'email_address' === $key ) {
+			$sanitized[ $key ] = sanitize_email( $value );
+		} else {
+			$sanitized[ $key ] = sanitize_text_field( $value );
+		}
+	}
+
+	return $sanitized;
+}
+
+/**
  * Validate first step of multistep registration form
  *
  * @since  4.0.0
  */
 function leaky_paywall_process_user_registration_validation() {
 
-	$form_data = isset( $_POST['form_data'] ) ? htmlspecialchars_decode( wp_kses_post( wp_unslash( $_POST['form_data'] ) ) ) : '';
-	parse_str( $form_data, $fields );
+	$form_data = isset( $_POST['form_data'] ) ? wp_unslash( $_POST['form_data'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each field is sanitized below, after decoding.
+	parse_str( (string) $form_data, $fields );
+	$fields = leaky_paywall_sanitize_registration_fields( $fields );
 
 	// Verified against the registration form's own nonce, which arrives in the
 	// serialized form data. This used to call check_ajax_referer() for a field the

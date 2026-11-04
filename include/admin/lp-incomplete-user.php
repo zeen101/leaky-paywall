@@ -104,9 +104,7 @@ class LP_Incomplete_User {
 					</th>
 					<td>
 						<?php
-						echo '<pre>';
-						print_r( $customer_data );
-						echo '</pre>';
+						echo '<pre>' . esc_html( print_r( $customer_data, true ) ) . '</pre>'; // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
 						?>
 					</td>
 				</tr>

@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.3.1\n"
+"Project-Id-Version: Leaky Paywall 5.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-27T17:22:34+00:00\n"
+"POT-Creation-Date: 2026-11-04T17:09:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -310,7 +310,7 @@ msgstr ""
 #: include/admin/subscribers/subscriber.php:636
 #: include/admin/subscribers/subscriber.php:910
 #: include/admin/tools/tools.php:261
-#: include/registration-functions.php:1322
+#: include/registration-functions.php:1354
 #: shortcodes.php:325
 #: templates/shortcode-account.php:294
 msgid "Payment Method"
@@ -2604,7 +2604,7 @@ msgid "Month"
 msgstr ""
 
 #: include/admin/onboarding/templates/restrictions.php:34
-#: include/registration-functions.php:1340
+#: include/registration-functions.php:1372
 msgid "Year"
 msgstr ""
 
@@ -3247,7 +3247,7 @@ msgstr ""
 
 #: include/admin/settings/settings.php:1363
 #: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:983
-#: include/registration-functions.php:1044
+#: include/registration-functions.php:1076
 #: shortcodes.php:368
 #: templates/shortcode-account.php:379
 msgid "Billing Address"
@@ -3612,7 +3612,7 @@ msgstr ""
 
 #: include/admin/subscribers/subscriber.php:429
 #: include/admin/subscribers/subscriber.php:795
-#: include/registration-functions.php:1033
+#: include/registration-functions.php:1065
 #: shortcodes.php:869
 #: templates/shortcode-account.php:319
 msgid "First Name"
@@ -3620,7 +3620,7 @@ msgstr ""
 
 #: include/admin/subscribers/subscriber.php:433
 #: include/admin/subscribers/subscriber.php:799
-#: include/registration-functions.php:1037
+#: include/registration-functions.php:1069
 #: shortcodes.php:874
 #: templates/shortcode-account.php:325
 msgid "Last Name"
@@ -4433,7 +4433,7 @@ msgid "Subscribe with Paypal"
 msgstr ""
 
 #: include/gateways/stripe/functions.php:277
-#: include/registration-functions.php:1420
+#: include/registration-functions.php:1452
 msgid "There was an error. Please try again."
 msgstr ""
 
@@ -4779,7 +4779,7 @@ msgid "Leaky Paywall Pro is not active on this site."
 msgstr ""
 
 #: include/registration-functions.php:65
-#: include/registration-functions.php:368
+#: include/registration-functions.php:400
 #: shortcodes.php:568
 msgid "You are already subscribed to this level."
 msgstr ""
@@ -4788,196 +4788,196 @@ msgstr ""
 msgid "A user could not be created. Please check your details and try again."
 msgstr ""
 
-#: include/registration-functions.php:251
+#: include/registration-functions.php:283
 msgid "This page has expired. Please refresh the page and try again."
 msgstr ""
 
-#: include/registration-functions.php:296
-#: include/registration-functions.php:897
+#: include/registration-functions.php:328
+#: include/registration-functions.php:929
 msgid "Please enter your first name"
 msgstr ""
 
-#: include/registration-functions.php:302
-#: include/registration-functions.php:901
+#: include/registration-functions.php:334
+#: include/registration-functions.php:933
 msgid "Please enter your last name"
 msgstr ""
 
-#: include/registration-functions.php:308
-#: include/registration-functions.php:905
+#: include/registration-functions.php:340
+#: include/registration-functions.php:937
 msgid "Invalid email"
 msgstr ""
 
 #. Translators: 1: login url, 2: lost password url
-#: include/registration-functions.php:321
+#: include/registration-functions.php:353
 #, php-format
 msgid "An account with this email already exists. <a href=\"%1$s\">Log in</a> to subscribe, or <a href=\"%2$s\">reset your password</a> if you don't remember it."
 msgstr ""
 
-#: include/registration-functions.php:332
-#: include/registration-functions.php:910
+#: include/registration-functions.php:364
+#: include/registration-functions.php:942
 msgid "Invalid username"
 msgstr ""
 
-#: include/registration-functions.php:338
+#: include/registration-functions.php:370
 msgid "Username already exists. Please log in or try a different one."
 msgstr ""
 
-#: include/registration-functions.php:345
-#: include/registration-functions.php:915
+#: include/registration-functions.php:377
+#: include/registration-functions.php:947
 msgid "Please enter a password"
 msgstr ""
 
-#: include/registration-functions.php:351
-#: include/registration-functions.php:919
+#: include/registration-functions.php:383
+#: include/registration-functions.php:951
 msgid "Passwords do not match"
 msgstr ""
 
-#: include/registration-functions.php:357
-#: include/registration-functions.php:889
+#: include/registration-functions.php:389
+#: include/registration-functions.php:921
 msgid "You must agree to the terms and conditions."
 msgstr ""
 
-#: include/registration-functions.php:411
-#: include/registration-functions.php:627
+#: include/registration-functions.php:443
+#: include/registration-functions.php:659
 msgid "Could not create customer."
 msgstr ""
 
-#: include/registration-functions.php:589
-#: include/registration-functions.php:595
+#: include/registration-functions.php:621
+#: include/registration-functions.php:627
 msgid "Could not retrieve customer."
 msgstr ""
 
-#: include/registration-functions.php:676
+#: include/registration-functions.php:708
 msgid "It looks like a signup for this email was started a few minutes ago. Please check your inbox for confirmation, or contact us if you need help."
 msgstr ""
 
-#: include/registration-functions.php:697
+#: include/registration-functions.php:729
 msgid "Could not create subscription"
 msgstr ""
 
-#: include/registration-functions.php:746
+#: include/registration-functions.php:778
 msgid "Could not create payment intent."
 msgstr ""
 
-#: include/registration-functions.php:855
+#: include/registration-functions.php:887
 msgid "Your submission could not be processed."
 msgstr ""
 
 #. Translators: %s - login url
-#: include/registration-functions.php:926
+#: include/registration-functions.php:958
 #, php-format
 msgid "Email already registered. Please <a href=\"%s\">login</a>."
 msgstr ""
 
-#: include/registration-functions.php:930
+#: include/registration-functions.php:962
 msgid "Username already taken"
 msgstr ""
 
-#: include/registration-functions.php:934
+#: include/registration-functions.php:966
 msgid "Please enter a username"
 msgstr ""
 
-#: include/registration-functions.php:969
+#: include/registration-functions.php:1001
 #: shortcodes.php:379
 #: templates/shortcode-account.php:390
 msgid "Name on Card"
 msgstr ""
 
-#: include/registration-functions.php:974
-#: include/registration-functions.php:1325
+#: include/registration-functions.php:1006
+#: include/registration-functions.php:1357
 msgid "Card Number"
 msgstr ""
 
-#: include/registration-functions.php:979
-#: include/registration-functions.php:1351
+#: include/registration-functions.php:1011
+#: include/registration-functions.php:1383
 msgid "CVC"
 msgstr ""
 
-#: include/registration-functions.php:984
+#: include/registration-functions.php:1016
 msgid "Card Zip or Postal Code"
 msgstr ""
 
-#: include/registration-functions.php:989
+#: include/registration-functions.php:1021
 msgid "Expiration (MM/YYYY)"
 msgstr ""
 
-#: include/registration-functions.php:1030
+#: include/registration-functions.php:1062
 msgid "Billing Name"
 msgstr ""
 
-#: include/registration-functions.php:1034
+#: include/registration-functions.php:1066
 msgid "Jane"
 msgstr ""
 
-#: include/registration-functions.php:1038
+#: include/registration-functions.php:1070
 msgid "Doe"
 msgstr ""
 
-#: include/registration-functions.php:1047
+#: include/registration-functions.php:1079
 msgid "Address"
 msgstr ""
 
-#: include/registration-functions.php:1053
+#: include/registration-functions.php:1085
 #: shortcodes.php:388
 #: templates/shortcode-account.php:402
 msgid "City"
 msgstr ""
 
-#: include/registration-functions.php:1057
+#: include/registration-functions.php:1089
 msgid "State"
 msgstr ""
 
-#: include/registration-functions.php:1061
+#: include/registration-functions.php:1093
 msgid "ZIP"
 msgstr ""
 
-#: include/registration-functions.php:1067
+#: include/registration-functions.php:1099
 msgid "Country"
 msgstr ""
 
-#: include/registration-functions.php:1331
+#: include/registration-functions.php:1363
 msgid "Expiry Month"
 msgstr ""
 
-#: include/registration-functions.php:1436
+#: include/registration-functions.php:1468
 msgid "This email is invalid. Please enter a different email."
 msgstr ""
 
-#: include/registration-functions.php:1448
+#: include/registration-functions.php:1480
 msgid "This email already exists. Please login or enter a different email."
 msgstr ""
 
-#: include/registration-functions.php:1465
+#: include/registration-functions.php:1497
 msgid "Username already taken."
 msgstr ""
 
-#: include/registration-functions.php:1751
+#: include/registration-functions.php:1783
 msgid "No user was returned."
 msgstr ""
 
 #. translators: %s: site name
-#: include/registration-functions.php:1785
+#: include/registration-functions.php:1817
 #, php-format
 msgid "A subscriber paid but their account could not be created on %s"
 msgstr ""
 
-#: include/registration-functions.php:1787
+#: include/registration-functions.php:1819
 msgid "A reader completed a payment, but WordPress refused to create their account, so they cannot log in."
 msgstr ""
 
-#: include/registration-functions.php:1789
+#: include/registration-functions.php:1821
 msgid "Email:"
 msgstr ""
 
-#: include/registration-functions.php:1792
+#: include/registration-functions.php:1824
 msgid "Customer ID:"
 msgstr ""
 
-#: include/registration-functions.php:1795
+#: include/registration-functions.php:1827
 msgid "Reason:"
 msgstr ""
 
-#: include/registration-functions.php:1797
+#: include/registration-functions.php:1829
 msgid "Add them under Leaky Paywall > Subscribers > Add Subscriber, using the customer ID above so their renewals stay linked. If this keeps happening, another plugin or your host is blocking new accounts."
 msgstr ""
 
