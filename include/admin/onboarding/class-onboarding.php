@@ -38,6 +38,7 @@ class Leaky_Paywall_Onboarding {
 	 * Redirect to onboarding on first activation.
 	 */
 	public function maybe_redirect() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( ! get_option( 'leaky_paywall_onboarding_redirect', false ) ) {
 			return;
 		}
@@ -61,6 +62,7 @@ class Leaky_Paywall_Onboarding {
 		wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-setup' ) );
 		exit;
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Enqueue onboarding styles.
@@ -82,7 +84,7 @@ class Leaky_Paywall_Onboarding {
 	 * Main page router.
 	 */
 	public function render_page() {
-		$step = isset( $_GET['step'] ) ? sanitize_text_field( $_GET['step'] ) : '';
+		$step = isset( $_GET['step'] ) ? sanitize_text_field( wp_unslash( $_GET['step'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- which onboarding screen to show.
 
 		$steps = array(
 			''             => array( 'num' => 1, 'label' => __( 'Welcome', 'leaky-paywall' ) ),
@@ -159,32 +161,38 @@ class Leaky_Paywall_Onboarding {
 	 */
 	public function process_data() {
 
+		// Every step changes site settings, so only an admin may run them. The
+		// nonce on each step proves intent; this proves permission.
+		if ( empty( $_POST ) || ! current_user_can( 'manage_options' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- each step verifies its own nonce below.
+			return;
+		}
+
 		// Welcome step — save publication types.
-		if ( isset( $_POST['leaky_paywall_onboarding_welcome'] ) && wp_verify_nonce( $_POST['leaky_paywall_onboarding_welcome'], 'leaky_paywall_onboarding_welcome' ) ) {
+		if ( isset( $_POST['leaky_paywall_onboarding_welcome'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_onboarding_welcome'] ) ), 'leaky_paywall_onboarding_welcome' ) ) {
 
 			if ( ! empty( $_POST['publication_types'] ) ) {
-				$publication_types = array_map( 'sanitize_text_field', $_POST['publication_types'] );
+				$publication_types = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['publication_types'] ) );
 				update_option( 'leaky_paywall_publication_types', $publication_types, false );
 			}
 
-			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=tracking' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=tracking' ) );
 			exit;
 		}
 
 		// Tracking opt-in step.
-		elseif ( isset( $_POST['leaky_paywall_onboarding_tracking'] ) && wp_verify_nonce( $_POST['leaky_paywall_onboarding_tracking'], 'leaky_paywall_onboarding_tracking' ) ) {
+		elseif ( isset( $_POST['leaky_paywall_onboarding_tracking'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_onboarding_tracking'] ) ), 'leaky_paywall_onboarding_tracking' ) ) {
 
 			update_option( 'leaky_paywall_tracking_allow', 1, false );
 
 			// Send tracking data immediately so publication types reach the app right away.
 			leaky_paywall_tracking_send();
 
-			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=pages' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=pages' ) );
 			exit;
 		}
 
 		// Create pages step.
-		elseif ( isset( $_POST['leaky_paywall_onboarding_pages'] ) && wp_verify_nonce( $_POST['leaky_paywall_onboarding_pages'], 'leaky_paywall_onboarding_pages' ) ) {
+		elseif ( isset( $_POST['leaky_paywall_onboarding_pages'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_onboarding_pages'] ) ), 'leaky_paywall_onboarding_pages' ) ) {
 
 			$settings = get_leaky_paywall_settings();
 
@@ -227,12 +235,12 @@ class Leaky_Paywall_Onboarding {
 
 			update_leaky_paywall_settings( $settings );
 
-			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=listbuilder' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=listbuilder' ) );
 			exit;
 		}
 
 		// List Builder step.
-		elseif ( isset( $_POST['leaky_paywall_onboarding_listbuilder'] ) && wp_verify_nonce( $_POST['leaky_paywall_onboarding_listbuilder'], 'leaky_paywall_onboarding_listbuilder' ) ) {
+		elseif ( isset( $_POST['leaky_paywall_onboarding_listbuilder'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_onboarding_listbuilder'] ) ), 'leaky_paywall_onboarding_listbuilder' ) ) {
 
 			if ( ! empty( $_POST['enable_listbuilder'] ) ) {
 				$lb_settings                         = get_option( 'lp-listbuilder', array() );
@@ -248,16 +256,18 @@ class Leaky_Paywall_Onboarding {
 				update_option( 'lp-listbuilder', $lb_settings );
 			}
 
-			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=restrictions' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=restrictions' ) );
 			exit;
 		}
 
 		// Restrictions step.
-		elseif ( isset( $_POST['leaky_paywall_onboarding_restrictions'] ) && wp_verify_nonce( $_POST['leaky_paywall_onboarding_restrictions'], 'leaky_paywall_onboarding_restrictions' ) ) {
+		elseif ( isset( $_POST['leaky_paywall_onboarding_restrictions'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_onboarding_restrictions'] ) ), 'leaky_paywall_onboarding_restrictions' ) ) {
 
 			$settings = get_leaky_paywall_settings();
 
-			$allowed_value = isset( $_POST['free_posts'] ) ? absint( $_POST['free_posts'] ) : 1;
+			$allowed_value = isset( $_POST['free_posts'] ) ? absint( wp_unslash( $_POST['free_posts'] ) ) : 1;
+			$paid_price    = isset( $_POST['paid_level_price'] ) ? (float) sanitize_text_field( wp_unslash( $_POST['paid_level_price'] ) ) : 0;
+			$paid_interval = isset( $_POST['paid_level_interval'] ) ? sanitize_key( wp_unslash( $_POST['paid_level_interval'] ) ) : '';
 
 			$settings['free_articles'] = $allowed_value;
 			$settings['restrictions']  = array(
@@ -273,13 +283,13 @@ class Leaky_Paywall_Onboarding {
 			$settings['restriction_method']            = 'automatic';
 			$settings['enable_js_cookie_restrictions'] = 'on';
 
-			if ( ! empty( $_POST['paid_level_price'] ) && floatval( $_POST['paid_level_price'] ) > 0 ) {
+			if ( $paid_price > 0 ) {
 				$settings['levels']['1'] = array(
-					'label'                    => ! empty( $_POST['paid_level_label'] ) ? sanitize_text_field( $_POST['paid_level_label'] ) : 'Digital Subscription',
-					'price'                    => sanitize_text_field( $_POST['paid_level_price'] ),
+					'label'                    => ! empty( $_POST['paid_level_label'] ) ? sanitize_text_field( wp_unslash( $_POST['paid_level_label'] ) ) : 'Digital Subscription',
+					'price'                    => (string) $paid_price,
 					'subscription_length_type' => 'limited',
 					'interval_count'           => 1,
-					'interval'                 => isset( $_POST['paid_level_interval'] ) && in_array( $_POST['paid_level_interval'], array( 'month', 'year' ), true ) ? $_POST['paid_level_interval'] : 'month',
+					'interval'                 => in_array( $paid_interval, array( 'month', 'year' ), true ) ? $paid_interval : 'month',
 					'recurring'                => 'off',
 					'plan_id'                  => array(),
 					'post_types'               => array(
@@ -296,12 +306,12 @@ class Leaky_Paywall_Onboarding {
 
 			update_leaky_paywall_settings( $settings );
 
-			wp_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=stripe' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=leaky-paywall-setup&step=stripe' ) );
 			exit;
 		}
 
 		// Welcome email step.
-		elseif ( isset( $_POST['leaky_paywall_onboarding_email'] ) && wp_verify_nonce( $_POST['leaky_paywall_onboarding_email'], 'leaky_paywall_onboarding_email' ) ) {
+		elseif ( isset( $_POST['leaky_paywall_onboarding_email'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['leaky_paywall_onboarding_email'] ) ), 'leaky_paywall_onboarding_email' ) ) {
 
 			$settings = get_leaky_paywall_settings();
 
@@ -317,7 +327,7 @@ class Leaky_Paywall_Onboarding {
 
 			update_leaky_paywall_settings( $settings );
 
-			wp_redirect( admin_url( 'admin.php?page=issuem-leaky-paywall&lp_onboarding_complete=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=issuem-leaky-paywall&lp_onboarding_complete=1' ) );
 			exit;
 		}
 	}

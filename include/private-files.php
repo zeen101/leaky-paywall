@@ -211,7 +211,7 @@ function leaky_paywall_delete_log_files() {
 	}
 
 	foreach ( $files as $file ) {
-		if ( @unlink( $file ) ) {
+		if ( leaky_paywall_delete_file( $file ) ) {
 			++$deleted;
 		}
 	}
@@ -241,7 +241,7 @@ function leaky_paywall_maybe_migrate_debug_log() {
 
 	if ( $legacy ) {
 		foreach ( $legacy as $file ) {
-			if ( @unlink( $file ) ) {
+			if ( leaky_paywall_delete_file( $file ) ) {
 				++$deleted;
 			}
 		}
@@ -330,10 +330,10 @@ function leaky_paywall_rotate_log_file() {
 
 	// Only one generation is kept, so the existing one makes way.
 	if ( file_exists( $previous ) ) {
-		@unlink( $previous );
+		wp_delete_file( $previous );
 	}
 
-	if ( ! @rename( $current, $previous ) ) {
+	if ( ! @rename( $current, $previous ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- rotates LP's own file within the same directory.
 		return false;
 	}
 
@@ -448,7 +448,7 @@ function leaky_paywall_delete_orphan_log_files() {
 			continue;
 		}
 
-		if ( @unlink( $file ) ) {
+		if ( leaky_paywall_delete_file( $file ) ) {
 			++$deleted;
 		}
 	}
@@ -508,7 +508,7 @@ function leaky_paywall_maybe_migrate_subscriber_exports() {
 
 	if ( $files ) {
 		foreach ( $files as $file ) {
-			if ( @unlink( $file ) ) {
+			if ( leaky_paywall_delete_file( $file ) ) {
 				++$deleted;
 			}
 		}

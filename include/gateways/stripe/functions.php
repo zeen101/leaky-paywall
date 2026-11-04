@@ -6,6 +6,10 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Check whether a recent duplicate signup attempt exists for this email + plan.
  *
@@ -158,73 +162,11 @@ add_filter( 'leaky_paywall_subscription_options_payment_options', 'leaky_paywall
  */
 function leaky_paywall_stripe_checkout_button( $level, $level_id ) {
 
-	$results  = '';
-	$settings = get_leaky_paywall_settings();
-	$currency = apply_filters( 'leaky_paywall_stripe_currency', leaky_paywall_get_currency() );
-
-	// @todo: make this a function so we can use it on the credit card form too.
-	if ( in_array( strtoupper( $currency ), array( 'BIF', 'DJF', 'JPY', 'KRW', 'PYG', 'VND', 'XAF', 'XPF', 'CLP', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XOF' ) ) ) {
-		// Zero-Decimal Currencies.
-		// https://support.stripe.com/questions/which-zero-decimal-currencies-does-stripe-support  .
-		$stripe_price = number_format( floatval( $level['price'] ), '0', '', '' );
-	} else {
-		$stripe_price = number_format( floatval( $level['price'] ), '2', '', '' ); // no decimals.
-	}
-	$publishable_key = 'on' === $settings['test_mode'] ? $settings['test_publishable_key'] : $settings['live_publishable_key'];
-	$secret_key      = ( 'on' === $settings['test_mode'] ) ? $settings['test_secret_key'] : $settings['live_secret_key'];
-
-	if ( ! $secret_key ) {
-		return '<p>Please enter Stripe API keys in <a href="' . admin_url() . 'admin.php?page=leaky-paywall-settings&tab=payments">your Leaky Paywall settings</a>.</p>';
-	}
-
-	if ( ! empty( $level['recurring'] ) && 'on' === $level['recurring'] ) {
-
-		try {
-
-			$plan_args = array(
-				'stripe_price' => $stripe_price,
-				'currency'     => $currency,
-				'secret_key'   => $secret_key,
-			);
-
-			$stripe_plan = leaky_paywall_get_stripe_plan( $level, $level_id, $plan_args );
-
-			$results .= '<form action="' . esc_url( add_query_arg( 'leaky-paywall-confirm', 'stripe_checkout', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
-						  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
-						  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
-								  data-key="' . esc_js( $publishable_key ) . '"
-								  data-locale="auto"
-								  data-label="' . apply_filters( 'leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '"
-								  data-plan="' . esc_js( $stripe_plan->id ) . '"
-								  data-currency="' . esc_js( $currency ) . '"
-								  data-description="' . esc_js( $level['label'] ) . '">
-						  </script>
-						  ' . apply_filters( 'leaky_paywall_pay_with_stripe_recurring_payment_form_after_script', '' ) . '
-						</form>';
-		} catch ( \Throwable $th ) {
-
-			/* Translators: %s - Error message. */
-			$results = '<h1>' . sprintf( __( 'Error processing request: %s', 'leaky-paywall' ), $th->getMessage() ) . '</h1>';
-		}
-	} else {
-
-		$results .= '<form action="' . esc_url( add_query_arg( 'leaky-paywall-confirm', 'stripe_checkout', get_page_link( $settings['page_for_subscription'] ) ) ) . '" method="post">
-					  <input type="hidden" name="custom" value="' . esc_js( $level_id ) . '" />
-					  <script src="https://checkout.stripe.com/v2/checkout.js" class="stripe-button"
-							  data-key="' . esc_js( $publishable_key ) . '"
-							  data-locale="auto"
-							  data-label="' . apply_filters( 'leaky_paywall_stripe_button_label', __( 'Subscribe', 'leaky-paywall' ) ) . '"
-							  data-amount="' . esc_js( $stripe_price ) . '"
-							  data-currency="' . esc_js( $currency ) . '"
-							  data-description="' . esc_js( $level['label'] ) . '">
-					  </script>
-						  ' . apply_filters( 'leaky_paywall_pay_with_stripe_non_recurring_payment_form_after_script', '' ) . '
-					</form>';
-	}
-
-	$results = '<button class="lp-stripe-checkout-button" data-level-id="' . $level_id . '">Subscribe</button>';
-
-	return '<div class="leaky-paywall-stripe-button leaky-paywall-payment-button">' . $results . '</div>';
+	// This used to build a legacy Stripe Checkout (checkout.js v2) form, then
+	// replace it with this button before returning, so only the button was
+	// ever output. The unused form, and the Stripe plan lookup it made on
+	// every render, are gone.
+	return '<div class="leaky-paywall-stripe-button leaky-paywall-payment-button"><button class="lp-stripe-checkout-button" data-level-id="' . esc_attr( $level_id ) . '">' . esc_html__( 'Subscribe', 'leaky-paywall' ) . '</button></div>';
 }
 
 /**
@@ -2259,6 +2201,7 @@ function leaky_paywall_finalize_subscription_from_payment_intent( $pi, $stripe, 
 add_action( 'init', 'leaky_paywall_maybe_process_payment_intent_redirect_url' );
 
 function leaky_paywall_maybe_process_payment_intent_redirect_url() {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	if ( ! isset( $_GET['payment_intent'] ) ) {
 		return;
@@ -2298,6 +2241,7 @@ function leaky_paywall_maybe_process_payment_intent_redirect_url() {
 	wp_safe_redirect( leaky_paywall_get_redirect_url( $settings, $subscriber_data ) );
 	exit;
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 function leaky_paywall_get_stripe_checkout_success_url() {
 
@@ -2364,6 +2308,7 @@ add_action('admin_init', 'leaky_paywall_connect_maybe_process_refresh');
 
 function leaky_paywall_connect_maybe_process_refresh()
 {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	if (!isset($_GET['connect_refresh'])) {
 		return;
@@ -2379,12 +2324,14 @@ function leaky_paywall_connect_maybe_process_refresh()
 		exit;
 	}
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 
 add_action('admin_init', 'leaky_paywall_connect_maybe_process_return');
 
 function leaky_paywall_connect_maybe_process_return()
 {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	if (!isset($_GET['connected_account_id'])) {
 		return;
@@ -2480,6 +2427,7 @@ function leaky_paywall_connect_maybe_process_return()
 	wp_safe_redirect(admin_url('admin.php?page=leaky-paywall-settings&tab=payments'));
 	exit;
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 /**
  * Sync email change to Stripe customer.
@@ -2693,21 +2641,25 @@ add_action( 'leaky_paywall_after_create_transaction', 'leaky_paywall_stripe_capt
 function leaky_paywall_stripe_tax_preview() {
 	check_ajax_referer( 'lp_tax_preview', 'nonce' );
 
+	// Level ID 0 is a real level, so a missing ID is rejected rather than
+	// read as 0.
+	if ( ! isset( $_POST['level_id'] ) || '' === $_POST['level_id'] ) {
+		wp_send_json_error( 'Invalid level.' );
+	}
+
 	$settings = get_leaky_paywall_settings();
-	$level_id = absint( $_POST['level_id'] );
+	$level_id = absint( wp_unslash( $_POST['level_id'] ) );
 	$level    = get_leaky_paywall_subscription_level( $level_id );
 
 	if ( ! $level ) {
 		wp_send_json_error( 'Invalid level.' );
 	}
 
-	$address = array(
-		'line1'       => sanitize_text_field( wp_unslash( $_POST['line1'] ) ),
-		'city'        => sanitize_text_field( wp_unslash( $_POST['city'] ) ),
-		'state'       => sanitize_text_field( wp_unslash( $_POST['state'] ) ),
-		'postal_code' => sanitize_text_field( wp_unslash( $_POST['postal_code'] ) ),
-		'country'     => sanitize_text_field( wp_unslash( $_POST['country'] ) ),
-	);
+	$address = array();
+
+	foreach ( array( 'line1', 'city', 'state', 'postal_code', 'country' ) as $field ) {
+		$address[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
+	}
 
 	$stripe = leaky_paywall_initialize_stripe_api();
 
@@ -3177,7 +3129,7 @@ function leaky_paywall_stripe_disconnect() {
 		return;
 	}
 
-	if ( sanitize_text_field( $_GET['action'] ) != 'lp_stripe_disconnect' ) {
+	if ( sanitize_text_field( wp_unslash($_GET['action']) ) != 'lp_stripe_disconnect' ) {
 		return;
 	}
 
@@ -3204,6 +3156,7 @@ add_action('admin_init', 'leaky_paywall_manually_process_incomplete_user');
 
 function leaky_paywall_manually_process_incomplete_user()
 {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 	if (!isset($_GET['lp_iu_email'])) {
 		return;
@@ -3213,7 +3166,7 @@ function leaky_paywall_manually_process_incomplete_user()
 		return;
 	}
 
-	$email = sanitize_email($_GET['lp_iu_email']);
+	$email = sanitize_email(wp_unslash($_GET['lp_iu_email']));
 
 	if ( !is_email( $email ) ) {
 		return;
@@ -3221,3 +3174,4 @@ function leaky_paywall_manually_process_incomplete_user()
 
 	leaky_paywall_create_subscriber_from_incomplete_user( $email );
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended

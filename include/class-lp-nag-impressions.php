@@ -8,6 +8,10 @@
  * @since 4.23.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class LP_Nag_Impressions {
 
 	/**
@@ -86,12 +90,11 @@ class LP_Nag_Impressions {
 	public static function record( $post_id, $nag_type = 'subscribe' ) {
 		global $wpdb;
 
-		$table_name = self::get_table_name();
 		$today      = current_time( 'Y-m-d' );
 
 		$wpdb->query(
 			$wpdb->prepare(
-				"INSERT INTO $table_name (post_id, nag_date, nag_type, count)
+				"INSERT INTO {$wpdb->prefix}lp_nag_impressions (post_id, nag_date, nag_type, count)
 				 VALUES (%d, %s, %s, 1)
 				 ON DUPLICATE KEY UPDATE count = count + 1",
 				$post_id,
@@ -110,12 +113,11 @@ class LP_Nag_Impressions {
 	public static function get_total_impressions( $period ) {
 		global $wpdb;
 
-		$table_name = self::get_table_name();
 		$after_date = gmdate( 'Y-m-d', strtotime( leaky_paywall_insights_get_formatted_period( $period ) ) );
 
 		$total = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COALESCE(SUM(count), 0) FROM $table_name WHERE nag_date >= %s",
+				"SELECT COALESCE(SUM(count), 0) FROM {$wpdb->prefix}lp_nag_impressions WHERE nag_date >= %s",
 				$after_date
 			)
 		);
@@ -132,13 +134,12 @@ class LP_Nag_Impressions {
 	public static function get_impressions_by_nag_type( $period ) {
 		global $wpdb;
 
-		$table_name = self::get_table_name();
 		$after_date = gmdate( 'Y-m-d', strtotime( leaky_paywall_insights_get_formatted_period( $period ) ) );
 
 		return $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT nag_type, SUM(count) AS total
-				 FROM $table_name
+				 FROM {$wpdb->prefix}lp_nag_impressions
 				 WHERE nag_date >= %s
 				 GROUP BY nag_type
 				 ORDER BY total DESC",
@@ -157,14 +158,13 @@ class LP_Nag_Impressions {
 	public static function get_top_posts_with_conversions( $period, $limit = 15 ) {
 		global $wpdb;
 
-		$table_name = self::get_table_name();
 		$after_date = gmdate( 'Y-m-d', strtotime( leaky_paywall_insights_get_formatted_period( $period ) ) );
 
 		// Get impressions per post.
 		$impressions = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT post_id, SUM(count) AS impressions
-				 FROM $table_name
+				 FROM {$wpdb->prefix}lp_nag_impressions
 				 WHERE nag_date >= %s
 				 GROUP BY post_id
 				 ORDER BY impressions DESC
@@ -245,9 +245,11 @@ class LP_Nag_Impressions {
 			$title      = get_the_title( $message_id );
 
 			if ( $title ) {
+				/* translators: %s: targeted message title */
 				return sprintf( __( 'Targeted: %s', 'leaky-paywall' ), $title );
 			}
 
+			/* translators: %d: targeted message ID */
 			return sprintf( __( 'Targeted: #%d', 'leaky-paywall' ), $message_id );
 		}
 
@@ -263,11 +265,10 @@ class LP_Nag_Impressions {
 	public static function get_total_for_nag_type( $nag_type ) {
 		global $wpdb;
 
-		$table_name = self::get_table_name();
 
 		$total = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COALESCE(SUM(count), 0) FROM $table_name WHERE nag_type = %s",
+				"SELECT COALESCE(SUM(count), 0) FROM {$wpdb->prefix}lp_nag_impressions WHERE nag_type = %s",
 				$nag_type
 			)
 		);
@@ -283,9 +284,8 @@ class LP_Nag_Impressions {
 	public static function get_days_of_data() {
 		global $wpdb;
 
-		$table_name = self::get_table_name();
 
-		$earliest = $wpdb->get_var( "SELECT MIN(nag_date) FROM $table_name" );
+		$earliest = $wpdb->get_var( "SELECT MIN(nag_date) FROM {$wpdb->prefix}lp_nag_impressions" );
 
 		if ( ! $earliest ) {
 			return 0;

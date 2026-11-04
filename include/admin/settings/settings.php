@@ -14,6 +14,7 @@ class Leaky_Paywall_Settings
 
 	public function settings_page()
 	{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 		if (isset($_GET['tab'])) {
 			$tab = sanitize_text_field(wp_unslash($_GET['tab']));
@@ -27,7 +28,7 @@ class Leaky_Paywall_Settings
 		$settings_tabs = $this->get_settings_tabs();
 		$current_tab = apply_filters('leaky_paywall_current_tab', $tab, $settings_tabs);
 		$sections = $this->get_settings_tab_sections($current_tab);
-		$current_section = !empty($_GET['section']) && !empty($sections) ? sanitize_text_field($_GET['section']) : 'general';
+		$current_section = !empty($_GET['section']) && !empty($sections) ? sanitize_text_field(wp_unslash($_GET['section'])) : 'general';
 
 		$settings_updated = $this->process_settings_update($current_tab, $current_section);
 		$level_deleted = $this->process_level_deleted($current_tab, $current_section);
@@ -154,6 +155,7 @@ class Leaky_Paywall_Settings
 
 		<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	public function output_tabs($current_tab)
 	{
@@ -397,7 +399,7 @@ class Leaky_Paywall_Settings
 									array(
 										'name'              => 'page_for_terms',
 										'echo'              => 1,
-										'show_option_none'  => esc_attr__('&mdash; Select &mdash;'),
+										'show_option_none'  => esc_attr__('&mdash; Select &mdash;', 'leaky-paywall'),
 										'option_none_value' => '0',
 										'selected'          => esc_attr($settings['page_for_terms']),
 									)
@@ -430,7 +432,7 @@ class Leaky_Paywall_Settings
 								array(
 									'name'     => 'page_for_login',
 									'echo'     => 1,
-									'show_option_none' => esc_attr__('&mdash; Select &mdash;'),
+									'show_option_none' => esc_attr__('&mdash; Select &mdash;', 'leaky-paywall'),
 									'option_none_value' => '0',
 									'selected' => esc_attr($settings['page_for_login']),
 								)
@@ -453,7 +455,7 @@ class Leaky_Paywall_Settings
 								array(
 									'name'     => 'page_for_subscription',
 									'echo'     => 1,
-									'show_option_none' => esc_attr__('&mdash; Select &mdash;'),
+									'show_option_none' => esc_attr__('&mdash; Select &mdash;', 'leaky-paywall'),
 									'option_none_value' => '0',
 									'selected' => esc_attr($settings['page_for_subscription']),
 								)
@@ -476,7 +478,7 @@ class Leaky_Paywall_Settings
 								array(
 									'name'     => 'page_for_register',
 									'echo'     => 1,
-									'show_option_none' => esc_attr__('&mdash; Select &mdash;'),
+									'show_option_none' => esc_attr__('&mdash; Select &mdash;', 'leaky-paywall'),
 									'option_none_value' => '0',
 									'selected' => esc_attr($settings['page_for_register']),
 								)
@@ -499,7 +501,7 @@ class Leaky_Paywall_Settings
 								array(
 									'name'     => 'page_for_profile',
 									'echo'     => 1,
-									'show_option_none' => esc_attr__('&mdash; Select &mdash;'),
+									'show_option_none' => esc_attr__('&mdash; Select &mdash;', 'leaky-paywall'),
 									'option_none_value' => '0',
 									'selected' => esc_attr($settings['page_for_profile']),
 								)
@@ -522,7 +524,7 @@ class Leaky_Paywall_Settings
 								array(
 									'name'     => 'page_for_after_subscribe',
 									'echo'     => 1,
-									'show_option_none' => esc_attr__('&mdash; Select &mdash;'),
+									'show_option_none' => esc_attr__('&mdash; Select &mdash;', 'leaky-paywall'),
 									'option_none_value' => '0',
 									'selected' => esc_attr($settings['page_for_after_subscribe']),
 								)
@@ -552,7 +554,9 @@ class Leaky_Paywall_Settings
 						<th><label for="insights_api_key"><?php esc_html_e('API Key', 'leaky-paywall'); ?></label></th>
 						<td>
 							<input type="text" id="insights_api_key" name="insights_api_key" value="<?php echo esc_attr($settings['insights_api_key']); ?>" class="regular-text" />
-							<p class="description"><?php printf(esc_html__('Your publication API key from Leaky Paywall Insights. %sDon\'t have one? Get started at insights.leakypaywall.com%s', 'leaky-paywall'), '<a href="https://insights.leakypaywall.com" target="_blank">', '</a>'); ?></p>
+							<p class="description"><?php printf(
+								/* translators: 1: opening link tag, 2: closing link tag */
+								esc_html__('Your publication API key from Leaky Paywall Insights. %1$sDon\'t have one? Get started at insights.leakypaywall.com%2$s', 'leaky-paywall'), '<a href="https://insights.leakypaywall.com" target="_blank">', '</a>'); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -715,7 +719,7 @@ class Leaky_Paywall_Settings
 					<th><?php esc_html_e('Combined Restrictions Total Allowed', 'leaky-paywall'); ?></th>
 					<td>
 						<input type="number" min="0" id="combined_restrictions_total_allowed" class="small-text" name="combined_restrictions_total_allowed" value="<?php echo esc_attr($settings['combined_restrictions_total_allowed']); ?>" />
-						<p class="description"><?php esc_html_e('If combined restrictions is enabled, the total amount of content items allowed before content is restricted.'); ?></p>
+						<p class="description"><?php esc_html_e('If combined restrictions is enabled, the total amount of content items allowed before content is restricted.', 'leaky-paywall'); ?></p>
 					</td>
 				</tr>
 
@@ -773,7 +777,7 @@ class Leaky_Paywall_Settings
 					<th><?php esc_html_e('JavaScript Restrictions Post Container', 'leaky-paywall'); ?></th>
 					<td>
 						<input type="text" id="js_restrictions_post_container" class="large-text" name="js_restrictions_post_container" value="<?php echo esc_attr($settings['js_restrictions_post_container']); ?>" />
-						<p class="description"><?php esc_html_e('CSS selector of the container that contains the content on a post and custom post type.'); ?></p>
+						<p class="description"><?php esc_html_e('CSS selector of the container that contains the content on a post and custom post type.', 'leaky-paywall'); ?></p>
 					</td>
 				</tr>
 
@@ -781,7 +785,7 @@ class Leaky_Paywall_Settings
 					<th><?php esc_html_e('JavaScript Restrictions Page Container', 'leaky-paywall'); ?></th>
 					<td>
 						<input type="text" id="js_restrictions_page_container" class="large-text" name="js_restrictions_page_container" value="<?php echo esc_attr($settings['js_restrictions_page_container']); ?>" />
-						<p class="description"><?php esc_html_e('CSS selector of the container that contains the content on a page.'); ?></p>
+						<p class="description"><?php esc_html_e('CSS selector of the container that contains the content on a page.', 'leaky-paywall'); ?></p>
 					</td>
 				</tr>
 
@@ -809,7 +813,7 @@ class Leaky_Paywall_Settings
 						?>
 
 						<p class="description">
-							<?php esc_html_e('Allow the selected user roles to always bypass the paywall. Administrators can always bypass the paywall.'); ?>
+							<?php esc_html_e('Allow the selected user roles to always bypass the paywall. Administrators can always bypass the paywall.', 'leaky-paywall'); ?>
 						</p>
 					</td>
 				</tr>
@@ -828,7 +832,7 @@ class Leaky_Paywall_Settings
 					<td>
 						<input type="checkbox" id="paywall_schema_markup" name="paywall_schema_markup" <?php checked( 'on', $settings['paywall_schema_markup'] ); ?> />
 						<?php esc_html_e( 'Add structured data (JSON-LD) to restricted pages so search engines identify content as paywalled.', 'leaky-paywall' ); ?>
-						<p class="description"><?php printf( esc_html__( 'Outputs %s per Google\'s paywalled content guidelines.', 'leaky-paywall' ), '<code>isAccessibleForFree: false</code>' ); ?></p>
+						<p class="description"><?php printf( /* translators: %s: the structured data property, as code */ esc_html__( 'Outputs %s per Google\'s paywalled content guidelines.', 'leaky-paywall' ), '<code>isAccessibleForFree: false</code>' ); ?></p>
 					</td>
 				</tr>
 
@@ -858,6 +862,7 @@ class Leaky_Paywall_Settings
 
 		public function output_subscriptions_settings($current_section)
 		{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 			if ($current_section != 'general') {
 				return;
@@ -976,6 +981,7 @@ class Leaky_Paywall_Settings
 
 		<?php
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		public function output_pro_upgrade_modal() {
 			?>
@@ -1110,6 +1116,7 @@ class Leaky_Paywall_Settings
 
 		public function output_payments_settings($current_section)
 		{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 			if ($current_section != 'general') {
 				return;
@@ -1241,7 +1248,7 @@ class Leaky_Paywall_Settings
 										echo 'account id: ' . esc_html( $settings['connected_account_id'] );
 										echo '</p></div>';
 
-										echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . $disconnect_link . '</p>';
+										echo '<p>' . esc_html__( 'Your Stripe account is connected for live payments. You are currently in test mode using your test keys.', 'leaky-paywall' ) . $disconnect_link . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $disconnect_link is built from escaped parts above; wp_kses would strip its confirm().
 
 									} else {
 
@@ -1266,7 +1273,7 @@ class Leaky_Paywall_Settings
 											echo 'account id: ' . esc_html( $settings['connected_account_id'] );
 											echo '</p></div>';
 
-											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . $disconnect_link . '</p>';
+											echo '<p>' . esc_html__( 'Your Stripe account is connected and accepting live payments.', 'leaky-paywall' ) . $disconnect_link . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $disconnect_link is built from escaped parts above; wp_kses would strip its confirm().
 
 										} catch (\Throwable $th) {
 
@@ -1544,6 +1551,7 @@ class Leaky_Paywall_Settings
 
 			<?php do_action('leaky_paywall_after_payments_settings', $settings);
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		public function output_emails_settings($current_section)
 		{
@@ -1569,9 +1577,9 @@ class Leaky_Paywall_Settings
 
 				<p><?php printf(
 					/* translators: 1: account URL, 2: extensions URL */
-					__( 'Enter your extension license keys here to receive updates. If your license has expired, <a href="%1$s">login to renew</a>. <a href="%2$s" target="_blank">Browse all extensions</a>.', 'leaky-paywall' ),
-					'https://leakypaywall.com/my-account/#tabs-2',
-					'https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings'
+					wp_kses_post( __( 'Enter your extension license keys here to receive updates. If your license has expired, <a href="%1$s">login to renew</a>. <a href="%2$s" target="_blank">Browse all extensions</a>.', 'leaky-paywall' ) ),
+					esc_url( 'https://leakypaywall.com/my-account/#tabs-2' ),
+					esc_url( 'https://leakypaywall.com/downloads/category/leaky-paywall-addons/?utm_source=plugin&utm_medium=license_tab&utm_content=link&utm_campaign=settings' )
 				); ?></p>
 
 				<?php wp_nonce_field('verify', 'leaky_paywall_license_wpnonce'); ?>
@@ -1593,7 +1601,7 @@ class Leaky_Paywall_Settings
 
 				<iframe width="560" height="315" src="https://www.youtube.com/embed/QlrYpL72L4E" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-				<h2><?php esc_html_e('Documentation Articles'); ?></h2>
+				<h2><?php esc_html_e('Documentation Articles', 'leaky-paywall'); ?></h2>
 
 				<p><a target="_blank" href="https://docs.leakypaywall.com/">View All</a></p>
 
@@ -1697,6 +1705,7 @@ The %sitename% Team';
 				'email_accent_color'                    => '#1e293b',
 				'email_footer_text'                     => '',
 				'new_subscriber_email'                  => 'off',
+				/* translators: %sitename% is an email tag replaced with the site name. Keep it as is. */
 				'new_email_subject'                     => __( 'Welcome to %sitename%', 'leaky-paywall' ),
 				'new_email_body'                        => $default_email_body,
 				'renewal_reminder_email'                => 'on',
@@ -1836,7 +1845,7 @@ The %sitename% Team';
 				return false;
 			}
 
-			$nonce = sanitize_text_field($_GET['_wpnonce']);
+			$nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
 
 			if (!wp_verify_nonce($nonce, 'leaky-paywall-level-row-nonce')) {
 				die(esc_html__('Failed Security Check', 'leaky-paywall'));

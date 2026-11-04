@@ -361,6 +361,10 @@ class LP_Emails {
 	private function save_global_settings() {
 		$settings = get_leaky_paywall_settings();
 
+		// Runs inside Leaky_Paywall_Settings' settings save, after it verifies
+		// the settings nonce and manage_options.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+
 		if ( ! empty( $_POST['site_name'] ) ) {
 			$settings['site_name'] = sanitize_text_field( wp_unslash( $_POST['site_name'] ) );
 		}
@@ -373,9 +377,6 @@ class LP_Emails {
 			$settings['from_email'] = sanitize_text_field( wp_unslash( $_POST['from_email'] ) );
 		}
 
-		// The settings form nonce is verified in
-		// Leaky_Paywall_Settings::process_settings_update() before this runs.
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$settings['email_template_enabled'] = empty( $_POST['email_template_enabled'] ) ? 'off' : 'on';
 
 		if ( isset( $_POST['email_logo'] ) ) {

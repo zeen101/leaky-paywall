@@ -6,6 +6,10 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Add the Paypal subscribe option to the subscribe cards.
  *

@@ -535,10 +535,14 @@ class LP_Email {
 	public function process_admin_options() {
 		$settings = array();
 
+		// Runs inside Leaky_Paywall_Settings' settings save, after it verifies
+		// the settings nonce and manage_options.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$settings['enabled']    = isset( $_POST[ $this->id . '_enabled' ] ) ? 'yes' : 'no';
 		$settings['subject']    = isset( $_POST[ $this->id . '_subject' ] ) ? sanitize_text_field( wp_unslash( $_POST[ $this->id . '_subject' ] ) ) : '';
 		$settings['body']       = isset( $_POST[ $this->id . '_body' ] ) ? wp_kses_post( wp_unslash( $_POST[ $this->id . '_body' ] ) ) : '';
 		$settings['recipients'] = isset( $_POST[ $this->id . '_recipients' ] ) ? sanitize_text_field( wp_unslash( $_POST[ $this->id . '_recipients' ] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$settings = $this->save_extra_settings( $settings );
 		$settings = apply_filters( 'leaky_paywall_email_' . $this->id . '_save_settings', $settings );

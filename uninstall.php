@@ -27,6 +27,8 @@ $options = array(
 	'leaky_paywall_email_renewal_reminder_settings',
 	'lp_email_settings_migrated',
 	'lp-listbuilder',
+	'leaky_paywall_password_scrub',
+	'leaky_paywall_password_scrub_cursor',
 );
 
 foreach ( $options as $option ) {

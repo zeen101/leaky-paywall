@@ -24,10 +24,12 @@ if ( ! defined( 'LEAKY_PAYWALL_TRACKING_URL' ) ) {
 add_action(
 	'admin_notices',
 	function () {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( isset( $_GET['leaky_paywall_tracking_send'] ) && current_user_can( 'manage_options' ) ) {
 			leaky_paywall_tracking_send();
 		}
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 );
 
 /**

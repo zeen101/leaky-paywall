@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class Leaky_Paywall_Admin_Subscriber
 {
 
@@ -66,19 +70,19 @@ class Leaky_Paywall_Admin_Subscriber
 
 		$user_id = absint($_GET['id']);
 
-		$first_name = isset($_POST['first_name']) ? sanitize_text_field($_POST['first_name']) : '';
-		$last_name = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
-		$email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
-		$subscriber_notes = isset($_POST['subscriber_notes']) ? sanitize_textarea_field($_POST['subscriber_notes']) : '';
+		$first_name = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
+		$last_name = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
+		$email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+		$subscriber_notes = isset($_POST['subscriber_notes']) ? sanitize_textarea_field(wp_unslash($_POST['subscriber_notes'])) : '';
 		// A blank submission is not level 0. absint('') is 0, and on publishers
 		// whose first level is ID 0 that silently grants a paid level, so the
 		// posted value is checked for emptiness before it is cast.
 		$posted_level_id = isset($_POST['level_id']) ? sanitize_text_field(wp_unslash($_POST['level_id'])) : '';
 		$level_id = '' !== $posted_level_id ? absint($posted_level_id) : '';
-		$subscriber_id = isset($_POST['subscriber_id']) ? sanitize_text_field($_POST['subscriber_id']) : '';
-		$payment_status = isset($_POST['payment_status']) ? sanitize_text_field($_POST['payment_status']) : '';
-		$payment_gateway = isset($_POST['payment_gateway']) ? sanitize_text_field($_POST['payment_gateway']) : '';
-		$plan = isset($_POST['plan']) ? sanitize_text_field($_POST['plan']) : '';
+		$subscriber_id = isset($_POST['subscriber_id']) ? sanitize_text_field(wp_unslash($_POST['subscriber_id'])) : '';
+		$payment_status = isset($_POST['payment_status']) ? sanitize_text_field(wp_unslash($_POST['payment_status'])) : '';
+		$payment_gateway = isset($_POST['payment_gateway']) ? sanitize_text_field(wp_unslash($_POST['payment_gateway'])) : '';
+		$plan = isset($_POST['plan']) ? sanitize_text_field(wp_unslash($_POST['plan'])) : '';
 
 		if (isset($_POST['first_name'])) {
 			lp_update_subscriber_meta('first_name', $first_name, $user_id);
@@ -121,7 +125,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 			if (is_numeric($_POST['leaky-paywall-subscriber-expires']) && $_POST['leaky-paywall-subscriber-expires'] < 1) {
 				$expires = 0;
-			} else if (strtolower(sanitize_text_field($_POST['leaky-paywall-subscriber-expires'])) === 'never') {
+			} else if (strtolower(sanitize_text_field(wp_unslash($_POST['leaky-paywall-subscriber-expires']))) === 'never') {
 				$expires = 0;
 			} else {
 				$expires = gmdate('Y-m-d 23:59:59', strtotime(trim(urldecode(sanitize_text_field(wp_unslash($_POST['leaky-paywall-subscriber-expires']))))));
@@ -176,6 +180,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 	public function show_subscribers_page()
 	{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 ?>
 		<div id="lp-header" class="lp-header">
 			<div id="lp-header-wrapper">
@@ -205,109 +210,12 @@ class Leaky_Paywall_Admin_Subscriber
 
 	<?php
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-
-	/**
-	 * Show the active "converted from this article" filter, if one is applied.
-	 *
-	 * Drilled into from the dashboard's Top Content cards. Names the article,
-	 * reconciles the number of listed subscribers against the conversions the
-	 * card counted, offers the CSV, and gives a way back out of the filter.
-	 *
-	 * @since 5.2.0
-	 *
-	 * @return void
-	 */
-	public function render_attributed_filter_notice()
-	{
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$post_id = isset($_GET['filter-article']) ? absint($_GET['filter-article']) : 0;
-		$type    = (isset($_GET['conversion_type']) && 'paid' === $_GET['conversion_type']) ? 'paid' : 'free';
-		$period  = isset($_GET['nag_period']) ? sanitize_text_field(wp_unslash($_GET['nag_period'])) : '';
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-		if (!$post_id || !leaky_paywall_is_pro()) {
-			return;
-		}
-
-		$attributed = leaky_paywall_get_attributed_conversions($post_id, $type, $period);
-		$conversions = count($attributed['emails']);
-		$listed      = count($attributed['user_ids']);
-		$title       = get_the_title($post_id);
-
-		$clear_url = remove_query_arg(array('filter-article', 'conversion_type', 'nag_period'));
-
-		$download_url = wp_nonce_url(
-			add_query_arg(
-				array(
-					'action'          => 'leaky_paywall_download_attributed',
-					'filter-article'  => $post_id,
-					'conversion_type' => $type,
-					'nag_period'      => $period,
-				),
-				admin_url('admin-post.php')
-			),
-			'leaky_paywall_download_attributed'
-		);
-?>
-		<div class="lp-attributed-filter" style="clear: both; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; margin: 0 0 16px; background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #72aee6; border-radius: 2px;">
-			<div>
-				<strong>
-					<?php
-					printf(
-						/* translators: 1: free or paid, 2: article title */
-						esc_html__('Subscribers with a %1$s conversion from "%2$s"', 'leaky-paywall'),
-						esc_html($type),
-						esc_html($title ? $title : __('(Untitled)', 'leaky-paywall'))
-					);
-					?>
-				</strong>
-				<a href="<?php echo esc_url($clear_url); ?>" style="text-decoration: none; margin-left: 6px; font-size: 16px; line-height: 1;" title="<?php esc_attr_e('Clear this filter', 'leaky-paywall'); ?>">&times;</a>
-				<p class="description" style="margin: 4px 0 0;">
-					<?php
-					if (0 === $listed) {
-						// The table will be empty. Say why, or this reads as a bug.
-						printf(
-							/* translators: %s: number of conversions */
-							esc_html(_n(
-								'This article has %s attributed conversion, but that subscriber no longer exists in WordPress, so there is nothing to list.',
-								'This article has %s attributed conversions, but none of those subscribers still exist in WordPress, so there is nothing to list.',
-								$conversions,
-								'leaky-paywall'
-							)),
-							esc_html(number_format_i18n($conversions))
-						);
-					} elseif ($listed === $conversions) {
-						printf(
-							/* translators: %s: number of conversions */
-							esc_html(_n('%s conversion.', '%s conversions.', $conversions, 'leaky-paywall')),
-							esc_html(number_format_i18n($conversions))
-						);
-					} else {
-						// The dashboard card counts conversions; this screen lists
-						// users. Surface the gap rather than quietly showing fewer.
-						printf(
-							/* translators: 1: subscribers listed, 2: conversions counted, 3: difference */
-							esc_html__('Showing %1$s of %2$s conversions. %3$s of these subscribers have since been deleted.', 'leaky-paywall'),
-							esc_html(number_format_i18n($listed)),
-							esc_html(number_format_i18n($conversions)),
-							esc_html(number_format_i18n($conversions - $listed))
-						);
-					}
-					?>
-				</p>
-			</div>
-			<?php if ($listed > 0) : ?>
-				<a class="button button-primary" href="<?php echo esc_url($download_url); ?>" style="flex-shrink: 0;">
-					<?php esc_html_e('Download CSV', 'leaky-paywall'); ?>
-				</a>
-			<?php endif; ?>
-		</div>
-<?php
-	}
 
 	public function show_subscribers_table()
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$subscriber_table = $this->list_table ? $this->list_table : new LP_Subscriber_List_Table();
 		$pagenum          = $subscriber_table->get_pagenum();
 		$subscriber_table->prepare_items();
@@ -323,7 +231,14 @@ class Leaky_Paywall_Admin_Subscriber
 			<a class="button button-primary" href="#" id="lp-open-add-subscriber-modal">+ <?php esc_html_e('Add Subscriber', 'leaky-paywall'); ?></a>
 		</div>
 
-		<?php $this->render_attributed_filter_notice(); ?>
+		<?php
+		/**
+		 * Fires above the subscriber list, after the Add Subscriber button.
+		 *
+		 * @since 5.3.3
+		 */
+		do_action( 'leaky_paywall_before_subscribers_table' );
+		?>
 
 		<style>
 			.lp-table-scroll-outer {
@@ -360,7 +275,7 @@ class Leaky_Paywall_Admin_Subscriber
 			<input type="hidden" name="page" value="<?php echo isset($_GET['page']) ? esc_attr(sanitize_text_field(wp_unslash($_GET['page']))) : ''; ?>" />
 			<div class="tablenav top" style="border-bottom: 0;">
 				<?php $subscriber_table->user_views(); ?>
-				<?php $subscriber_table->search_box(__('Search Subscribers'), 'leaky-paywall'); ?>
+				<?php $subscriber_table->search_box(__('Search Subscribers', 'leaky-paywall'), 'leaky-paywall'); ?>
 			</div>
 			<?php $subscriber_table->display(); ?>
 		</form>
@@ -397,6 +312,7 @@ class Leaky_Paywall_Admin_Subscriber
 	<?php
 
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	public function add_subscriber_modal()
 	{
@@ -660,6 +576,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 	public function show_subscriber_page()
 	{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 		$id = isset($_GET['id']) ? absint($_GET['id']) : '';
 		$user = get_user_by('ID', $id);
@@ -1026,6 +943,7 @@ class Leaky_Paywall_Admin_Subscriber
 
 
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 }
 
 new Leaky_Paywall_Admin_Subscriber();

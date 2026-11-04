@@ -1,6 +1,6 @@
 === Leaky Paywall ===
 Contributors: zeen101, layotte, pericson, endocreative
-Requires at least: 5.6
+Requires at least: 5.7
 Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 5.3.2

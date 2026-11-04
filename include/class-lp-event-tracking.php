@@ -890,7 +890,7 @@ class LP_Event_Tracking {
 			return array();
 		}
 
-		$decoded = json_decode( stripslashes( $_COOKIE['lp_utm'] ), true );
+		$decoded = json_decode( wp_unslash( $_COOKIE['lp_utm'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded JSON; each UTM value is sanitized where it is used.
 
 		if ( ! is_array( $decoded ) ) {
 			return array();

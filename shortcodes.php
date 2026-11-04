@@ -7,6 +7,10 @@
  * @since 1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if (!function_exists('do_leaky_paywall_login')) {
 
 	/**
@@ -19,6 +23,7 @@ if (!function_exists('do_leaky_paywall_login')) {
 	 */
 	function do_leaky_paywall_login($atts)
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		$settings = get_leaky_paywall_settings();
 
 		$defaults = array(
@@ -65,6 +70,7 @@ if (!function_exists('do_leaky_paywall_login')) {
 
 		return $results;
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	add_shortcode('leaky_paywall_login', 'do_leaky_paywall_login');
 }
 
@@ -80,6 +86,7 @@ if (!function_exists('do_leaky_paywall_subscription')) {
 	 */
 	function do_leaky_paywall_subscription($atts)
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if (isset($_REQUEST['level_id'])) {
 			return do_leaky_paywall_register_form($atts);
 		}
@@ -149,6 +156,7 @@ if (!function_exists('do_leaky_paywall_subscription')) {
 
 		return $results;
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	add_shortcode('leaky_paywall_subscription', 'do_leaky_paywall_subscription');
 }
 
@@ -202,7 +210,7 @@ function do_leaky_paywall_profile()
 	ob_start();
 
 	if (!is_user_logged_in()) {
-		echo do_leaky_paywall_login(array());
+		echo do_leaky_paywall_login(array()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the login form markup, escaped where it is built.
 		$content = ob_get_contents();
 		ob_end_clean();
 		return $content;
@@ -302,7 +310,7 @@ function do_leaky_paywall_profile()
 	}
 
 	/* Translators: %1$s - user login, %2$s - logout url */
-	echo '<p class="leaky-paywall-logout-link">' . sprintf(__('Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall') . '</p>', esc_html($user->user_login), esc_url(wp_logout_url(get_page_link($settings['page_for_login']))));
+	echo '<p class="leaky-paywall-logout-link">' . sprintf(wp_kses_post(__('Welcome %1$s, you are currently logged in. <a href="%2$s">Click here to log out.</a>', 'leaky-paywall')) . '</p>', esc_html($user->user_login), esc_url(wp_logout_url(get_page_link($settings['page_for_login']))));
 
 	$lp_show_subscription_table = leaky_paywall_show_subscription_table($user);
 
@@ -508,14 +516,14 @@ function do_leaky_paywall_profile()
 
 	$_lp_delete_gateway = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
 	if ( 'stripe' === $_lp_delete_gateway ) {
-		$delete_message = esc_html__( 'Deleting your account will delete your access and all your information on this site. Your active subscription will be cancelled automatically. Are you sure you want to continue?', 'leaky-paywall' );
+		$delete_message = __( 'Deleting your account will delete your access and all your information on this site. Your active subscription will be cancelled automatically. Are you sure you want to continue?', 'leaky-paywall' );
 	} else {
-		$delete_message = esc_html__( 'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that separately to stop future payments. Are you sure you want to continue?', 'leaky-paywall' );
+		$delete_message = __( 'Deleting your account will delete your access and all your information on this site. If you have a recurring subscription, you must cancel that separately to stop future payments. Are you sure you want to continue?', 'leaky-paywall' );
 	}
 
 	if ('on' === $settings['enable_user_delete_account']) {
 		echo '<form id="leaky-paywall-delete-account" action="" method="post">';
-		echo '<p><button type="submit" onclick="return confirm(\'' . $delete_message . '\')">' . esc_html__('Delete Account', 'leaky-paywall') . '</button></p>';
+		echo '<p><button type="submit" onclick="return confirm(\'' . esc_attr( esc_js( $delete_message ) ) . '\')">' . esc_html__('Delete Account', 'leaky-paywall') . '</button></p>';
 		wp_nonce_field('leaky-paywall-delete-account', 'leaky-paywall-delete-account-nonce', true);
 		echo '</form>';
 	}
@@ -539,6 +547,7 @@ add_shortcode('leaky_paywall_profile', 'do_leaky_paywall_profile');
  */
 function do_leaky_paywall_register_form($atts)
 {
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 	$a = shortcode_atts(
 		array(
 			'level_id' => '',
@@ -651,7 +660,7 @@ function do_leaky_paywall_register_form($atts)
 
 		<ul class="leaky-paywall-subscription-details">
 			<li class="leaky-paywall-subscription-details-subscription-name"><strong><?php printf(esc_attr__('Your Order:', 'leaky-paywall')); ?></strong> <?php echo wp_kses_post(apply_filters('leaky_paywall_registration_level_name', $level['label'])); ?></li>
-			<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf(esc_attr__('Subscription Length:', 'leaky-paywall')); ?></strong> <?php echo 'unlimited' === $level['subscription_length_type'] ? esc_attr__('Forever', 'leaky-paywall') : esc_attr($level['interval_count']) . ' ' . leaky_paywall_get_interval_text($level['interval'], $level['interval_count']); ?></li>
+			<li class="leaky-paywall-subscription-details-subscription-length"><strong><?php printf(esc_attr__('Subscription Length:', 'leaky-paywall')); ?></strong> <?php echo 'unlimited' === $level['subscription_length_type'] ? esc_attr__('Forever', 'leaky-paywall') : esc_html($level['interval_count'] . ' ' . leaky_paywall_get_interval_text($level['interval'], $level['interval_count'])); ?></li>
 			<li class="leaky-paywall-subscription-details-recurring"><strong><?php printf(esc_attr__('Recurring:', 'leaky-paywall')); ?> </strong> <?php echo !empty($level['recurring']) && 'on' === $level['recurring'] ? esc_attr__('Yes', 'leaky-paywall') : esc_attr__('No', 'leaky-paywall'); ?></li>
 			<li class="leaky-paywall-subscription-details-content-access"><strong><?php printf(esc_attr__('Content Access:', 'leaky-paywall')); ?></strong>
 
@@ -1107,6 +1116,7 @@ function do_leaky_paywall_register_form($atts)
 
 	return $content;
 }
+// phpcs:enable WordPress.Security.NonceVerification.Recommended
 add_shortcode('leaky_paywall_register_form', 'do_leaky_paywall_register_form');
 
 /**

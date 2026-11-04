@@ -329,14 +329,7 @@
 	}
 }
 
-/* Pro gated content */
-.lp-pro-blurred-row td {
-	filter: blur(4px);
-	-webkit-user-select: none;
-	user-select: none;
-	pointer-events: none;
-}
-
+/* Pro prompt under the Top Content cards */
 .lp-pro-unlock-row td {
 	text-align: center !important;
 	padding: 12px;

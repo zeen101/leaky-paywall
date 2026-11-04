@@ -413,6 +413,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function process_webhooks()
 	{
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if (!isset($_GET['listener']) || strtolower(sanitize_text_field(wp_unslash($_GET['listener']))) != 'stripe') {
 			return;
 		}
@@ -439,7 +440,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		if ($endpoint_secret) {
 
-			$sig_header = isset($_SERVER['HTTP_STRIPE_SIGNATURE']) ? sanitize_text_field($_SERVER['HTTP_STRIPE_SIGNATURE']) : '';
+			$sig_header = isset($_SERVER['HTTP_STRIPE_SIGNATURE']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_STRIPE_SIGNATURE'])) : '';
 
 			try {
 				$event = \Stripe\Webhook::constructEvent(
@@ -907,6 +908,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 		// site happened to receive the webhook.
 		wp_send_json(['leaky paywall webhook received - success'], 200);
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Add credit card fields
@@ -917,6 +919,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	 */
 	public function fields($level_id)
 	{
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 		if (is_numeric($level_id)) {
 			$level_id = $level_id;
@@ -934,6 +937,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 		return $content;
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
 	 * Add Stripe elements
@@ -1024,7 +1028,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 						if (method == 'stripe') {
 							$('.leaky-paywall-card-details').slideDown();
-							button.text('<?php echo htmlspecialchars_decode( esc_js($default_button_text) ); ?>');
+							button.text(<?php echo wp_json_encode( wp_specialchars_decode( $default_button_text, ENT_QUOTES ) ); ?>);
 						}
 
 					});

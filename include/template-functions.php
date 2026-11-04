@@ -15,6 +15,11 @@
  * @param   string $default_path           Default path to template files.
  * @return  string                          Path to the template file.
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function leaky_paywall_locate_template( $template_name, $template_path = '', $default_path = '' ) {
 
 	// Set variable to search in leaky-paywall folder of theme.

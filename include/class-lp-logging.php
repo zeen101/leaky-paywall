@@ -6,6 +6,10 @@
  * @since       4.16.14
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Load the LP_Logging class
  */
@@ -92,7 +96,7 @@ class LP_Logging {
 
 		if ( @file_exists( $this->file ) ) {
 
-			if ( ! is_writeable( $this->file ) ) {
+			if ( ! wp_is_writable( $this->file ) ) {
 				$this->is_writable = false;
 			}
 
@@ -147,13 +151,13 @@ class LP_Logging {
 
 		delete_option( 'leaky_paywall_log_started' );
 
-		@unlink( $this->file );
+		wp_delete_file( $this->file );
 
 		if ( file_exists( $this->file ) ) {
 
 			// it's still there, so maybe server doesn't have delete rights
-			chmod( $this->file, 0664 ); // Try to give the server delete rights
-			@unlink( $this->file );
+			chmod( $this->file, 0664 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- one retry on LP's own log file before emptying it instead.
+			wp_delete_file( $this->file );
 
 			// See if it's still there
 			if ( @file_exists( $this->file ) ) {
@@ -161,7 +165,7 @@ class LP_Logging {
 				/*
 				 * Remove all contents of the log file if we cannot delete it
 				 */
-				if ( is_writeable( $this->file ) ) {
+				if ( wp_is_writable( $this->file ) ) {
 
 					file_put_contents( $this->file, '' );
 
@@ -265,7 +269,7 @@ class LP_Logging {
 			$file = $this->file;
 		}
 
-		$handle = @fopen( $file, 'rb' );
+		$handle = @fopen( $file, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- counts lines of LP's own log in chunks; WP_Filesystem has no streaming read.
 
 		if ( ! $handle ) {
 			return 0;
@@ -274,7 +278,7 @@ class LP_Logging {
 		$count = 0;
 
 		while ( ! feof( $handle ) ) {
-			$chunk = fread( $handle, 8192 );
+			$chunk = fread( $handle, 8192 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- see fopen above.
 
 			if ( false === $chunk ) {
 				break;
@@ -283,7 +287,7 @@ class LP_Logging {
 			$count += substr_count( $chunk, "\n" );
 		}
 
-		fclose( $handle );
+		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- see fopen above.
 
 		return $count;
 	}

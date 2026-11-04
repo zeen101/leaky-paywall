@@ -93,7 +93,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					if (method == 'paypal_standard') {
 						$('.leaky-paywall-card-details').slideUp();
-						button.text('<?php echo htmlspecialchars_decode( esc_js( $paypal_button_text ) ); ?>');
+						button.text(<?php echo wp_json_encode( wp_specialchars_decode( $paypal_button_text, ENT_QUOTES ) ); ?>);
 					}
 
 				});
@@ -152,7 +152,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			$url = 'https://www.paypal.com/cgi-bin/webscr?' . $paypal_args;
 		}
 
-		wp_redirect( $url );
+		wp_redirect( $url ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- sends the reader to PayPal's checkout, a fixed external host.
 		exit;
 
 		// send data to paypal.
@@ -222,6 +222,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function process_confirmation() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 		if ( empty( $_GET['leaky-paywall-confirm'] ) && 'paypal_standard' !== $_GET['leaky-paywall-confirm'] ) {
 			return false;
 		}
@@ -231,6 +232,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		return; // everything will be handled with webhooks instead of here.
 
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 
 	/**
@@ -239,6 +241,12 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 * @since 4.0.0
 	 */
 	public function process_webhooks() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
+
+		// A PayPal IPN is a server-to-server POST, so it carries no nonce. It is
+		// acted on only when PayPal answers VERIFIED to the post-back below and
+		// the payment went to this publisher's PayPal account.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 
 		if ( ! isset( $_POST['txn_type'] ) ) {
 			return;
@@ -257,6 +265,8 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 			$payload[$key] = stripslashes( $value );
 		}
 
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
 		if ( 'test' == $mode ) {
 			$paypal_api_url = 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr';
 		} else {
@@ -265,29 +275,33 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		leaky_paywall_log( $payload, 'paypal standard ipn payload' );
 
-		// https://developer.paypal.com/api/nvp-soap/ipn/IPNTesting/#receive-an-invalid-message
-		$response = wp_remote_post(
-			$paypal_api_url,
-			array(
-				'body'        => $payload,
-				'httpversion' => '1.1',
-			)
-		);
-		$body = wp_remote_retrieve_body( $response );
+		// PayPal verifies a message only when it is posted back exactly as it
+		// arrived: same fields, same order, same encoding, after
+		// cmd=_notify-validate. Rebuilding it from $_POST re-encodes it, which
+		// is a known cause of INVALID, so the raw body goes first and the
+		// rebuilt copy is the second try. Either way only PayPal's VERIFIED
+		// counts.
+		// https://developer.paypal.com/api/nvp-soap/ipn/IPNImplementation/
+		$raw_body     = file_get_contents( 'php://input' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- the raw IPN body, which PayPal requires posted back unchanged.
+		$ipn_verified = false;
 
-		leaky_paywall_log( $body, 'paypal standard ipn body' );
+		if ( is_string( $raw_body ) && '' !== $raw_body ) {
+			$ipn_verified = $this->paypal_verifies_ipn( $paypal_api_url, 'cmd=_notify-validate&' . $raw_body );
+		}
 
-		$ipn_verified = ( 'VERIFIED' === $body );
+		if ( ! $ipn_verified ) {
+			$ipn_verified = $this->paypal_verifies_ipn( $paypal_api_url, $payload );
+		}
 
-		// Fallback self-validation when PayPal's verification endpoint
-		// returns INVALID (known issue since PayPal's IPN format change
-		// in early 2026). Validates the receiver, payment status, amount,
-		// and invoice format independently.
-		if ( ! $ipn_verified && ! empty( $_REQUEST['txn_type'] ) ) {
-			$ipn_verified = $this->self_validate_ipn( $settings, $mode );
-			if ( $ipn_verified ) {
-				leaky_paywall_log_error( 'PayPal IPN self-validated (classic verification returned INVALID)', 'paypal standard ipn' );
-			}
+		if ( ! $ipn_verified ) {
+			leaky_paywall_log_error( 'PayPal did not verify this IPN, so it was ignored. txn_type: ' . ( isset( $_REQUEST['txn_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['txn_type'] ) ) : '' ), 'paypal standard ipn' );
+			return;
+		}
+
+		// A genuine IPN can still be for a payment to someone else's account,
+		// sent to this site's listener. Only act on payments to this publisher.
+		if ( ! $this->ipn_is_for_this_account( $settings, $mode ) ) {
+			return;
 		}
 
 		if ( $ipn_verified ) {
@@ -607,8 +621,17 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 				$transaction_id = leaky_paywall_get_transaction_id_from_email( sanitize_email( wp_unslash( $_REQUEST['custom'] ) ) );
 
 				if ( $transaction_id ) {
-					$args['password'] = get_post_meta( $transaction_id, '_password', true );
-					delete_post_meta( $transaction_id, '_password' ); // dont want this in the database.
+					// Only a hash of the password chosen at checkout is kept. A
+					// transaction saved before 5.3.3 may still hold it in plain text.
+					$args['password_hash'] = get_post_meta( $transaction_id, '_password_hash', true );
+					$legacy_password       = get_post_meta( $transaction_id, '_password', true );
+
+					if ( ! $args['password_hash'] && $legacy_password ) {
+						$args['password_hash'] = wp_hash_password( $legacy_password );
+					}
+
+					delete_post_meta( $transaction_id, '_password_hash' );
+					delete_post_meta( $transaction_id, '_password' );
 					$args['first_name']     = get_post_meta( $transaction_id, '_first_name', true );
 					$args['last_name']      = get_post_meta( $transaction_id, '_last_name', true );
 					$args['login']          = get_post_meta( $transaction_id, '_login', true );
@@ -647,6 +670,12 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 					$user_id = leaky_paywall_new_subscriber( null, $args['subscriber_email'], $args['subscr_id'], $args );
 
+					// Only a hash of the password was kept, so the welcome email
+					// can't repeat it.
+					if ( empty( $args['password'] ) ) {
+						$args['password'] = leaky_paywall_password_chosen_label();
+					}
+
 					// send new user the welcome email.
 					leaky_paywall_email_subscription_status( $user_id, 'new', $args );
 				}
@@ -667,73 +696,86 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		return true;
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	/**
-	 * Self-validate a PayPal IPN when the classic verification endpoint
-	 * returns INVALID (known issue with PayPal's post-2026 IPN format).
+	 * Post an IPN back to PayPal and report whether PayPal says VERIFIED.
 	 *
-	 * Checks: receiver matches LP settings, payment is completed, amount
-	 * matches the subscription level price, and invoice format is LP's.
-	 *
-	 * @param array  $settings LP settings.
-	 * @param string $mode     Current mode (live or test).
+	 * @param string       $url  PayPal's IPN verification endpoint.
+	 * @param string|array $body The message, prefixed with cmd=_notify-validate.
 	 * @return bool
 	 */
-	private function self_validate_ipn( $settings, $mode ) {
-		// 1. Verify the receiver matches the publisher's PayPal email.
-		$expected_email = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
+	private function paypal_verifies_ipn( $url, $body ) {
 
-		$receiver_email   = isset( $_REQUEST['receiver_email'] ) ? sanitize_email( wp_unslash( $_REQUEST['receiver_email'] ) ) : '';
-		$business_email   = isset( $_REQUEST['business'] ) ? sanitize_email( wp_unslash( $_REQUEST['business'] ) ) : '';
+		$args = array(
+			'body'        => $body,
+			'httpversion' => '1.1',
+			'timeout'     => 30,
+			'user-agent'  => 'Leaky Paywall IPN verification',
+		);
 
-		if ( ! $expected_email ) {
-			leaky_paywall_log_error( 'Self-validation failed: no PayPal email configured in LP settings', 'paypal standard ipn' );
+		if ( is_string( $body ) ) {
+			$args['headers'] = array( 'Content-Type' => 'application/x-www-form-urlencoded' );
+		}
+
+		$response = wp_remote_post( $url, $args );
+
+		if ( is_wp_error( $response ) ) {
+			leaky_paywall_log_error( $response->get_error_message(), 'paypal standard ipn - verification request failed' );
 			return false;
 		}
 
-		if ( strtolower( $receiver_email ) !== strtolower( $expected_email ) && strtolower( $business_email ) !== strtolower( $expected_email ) ) {
-			leaky_paywall_log_error( 'Self-validation failed: receiver email mismatch. Expected: ' . $expected_email . ', Got: ' . $receiver_email . ' / ' . $business_email, 'paypal standard ipn' );
-			return false;
-		}
+		$reply = trim( wp_remote_retrieve_body( $response ) );
 
-		// 2. Verify payment status is Completed.
-		$payment_status = isset( $_REQUEST['payment_status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['payment_status'] ) ) : '';
-		if ( 'completed' !== strtolower( $payment_status ) ) {
-			leaky_paywall_log_error( 'Self-validation failed: payment_status is ' . $payment_status, 'paypal standard ipn' );
-			return false;
-		}
+		leaky_paywall_log( $reply, 'paypal standard ipn body' );
 
-		// 3. Verify the invoice format matches LP's pattern (LP-{site}-{id}).
-		$invoice = isset( $_REQUEST['invoice'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['invoice'] ) ) : '';
-		if ( ! preg_match( '/^LP-\d+-\d+$/', $invoice ) ) {
-			leaky_paywall_log_error( 'Self-validation failed: invoice format mismatch: ' . $invoice, 'paypal standard ipn' );
-			return false;
-		}
+		return 'VERIFIED' === $reply;
+	}
 
-		// 4. Verify the amount matches the subscription level price.
-		$item_number = isset( $_REQUEST['item_number'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['item_number'] ) ) : '';
-		$level       = get_leaky_paywall_subscription_level( $item_number );
+	/**
+	 * Was this IPN's payment made to this publisher's PayPal account?
+	 *
+	 * The account in Leaky Paywall's settings is what checkout sends PayPal as
+	 * `business`, an email address or a merchant ID, so it is matched against
+	 * the IPN's receiver_email, business and receiver_id.
+	 *
+	 * @param array  $settings LP settings.
+	 * @param string $mode     'live' or 'test'.
+	 * @return bool
+	 */
+	private function ipn_is_for_this_account( $settings, $mode ) {
+		// phpcs:disable WordPress.Security.NonceVerification -- reads a PayPal-verified IPN; see process_webhooks().
+		$configured = 'test' === $mode ? $settings['paypal_sand_email'] : $settings['paypal_live_email'];
 
-		if ( $level ) {
-			$mc_gross       = isset( $_REQUEST['mc_gross'] ) ? floatval( $_REQUEST['mc_gross'] ) : 0;
-			$payment_gross  = isset( $_REQUEST['payment_gross'] ) ? floatval( $_REQUEST['payment_gross'] ) : 0;
-			$received       = max( $mc_gross, $payment_gross );
-			$expected_price = floatval( $level['price'] );
+		/**
+		 * Filters the PayPal accounts (emails or merchant IDs) whose IPNs are
+		 * accepted. Add an old address here if subscriptions were set up before
+		 * the account in the settings was changed.
+		 *
+		 * @since 5.3.3
+		 *
+		 * @param array  $accounts Accepted accounts.
+		 * @param string $mode     'live' or 'test'.
+		 */
+		$accounts = (array) apply_filters( 'leaky_paywall_paypal_ipn_accounts', array_filter( array( $configured ) ), $mode );
+		$accounts = array_filter( array_map( 'strtolower', array_map( 'trim', $accounts ) ) );
 
-			if ( abs( $received - $expected_price ) > 0.01 ) {
-				leaky_paywall_log_error( 'Self-validation failed: amount mismatch. Expected: ' . $expected_price . ', Got: ' . $received, 'paypal standard ipn' );
-				return false;
+		$received = array();
+
+		foreach ( array( 'receiver_email', 'business', 'receiver_id' ) as $field ) {
+			if ( ! empty( $_REQUEST[ $field ] ) ) {
+				$received[] = strtolower( trim( sanitize_text_field( wp_unslash( $_REQUEST[ $field ] ) ) ) );
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification
 
-		// 5. Verify we have a subscriber email in the custom field.
-		$custom = isset( $_REQUEST['custom'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['custom'] ) ) : '';
-		if ( ! is_email( $custom ) ) {
-			leaky_paywall_log_error( 'Self-validation failed: custom field is not a valid email: ' . $custom, 'paypal standard ipn' );
-			return false;
+		if ( $accounts && array_intersect( $accounts, $received ) ) {
+			return true;
 		}
 
-		return true;
+		leaky_paywall_log_error( 'Verified PayPal IPN ignored: it is for ' . implode( ' / ', $received ) . ', not the PayPal account in Leaky Paywall settings (' . implode( ', ', $accounts ) . ').', 'paypal standard ipn' );
+
+		return false;
 	}
 
 	/**
@@ -742,6 +784,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 	 * @param string $email The email address
 	 */
 	public function save_data_to_transaction( $email = '' ) {
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reads request parameters to choose what to show or where to go; reviewed for 5.3.3, nothing here acts on them without its own check.
 
 		if ( $email ) {
 			$transaction_email = $email;
@@ -760,6 +803,9 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		// Insert the post into the database.
 		$transaction_id = wp_insert_post( $transaction );
 
+		// Called from process_signup(), after leaky_paywall_process_registration()
+		// has verified the registration nonce.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['password'] ) ) {
 			$transaction_password = sanitize_text_field( wp_unslash( $_POST['password'] ) );
 		} else {
@@ -771,6 +817,7 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		} else {
 			$username = '';
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ( isset( $this->first_name ) ) {
 			$first_name = $this->first_name;
@@ -815,7 +862,10 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		}
 
 		update_post_meta( $transaction_id, '_email', $transaction_email );
-		update_post_meta( $transaction_id, '_password', $transaction_password );
+		// Only a hash, used to create the account when PayPal's IPN arrives.
+		if ( '' !== $transaction_password ) {
+			update_post_meta( $transaction_id, '_password_hash', wp_hash_password( $transaction_password ) );
+		}
 		update_post_meta( $transaction_id, '_first_name', $first_name );
 		update_post_meta( $transaction_id, '_last_name', $last_name );
 		update_post_meta( $transaction_id, '_login', $username );
@@ -834,4 +884,5 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 
 		return $transaction_id;
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 }
