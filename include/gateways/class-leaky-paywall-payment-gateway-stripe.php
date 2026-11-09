@@ -959,6 +959,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 	public function stripe_elements($level_id)
 	{
 
+		$settings    = get_leaky_paywall_settings();
 		$level       = get_leaky_paywall_subscription_level($level_id);
 
 		if (0 == $level['price']) {
