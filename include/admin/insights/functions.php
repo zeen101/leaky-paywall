@@ -4,34 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-add_action( 'wp_ajax_lp_reports_get_data', 'lp_reports_get_data' );
-
-function lp_reports_get_data() {
-
-    if ( ! check_ajax_referer( 'process_lp_insights' ) ) {
-        wp_send_json( array( 'error' => 'There was an error.' ) );
-    }
-
-    $period = isset( $_POST['period'] ) ? sanitize_text_field( wp_unslash($_POST['period']) ) : '';
-
-    // get total revenue data
-    $revenue = leaky_paywall_insights_get_total_revenue( $period );
-    $new_paid_subs = leaky_paywall_insights_get_new_paid_subs( $period );
-    $new_free_subs = leaky_paywall_insights_get_new_free_subs( $period );
-    $paid_content = leaky_paywall_insights_get_paid_content( $period );
-    $free_content = leaky_paywall_insights_get_free_content( $period );
-
-    wp_send_json(
-        array(
-            'total_revenue' => $revenue,
-            'new_paid_subs' => $new_paid_subs,
-            'new_free_subs' => $new_free_subs,
-            'paid_content' => $paid_content,
-            'free_content' => $free_content,
-        )
-    );
-}
-
 function leaky_paywall_insights_get_total_revenue( $period ) {
 
     global $wpdb;
