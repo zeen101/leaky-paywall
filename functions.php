@@ -1125,42 +1125,16 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 			return false;
 		}
 
-		$mode           = leaky_paywall_get_current_mode();
-		$site           = leaky_paywall_get_current_site();
-		$payment_status = get_user_meta($user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true);
+		$access     = leaky_paywall_compute_access( $user );
+		$has_access = $access['status_grants_access'] && ! $access['expired'];
 
-		$has_access = in_array( $payment_status, leaky_paywall_access_statuses(), true );
-
-		// Enforce the expires date even for statuses like pending_cancel
-		// that would otherwise grant access indefinitely. A subscriber
-		// canceled at Stripe's period-end keeps `pending_cancel` locally
-		// until the gateway's subscription.deleted webhook flips them to
-		// expired; if that webhook fails to arrive (Stripe outage,
-		// receiver blocked, wp-cron down) they historically retained
-		// content access for months. The daily cron also skipped
-		// pending_cancel by design, so this runtime check is the safety
-		// net that ends access on time regardless of webhook or cron
-		// health. Empty or 0000-00-00 means "no expiration".
-		if ( $has_access ) {
-			$expires        = get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-			$has_expiration = ! empty( $expires )
-				&& '0000-00-00 00:00:00' !== $expires
-				&& '0' !== $expires;
-
-			if ( $has_expiration && strtotime( $expires ) < time() ) {
-				$has_access = false;
-
-				// Self-heal the stale status so the admin dashboard
-				// reflects reality (no more "Expires Soon" on
-				// subscribers whose access has actually ended) and
-				// transition hooks fire for downstream integrations
-				// like mailing-list sync. set_subscriber_status is a
-				// no-op when target matches current, so this runs
-				// exactly once per subscriber.
-				if ( function_exists( 'leaky_paywall_set_subscriber_status' ) ) {
-					leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'access_check_expired' );
-				}
-			}
+		// Self-heal the stale status so the admin dashboard reflects reality
+		// (no more "Expires Soon" on subscribers whose access has actually
+		// ended) and transition hooks fire for downstream integrations like
+		// mailing-list sync. set_subscriber_status is a no-op when target
+		// matches current, so this runs exactly once per subscriber.
+		if ( $access['status_grants_access'] && $access['expired'] && function_exists( 'leaky_paywall_set_subscriber_status' ) ) {
+			leaky_paywall_set_subscriber_status( $user->ID, 'expired', 'access_check_expired' );
 		}
 
 		// Only apply the logged-in check when checking the current visitor.
@@ -1170,11 +1144,85 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 			$has_access = false;
 		}
 
-		if (leaky_paywall_user_can_bypass_paywall_by_role($user)) {
+		if ( $access['bypass_by_role'] ) {
 			$has_access = true;
 		}
 
 		return apply_filters('leaky_paywall_user_has_access', $has_access, $user);
+	}
+}
+
+if ( ! function_exists( 'leaky_paywall_compute_access' ) ) {
+
+	/**
+	 * Work out whether a subscriber's own record grants access, without
+	 * changing anything.
+	 *
+	 * leaky_paywall_user_has_access() uses this and then self-heals a stale
+	 * status (writes `expired` and fires transition hooks). Anything that must
+	 * only read, such as the Abilities API, calls this instead. It does not
+	 * apply the `leaky_paywall_user_has_access` filter or the logged-in check,
+	 * since both depend on who is asking rather than on the record.
+	 *
+	 * Enforces the expires date even for statuses like pending_cancel that
+	 * would otherwise grant access indefinitely. A subscriber canceled at
+	 * Stripe's period-end keeps `pending_cancel` until the gateway's
+	 * subscription.deleted webhook arrives; if it never does, this is the
+	 * safety net that ends access on time. Empty or 0000-00-00 means
+	 * "no expiration".
+	 *
+	 * @since 5.3.5
+	 *
+	 * @param WP_User $user User to check.
+	 * @return array {
+	 *     @type bool   $has_access           Record grants access (status and expiry, or a bypass role).
+	 *     @type string $status               Raw payment_status meta for the current mode and site.
+	 *     @type bool   $status_grants_access Status is one of leaky_paywall_access_statuses().
+	 *     @type string $expires              Raw expires meta.
+	 *     @type bool   $has_expiration       Expires is set to a real date.
+	 *     @type bool   $expires_parseable    strtotime() can read expires (false only when it is set and unreadable).
+	 *     @type bool   $expired              Expires is set and in the past.
+	 *     @type bool   $bypass_by_role       A role on the user bypasses the paywall.
+	 * }
+	 */
+	function leaky_paywall_compute_access( $user ) {
+		$result = array(
+			'has_access'           => false,
+			'status'               => '',
+			'status_grants_access' => false,
+			'expires'              => '',
+			'has_expiration'       => false,
+			'expires_parseable'    => true,
+			'expired'              => false,
+			'bypass_by_role'       => false,
+		);
+
+		if ( ! is_object( $user ) || empty( $user->ID ) ) {
+			return $result;
+		}
+
+		$mode = leaky_paywall_get_current_mode();
+		$site = leaky_paywall_get_current_site();
+
+		$result['status']               = (string) get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
+		$result['status_grants_access'] = in_array( $result['status'], leaky_paywall_access_statuses(), true );
+		$result['expires']              = (string) get_user_meta( $user->ID, '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
+		$result['has_expiration']       = '' !== $result['expires']
+			&& '0000-00-00 00:00:00' !== $result['expires']
+			&& '0' !== $result['expires'];
+
+		if ( $result['has_expiration'] ) {
+			$timestamp                   = strtotime( $result['expires'] );
+			$result['expires_parseable'] = false !== $timestamp;
+			// Same comparison user_has_access() has always made; an unreadable
+			// date compares as false < time(), so it counts as expired.
+			$result['expired'] = $timestamp < time();
+		}
+
+		$result['bypass_by_role'] = leaky_paywall_user_can_bypass_paywall_by_role( $user );
+		$result['has_access']     = ( $result['status_grants_access'] && ! $result['expired'] ) || $result['bypass_by_role'];
+
+		return $result;
 	}
 }
 

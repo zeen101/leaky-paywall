@@ -382,6 +382,14 @@ class Leaky_Paywall_Settings
 					</tr>
 
 					<tr class="general-options">
+						<th><?php esc_html_e('AI Assistants', 'leaky-paywall'); ?></th>
+						<td>
+							<input type="checkbox" id="enable_ai_abilities" name="enable_ai_abilities" <?php checked('on', $settings['enable_ai_abilities']); ?> /> <?php esc_html_e('Allow AI assistants to look up subscribers and subscription levels (read-only).', 'leaky-paywall'); ?>
+							<p class="description"><?php esc_html_e('Makes Leaky Paywall\'s abilities available to AI assistants connected to this site through the WordPress Abilities API, for example over MCP. Only administrators who can manage Leaky Paywall can use them. Subscriber names, emails and payment details they look up are sent to the assistant\'s AI provider. Requires WordPress 6.9 or later.', 'leaky-paywall'); ?></p>
+						</td>
+					</tr>
+
+					<tr class="general-options">
 						<th><?php esc_html_e('Terms and Conditions', 'leaky-paywall'); ?></th>
 						<td>
 							<input type="checkbox" id="enable_terms_and_conditions" name="enable_terms_and_conditions" <?php checked('on', $settings['enable_terms_and_conditions']); ?> /> <?php esc_html_e('Require subscribers to agree to your terms and conditions during registration.', 'leaky-paywall'); ?>
@@ -1696,6 +1704,7 @@ The %sitename% Team';
 				'remove_username_field'                 => 'off',
 				'add_expiration_dates'   	            => 'on',
 				'enable_rest_api'                  		=> 'on',
+				'enable_ai_abilities'                   => 'off',
 				'debug_mode'                            => 'off',
 				'site_name'                             => get_option('blogname'), /* Site Specific */
 				'from_name'                             => get_option('blogname'), /* Site Specific */
@@ -1937,6 +1946,8 @@ The %sitename% Team';
 				} else {
 					$settings['enable_rest_api'] = 'off';
 				}
+
+				$settings['enable_ai_abilities'] = empty($_POST['enable_ai_abilities']) ? 'off' : 'on';
 
 				if (!empty($_POST['enable_terms_and_conditions'])) {
 					$settings['enable_terms_and_conditions'] = sanitize_text_field(wp_unslash($_POST['enable_terms_and_conditions']));
