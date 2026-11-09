@@ -55,8 +55,53 @@ class LP_Abilities {
 		return (bool) apply_filters( 'leaky_paywall_abilities_exposed', $exposed );
 	}
 
+	/**
+	 * Register a category with the Abilities API registry.
+	 *
+	 * Same as wp_register_ability_category(), which checks it is running on
+	 * wp_abilities_api_categories_init and then calls the registry; this only
+	 * runs from that action. Calling the registry directly keeps a WordPress
+	 * 6.9 function out of a plugin that supports older versions.
+	 *
+	 * @param string $slug Category slug.
+	 * @param array  $args Category arguments.
+	 */
+	private static function add_category( $slug, $args ) {
+		if ( ! class_exists( 'WP_Ability_Categories_Registry' ) ) {
+			return;
+		}
+
+		$registry = WP_Ability_Categories_Registry::get_instance();
+
+		if ( $registry ) {
+			$registry->register( $slug, $args );
+		}
+	}
+
+	/**
+	 * Register an ability with the Abilities API registry.
+	 *
+	 * Same as wp_register_ability(), which checks it is running on
+	 * wp_abilities_api_init and then calls the registry; this only runs from
+	 * that action.
+	 *
+	 * @param string $name Ability name.
+	 * @param array  $args Ability arguments.
+	 */
+	private static function add_ability( $name, $args ) {
+		if ( ! class_exists( 'WP_Abilities_Registry' ) ) {
+			return;
+		}
+
+		$registry = WP_Abilities_Registry::get_instance();
+
+		if ( $registry ) {
+			$registry->register( $name, $args );
+		}
+	}
+
 	public static function register_category() {
-		wp_register_ability_category(
+		self::add_category(
 			self::CATEGORY,
 			array(
 				'label'       => __( 'Leaky Paywall', 'leaky-paywall' ),
@@ -81,7 +126,7 @@ class LP_Abilities {
 			),
 		);
 
-		wp_register_ability(
+		self::add_ability(
 			'leaky-paywall/explain-subscriber-access',
 			array(
 				'label'               => __( 'Explain subscriber access', 'leaky-paywall' ),
@@ -120,7 +165,7 @@ class LP_Abilities {
 			)
 		);
 
-		wp_register_ability(
+		self::add_ability(
 			'leaky-paywall/list-levels',
 			array(
 				'label'               => __( 'List subscription levels', 'leaky-paywall' ),
