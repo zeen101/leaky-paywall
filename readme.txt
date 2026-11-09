@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.7
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.4
+Stable tag: 5.3.5
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,12 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.5 =
+* New: Leaky Paywall can now answer questions from AI assistants connected to your site through the WordPress Abilities API (WordPress 6.9 or later), such as "why can't this reader see paid content?" and "what subscription levels do we sell?". Read-only and admin-only. Turn it on under Settings > General > AI Assistants (off by default).
+* Fix: When a reader's browser blocks the Stripe payment form (cookie settings, a browser extension or a work network), the registration form now explains the problem instead of leaving a Next button that does nothing, and the attempt is recorded in the debug log with the likely cause.
+* Fix: Reading subscribers through the Leaky Paywall REST API no longer changes their status. A subscriber whose expiration date has passed is reported with has_access false and keeps their stored status until their next visit or the daily expiration check.
+* Improvement: Removed an unused Insights reports request handler and its unused scripts.
 
 = 5.3.4 =
 * Fix: Stripe signups no longer get stuck on "Processing" after clicking Next when the Billing Address option is turned on.
