@@ -50,7 +50,8 @@ function lp_rest_get_post_meta( $user, $field_name, $request ) {
     $plan = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_plan' . $site, true );
     $created = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_created' . $site, true );
     $expires = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_expires' . $site, true );
-    $has_access = leaky_paywall_user_has_access( $user_obj );
+    // Read-only: reading a user over REST must not expire them.
+    $has_access = leaky_paywall_user_has_access_readonly( $user_obj );
     $payment_gateway = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_gateway' . $site, true );
     $payment_status = get_user_meta( $user['id'], '_issuem_leaky_paywall_' . $mode . '_payment_status' . $site, true );
 

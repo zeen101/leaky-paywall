@@ -1152,6 +1152,33 @@ if (!function_exists('leaky_paywall_user_has_access')) {
 	}
 }
 
+if ( ! function_exists( 'leaky_paywall_user_has_access_readonly' ) ) {
+
+	/**
+	 * leaky_paywall_user_has_access() for a given user, without the self-heal.
+	 *
+	 * Same answer for an explicit user (record, role bypass, then the
+	 * `leaky_paywall_user_has_access` filter extensions use to grant access),
+	 * but never writes `expired` or fires status transitions. For reads that
+	 * report on a subscriber rather than serve them content, such as the REST
+	 * API: listing subscribers must not change them.
+	 *
+	 * @since 5.3.5
+	 *
+	 * @param WP_User $user User to check.
+	 * @return bool
+	 */
+	function leaky_paywall_user_has_access_readonly( $user ) {
+		if ( ! is_object( $user ) ) {
+			return false;
+		}
+
+		$access = leaky_paywall_compute_access( $user );
+
+		return (bool) apply_filters( 'leaky_paywall_user_has_access', $access['has_access'], $user );
+	}
+}
+
 if ( ! function_exists( 'leaky_paywall_compute_access' ) ) {
 
 	/**

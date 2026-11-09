@@ -456,7 +456,8 @@ class Leaky_Paywall_REST_Subscribers {
 			'plan'            => lp_get_subscriber_meta( 'plan', $user ),
 			'created'         => lp_get_subscriber_meta( 'created', $user ),
 			'expires'         => lp_get_subscriber_meta( 'expires', $user ),
-			'has_access'      => leaky_paywall_user_has_access( $user ),
+			// Read-only: listing or fetching subscribers must not expire them.
+			'has_access'      => leaky_paywall_user_has_access_readonly( $user ),
 			'payment_gateway' => lp_get_subscriber_meta( 'payment_gateway', $user ),
 			'payment_status'  => lp_get_subscriber_meta( 'payment_status', $user ),
 		);
