@@ -839,7 +839,7 @@ function leaky_paywall_ajax_report_checkout_error() {
 	set_transient( $limit_key, $reported + 1, HOUR_IN_SECONDS );
 
 	$stages  = array( 'account', 'checkout', 'payment' );
-	$reasons = array( 'timeout', 'request', 'parse', 'unrecognized', 'stripe', 'incomplete', 'exception' );
+	$reasons = array( 'timeout', 'request', 'parse', 'unrecognized', 'stripe', 'incomplete', 'exception', 'stripe_blocked' );
 
 	$field = function ( $key, $length = 100 ) {
 		$value = isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked above.

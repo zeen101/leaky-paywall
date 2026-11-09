@@ -19,16 +19,100 @@
         // (Stripe processes the transaction the visitor is trying to make,
         // which fits the Necessary category under GDPR). We surface an
         // in-form message here so the visitor knows what to do.
+        //
+        // The error box is display:none until something shows it, so the
+        // message has to be shown explicitly; it used to be written into the
+        // hidden box and the reader saw a Next button that did nothing. The
+        // form is also held back: pressing Enter submitted it without step one,
+        // and the server answered "An error occurred" (stripe signup - error 2).
         if ( typeof Stripe === 'undefined' ) {
-            var $errors = $('#leaky-paywall-registration-errors');
-            if ( $errors.length ) {
-                $errors.html(
-                    $('<div class="leaky_paywall_message error"></div>').text( message('stripe_blocked') )
-                );
+            var $form = $('#leaky-paywall-payment-form');
+
+            // The Stripe script loads on every page; only the form needs this.
+            if ( ! $form.length ) {
+                return;
             }
-            // Also disable the submit buttons so the user doesn't repeatedly
-            // click a form that can't submit.
-            $('#checkout, #leaky-paywall-registration-next').prop('disabled', true);
+
+            var blockedReported = false;
+
+            // Why Stripe.js is missing, short enough for one log line:
+            // tag=missing (stripped by an optimizer), type=text/plain plus
+            // cc=... (consent tool), type=pmdelayedscript or similar (delay
+            // plugin), or a normal tag with net=none (never requested or
+            // refused: extension or DNS/network filter) or net=status0 (an
+            // answer came back but defined no Stripe, such as a proxy block
+            // page). status0 is normal for this cross-origin script even when
+            // it loads, so it only means "a response arrived".
+            var stripeBlockedDiagnostics = function () {
+                var parts = [];
+                var tag = document.querySelector('#stripe-js, script[src*="js.stripe.com"], script[data-src*="js.stripe.com"], script[data-cookieblock-src*="js.stripe.com"]');
+
+                if ( ! tag ) {
+                    parts.push('tag=missing');
+                } else {
+                    parts.push('type=' + ( tag.getAttribute('type') || 'default' ));
+                    if ( tag.getAttribute('data-cookieconsent') ) {
+                        parts.push('cc=' + tag.getAttribute('data-cookieconsent'));
+                    }
+                    var src = tag.getAttribute('src') || tag.getAttribute('data-src') || tag.getAttribute('data-cookieblock-src') || '';
+                    if ( src.indexOf('js.stripe.com') === -1 ) {
+                        parts.push('src=' + src.substring(0, 60));
+                    } else if ( ! tag.getAttribute('src') ) {
+                        parts.push('src=moved');
+                    }
+                }
+
+                if ( window.Cookiebot && window.Cookiebot.consent ) {
+                    var c = window.Cookiebot.consent;
+                    parts.push('cookiebot=' + ( window.Cookiebot.hasResponse ? 'n' + ( c.necessary ? 1 : 0 ) + 'p' + ( c.preferences ? 1 : 0 ) + 's' + ( c.statistics ? 1 : 0 ) + 'm' + ( c.marketing ? 1 : 0 ) : 'noresponse' ));
+                }
+
+                try {
+                    var hits = ( window.performance && performance.getEntriesByType ) ? performance.getEntriesByType('resource').filter(function ( r ) {
+                        return r.name.indexOf('js.stripe.com') !== -1;
+                    }) : null;
+
+                    if ( null === hits ) {
+                        parts.push('net=unknown');
+                    } else if ( ! hits.length ) {
+                        parts.push('net=none');
+                    } else {
+                        var hit = hits[ hits.length - 1 ];
+                        parts.push('net=' + ( 'number' === typeof hit.responseStatus ? 'status' + hit.responseStatus : 'seen' ) + ',' + Math.round( hit.duration ) + 'ms');
+                    }
+                } catch ( err ) {
+                    parts.push('net=error');
+                }
+
+                if ( false === navigator.onLine ) {
+                    parts.push('offline');
+                }
+
+                return parts.join(' ');
+            };
+
+            var showStripeBlocked = function () {
+                $('#leaky-paywall-registration-errors').html(
+                    $('<p class="leaky-paywall-registration-error"></p>').text( message('stripe_blocked') )
+                ).show();
+            };
+
+            // Logged when a reader tries to continue, not on every page view,
+            // so the debug log names the readers who were actually stopped.
+            var blockedAttempt = function ( e ) {
+                e.preventDefault();
+                showStripeBlocked();
+                $('html, body').animate({ scrollTop: $('#leaky-paywall-registration-errors').offset().top - 40 }, 400);
+
+                if ( ! blockedReported ) {
+                    blockedReported = true;
+                    reportError( 'account', 'stripe_blocked', { detail: 'Stripe.js did not load: ' + stripeBlockedDiagnostics() } );
+                }
+            };
+
+            showStripeBlocked();
+            $('#leaky-paywall-registration-next, #checkout').on('click', blockedAttempt);
+            $form.on('submit', blockedAttempt);
             return;
         }
 

@@ -586,7 +586,7 @@ class Leaky_Paywall {
 						'timeout' => esc_html__( 'This is taking longer than it should. Please try again.', 'leaky-paywall' ),
 						'unexpected' => esc_html__( 'An unexpected error occurred. Please try again.', 'leaky-paywall' ),
 						'payment_incomplete' => esc_html__( 'Your payment was not completed. Please try again or use a different payment method.', 'leaky-paywall' ),
-						'stripe_blocked' => esc_html__( 'Payment processing is currently blocked by your cookie settings. To subscribe, please reopen the cookie banner and allow the payment / necessary category, then reload this page.', 'leaky-paywall' ),
+						'stripe_blocked' => esc_html__( 'Our secure payment form could not load. Cookie settings, a browser extension or a work network can block it. Please allow necessary cookies for this site, or try another browser or network, then reload this page.', 'leaky-paywall' ),
 					),
 				)
 			);
