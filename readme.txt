@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.7
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.3
+Stable tag: 5.3.4
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,17 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.4 =
+* Fix: Stripe signups no longer get stuck on "Processing" after clicking Next when the Billing Address option is turned on.
+* Fix: A partial refund in Stripe no longer removes a subscriber's access. Only a full refund ends access, and the refund is still recorded.
+* Fix: A delayed trial with a setup fee now stays on trial until it converts, instead of showing as active once the fee is paid.
+* Fix: Row actions, including Send Receipt, show again on the Transactions list.
+* Improvement: The registration Next button now reads "Continue to Payment". Developers can change it with the leaky_paywall_registration_next_text filter.
+* Improvement: Logged-in readers no longer see an empty Account Details heading on the registration form.
+* Improvement: Quick Edit and Trash are removed from individual transaction rows, since transactions are financial records. Trash is still available as a bulk action.
+* Improvement: List Builder now enforces its minimum password length on signup. Developers can change it with the lp_list_builder_min_password_length filter.
+* New: Developers can let a logged-in reader buying another level start a separate Stripe subscription instead of switching their current one, using the leaky_paywall_stripe_switch_existing_subscription filter.
 
 = 5.3.3 =
 * Security: PayPal payment notifications are now verified with PayPal before they are acted on.

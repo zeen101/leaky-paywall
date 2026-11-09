@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.3.3\n"
+"Project-Id-Version: Leaky Paywall 5.3.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-04T21:04:12+00:00\n"
+"POT-Creation-Date: 2026-11-09T20:27:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -18,7 +18,7 @@ msgstr ""
 #. Author of the plugin
 #: leaky-paywall.php
 #: class.php:272
-#: functions.php:5846
+#: functions.php:5866
 #: include/admin/config-notices.php:296
 #: include/admin/extensions-page.php:133
 #: include/admin/license-page.php:120
@@ -62,35 +62,35 @@ msgstr ""
 
 #: class.php:276
 #: functions.php:5276
-#: functions.php:5857
+#: functions.php:5877
 #: include/admin/dashboard/dashboard.php:356
 msgid "Settings"
 msgstr ""
 
 #: class.php:278
-#: functions.php:5870
+#: functions.php:5890
 #: include/admin/dashboard-widgets.php:298
 #: include/admin/dashboard/dashboard.php:358
 msgid "Subscribers"
 msgstr ""
 
 #: class.php:280
-#: functions.php:5884
+#: functions.php:5904
 #: include/admin/dashboard-widgets.php:300
 #: include/admin/dashboard/dashboard.php:360
-#: include/admin/lp-transaction.php:73
+#: include/admin/lp-transaction.php:75
 msgid "Transactions"
 msgstr ""
 
 #: class.php:283
-#: functions.php:5898
+#: functions.php:5918
 #: include/admin/tools/tools.php:53
 msgid "Tools"
 msgstr ""
 
 #: class.php:286
 #: functions.php:5310
-#: functions.php:5912
+#: functions.php:5932
 #: include/admin/extensions-page.php:137
 msgid "Extensions"
 msgstr ""
@@ -108,17 +108,12 @@ msgstr ""
 
 #: class.php:545
 #: shortcodes.php:461
-#: shortcodes.php:1323
+#: shortcodes.php:1330
 msgid "Passwords do not match."
 msgstr ""
 
 #: class.php:573
 msgid "Processing... Please Wait"
-msgstr ""
-
-#: class.php:574
-#: shortcodes.php:960
-msgid "Next"
 msgstr ""
 
 #: class.php:582
@@ -434,7 +429,7 @@ msgstr ""
 
 #: functions.php:2093
 #: functions.php:3376
-#: include/admin/lp-transaction.php:312
+#: include/admin/lp-transaction.php:314
 #: include/admin/settings/settings.php:1779
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:602
 msgid "Free Registration"
@@ -634,10 +629,10 @@ msgid "Free for the first %s day(s)"
 msgstr ""
 
 #: functions.php:3229
-#: functions.php:5484
+#: functions.php:5504
 #: include/admin/dashboard-widgets.php:201
 #: include/admin/dashboard/dashboard.php:445
-#: include/admin/lp-transaction.php:572
+#: include/admin/lp-transaction.php:574
 #: include/emails/receipt-tags.php:61
 msgid "Free"
 msgstr ""
@@ -651,20 +646,20 @@ msgid "Lost Password?"
 msgstr ""
 
 #: functions.php:3373
-#: include/admin/lp-transaction.php:311
+#: include/admin/lp-transaction.php:313
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:601
 #: include/emails/receipt-tags.php:60
 msgid "Manual"
 msgstr ""
 
 #: functions.php:3374
-#: include/admin/lp-transaction.php:308
+#: include/admin/lp-transaction.php:310
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:598
 msgid "Stripe"
 msgstr ""
 
 #: functions.php:3375
-#: include/admin/lp-transaction.php:310
+#: include/admin/lp-transaction.php:312
 #: include/gateways/class-leaky-paywall-payment-gateways.php:92
 msgid "PayPal Standard"
 msgstr ""
@@ -674,42 +669,42 @@ msgid "for life"
 msgstr ""
 
 #: functions.php:3401
-#: functions.php:6353
+#: functions.php:6373
 msgid "day"
 msgstr ""
 
 #: functions.php:3404
-#: functions.php:6351
+#: functions.php:6371
 msgid "days"
 msgstr ""
 
 #: functions.php:3407
-#: functions.php:6361
+#: functions.php:6381
 msgid "week"
 msgstr ""
 
 #: functions.php:3410
-#: functions.php:6359
+#: functions.php:6379
 msgid "weeks"
 msgstr ""
 
 #: functions.php:3413
-#: functions.php:6369
+#: functions.php:6389
 msgid "month"
 msgstr ""
 
 #: functions.php:3416
-#: functions.php:6367
+#: functions.php:6387
 msgid "months"
 msgstr ""
 
 #: functions.php:3419
-#: functions.php:6377
+#: functions.php:6397
 msgid "year"
 msgstr ""
 
 #: functions.php:3422
-#: functions.php:6375
+#: functions.php:6395
 msgid "years"
 msgstr ""
 
@@ -1620,67 +1615,72 @@ msgstr ""
 msgid "User Account Deleted on %s"
 msgstr ""
 
-#: functions.php:5973
+#: functions.php:5439
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe-checkout.php:46
+msgid "Continue to Payment"
+msgstr ""
+
+#: functions.php:5993
 msgid "Congrats!"
 msgstr ""
 
-#: functions.php:5973
+#: functions.php:5993
 msgid "You have more than 100 subscribers with Leaky Paywall. Please help us by leaving a review on WordPress.org. We read every review and use your feedback to make Leaky Paywall better for everyone!"
 msgstr ""
 
-#: functions.php:5975
+#: functions.php:5995
 msgid "Leave a Review"
 msgstr ""
 
-#: functions.php:5976
+#: functions.php:5996
 msgid "Hide"
 msgstr ""
 
-#: functions.php:6262
-#: include/admin/lp-transaction.php:179
-#: include/admin/lp-transaction.php:573
+#: functions.php:6282
+#: include/admin/lp-transaction.php:181
+#: include/admin/lp-transaction.php:575
 msgid "Refund"
 msgstr ""
 
-#: functions.php:6263
+#: functions.php:6283
 msgid "Subscription Renewal"
 msgstr ""
 
-#: functions.php:6264
-#: include/admin/lp-transaction.php:575
+#: functions.php:6284
+#: include/admin/lp-transaction.php:577
 msgid "Level Change"
 msgstr ""
 
-#: functions.php:6265
+#: functions.php:6285
 msgid "Initial Subscription Payment"
 msgstr ""
 
-#: functions.php:6266
+#: functions.php:6286
 msgid "One Time"
 msgstr ""
 
 #. Translators: %s - the year the reader created their account.
-#: functions.php:6538
+#: functions.php:6558
 #, php-format
 msgid "You have been reading since %s."
 msgstr ""
 
-#: functions.php:6562
+#: functions.php:6582
 #: include/admin/settings/settings.php:1691
 msgid "Get full access"
 msgstr ""
 
-#: functions.php:6563
+#: functions.php:6583
 #: include/admin/settings/settings.php:1692
 msgid "Read everything we publish and support our work."
 msgstr ""
 
-#: functions.php:6564
+#: functions.php:6584
 #: include/admin/settings/settings.php:1693
 msgid "See subscription options"
 msgstr ""
 
-#: functions.php:6741
+#: functions.php:6761
 msgid "the password you chose when you signed up"
 msgstr ""
 
@@ -1746,7 +1746,7 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:197
 #: include/admin/dashboard/dashboard.php:433
-#: include/admin/lp-transaction.php:570
+#: include/admin/lp-transaction.php:572
 msgid "Paid"
 msgstr ""
 
@@ -1772,7 +1772,7 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:249
 #: include/admin/dashboard/dashboard.php:308
-#: include/admin/lp-transaction.php:359
+#: include/admin/lp-transaction.php:361
 #: include/admin/subscribers/subscriber.php:856
 #: include/admin/subscribers/subscriber.php:912
 msgid "Date"
@@ -1780,8 +1780,8 @@ msgstr ""
 
 #: include/admin/dashboard-widgets.php:250
 #: include/admin/dashboard/dashboard.php:309
-#: include/admin/lp-transaction.php:238
-#: include/admin/lp-transaction.php:454
+#: include/admin/lp-transaction.php:240
+#: include/admin/lp-transaction.php:456
 #: include/admin/onboarding/class-onboarding.php:96
 #: include/admin/subscribers/subscriber.php:720
 #: include/emails/class-lp-emails.php:263
@@ -1794,8 +1794,8 @@ msgstr ""
 #: include/admin/dashboard-widgets.php:251
 #: include/admin/dashboard/dashboard.php:265
 #: include/admin/dashboard/dashboard.php:310
-#: include/admin/lp-transaction.php:252
-#: include/admin/lp-transaction.php:455
+#: include/admin/lp-transaction.php:254
+#: include/admin/lp-transaction.php:457
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:40
 #: include/admin/subscribers/subscriber.php:764
 #: subscriber-table.php:190
@@ -2119,14 +2119,14 @@ msgstr ""
 #: include/admin/insights/insights.php:100
 #: include/admin/insights/insights.php:245
 #: include/admin/insights/insights.php:326
-#: include/admin/lp-transaction.php:560
+#: include/admin/lp-transaction.php:562
 msgid "Last 7 days"
 msgstr ""
 
 #: include/admin/insights/insights.php:101
 #: include/admin/insights/insights.php:246
 #: include/admin/insights/insights.php:327
-#: include/admin/lp-transaction.php:561
+#: include/admin/lp-transaction.php:563
 msgid "Last 30 days"
 msgstr ""
 
@@ -2277,45 +2277,45 @@ msgstr ""
 msgid "Leaky Paywall Incomplete Users"
 msgstr ""
 
-#: include/admin/lp-transaction.php:105
+#: include/admin/lp-transaction.php:107
 msgid "Leaky Paywall Transactions"
 msgstr ""
 
-#: include/admin/lp-transaction.php:127
+#: include/admin/lp-transaction.php:129
 msgid "Transaction Details"
 msgstr ""
 
-#: include/admin/lp-transaction.php:128
+#: include/admin/lp-transaction.php:130
 msgid "Transaction Info"
 msgstr ""
 
-#: include/admin/lp-transaction.php:153
+#: include/admin/lp-transaction.php:155
 msgid "Complete"
 msgstr ""
 
-#: include/admin/lp-transaction.php:195
+#: include/admin/lp-transaction.php:197
 msgid "Subtotal:"
 msgstr ""
 
-#: include/admin/lp-transaction.php:196
+#: include/admin/lp-transaction.php:198
 msgid "Tax:"
 msgstr ""
 
-#: include/admin/lp-transaction.php:209
+#: include/admin/lp-transaction.php:211
 msgid "Refund for"
 msgstr ""
 
 #. translators: %d: transaction ID
-#: include/admin/lp-transaction.php:214
+#: include/admin/lp-transaction.php:216
 #, php-format
 msgid "Transaction #%d"
 msgstr ""
 
-#: include/admin/lp-transaction.php:227
+#: include/admin/lp-transaction.php:229
 msgid "Customer"
 msgstr ""
 
-#: include/admin/lp-transaction.php:233
+#: include/admin/lp-transaction.php:235
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:39
 #: subscriber-table.php:189
 #: templates/shortcode-account.php:248
@@ -2323,63 +2323,63 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: include/admin/lp-transaction.php:249
+#: include/admin/lp-transaction.php:251
 msgid "Subscription"
 msgstr ""
 
-#: include/admin/lp-transaction.php:260
+#: include/admin/lp-transaction.php:262
 msgid "Nag Location"
 msgstr ""
 
-#: include/admin/lp-transaction.php:278
+#: include/admin/lp-transaction.php:280
 msgid "PayPal Response"
 msgstr ""
 
-#: include/admin/lp-transaction.php:309
+#: include/admin/lp-transaction.php:311
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:599
 #: include/gateways/class-leaky-paywall-payment-gateways.php:65
 msgid "Stripe Checkout"
 msgstr ""
 
-#: include/admin/lp-transaction.php:365
+#: include/admin/lp-transaction.php:367
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:46
 msgid "Gateway"
 msgstr ""
 
-#: include/admin/lp-transaction.php:372
+#: include/admin/lp-transaction.php:374
 msgid "Transaction ID"
 msgstr ""
 
-#: include/admin/lp-transaction.php:387
+#: include/admin/lp-transaction.php:389
 msgid "Customer ID"
 msgstr ""
 
-#: include/admin/lp-transaction.php:401
-#: include/admin/lp-transaction.php:459
+#: include/admin/lp-transaction.php:403
+#: include/admin/lp-transaction.php:461
 #: include/admin/subscribers/subscriber.php:859
 msgid "Payment Type"
 msgstr ""
 
-#: include/admin/lp-transaction.php:407
+#: include/admin/lp-transaction.php:409
 msgid "Customer IP"
 msgstr ""
 
-#: include/admin/lp-transaction.php:415
+#: include/admin/lp-transaction.php:417
 msgid "View Subscriber"
 msgstr ""
 
-#: include/admin/lp-transaction.php:426
+#: include/admin/lp-transaction.php:428
 msgid "All Transactions for Customer"
 msgstr ""
 
-#: include/admin/lp-transaction.php:456
+#: include/admin/lp-transaction.php:458
 #: include/admin/onboarding/templates/restrictions.php:31
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:49
 #: include/admin/tools/tools.php:221
 msgid "Price"
 msgstr ""
 
-#: include/admin/lp-transaction.php:457
+#: include/admin/lp-transaction.php:459
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:42
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:643
 #: include/admin/subscribers/subscriber.php:728
@@ -2387,50 +2387,50 @@ msgstr ""
 msgid "Created"
 msgstr ""
 
-#: include/admin/lp-transaction.php:458
+#: include/admin/lp-transaction.php:460
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:41
 #: shortcodes.php:331
 #: subscriber-table.php:191
 msgid "Status"
 msgstr ""
 
-#: include/admin/lp-transaction.php:558
+#: include/admin/lp-transaction.php:560
 msgid "All dates"
 msgstr ""
 
-#: include/admin/lp-transaction.php:559
+#: include/admin/lp-transaction.php:561
 msgid "Today"
 msgstr ""
 
-#: include/admin/lp-transaction.php:562
+#: include/admin/lp-transaction.php:564
 msgid "This month"
 msgstr ""
 
-#: include/admin/lp-transaction.php:563
+#: include/admin/lp-transaction.php:565
 msgid "Last month"
 msgstr ""
 
-#: include/admin/lp-transaction.php:564
+#: include/admin/lp-transaction.php:566
 msgid "This year"
 msgstr ""
 
-#: include/admin/lp-transaction.php:571
+#: include/admin/lp-transaction.php:573
 msgid "New Paid Subscription"
 msgstr ""
 
-#: include/admin/lp-transaction.php:574
+#: include/admin/lp-transaction.php:576
 msgid "Renewal"
 msgstr ""
 
-#: include/admin/lp-transaction.php:580
+#: include/admin/lp-transaction.php:582
 msgid "All payment types"
 msgstr ""
 
-#: include/admin/lp-transaction.php:594
+#: include/admin/lp-transaction.php:596
 msgid "All levels"
 msgstr ""
 
-#: include/admin/lp-transaction.php:615
+#: include/admin/lp-transaction.php:617
 msgid "All gateways"
 msgstr ""
 
@@ -3304,7 +3304,7 @@ msgid "When set to exclusive, tax is added to the subtotal. If set to inclusive,
 msgstr ""
 
 #: include/admin/settings/settings.php:1370
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:987
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:1000
 #: include/registration-functions.php:1076
 #: shortcodes.php:376
 #: templates/shortcode-account.php:379
@@ -3628,14 +3628,14 @@ msgstr ""
 
 #: include/admin/subscribers/subscriber.php:334
 #: shortcodes.php:484
-#: shortcodes.php:904
+#: shortcodes.php:911
 msgid "Username"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:339
 #: include/list-builder/class-lp-list-builder.php:130
-#: include/list-builder/class-lp-list-builder.php:732
-#: include/list-builder/class-lp-list-builder.php:762
+#: include/list-builder/class-lp-list-builder.php:745
+#: include/list-builder/class-lp-list-builder.php:775
 #: shortcodes.php:888
 msgid "Email Address"
 msgstr ""
@@ -3686,9 +3686,9 @@ msgid "Subscriber Details"
 msgstr ""
 
 #: include/admin/subscribers/subscriber.php:732
-#: include/list-builder/class-lp-list-builder.php:739
-#: include/list-builder/class-lp-list-builder.php:769
-#: shortcodes.php:916
+#: include/list-builder/class-lp-list-builder.php:752
+#: include/list-builder/class-lp-list-builder.php:782
+#: shortcodes.php:923
 msgid "Password"
 msgstr ""
 
@@ -4335,10 +4335,6 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe-checkout.php:46
-msgid "Continue to Payment"
-msgstr ""
-
 #: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:77
 #: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:126
 #: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:149
@@ -4351,13 +4347,13 @@ msgstr ""
 msgid "Your payment was received and your account is ready. Please <a href=\"%s\">log in</a>."
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:967
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:980
 #: shortcodes.php:289
 #: templates/shortcode-account.php:189
 msgid "Credit Card"
 msgstr ""
 
-#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:980
+#: include/gateways/class-leaky-paywall-payment-gateway-stripe.php:993
 msgid "This page is unsecured. Do not enter a real credit card number. Use this field only for testing purposes."
 msgstr ""
 
@@ -4396,23 +4392,23 @@ msgstr ""
 msgid "There was an error. Please try again."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:2346
+#: include/gateways/stripe/functions.php:2390
 msgid "Insufficient permissions."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:2353
+#: include/gateways/stripe/functions.php:2397
 msgid "Invalid or expired connect session."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:2360
+#: include/gateways/stripe/functions.php:2404
 msgid "Invalid account id."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:2389
+#: include/gateways/stripe/functions.php:2433
 msgid "Failed to retrieve credentials."
 msgstr ""
 
-#: include/gateways/stripe/functions.php:2395
+#: include/gateways/stripe/functions.php:2439
 msgid "Invalid credentials response."
 msgstr ""
 
@@ -4436,80 +4432,82 @@ msgstr ""
 msgid "Log in here"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:201
-#: include/list-builder/class-lp-list-builder.php:243
+#: include/list-builder/class-lp-list-builder.php:211
+#: include/list-builder/class-lp-list-builder.php:253
 msgid "Email verification is not enabled."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:211
-#: include/list-builder/class-lp-list-builder.php:254
-#: include/list-builder/class-lp-list-builder.php:283
-#: include/list-builder/class-lp-list-builder.php:323
-#: include/list-builder/class-lp-list-builder.php:472
+#: include/list-builder/class-lp-list-builder.php:221
+#: include/list-builder/class-lp-list-builder.php:264
+#: include/list-builder/class-lp-list-builder.php:293
+#: include/list-builder/class-lp-list-builder.php:333
+#: include/list-builder/class-lp-list-builder.php:485
 msgid "Please enter a valid email address."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:295
+#: include/list-builder/class-lp-list-builder.php:305
 msgid "Welcome back"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:296
+#: include/list-builder/class-lp-list-builder.php:306
 msgid "Enter your password to log in."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:306
+#: include/list-builder/class-lp-list-builder.php:316
 msgid "Create a password"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:331
-msgid "Password must be at least 4 characters."
+#. translators: %d: minimum password length
+#: include/list-builder/class-lp-list-builder.php:344
+#, php-format
+msgid "Password must be at least %d characters."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:339
+#: include/list-builder/class-lp-list-builder.php:352
 msgid "Registration could not be completed."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:360
+#: include/list-builder/class-lp-list-builder.php:373
 msgid "Please verify your email address first."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:369
+#: include/list-builder/class-lp-list-builder.php:382
 msgid "An account with that email already exists. Please sign in instead."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:482
+#: include/list-builder/class-lp-list-builder.php:495
 msgid "No account found for that email. Please create an account."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:498
+#: include/list-builder/class-lp-list-builder.php:511
 msgid "Incorrect email or password."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:520
+#: include/list-builder/class-lp-list-builder.php:533
 msgid "Check your email"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:521
+#: include/list-builder/class-lp-list-builder.php:534
 msgid "If an account exists for that email, we sent a 6-digit verification code."
 msgstr ""
 
 #. translators: %s: email address
-#: include/list-builder/class-lp-list-builder.php:542
-#: include/list-builder/class-lp-list-builder.php:577
+#: include/list-builder/class-lp-list-builder.php:555
+#: include/list-builder/class-lp-list-builder.php:590
 #, php-format
 msgid "We sent a 6-digit code to %s (expires in 10 minutes)."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:549
+#: include/list-builder/class-lp-list-builder.php:562
 msgid "Please wait a moment before requesting another code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:570
+#: include/list-builder/class-lp-list-builder.php:583
 msgid "Your Verification Code"
 msgstr ""
 
 #. translators: %s: 6-digit verification code
-#: include/list-builder/class-lp-list-builder.php:572
+#: include/list-builder/class-lp-list-builder.php:585
 #, php-format
 msgid ""
 "Your verification code is: %s\n"
@@ -4517,86 +4515,86 @@ msgid ""
 "This code expires in 10 minutes."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:599
-#: include/list-builder/class-lp-list-builder.php:606
-#: include/list-builder/class-lp-list-builder.php:626
+#: include/list-builder/class-lp-list-builder.php:612
+#: include/list-builder/class-lp-list-builder.php:619
+#: include/list-builder/class-lp-list-builder.php:639
 msgid "Invalid code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:614
+#: include/list-builder/class-lp-list-builder.php:627
 msgid "Code expired. Please request a new one."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:619
+#: include/list-builder/class-lp-list-builder.php:632
 msgid "Too many attempts. Request a new code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:638
+#: include/list-builder/class-lp-list-builder.php:651
 msgid "Set a new password"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:639
+#: include/list-builder/class-lp-list-builder.php:652
 msgid "Choose a new password for your account."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:662
-#: include/list-builder/class-lp-list-builder.php:667
+#: include/list-builder/class-lp-list-builder.php:675
+#: include/list-builder/class-lp-list-builder.php:680
 msgid "Invalid request."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:674
+#: include/list-builder/class-lp-list-builder.php:687
 msgid "Reset session expired. Please request a new code."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:678
+#: include/list-builder/class-lp-list-builder.php:691
 msgid "Invalid reset session."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:688
+#: include/list-builder/class-lp-list-builder.php:701
 msgid "All set"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:689
+#: include/list-builder/class-lp-list-builder.php:702
 msgid "Your password has been updated."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:691
+#: include/list-builder/class-lp-list-builder.php:704
 msgid "Password updated."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:691
+#: include/list-builder/class-lp-list-builder.php:704
 msgid "You can continue."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:746
+#: include/list-builder/class-lp-list-builder.php:759
 msgid "Forgot your password?"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:749
+#: include/list-builder/class-lp-list-builder.php:762
 msgid "Log in"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:795
+#: include/list-builder/class-lp-list-builder.php:808
 msgid "By creating an account, you agree to the Terms of Sale, Terms of Service, and Privacy Policy."
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:806
+#: include/list-builder/class-lp-list-builder.php:819
 msgid "Create account"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:824
+#: include/list-builder/class-lp-list-builder.php:837
 msgid "Verification code"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:837
+#: include/list-builder/class-lp-list-builder.php:850
 msgid "Verify code"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:854
+#: include/list-builder/class-lp-list-builder.php:867
 msgid "New password"
 msgstr ""
 
-#: include/list-builder/class-lp-list-builder.php:865
+#: include/list-builder/class-lp-list-builder.php:878
 msgid "Set new password"
 msgstr ""
 
@@ -5161,7 +5159,7 @@ msgid "Your Profile"
 msgstr ""
 
 #: shortcodes.php:453
-#: shortcodes.php:1315
+#: shortcodes.php:1322
 msgid "Invalid email address."
 msgstr ""
 
@@ -5308,27 +5306,27 @@ msgstr ""
 msgid "Your Details"
 msgstr ""
 
-#: shortcodes.php:898
+#: shortcodes.php:904
 msgid "Account Details"
 msgstr ""
 
-#: shortcodes.php:921
+#: shortcodes.php:928
 msgid "Confirm Password"
 msgstr ""
 
-#: shortcodes.php:994
+#: shortcodes.php:1001
 msgid "Payment Information"
 msgstr ""
 
-#: shortcodes.php:1045
+#: shortcodes.php:1052
 msgid "Subtotal"
 msgstr ""
 
-#: shortcodes.php:1049
+#: shortcodes.php:1056
 msgid "Tax"
 msgstr ""
 
-#: shortcodes.php:1053
+#: shortcodes.php:1060
 msgid "Total"
 msgstr ""
 
