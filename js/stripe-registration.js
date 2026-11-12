@@ -374,15 +374,41 @@
             });
         }
 
+        // Appearance and fonts from the leaky_paywall_stripe_elements_appearance
+        // and leaky_paywall_stripe_elements_fonts filters, applied to every
+        // Elements instance so the address and payment fields match.
+        function elementsOptions( extra ) {
+            var options = $.extend( {}, extra );
+            var appearance = leaky_paywall_stripe_registration_ajax.elements_appearance;
+            var fonts = leaky_paywall_stripe_registration_ajax.elements_fonts;
+
+            if ( appearance && 'object' === typeof appearance && ! Array.isArray( appearance ) ) {
+                options.appearance = $.extend( {}, appearance );
+
+                // An empty PHP array arrives as [], which Stripe rejects.
+                [ 'variables', 'rules' ].forEach( function ( key ) {
+                    if ( Array.isArray( options.appearance[ key ] ) ) {
+                        delete options.appearance[ key ];
+                    }
+                } );
+            }
+
+            if ( Array.isArray( fonts ) && fonts.length ) {
+                options.fonts = fonts;
+            }
+
+            return options;
+        }
+
         function buildAddressOnly() {
             // For deferred tax flow: mount only the address element first, without a clientSecret.
-            var standaloneElements = stripe.elements();
+            var standaloneElements = stripe.elements( elementsOptions() );
             mountAddressElement( standaloneElements );
         }
 
         function buildPaymentForm( clientSecret ) {
 
-            elements = stripe.elements({ clientSecret });
+            elements = stripe.elements( elementsOptions( { clientSecret: clientSecret } ) );
 
             const paymentElementOptions = {
                 layout: "tabs",

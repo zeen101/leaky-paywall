@@ -223,12 +223,53 @@
 	font-style: italic;
 }
 
+/* Payment method selector: one selectable tile per method. */
 .leaky-paywall-payment-method-container {
-	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 10px;
+	padding: 14px 16px;
+	border: 1px solid var(--lp-payment-method-border, #d9dce1);
+	border-radius: var(--lp-payment-method-radius, 6px);
+	background: var(--lp-payment-method-background, transparent);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.leaky-paywall-payment-method-container img {
-	margin-left: 20px;
+.leaky-paywall-payment-method-container:has(input:checked) {
+	border-color: var(--lp-payment-method-accent, currentColor);
+	box-shadow: 0 0 0 1px var(--lp-payment-method-accent, currentColor);
+}
+
+.leaky-paywall-payment-method-container input[type="radio"] {
+	margin: 0;
+	accent-color: var(--lp-payment-method-accent, currentColor);
+}
+
+.leaky-paywall-payment-method-container label {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 12px;
+	margin: 0;
+	cursor: pointer;
+}
+
+.leaky-paywall-payment-method-container .leaky-paywall-payment-method-icon {
+	flex-shrink: 0;
+	width: auto;
+	height: 20px;
+	margin-left: auto;
+}
+
+.leaky-paywall-payment-method-container .leaky-paywall-payment-method-logo {
+	width: auto;
+	height: 20px;
+}
+
+/* A single payment method has nothing to choose. The radio stays in the form. */
+.leaky-paywall-single-payment-method .leaky-paywall-payment-method-container {
+	display: none;
 }
 
 .leaky-paywall-test-mode-wrapper {

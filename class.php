@@ -580,6 +580,39 @@ class Leaky_Paywall {
 					'error_nonce' => wp_create_nonce( 'lp_checkout_error' ),
 					'request_timeout' => 45000,
 					'change_subscription_text' => esc_html__( 'Change Subscription', 'leaky-paywall' ),
+					/**
+					 * Filters the Stripe Elements appearance used by the registration form.
+					 *
+					 * Passed to stripe.elements() as `appearance`, so the payment and
+					 * address fields can match the site's colours, fonts and corners.
+					 * See https://docs.stripe.com/elements/appearance-api.
+					 *
+					 * @since 5.3.6
+					 *
+					 * @param array $appearance Stripe appearance object.
+					 */
+					'elements_appearance' => (object) apply_filters(
+						'leaky_paywall_stripe_elements_appearance',
+						array(
+							'theme'     => 'stripe',
+							'variables' => array(
+								'borderRadius' => '6px',
+							),
+						)
+					),
+					/**
+					 * Filters the fonts loaded into Stripe Elements.
+					 *
+					 * Stripe's fields render in an iframe and can't use the site's web
+					 * fonts unless they are loaded here, for example
+					 * array( array( 'cssSrc' => 'https://fonts.googleapis.com/css2?family=Inter' ) ).
+					 * Pair it with a fontFamily variable in the appearance filter.
+					 *
+					 * @since 5.3.6
+					 *
+					 * @param array $fonts Stripe fonts array.
+					 */
+					'elements_fonts' => array_values( (array) apply_filters( 'leaky_paywall_stripe_elements_fonts', array() ) ),
 					'messages' => array(
 						'address_needed' => esc_html__( 'Please enter your billing address.', 'leaky-paywall' ),
 						'request_failed' => esc_html__( 'We could not reach the payment step. Please check your connection and try again.', 'leaky-paywall' ),

@@ -977,7 +977,7 @@ class Leaky_Paywall_Payment_Gateway_Stripe extends Leaky_Paywall_Payment_Gateway
 
 			<input id="payment_method_stripe" class="input-radio" name="payment_method" value="stripe" checked="checked" data-order_button_text="" type="radio">
 
-			<label for="payment_method_stripe"> <?php esc_html_e('Credit Card', 'leaky-paywall'); ?> <img width="150" src="<?php echo esc_url(LEAKY_PAYWALL_URL); ?>images/credit_card_logos_5.gif"></label>
+			<label for="payment_method_stripe"><?php esc_html_e('Credit Card', 'leaky-paywall'); ?> <svg class="leaky-paywall-payment-method-icon" width="28" height="20" viewBox="0 0 28 20" aria-hidden="true" focusable="false"><rect x="1" y="1" width="26" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="5" width="26" height="3" fill="currentColor"/><rect x="4" y="13" width="7" height="2" rx="1" fill="currentColor"/></svg></label>
 
 		</div>
 

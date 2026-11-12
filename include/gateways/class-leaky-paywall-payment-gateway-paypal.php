@@ -69,11 +69,15 @@ class Leaky_Paywall_Payment_Gateway_PayPal extends Leaky_Paywall_Payment_Gateway
 		$paypal_button_text  = leaky_paywall_get_registration_checkout_button_text( 'paypal' );
 		$default_button_text = leaky_paywall_get_registration_checkout_button_text();
 
+		// Card is the default when it is also offered. PayPal renders after the
+		// card option, so a checked PayPal radio would win the selection.
+		$card_offered = array_key_exists( 'stripe', leaky_paywall_get_enabled_payment_gateways( $level_id ) );
+
 		ob_start(); ?>
 
 		<div class="leaky-paywall-payment-method-container">
-			<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" checked="checked" data-order_button_text="<?php echo esc_attr( $paypal_button_text ); ?>" type="radio">
-			<label for="payment_method_paypal"> Paypal <img src="<?php echo esc_url( LEAKY_PAYWALL_URL ); ?>images/PP_logo_h_150x38.png" alt="PayPal Logo"></label>
+			<input id="payment_method_paypal" class="input-radio" name="payment_method" value="paypal_standard" <?php checked( ! $card_offered ); ?> data-order_button_text="<?php echo esc_attr( $paypal_button_text ); ?>" type="radio">
+			<label for="payment_method_paypal"><img class="leaky-paywall-payment-method-logo" src="<?php echo esc_url( LEAKY_PAYWALL_URL ); ?>images/PP_logo_h_150x38.png" width="79" height="20" alt="<?php esc_attr_e( 'PayPal', 'leaky-paywall' ); ?>"></label>
 		</div>
 
 		<script>

@@ -973,7 +973,24 @@ function do_leaky_paywall_register_form($atts)
 
 		</div> <!-- leaky-paywall-registration-user-container -->
 
-		<div class="leaky-paywall-registration-payment-container">
+		<?php
+		/**
+		 * Filters whether the payment method selector is shown.
+		 *
+		 * With a single payment method there is nothing to choose, so the
+		 * selector is hidden. Its radio stays in the form, checked, so the
+		 * method is still submitted and gateway scripts can read it.
+		 *
+		 * @since 5.3.6
+		 *
+		 * @param bool  $show     Whether to show the selector.
+		 * @param array $gateways Enabled gateways for this level.
+		 * @param mixed $level_id The level id.
+		 */
+		$show_method_selector = apply_filters( 'leaky_paywall_show_payment_method_selector', count( (array) $gateways ) > 1, $gateways, $level_id );
+		?>
+
+		<div class="leaky-paywall-registration-payment-container<?php echo $show_method_selector ? '' : ' leaky-paywall-single-payment-method'; ?>">
 
 			<?php
 
