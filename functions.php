@@ -5536,7 +5536,7 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$currency_position  = $settings['leaky_paywall_currency_position'];
 		$thousand_separator = $settings['leaky_paywall_thousand_separator'];
 		$decimal_separator  = $settings['leaky_paywall_decimal_separator'];
-		$decimal_number     = empty($settings['leaky_paywall_decimal_number']) ? '0' : $settings['leaky_paywall_decimal_number'];
+		$decimal_number     = empty($settings['leaky_paywall_decimal_number']) ? 0 : absint($settings['leaky_paywall_decimal_number']);
 		$currency_symbol    = leaky_paywall_get_current_currency_symbol();
 
 		$broken_price = explode('.', $price);
@@ -5544,8 +5544,10 @@ if (!function_exists('build_leaky_paywall_subscription_levels_row')) {
 		$before_decimal = $broken_price[0];
 		$after_decimal  = substr(isset($broken_price[1]) ? $broken_price[1] : '', 0, $decimal_number);
 
-		if (!$after_decimal && 2 === $decimal_number) {
-			$after_decimal = '00';
+		// Pad a partial fraction to the configured places ("49.5" -> "49.50").
+		// Whole prices stay whole ("20" -> "20").
+		if ('' !== $after_decimal) {
+			$after_decimal = str_pad($after_decimal, $decimal_number, '0');
 		}
 
 		if ($price > 0) {
