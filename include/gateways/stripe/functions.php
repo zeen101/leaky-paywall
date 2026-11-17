@@ -1810,6 +1810,9 @@ function leaky_paywall_sync_stripe_subscription( $user ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
 			} elseif ( $subscription->status == 'active' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, 'active', 'stripe_sync' );
+			} elseif ( $subscription->status == 'trialing' && leaky_paywall_stripe_subscription_cancels( $subscription ) ) {
+				// Stripe keeps a canceled trial as trialing until the trial ends.
+				leaky_paywall_set_subscriber_status( $user->ID, 'pending_cancel', 'stripe_sync' );
 			} elseif ( $subscription->status == 'trialing' ) {
 				leaky_paywall_set_subscriber_status( $user->ID, leaky_paywall_stripe_trialing_status( $user ), 'stripe_sync' );
 			} elseif ( $subscription->status == 'canceled' ) {
