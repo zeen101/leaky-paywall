@@ -2301,6 +2301,10 @@ The %sitename% Team';
 					}
 				}
 
+				if (isset($levels[$i]['price'])) {
+					$levels[$i]['price'] = leaky_paywall_sanitize_price($levels[$i]['price']);
+				}
+
 				// A level saved as "Forever" (unlimited) hides its interval inputs in
 				// the admin UI but still submits their last values. Zero them here so
 				// stale interval data cannot reach leaky_paywall_set_expiration_date()
@@ -2347,6 +2351,11 @@ The %sitename% Team';
 				if (in_array($key, $textarea_fields)) {
 					$level[$key] = wp_kses_post($value);
 				}
+			}
+
+			// "$27" was saved as typed, and read as a free level at checkout.
+			if (isset($level['price'])) {
+				$level['price'] = leaky_paywall_sanitize_price($level['price']);
 			}
 
 			// A level saved as "Forever" (unlimited) hides its interval inputs in the

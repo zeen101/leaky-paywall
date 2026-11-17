@@ -6837,3 +6837,44 @@ function leaky_paywall_set_password_hash( $user_id, $hash ) {
 function leaky_paywall_password_chosen_label() {
 	return apply_filters( 'leaky_paywall_password_chosen_label', __( 'the password you chose when you signed up', 'leaky-paywall' ) );
 }
+
+/**
+ * Turn a level price as typed in the admin into a plain number.
+ *
+ * The price field is free text, so publishers type "$27" or "1,200.00". A
+ * currency symbol made the level compare as free ("$27" < 0.5 is true in
+ * PHP 8) and broke checkout at step 1, and any arithmetic on it threw a
+ * TypeError. Currency symbols, spaces and thousands separators are removed.
+ * A comma is read as the decimal point only when the site uses a comma as
+ * its decimal separator and the price has no period.
+ *
+ * @param mixed $price The price as entered.
+ * @return string The price as a plain number, or '' when nothing was entered.
+ */
+function leaky_paywall_sanitize_price( $price ) {
+
+	$price = trim( (string) $price );
+
+	if ( '' === $price || is_numeric( $price ) ) {
+		return $price;
+	}
+
+	$settings          = get_leaky_paywall_settings();
+	$decimal_separator = isset( $settings['leaky_paywall_decimal_separator'] ) ? $settings['leaky_paywall_decimal_separator'] : '.';
+
+	$price = preg_replace( '/[^0-9.,]/', '', $price );
+
+	if ( ',' === $decimal_separator && false === strpos( $price, '.' ) ) {
+		$price = str_replace( ',', '.', $price );
+	} else {
+		$price = str_replace( ',', '', $price );
+	}
+
+	// A stray extra period ("27.00.") leaves it non-numeric; keep the first.
+	if ( substr_count( $price, '.' ) > 1 ) {
+		$parts = explode( '.', $price );
+		$price = array_shift( $parts ) . '.' . implode( '', $parts );
+	}
+
+	return is_numeric( $price ) ? $price : '0';
+}

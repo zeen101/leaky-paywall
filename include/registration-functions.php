@@ -408,6 +408,30 @@ function leaky_paywall_process_user_registration_validation() {
 		wp_send_json( $return );
 	}
 
+	// A price saved before prices were cleaned on save, like "$27", compares as
+	// free and the Stripe form has no free step, so the reader only saw "An
+	// unexpected error occurred". Stop with a message they can act on and log
+	// it, so the publisher can find the level to fix.
+	if ( ! is_numeric( trim( (string) $level['price'] ) ) ) {
+		leaky_paywall_log_error(
+			array(
+				'level_id' => $level_id,
+				'price'    => $level['price'],
+			),
+			'registration - level price is not a number, re-save the level with a number only'
+		);
+
+		wp_send_json(
+			array(
+				'errors' => array(
+					'price_invalid' => array(
+						'message' => __( 'This subscription can\'t be purchased right now. Please contact us so we can fix it.', 'leaky-paywall' ),
+					),
+				),
+			)
+		);
+	}
+
 	// if free level, return
 	if ($level['price'] < 0.5 ) {
 		$return = array(
