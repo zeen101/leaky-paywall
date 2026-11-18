@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.7
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.7
+Stable tag: 5.3.8
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -231,6 +231,9 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 10. Leaky Paywall account page for subscribers to manage their account information
 
 == Changelog ==
+
+= 5.3.8 =
+* New: the subscriber page has a "View in Insights" link that opens the subscriber in Leaky Paywall Insights.
 
 = 5.3.7 =
 * Fix: payment events from Stripe and PayPal not reaching Insights since 5.3.0.

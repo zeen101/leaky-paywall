@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: Leaky Paywall 5.3.7\n"
+"Project-Id-Version: Leaky Paywall 5.3.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/leaky-paywall\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-18T21:17:02+00:00\n"
+"POT-Creation-Date: 2026-11-18T21:58:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: leaky-paywall\n"
@@ -152,8 +152,8 @@ msgid "Unable to verify security token. Subscriber not added. Please try again."
 msgstr ""
 
 #: class.php:704
-#: include/admin/subscribers/subscriber.php:164
-#: include/admin/subscribers/subscriber.php:464
+#: include/admin/subscribers/subscriber.php:240
+#: include/admin/subscribers/subscriber.php:540
 msgid "Manual Addition"
 msgstr ""
 
@@ -172,20 +172,20 @@ msgstr ""
 
 #: class.php:857
 #: class.php:925
-#: include/admin/subscribers/subscriber.php:513
+#: include/admin/subscribers/subscriber.php:589
 msgid "Username (required)"
 msgstr ""
 
 #: class.php:858
 #: class.php:926
-#: include/admin/subscribers/subscriber.php:514
+#: include/admin/subscribers/subscriber.php:590
 msgid "Email Address (required)"
 msgstr ""
 
 #: class.php:859
 #: class.php:927
-#: include/admin/subscribers/subscriber.php:355
-#: include/admin/subscribers/subscriber.php:515
+#: include/admin/subscribers/subscriber.php:431
+#: include/admin/subscribers/subscriber.php:591
 msgid "Price Paid"
 msgstr ""
 
@@ -193,25 +193,25 @@ msgstr ""
 #: class.php:929
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:43
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:650
-#: include/admin/subscribers/subscriber.php:360
-#: include/admin/subscribers/subscriber.php:517
-#: include/admin/subscribers/subscriber.php:821
+#: include/admin/subscribers/subscriber.php:436
+#: include/admin/subscribers/subscriber.php:593
+#: include/admin/subscribers/subscriber.php:939
 #: subscriber-table.php:193
 msgid "Expires"
 msgstr ""
 
 #: class.php:863
 #: class.php:931
-#: include/admin/subscribers/subscriber.php:363
-#: include/admin/subscribers/subscriber.php:519
-#: include/admin/subscribers/subscriber.php:824
+#: include/admin/subscribers/subscriber.php:439
+#: include/admin/subscribers/subscriber.php:595
+#: include/admin/subscribers/subscriber.php:942
 msgid "Enter 0 for never expires"
 msgstr ""
 
 #: class.php:866
 #: class.php:934
-#: include/admin/subscribers/subscriber.php:367
-#: include/admin/subscribers/subscriber.php:522
+#: include/admin/subscribers/subscriber.php:443
+#: include/admin/subscribers/subscriber.php:598
 #: include/admin/tools/tools.php:228
 #: include/list-builder/settings.php:58
 msgid "Subscription Level"
@@ -219,9 +219,9 @@ msgstr ""
 
 #: class.php:881
 #: class.php:952
-#: include/admin/subscribers/subscriber.php:380
-#: include/admin/subscribers/subscriber.php:540
-#: include/admin/subscribers/subscriber.php:752
+#: include/admin/subscribers/subscriber.php:456
+#: include/admin/subscribers/subscriber.php:616
+#: include/admin/subscribers/subscriber.php:870
 #: include/admin/tools/tools.php:241
 #: templates/shortcode-account.php:282
 msgid "Payment Status"
@@ -235,9 +235,9 @@ msgstr ""
 #: include/admin/license-page.php:135
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:577
 #: include/admin/subscribers/functions.php:227
-#: include/admin/subscribers/subscriber.php:382
-#: include/admin/subscribers/subscriber.php:542
-#: include/admin/subscribers/subscriber.php:754
+#: include/admin/subscribers/subscriber.php:458
+#: include/admin/subscribers/subscriber.php:618
+#: include/admin/subscribers/subscriber.php:872
 #: include/admin/tools/tools.php:244
 #: include/license-key.php:125
 #: shortcodes.php:300
@@ -247,9 +247,9 @@ msgstr ""
 #: class.php:884
 #: class.php:955
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:578
-#: include/admin/subscribers/subscriber.php:383
-#: include/admin/subscribers/subscriber.php:543
-#: include/admin/subscribers/subscriber.php:755
+#: include/admin/subscribers/subscriber.php:459
+#: include/admin/subscribers/subscriber.php:619
+#: include/admin/subscribers/subscriber.php:873
 #: templates/shortcode-account.php:180
 msgid "Pending Cancel"
 msgstr ""
@@ -258,9 +258,9 @@ msgstr ""
 #: class.php:956
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:579
 #: include/admin/subscribers/functions.php:229
-#: include/admin/subscribers/subscriber.php:384
-#: include/admin/subscribers/subscriber.php:544
-#: include/admin/subscribers/subscriber.php:756
+#: include/admin/subscribers/subscriber.php:460
+#: include/admin/subscribers/subscriber.php:620
+#: include/admin/subscribers/subscriber.php:874
 #: include/admin/tools/tools.php:247
 #: shortcodes.php:304
 msgid "Trial"
@@ -269,9 +269,9 @@ msgstr ""
 #: class.php:886
 #: class.php:957
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:580
-#: include/admin/subscribers/subscriber.php:385
-#: include/admin/subscribers/subscriber.php:545
-#: include/admin/subscribers/subscriber.php:757
+#: include/admin/subscribers/subscriber.php:461
+#: include/admin/subscribers/subscriber.php:621
+#: include/admin/subscribers/subscriber.php:875
 #: templates/shortcode-account.php:182
 msgid "Past Due"
 msgstr ""
@@ -280,9 +280,9 @@ msgstr ""
 #: class.php:958
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:581
 #: include/admin/subscribers/functions.php:230
-#: include/admin/subscribers/subscriber.php:386
-#: include/admin/subscribers/subscriber.php:546
-#: include/admin/subscribers/subscriber.php:758
+#: include/admin/subscribers/subscriber.php:462
+#: include/admin/subscribers/subscriber.php:622
+#: include/admin/subscribers/subscriber.php:876
 #: include/admin/tools/tools.php:245
 msgid "Canceled"
 msgstr ""
@@ -292,9 +292,9 @@ msgstr ""
 #: include/admin/license-page.php:139
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:582
 #: include/admin/subscribers/functions.php:231
-#: include/admin/subscribers/subscriber.php:387
-#: include/admin/subscribers/subscriber.php:547
-#: include/admin/subscribers/subscriber.php:759
+#: include/admin/subscribers/subscriber.php:463
+#: include/admin/subscribers/subscriber.php:623
+#: include/admin/subscribers/subscriber.php:877
 #: include/admin/tools/tools.php:248
 #: shortcodes.php:295
 #: templates/shortcode-account.php:178
@@ -305,18 +305,18 @@ msgstr ""
 #: class.php:960
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:583
 #: include/admin/subscribers/functions.php:232
-#: include/admin/subscribers/subscriber.php:388
-#: include/admin/subscribers/subscriber.php:548
-#: include/admin/subscribers/subscriber.php:760
+#: include/admin/subscribers/subscriber.php:464
+#: include/admin/subscribers/subscriber.php:624
+#: include/admin/subscribers/subscriber.php:878
 #: include/admin/tools/tools.php:246
 msgid "Deactivated"
 msgstr ""
 
 #: class.php:893
 #: class.php:964
-#: include/admin/subscribers/subscriber.php:393
-#: include/admin/subscribers/subscriber.php:552
-#: include/admin/subscribers/subscriber.php:827
+#: include/admin/subscribers/subscriber.php:469
+#: include/admin/subscribers/subscriber.php:628
+#: include/admin/subscribers/subscriber.php:945
 #: include/admin/tools/tools.php:263
 #: include/registration-functions.php:1378
 #: shortcodes.php:333
@@ -327,21 +327,21 @@ msgstr ""
 #: class.php:904
 #: class.php:975
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:44
-#: include/admin/subscribers/subscriber.php:402
-#: include/admin/subscribers/subscriber.php:563
-#: include/admin/subscribers/subscriber.php:801
+#: include/admin/subscribers/subscriber.php:478
+#: include/admin/subscribers/subscriber.php:639
+#: include/admin/subscribers/subscriber.php:919
 #: include/admin/tools/tools.php:277
 msgid "Subscriber ID"
 msgstr ""
 
 #: class.php:907
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:45
-#: include/admin/subscribers/subscriber.php:811
+#: include/admin/subscribers/subscriber.php:929
 msgid "Plan"
 msgstr ""
 
 #: class.php:908
-#: include/admin/subscribers/subscriber.php:818
+#: include/admin/subscribers/subscriber.php:936
 msgid "Leave empty for Non-Recurring"
 msgstr ""
 
@@ -350,12 +350,12 @@ msgid "Subscriber Notes"
 msgstr ""
 
 #: class.php:918
-#: include/admin/subscribers/subscriber.php:412
+#: include/admin/subscribers/subscriber.php:488
 msgid "Cancel"
 msgstr ""
 
 #: class.php:996
-#: include/admin/subscribers/subscriber.php:278
+#: include/admin/subscribers/subscriber.php:354
 msgid "Search Subscribers"
 msgstr ""
 
@@ -555,7 +555,7 @@ msgid "Disable the direct sign up link for this level, but still allow manual as
 msgstr ""
 
 #: functions.php:2705
-#: include/admin/subscribers/subscriber.php:739
+#: include/admin/subscribers/subscriber.php:857
 msgid "Site"
 msgstr ""
 
@@ -1774,8 +1774,8 @@ msgstr ""
 #: include/admin/dashboard-widgets.php:249
 #: include/admin/dashboard/dashboard.php:308
 #: include/admin/lp-transaction.php:361
-#: include/admin/subscribers/subscriber.php:856
-#: include/admin/subscribers/subscriber.php:912
+#: include/admin/subscribers/subscriber.php:974
+#: include/admin/subscribers/subscriber.php:1030
 msgid "Date"
 msgstr ""
 
@@ -1784,7 +1784,7 @@ msgstr ""
 #: include/admin/lp-transaction.php:240
 #: include/admin/lp-transaction.php:456
 #: include/admin/onboarding/class-onboarding.php:96
-#: include/admin/subscribers/subscriber.php:720
+#: include/admin/subscribers/subscriber.php:838
 #: include/emails/class-lp-emails.php:263
 #: shortcodes.php:494
 #: templates/shortcode-account.php:252
@@ -1798,7 +1798,7 @@ msgstr ""
 #: include/admin/lp-transaction.php:254
 #: include/admin/lp-transaction.php:457
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:40
-#: include/admin/subscribers/subscriber.php:764
+#: include/admin/subscribers/subscriber.php:882
 #: subscriber-table.php:190
 msgid "Level"
 msgstr ""
@@ -1973,7 +1973,7 @@ msgstr[1] ""
 
 #: include/admin/dashboard/dashboard.php:790
 #: include/admin/settings/settings.php:998
-#: include/admin/subscribers/subscriber.php:328
+#: include/admin/subscribers/subscriber.php:404
 msgid "Close"
 msgstr ""
 
@@ -2357,7 +2357,7 @@ msgstr ""
 
 #: include/admin/lp-transaction.php:403
 #: include/admin/lp-transaction.php:461
-#: include/admin/subscribers/subscriber.php:859
+#: include/admin/subscribers/subscriber.php:977
 msgid "Payment Type"
 msgstr ""
 
@@ -2383,7 +2383,7 @@ msgstr ""
 #: include/admin/lp-transaction.php:459
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:42
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:643
-#: include/admin/subscribers/subscriber.php:728
+#: include/admin/subscribers/subscriber.php:846
 #: subscriber-table.php:192
 msgid "Created"
 msgstr ""
@@ -2799,7 +2799,7 @@ msgid "Heading"
 msgstr ""
 
 #: include/admin/settings/settings.php:341
-#: include/admin/subscribers/subscriber.php:857
+#: include/admin/subscribers/subscriber.php:975
 msgid "Description"
 msgstr ""
 
@@ -3480,12 +3480,12 @@ msgid "Has Access"
 msgstr ""
 
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:48
-#: include/admin/subscribers/subscriber.php:724
+#: include/admin/subscribers/subscriber.php:842
 msgid "Notes"
 msgstr ""
 
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:403
-#: include/admin/subscribers/subscriber.php:789
+#: include/admin/subscribers/subscriber.php:907
 msgid "No level assigned"
 msgstr ""
 
@@ -3497,7 +3497,7 @@ msgid "Undefined"
 msgstr ""
 
 #: include/admin/subscribers/class-lp-subscriber-list-table.php:437
-#: include/admin/subscribers/subscriber.php:608
+#: include/admin/subscribers/subscriber.php:684
 #: shortcodes.php:244
 #: subscriber-table.php:516
 #: templates/shortcode-account.php:172
@@ -3630,23 +3630,31 @@ msgstr ""
 msgid "Suspended"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:48
+#: include/admin/subscribers/subscriber.php:37
+msgid "You do not have permission to do that."
+msgstr ""
+
+#: include/admin/subscribers/subscriber.php:47
+msgid "No user found."
+msgstr ""
+
+#: include/admin/subscribers/subscriber.php:124
 msgid "Subscribers per page"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:231
-#: include/admin/subscribers/subscriber.php:327
-#: include/admin/subscribers/subscriber.php:413
+#: include/admin/subscribers/subscriber.php:307
+#: include/admin/subscribers/subscriber.php:403
+#: include/admin/subscribers/subscriber.php:489
 msgid "Add Subscriber"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:334
+#: include/admin/subscribers/subscriber.php:410
 #: shortcodes.php:484
 #: shortcodes.php:911
 msgid "Username"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:339
+#: include/admin/subscribers/subscriber.php:415
 #: include/list-builder/class-lp-list-builder.php:153
 #: include/list-builder/class-lp-list-builder.php:768
 #: include/list-builder/class-lp-list-builder.php:798
@@ -3654,101 +3662,113 @@ msgstr ""
 msgid "Email Address"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:345
-#: include/admin/subscribers/subscriber.php:712
+#: include/admin/subscribers/subscriber.php:421
+#: include/admin/subscribers/subscriber.php:830
 #: include/registration-functions.php:1089
 #: shortcodes.php:878
 #: templates/shortcode-account.php:319
 msgid "First Name"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:349
-#: include/admin/subscribers/subscriber.php:716
+#: include/admin/subscribers/subscriber.php:425
+#: include/admin/subscribers/subscriber.php:834
 #: include/registration-functions.php:1093
 #: shortcodes.php:883
 #: templates/shortcode-account.php:325
 msgid "Last Name"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:431
+#: include/admin/subscribers/subscriber.php:507
 msgid "Security check failed."
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:435
+#: include/admin/subscribers/subscriber.php:511
 msgid "You do not have permission to do this."
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:444
+#: include/admin/subscribers/subscriber.php:520
 msgid "Username and email are required."
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:448
+#: include/admin/subscribers/subscriber.php:524
 msgid "A user with that email address already exists."
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:495
+#: include/admin/subscribers/subscriber.php:571
 msgid "Subscriber added successfully."
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:509
-#: include/admin/subscribers/subscriber.php:694
+#: include/admin/subscribers/subscriber.php:585
+#: include/admin/subscribers/subscriber.php:772
 msgid "All Subscribers"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:709
+#: include/admin/subscribers/subscriber.php:802
+msgid "View in Insights"
+msgstr ""
+
+#: include/admin/subscribers/subscriber.php:810
+msgid "Insights has no activity for this subscriber yet. They appear in Insights after their first tracked event, such as a login, content view, or payment."
+msgstr ""
+
+#: include/admin/subscribers/subscriber.php:812
+msgid "Could not reach Leaky Paywall Insights. Check the API key in Leaky Paywall > Settings > Insights and try again."
+msgstr ""
+
+#: include/admin/subscribers/subscriber.php:827
 msgid "Subscriber Details"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:732
+#: include/admin/subscribers/subscriber.php:850
 #: include/list-builder/class-lp-list-builder.php:775
 #: include/list-builder/class-lp-list-builder.php:805
 #: shortcodes.php:923
 msgid "Password"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:734
+#: include/admin/subscribers/subscriber.php:852
 msgid "Edit on WP User Profile"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:749
+#: include/admin/subscribers/subscriber.php:867
 msgid "Subscription Details"
 msgstr ""
 
 #. translators: %s: the level id currently stored on the subscriber.
-#: include/admin/subscribers/subscriber.php:784
+#: include/admin/subscribers/subscriber.php:902
 #, php-format
 msgid "Unknown level (ID: %s)"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:845
+#: include/admin/subscribers/subscriber.php:963
 msgid "Save Changes"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:851
+#: include/admin/subscribers/subscriber.php:969
 msgid "Past Transactions"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:858
+#: include/admin/subscribers/subscriber.php:976
 msgid "Amount"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:894
+#: include/admin/subscribers/subscriber.php:1012
 msgid "No transactions found."
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:902
+#: include/admin/subscribers/subscriber.php:1020
 msgid "Status History"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:913
+#: include/admin/subscribers/subscriber.php:1031
 msgid "Change"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:914
+#: include/admin/subscribers/subscriber.php:1032
 msgid "Source"
 msgstr ""
 
-#: include/admin/subscribers/subscriber.php:932
+#: include/admin/subscribers/subscriber.php:1050
 msgid "No status changes recorded yet."
 msgstr ""
 
