@@ -18,9 +18,85 @@ class Leaky_Paywall_Admin_Subscriber
 	{
 		add_action('admin_init', array($this, 'process_admin_subscriber_update'));
 		add_action('admin_init', array($this, 'process_admin_subscriber_add'));
+		add_action('admin_post_leaky_paywall_view_in_insights', array($this, 'view_in_insights'));
 		add_action('load-leaky-paywall_page_leaky-paywall-subscribers', array($this, 'setup_screen_options'));
 		add_filter('set-screen-option', array($this, 'save_screen_option'), 10, 3);
 		add_filter('set_screen_option_lp_subscribers_per_page', array($this, 'save_screen_option'), 10, 3);
+	}
+
+	/**
+	 * Send the admin to this subscriber's page in Leaky Paywall Insights.
+	 *
+	 * The Insights subscriber ID isn't stored in WordPress, so look it up
+	 * server side with the publication's API key (which also picks the right
+	 * publication) and redirect. Keeps the email out of the browser URL.
+	 */
+	public function view_in_insights()
+	{
+		if (!current_user_can(apply_filters('manage_leaky_paywall_settings', 'manage_options'))) {
+			wp_die(esc_html__('You do not have permission to do that.', 'leaky-paywall'), '', array('response' => 403));
+		}
+
+		$user_id = isset($_GET['user_id']) ? absint($_GET['user_id']) : 0;
+
+		check_admin_referer('leaky_paywall_view_in_insights_' . $user_id);
+
+		$user = get_user_by('ID', $user_id);
+
+		if (!$user) {
+			wp_die(esc_html__('No user found.', 'leaky-paywall'));
+		}
+
+		$back = add_query_arg(
+			array(
+				'page'   => 'leaky-paywall-subscribers',
+				'action' => 'show',
+				'id'     => $user->ID,
+			),
+			admin_url('admin.php')
+		);
+
+		$settings = get_leaky_paywall_settings();
+		$token    = isset($settings['insights_api_key']) ? $settings['insights_api_key'] : '';
+		$api_url  = untrailingslashit(apply_filters('leaky_paywall_insights_api_url', 'https://insights.leakypaywall.com'));
+
+		if (!$token) {
+			wp_safe_redirect(add_query_arg('lp_insights', 'error', $back));
+			exit;
+		}
+
+		$response = wp_remote_get(
+			add_query_arg(
+				array(
+					'email'      => rawurlencode($user->user_email),
+					'wp_user_id' => $user->ID,
+				),
+				$api_url . '/api/v1/subscribers/lookup'
+			),
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $token,
+					'Accept'        => 'application/json',
+				),
+				'timeout' => 10,
+			)
+		);
+
+		$code = wp_remote_retrieve_response_code($response);
+		$body = json_decode(wp_remote_retrieve_body($response), true);
+		$url  = isset($body['data']['url']) ? $body['data']['url'] : '';
+
+		// Only follow a link back to the Insights host we called.
+		if (200 === $code && $url && wp_parse_url($url, PHP_URL_HOST) === wp_parse_url($api_url, PHP_URL_HOST)) {
+			wp_redirect(esc_url_raw($url)); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- external Insights host, checked above.
+			exit;
+		}
+
+		// A plain 404 (e.g. an Insights version without this endpoint) is an error, not "no activity".
+		$not_found = 404 === $code && isset($body['error']) && 'subscriber_not_found' === $body['error'];
+
+		wp_safe_redirect(add_query_arg('lp_insights', $not_found ? 'not_found' : 'error', $back));
+		exit;
 	}
 
 	/**
@@ -618,6 +694,8 @@ class Leaky_Paywall_Admin_Subscriber
 			.lp-sub-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
 			.lp-sub-header h1 { margin: 0; font-size: 20px; font-weight: 600; color: #1d2327; }
 			.lp-sub-header .lp-status-badge { font-size: 12px; }
+			.lp-sub-header .lp-sub-insights-link { margin-left: auto; font-size: 13px; color: #2271b1; text-decoration: none; }
+			.lp-sub-header .lp-sub-insights-link:hover { color: #135e96; }
 			.lp-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 			.lp-sub-card {
 				background: #fff;
@@ -696,7 +774,37 @@ class Leaky_Paywall_Admin_Subscriber
 			<div class="lp-sub-header">
 				<h1><?php echo esc_html($user->user_email); ?></h1>
 				<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($payment_status); ?>"><?php echo esc_html(ucwords(str_replace('_', ' ', $payment_status))); ?></span>
+				<?php
+				$lp_settings = get_leaky_paywall_settings();
+				if (!empty($lp_settings['insights_api_key'])) :
+					$insights_link = wp_nonce_url(
+						add_query_arg(
+							array(
+								'action'  => 'leaky_paywall_view_in_insights',
+								'user_id' => $user->ID,
+							),
+							admin_url('admin-post.php')
+						),
+						'leaky_paywall_view_in_insights_' . $user->ID
+					);
+					?>
+					<a href="<?php echo esc_url($insights_link); ?>" class="lp-sub-insights-link" target="_blank" rel="noopener"><?php esc_html_e('View in Insights', 'leaky-paywall'); ?> &nearr;</a>
+				<?php endif; ?>
 			</div>
+
+			<?php if (isset($_GET['lp_insights'])) : ?>
+				<div class="notice notice-warning inline">
+					<p>
+						<?php
+						if ('not_found' === $_GET['lp_insights']) {
+							esc_html_e('Insights has no activity for this subscriber yet. They appear in Insights after their first tracked event, such as a login, content view, or payment.', 'leaky-paywall');
+						} else {
+							esc_html_e('Could not reach Leaky Paywall Insights. Check the API key in Leaky Paywall > Settings > Insights and try again.', 'leaky-paywall');
+						}
+						?>
+					</p>
+				</div>
+			<?php endif; ?>
 
 			<form method="POST" action="" id="leaky-paywall-admin-subscriber-form">
 
