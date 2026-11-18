@@ -3,7 +3,7 @@ Contributors: zeen101, layotte, pericson, endocreative
 Requires at least: 5.7
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.3.6
+Stable tag: 5.3.7
 Tags: paywall, metered paywall, subscription plugin, membership, content restriction
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -232,6 +232,9 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 
 == Changelog ==
 
+= 5.3.7 =
+* Fix: payment events from Stripe and PayPal not reaching Insights since 5.3.0.
+
 = 5.3.6 =
 * Fix: A Stripe renewal paid from a reader's account credit (for example, after switching from an annual to a monthly plan) now keeps their access, as long as they have no unpaid invoice. Previously these renewals were treated as unpaid and the reader lost access.
 * Fix: Level prices entered with a currency symbol (such as "$27") are now saved as plain numbers. Checkout previously showed "An unexpected error occurred" for these levels. A price that still isn't a number now stops checkout with a clear message and is recorded in the debug log.
@@ -258,16 +261,6 @@ You can deactivate Leaky Paywall at any time without losing any subscriber data.
 * Improvement: Quick Edit and Trash are removed from individual transaction rows, since transactions are financial records. Trash is still available as a bulk action.
 * Improvement: List Builder now enforces its minimum password length on signup. Developers can change it with the lp_list_builder_min_password_length filter.
 * New: Developers can let a logged-in reader buying another level start a separate Stripe subscription instead of switching their current one, using the leaky_paywall_stripe_switch_existing_subscription filter.
-
-= 5.3.3 =
-* Security: PayPal payment notifications are now verified with PayPal before they are acted on.
-* Security: Improved how account details entered at checkout are stored while a payment completes.
-* Security: General security hardening across the admin screens, settings, registration and payment gateways.
-* Improvement: One-click extension installs and updates, and the Pro conversion reports (top 10 content, the subscribers behind each conversion, and their CSV download), now come from the new Leaky Paywall Pro plugin. Pro customers can download it from their account. Leaky Paywall shows your top 3 content items.
-* Improvement: The date picker on the Tools page now loads its styles from the plugin instead of from Google's servers.
-* Fix: A subscriber created without a password now gets the password they chose at checkout, or a random one they can reset.
-* Fix: Leaky Paywall no longer changes the TLS setting for every outgoing request your site makes.
-* Requires WordPress 5.7 or later.
 
 For older changelog entries, please see the [changelog.txt file](https://plugins.svn.wordpress.org/leaky-paywall/trunk/changelog.txt) delivered with the plugin.
 
