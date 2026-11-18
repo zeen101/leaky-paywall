@@ -1433,6 +1433,13 @@ function leaky_paywall_is_valid_stripe_subscription( $subscription ) {
  *     out a free paid term.
  *   - A renewal (billing_reason "subscription_cycle") can be covered entirely
  *     by an accumulated credit balance, so amount_paid is 0 while total > 0.
+ *     That credit is legitimate when it came from a term the reader paid for
+ *     (annual paid, then switched to monthly: Stripe credits the unused part
+ *     and spends it on the monthly renewals). It is not legitimate when it
+ *     came from switching plans while a renewal was unpaid. The two are told
+ *     apart by whether the customer still has an unpaid (open or
+ *     uncollectible) invoice: a credit-covered renewal counts as paid only
+ *     when nothing is owed.
  *
  * A genuine free period (100%-off coupon) has total 0 and still passes, as does
  * a payment made outside Stripe (paid_out_of_band).
@@ -1459,12 +1466,71 @@ function leaky_paywall_stripe_invoice_collected_payment( $invoice ) {
 		$collected = false;
 	} elseif ( $total > 0 && $starting_balance < 0 ) {
 		// A billed period covered entirely by an existing credit balance rather
-		// than a charge. Stripe spending accrued credit is not a payment. A real
-		// free period (coupon) has total <= 0 and stays true.
-		$collected = false;
+		// than a charge. Credit left over from a paid term is a real payment;
+		// credit minted by a plan switch over an unpaid renewal is not, and
+		// that case always leaves the unpaid invoice open or uncollectible.
+		// A real free period (coupon) has total <= 0 and never gets here.
+		$customer_id = isset( $invoice->customer ) ? $invoice->customer : '';
+		if ( is_object( $customer_id ) ) {
+			$customer_id = isset( $customer_id->id ) ? $customer_id->id : '';
+		}
+
+		$collected = 'subscription_cycle' === $billing_reason
+			&& $customer_id
+			&& ! leaky_paywall_stripe_customer_has_unpaid_invoice( $customer_id, isset( $invoice->id ) ? $invoice->id : '' );
 	}
 
 	return apply_filters( 'leaky_paywall_stripe_invoice_collected_payment', $collected, $invoice );
+}
+
+/**
+ * Whether a Stripe customer has an invoice they still owe.
+ *
+ * Used to decide if a renewal paid from credit balance can be trusted: credit
+ * created by switching plans over an unpaid renewal leaves that renewal's
+ * invoice open (or uncollectible once Stripe gives up retrying).
+ *
+ * Fails closed: if Stripe can't be reached the customer is treated as owing,
+ * so a credit-covered renewal does not extend access. The admin Stripe sync
+ * still restores it on the next subscriber view.
+ *
+ * @since 5.3.6
+ *
+ * @param string $customer_id       Stripe customer id.
+ * @param string $exclude_invoice_id Invoice to ignore (the one being processed).
+ * @return bool True if an open or uncollectible invoice exists.
+ */
+function leaky_paywall_stripe_customer_has_unpaid_invoice( $customer_id, $exclude_invoice_id = '' ) {
+
+	$stripe = leaky_paywall_initialize_stripe_api();
+
+	if ( ! $stripe ) {
+		return true;
+	}
+
+	foreach ( array( 'open', 'uncollectible' ) as $status ) {
+		try {
+			$invoices = $stripe->invoices->all(
+				array(
+					'customer' => $customer_id,
+					'status'   => $status,
+					'limit'    => 10,
+				),
+				leaky_paywall_get_stripe_connect_params()
+			);
+		} catch ( \Throwable $th ) {
+			leaky_paywall_log_error( $th->getMessage(), 'lp stripe - error listing ' . $status . ' invoices for ' . $customer_id );
+			return true;
+		}
+
+		foreach ( $invoices->data as $unpaid ) {
+			if ( $unpaid->id !== $exclude_invoice_id ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 /**
