@@ -776,7 +776,17 @@ class Leaky_Paywall_Admin_Subscriber
 				<span class="lp-status-badge lp-status-badge--<?php echo esc_attr($payment_status); ?>"><?php echo esc_html(ucwords(str_replace('_', ' ', $payment_status))); ?></span>
 				<?php
 				$lp_settings = get_leaky_paywall_settings();
-				if (!empty($lp_settings['insights_api_key'])) :
+				// Not connected: send them to the Insights homepage to sign up.
+				$insights_link = add_query_arg(
+					array(
+						'utm_source'   => 'plugin',
+						'utm_medium'   => 'subscriber_page',
+						'utm_content'  => 'view_in_insights',
+						'utm_campaign' => 'insights',
+					),
+					trailingslashit(apply_filters('leaky_paywall_insights_api_url', 'https://insights.leakypaywall.com'))
+				);
+				if (!empty($lp_settings['insights_api_key'])) {
 					$insights_link = wp_nonce_url(
 						add_query_arg(
 							array(
@@ -787,9 +797,9 @@ class Leaky_Paywall_Admin_Subscriber
 						),
 						'leaky_paywall_view_in_insights_' . $user->ID
 					);
-					?>
-					<a href="<?php echo esc_url($insights_link); ?>" class="lp-sub-insights-link" target="_blank" rel="noopener"><?php esc_html_e('View in Insights', 'leaky-paywall'); ?> &nearr;</a>
-				<?php endif; ?>
+				}
+				?>
+				<a href="<?php echo esc_url($insights_link); ?>" class="lp-sub-insights-link" target="_blank" rel="noopener"><?php esc_html_e('View in Insights', 'leaky-paywall'); ?> &nearr;</a>
 			</div>
 
 			<?php if (isset($_GET['lp_insights'])) : ?>
