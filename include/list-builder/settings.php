@@ -204,11 +204,11 @@ class Leaky_Paywall_List_Builder_Settings
         }
 
         if (isset($_POST['subheading'])) {
-            $settings['subheading'] = sanitize_text_field(wp_unslash($_POST['subheading']));
+            $settings['subheading'] = wp_kses(wp_unslash($_POST['subheading']), LP_List_Builder::allowed_text_html());
         }
 
         if (isset($_POST['terms_and_conditions'])) {
-            $settings['terms_and_conditions'] = sanitize_text_field(wp_unslash($_POST['terms_and_conditions']));
+            $settings['terms_and_conditions'] = wp_kses(wp_unslash($_POST['terms_and_conditions']), LP_List_Builder::allowed_text_html());
         }
 
         $settings['require_email_verification'] = isset( $_POST['lp_listbuilder_require_email_verification'] ) ? 'on' : '';
@@ -236,7 +236,7 @@ class Leaky_Paywall_List_Builder_Settings
         }
 
         if (isset($_POST['upgrade_subheading'])) {
-            $settings['upgrade_subheading'] = sanitize_text_field(wp_unslash($_POST['upgrade_subheading']));
+            $settings['upgrade_subheading'] = wp_kses(wp_unslash($_POST['upgrade_subheading']), LP_List_Builder::allowed_text_html());
         }
 
         if (isset($_POST['upgrade_button_text'])) {

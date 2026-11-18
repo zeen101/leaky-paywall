@@ -51,6 +51,29 @@ class LP_List_Builder
         return !empty($settings['upgrade_enabled']) && 'on' === $settings['upgrade_enabled'];
     }
 
+    /**
+     * Inline HTML allowed in the modal's subheading and terms text: line
+     * breaks, bold, italics and links. Used both when the settings are saved
+     * and when they are printed.
+     *
+     * @return array wp_kses() allowed-tags list.
+     */
+    public static function allowed_text_html()
+    {
+        return array(
+            'br'     => array(),
+            'strong' => array(),
+            'b'      => array(),
+            'em'     => array(),
+            'i'      => array(),
+            'a'      => array(
+                'href'   => true,
+                'target' => true,
+                'rel'    => true,
+            ),
+        );
+    }
+
     public function maybe_hide_admin_bar()
     {
         if (!is_user_logged_in()) {
@@ -121,7 +144,7 @@ class LP_List_Builder
                     <?php if ( $signup_enabled ) : ?>
                     <div id="lplb-subscribe-panel" class="Slider__InnerContainer Slider__InnerContainer--scrolled">
                         <h1 class="Slider__ExpandedHeader"><?php echo esc_html($heading); ?></h1>
-                        <div class="Slider__ExpandedSubHeader"><?php echo esc_html($subheading); ?></div>
+                        <div class="Slider__ExpandedSubHeader"><?php echo wp_kses($subheading, self::allowed_text_html()); ?></div>
                         <div class="Form__Container" data-lp-list-builder>
 
                             <form class="lp-list-builder__form" data-step="email">
@@ -136,7 +159,7 @@ class LP_List_Builder
                                         <?php esc_html_e( 'Continue', 'leaky-paywall' ); ?>
                                     </button>
                                     <div class="Slider__Policy">
-                                        <p><?php echo esc_html($terms_and_conditions); ?></p>
+                                        <p><?php echo wp_kses($terms_and_conditions, self::allowed_text_html()); ?></p>
                                     </div>
                                 </div>
                             </form>
@@ -149,7 +172,7 @@ class LP_List_Builder
 
                     <div id="lplb-upgrade-panel" class="Slider__InnerContainer Slider__InnerContainer--scrolled" style="display:none;">
                         <h1 class="Slider__ExpandedHeader"><?php echo esc_html($upgrade_heading); ?></h1>
-                        <div class="Slider__ExpandedSubHeader"><?php echo esc_html($upgrade_subheading); ?></div>
+                        <div class="Slider__ExpandedSubHeader"><?php echo wp_kses($upgrade_subheading, self::allowed_text_html()); ?></div>
                         <?php if ( $subscribe_url ) : ?>
                             <a href="<?php echo esc_url($subscribe_url); ?>" class="Slider__ExpandedButton" style="display:inline-block;text-align:center;text-decoration:none;">
                                 <?php echo esc_html($upgrade_button_text); ?>
