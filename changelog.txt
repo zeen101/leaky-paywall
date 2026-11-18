@@ -1,0 +1,449 @@
+== Leaky Paywall Changelog ==
+
+= 5.3.2 =
+* Security: Fixed a stored cross-site scripting issue in the registration form (CVE-2026-104336). Names and other registration fields are now sanitized before they are saved or sent to Stripe, and the Incomplete Users screen escapes the details it displays. Thanks to 0xabdoulaye for responsibly disclosing this through Wordfence.
+
+= 5.3.1 =
+* Improvement: Logged-in subscribers can now switch plans when automatic tax is on. Their existing Stripe subscription is changed and tax is calculated on the new plan.
+* Improvement: Coupons now apply to Stripe subscriptions when automatic tax is on, and the order summary shows the discounted total with tax.
+* Improvement: With a Pro license, extension updates can now be installed from the Plugins page as well as from Leaky Paywall > Extensions.
+* Improvement: The Search Engine Bot Bypass setting now notes that it also applies to Google AI Overviews.
+* Fix: A Stripe subscriber who is refunded now stays deactivated, instead of getting access back the next time they or an admin open their account.
+* Fix: A forever coupon is kept when a subscriber switches plans. Requires Leaky Paywall Coupons 2.4.10.
+* Fix: Text with an apostrophe in an extension's level settings no longer gains a backslash each time the level is saved.
+* Security: A Stripe signup now gets access only once its own subscription is paid.
+* Security: Recurring Stripe levels are always charged the level's own price, so editing the registration form can no longer change the amount billed. Sites using Name Your Price on a recurring level need Name Your Price 1.2.3.
+* Security: The automatic tax step now only updates the Stripe customer of the signup in progress, and an unused Stripe Checkout request has been removed.
+
+= 5.3.0 =
+* New: Restriction Method setting under Leaky Paywall > Settings > Restrictions, with Automatic, JavaScript and Server options. Automatic restricts posts only paid levels can read on the server, so their full text never reaches the page source, and checks metered posts in the browser so the meter keeps working with page caching. New installs start on Automatic. Existing sites keep the method they had.
+* Improvement: The teaser above the paywall is now set by Lead In Elements for every restriction method. Custom Excerpt Length has been removed, so sites using the Server method will see their teaser change. Check a restricted post after updating and adjust Lead In Elements if needed.
+* Improvement: Restricted posts in RSS feeds now show the excerpt and a link to the full article instead of the full text.
+* Improvement: List Builder offers the upgrade panel on posts only paid levels can read, instead of a free signup that would not unlock them.
+* Improvement: The List Builder upgrade modal can now be used with the email signup turned off.
+* Improvement: Checkout problems that happen in the reader's browser, such as a declined card or a failed request, are now recorded in the Leaky Paywall debug log.
+* Fix: A reader who leaves checkout at the payment step can try again right away, instead of being blocked for an hour with a message to check their inbox.
+* Fix: The Stripe registration form no longer freezes on "Processing" when a request fails or times out. It shows an error and lets the reader try again.
+* Fix: A reader whose signup the Stripe webhook already completed is now logged in and taken to the confirmation page, instead of being sent back to the form with an error.
+* Fix: When a signup email already has an account, the message now links to the login and password reset pages.
+* Fix: Registration forms on pages served from a page cache no longer fail with "There was an error" once the cached copy is old.
+* Fix: A page shown in full to a search engine through Search Engine Bot Bypass is no longer cached and served to visitors.
+* Fix: Readers no longer get the full article when a speed plugin such as Perfmatters delays the List Builder script.
+* Fix: The in-content paywall is hidden when the List Builder modal opens over it, so readers no longer see both.
+* Fix: Registration errors scroll into view once, instead of locking the page for a second per error.
+* Fix: PHP 8.4 deprecation notices and the early translation loading notice in WordPress 6.7 and later.
+
+= 5.2.1 =
+* Security: The Stripe registration form now verifies its security token on the first step, before a Stripe customer is created.
+* Security: A one-time purchase is only activated when Stripe confirms a payment from that subscriber's own customer record. A missing, failed or mismatched payment now leaves the subscriber pending until the payment arrives.
+* Fix: Stripe subscription signups no longer activate before the first payment is confirmed, and subscribers whose subscription is canceled in Stripe now lose access.
+* Fix: Readers with a past due subscription who resubscribe now pay for a new subscription instead of being switched onto the unpaid one, and the old subscription and its unpaid invoice are cleaned up.
+* Fix: Logged in subscribers who switch plans are now charged and recorded with the correct switch amount.
+* Fix: Stripe subscriptions that report as trialing are only marked as a trial in Leaky Paywall when the level has a trial.
+* Fix: When WordPress refuses to create a paying subscriber's account, the registration is kept so it can be completed later, and the site admin is emailed with the subscriber's details.
+* Fix: The welcome email, admin new subscriber email and payment receipt are now sent when a pending payment completes, instead of before it is confirmed.
+* Fix: A logged in reader whose saved Stripe customer no longer exists can now check out, and a new Stripe customer is created for them.
+
+= 5.2.0 =
+* New: See who converted on each article. The Top Content cards on the dashboard now link their conversion counts through to those exact subscribers, and you can download that list as a CSV from the Subscribers screen. Works for both free and paid conversions. (Pro)
+* New: Upgrade prompt for free subscribers. Readers on a free registration now see how long they have been reading and an invitation to subscribe on their account page, in place of a subscription table that only told them their free access never expires. It appears only when you have a paid level a reader can actually buy, and you can set the heading, description, and button wording under Leaky Paywall > Settings > General.
+* New: Email Template switch. Leaky Paywall > Settings > Emails now has a setting to turn the branded email template off, for publishers who send their own fully designed email HTML. It stays on for existing sites.
+* New: Level Change transaction type. A subscriber moving between levels is now recorded and labelled as a level change rather than an initial payment, with its own filter on the transactions screen.
+* Improvement: More subscriber statuses have their own colored badge in the admin, including pending, trialing, past due, pending cancellation, and inactive.
+* Improvement: The List Builder overlay no longer flashes on screen when a performance plugin defers Leaky Paywall's stylesheet.
+* Fix: Upgrading during a free trial did not start billing. The subscriber was moved onto the new plan but kept free access until the original trial end, and their first charge landed on that old date, while the site recorded a payment that Stripe had never taken. Trials now end as part of the switch.
+* Fix: A plan change recorded the level's list price with no Stripe transaction ID, instead of what Stripe actually invoiced. Level changes now record the real invoice amount and payment.
+* Fix: A plan change or renewal covered entirely by Stripe account credit was treated as a completed payment, activating the subscriber and extending their expiration. Switching plans while a renewal was unpaid could grant a free paid term.
+* Fix: On sites where another plugin starts the REST API early, Leaky Paywall applied its restrictions during normal page loads, which could show a second paywall notice and count the article twice against the meter.
+
+= 5.1.9 =
+* New: Payment Receipt email. Leaky Paywall now emails subscribers a branded receipt for every payment, including automatic subscription renewals. It is on by default for new installs. On existing sites it starts switched off with a dashboard notice so you can turn it on when you are ready. You can resend a receipt from any transaction.
+* New: Branded email template. Add your logo, an accent color, and footer text under Leaky Paywall > Settings > Emails and it applies to every email Leaky Paywall sends. Each email now has a Send Test Email button.
+* Improvement: Stripe subscriptions are now created with Stripe's current Prices API instead of the deprecated Plans API.
+* Improvement: On multisite, a single gateway webhook endpoint can now finalize a registration that was started on any site in the network.
+* Fix: Free subscribers added through the REST API on a Forever level were given a one month expiration instead of never expiring. This also affected the default Free Registration level.
+* Fix: Prevented an error when creating a Stripe subscription for a level that still referenced an old Stripe plan ID.
+* Fix: Prevented a PHP warning on the account screen when a subscriber's level could not be found.
+* Fix: Prevented a "Could not create subscription" error at Stripe checkout on sites running an older Recurring Payments add-on.
+
+= 5.1.8 =
+* Security: detailed debug logging is now off by default and can be turned on from Leaky Paywall > Tools > Debug Log. Errors are always recorded. The log is stored in a protected folder, is given a new unguessable name each time detailed logging is enabled, and is capped at 5 MB or 30 days. Existing log files created by earlier versions are deleted on update. Define LEAKY_PAYWALL_LOG_DIR in wp-config.php to store the log outside your website folder.
+* Security: subscriber exports are no longer saved to a publicly readable location. Exports are delivered as a download only a logged-in administrator can request, are removed once downloaded, and any export files left behind by earlier versions are deleted on update.
+* Added: the Import tool can now delete the uploaded CSV from your Media Library when the import finishes, so a file containing subscriber data is not left in place. Enabled by default.
+* Improved: the email you receive when a subscriber deletes their own account now lists the Stripe subscriptions that were cancelled, or confirms there were none.
+* Improved: admin notices now warn when an access configuration would silently lock subscribers out, and a new level no longer starts with an access rule the resolver does not honour.
+* Fixed: searching subscribers now matches on both account details and subscriber data instead of losing one half of the search when a filter is applied.
+* Fixed: an abandoned Stripe registration no longer removes access from a subscriber who signed up twice on the same Stripe customer.
+
+= 5.1.7 =
+* Added: the category and tag exemption setting now supports custom taxonomies, not just the built-in categories and tags.
+* Added: a "New Paid Subscription" filter on the Transactions list that shows initial paid signups only, excluding renewals and refunds.
+* Added: a `leaky_paywall_free_registration_effective_price` filter so extensions can adjust a registration's effective price (for example, coupon discounts) while keeping free vs paid level validation secure.
+* Added: a `leaky_paywall_skip_stripe_sync` filter to suppress the Stripe to Leaky Paywall sync during migrations or bulk corrections.
+* Improved: extension installation is more reliable, with a writable-directory pre-flight check and a clear support message (including manual-upload instructions) when a download cannot be saved.
+* Improved: REST API subscriber endpoints. Expiration is only overwritten when a value is supplied, an optional password can be set when creating a subscriber, expiration now accepts "never" and rejects unparseable dates, and API-driven changes are labeled "API" in the status log so they can be told apart from admin edits.
+* Fixed: PayPal Standard settings and IPN processing now stay available even after the gateway is unchecked, so existing PayPal subscribers keep renewing instead of silently lapsing.
+* Fixed: new Stripe signups are granted access only once payment is confirmed or genuinely in progress, closing a window where an abandoned or unconfirmed payment could receive temporary access.
+* Fixed: the "Subscription Started" event sent to Insights now fires only for paid signups, so free registrations no longer inflate paid-conversion reporting (paid trials and 100%-off coupons still count).
+* Fixed: editing a post's categories, tags, or exemption setting now takes effect immediately instead of waiting for the restriction cache to expire.
+
+= 5.1.6 =
+* Security: the free registration flow now verifies the selected level is actually a free level before creating an account
+* Stripe Checkout: existing subscribers who switch to a different level now have their current subscription updated in place with immediate prorated billing, instead of getting a second Stripe customer and a duplicate subscription while the old one keeps billing.
+* Fixed: subscribers with a future-dated Stripe subscription schedule are no longer flipped to expired when their subscriber record is viewed
+
+= 5.1.5 =
+* Admin new-subscriber email redesigned with structured sections: subscriber details, payment (skipped for free signups), attribution (IP and UTM when available), and quick action links to the subscriber and transaction records.
+* New helper `leaky_paywall_get_customer_ip()` resolves the customer IP address at transaction time and stores it on the transaction as `_customer_ip` meta for fraud analysis.
+* Customer IP is now passed to Stripe as transaction metadata, giving publishers visibility in the Stripe dashboard.
+* Customer IP is now included in `Subscription Started` event payloads sent to Insights.
+
+= 5.1.4 =
+* Content Viewed and Paywall Displayed events are now correctly recorded for logged-in subscribers
+* Add check for pending cancel subscribers to make sure their expiration date has not passed
+* Improve performance of subscriber search
+* Add tos and wc pages to unblock list
+* Add delay during migration to limit timeout issues
+* Add hardening of registration scripts for cookiebots
+* Add more helpful text when extensions will not install
+* Add update to list builder script for cookie consent platforms
+
+= 5.1.3 =
+* Added: ACH Pending modal so the 3–5 day clearing window is clear at signup.
+* Added: dedup check at registration to prevent accidental duplicate signups across Stripe customers.
+* Fixed: subscription cards now show "Unlimited Articles" instead of "Access 0 Articles" when a level is set to Unlimited.
+* Fixed: List Builder signups with disposable / blocked emails (e.g. on WP.com / Jetpack) now show a clear error instead of crashing the site.
+* Fixed: Import tool now accepts CSVs exported from LP (the user_email column) without manual rename, validates the header, restricts uploads to .csv, and always reports the import result.
+* Fixed: failed-payment cancellations no longer extend access past the original expiration date.
+* Fixed: Stripe subscription create / update calls updated for Stripe's new flexible billing parameters.
+* Fixed: incomplete-user staleness window extended to 14 days so ACH signups don't get cleaned up before they clear.
+
+= 5.1.2 =
+* Fix for race condition in registratin that could prevent fields from being saved correctly
+* Fix REST API endpoint to keep expiration from being accidently updated
+* Harden list builder scripts to load correctly even with performance add ons
+
+= 5.1.1 =
+* Add scaffolding for single Pro license key
+* Add handling for multiple subscriptions during a sync
+* Add dedup to registrations
+* Add incomplete user cleanup functionality
+* Add leaky_paywall_already_subscribed_at_level_content filter
+* Allow search in subscriber table by first and last name
+* Code cleanup for import tool
+* Update handling of incomplete user during stripe webhook
+
+= 5.1.0 =
+* Stripe Payment Element now finalizes subscriptions via a webhook fallback when the browser redirect doesn't complete (e.g. Stripe Link, closed tab)
+* Stripe Checkout webhook now dedupes by checkout session ID, preventing duplicate transactions from webhook retries
+* Subscriptions that Stripe marks "canceled" while still inside their paid period now show as "pending_cancel" instead of immediately expiring
+* customer.subscription.created webhook no longer activates users on incomplete subscriptions
+* My Account page now shows "Cancels Soon" and "Expires on {date}" for pending_cancel subscribers
+* REST PUT /subscribers now accepts an `expires` parameter and auto-calculates expiration when only `level_id` is supplied
+* Stripe Connect admin notice no longer makes live API calls while in test mode
+* leaky_paywall_new_subscriber and leaky_paywall_update_subscriber now record payment status changes in the status history log
+* New filter `leaky_paywall_already_subscribed_at_level_content` lets extensions replace the message when a logged-in user tries to subscribe to a level they already have, e.g. to show a Resume Billing CTA for pending_cancel subscribers
+* Stale `lp_incomplete_user` posts are now deleted daily after 30 days via Action Scheduler; configurable with the `leaky_paywall_incomplete_user_retention_days` filter (0 disables)
+* Pro activation banner is now scoped to the Leaky Paywall Dashboard only (no longer appears on Settings/Tools/Subscribers) and is dismissible per user for 90 days
+* Plugins page now exposes a License action link alongside Settings
+* Fix: orphan `lp_incomplete_user` records no longer cause subscription renewals to be processed as new signups (duplicate "Initial Subscription Payment" transaction and admin new-subscriber email) — guarded both by a subscription_cycle gate in the Payment Intent finalize path and a 1-hour age check (filter: `leaky_paywall_incomplete_user_max_age_hours`) on the incomplete-user lookup
+* Fix: subscriber list table search now matches first and last name user meta in addition to display_name, so subscribers whose display_name is their login or email are found by name search
+* Fix: subscriber list table level and status filters now match exactly
+* Fix: List Builder popup INP improved on mobile
+
+= 5.0.9 =
+* Email merge tags now support a fallback value for empty tokens, e.g. `%firstname|there%` renders "there" when no first name is on file
+* Subscription Started and Subscription Renewed events now include previous_level and previous_level_id, enabling free-to-paid conversion tracking in Insights
+* Non-recurring subscribers can now re-register on the same level to renew their subscription
+* Fix paywall incorrectly appearing when a visitor revisits an article they've already viewed
+* List Builder upgrade message now records nag location on conversion, so upgrades from logged-in subscribers appear in Top Content - Paid Conversions
+* Status transition log now collapses rapid same-request transitions into a single entry, so a sync that briefly flips status no longer produces a chain of log rows
+* New filter `leaky_paywall_target_subscriber_status` lets extensions veto or remap a status transition before it is written
+* New filter `leaky_paywall_status_source_labels` lets extensions register custom human-readable labels for status transition sources
+
+= 5.0.8 =
+* Add list builder to top content conversions
+* Fix save issue in email settings
+* Update styling of dashboard
+* Add self verification for deprecated paypal IPN
+
+= 5.0.7 =
+* Fix slow dashboard query
+
+= 5.0.6 =
+* Add checkout started event
+* Update properties sent with events
+* Add fix for in content nag displaying incorrectly
+* Only update expires when the Stripe subscription status is active or trialing
+* Add nonce check to settings
+* Update cron handling of past due subscribers
+* Adjust free count in dashboard to not include free to paid conversions
+* Add hooks to dashboard widgets
+
+= 5.0.5 =
+* Add check for Stripe key before running script
+* Add filter on the subscribe button for list builder
+* Fix for free reg setting an incorrect expiration date
+* Adjust list builder display for free sub level
+* Add check for logged in user restrictions and previously viewed content
+* Remove unnecessary nonce check for logged out visitors during restriction check
+* Add undefined filter to level on subscriber table
+* Fix upgrade messaging in admin
+* Update default list builder settings
+
+= 5.0.4 =
+* Add new subscriber table filters and screen options
+* Add filters for paywall allowed value and content viewed
+* Add Stripe Tax integration
+* Use terms and conditions setting on List Builder
+* Fix logic for has access check in REST API
+* Fix link colors in List Builder
+
+= 5.0.3 =
+* Fix duplicate display of the same user in subscriber table
+* Fix restriction reset during login for list builder
+
+= 5.0.2 =
+* Fix possible double count of paywall views
+* Adjust loading of list builder script
+* Fix text domain compatibility warning
+* Add list builder data to dashboard
+* Fix for pressing enter on registration form
+* Clear cancel at period end on level switch
+
+= 5.0.1 =
+
+= New =
+* List Builder: Upgrade modal for logged-in free subscribers who hit the paywall, with independent enable/disable toggle and customizable heading, subheading, and button text
+* List Builder: Auto-enables JavaScript cookie restrictions when List Builder is activated
+* List Builder: Support for reCAPTCHA and Turnstile add-ons on the signup form
+
+= Improved =
+* Stripe billing address updates now apply to all attached payment methods, not just the default
+
+= Fixed =
+* Stripe PaymentMethod billing details not updating when customer's default payment method was unset
+
+= 5.0 =
+Major release introducing List Builder registration walls, a new Publisher Dashboard, onboarding improvements, deeper subscriber management tools, and expanded Stripe integration.
+
+= New =
+* List Builder added to core plugin for inline authentication and registration flows
+* Multiple subscription levels restored to core functionality
+* New onboarding wizard for faster setup
+* New Publisher Dashboard with subscriber and revenue overview
+* New Tools page with Import, Export, and Debug Log utilities
+* Insights integration for tracking paywall impressions and nag statistics
+* New email administration interface
+* Subscription change flow added to the main registration form
+* New subscriber statuses: expired, pending_cancel, and past_due
+* Subscriber status transition logging and history on subscriber profiles
+* Stripe webhook refund handling
+* Transaction filtering (basic filters and date filters)
+* Ability to block content using `0` in access settings
+* Search engine bot bypass setting for SEO indexing
+* Paywall schema markup (JSON-LD) for restricted content
+* Terms and conditions settings
+* REST API endpoints for Leaky Paywall subscribers
+
+= Improved =
+* Query performance improvements for Insights data
+* Content restriction checks moved to REST API
+* Updated WordPress dashboard widget with improved data display
+* Migration script updated to use Action Scheduler
+* Admin interface styling improvements (dashboard, transactions, subscribers, settings)
+* CLS (Cumulative Layout Shift) styling improvements
+* Stripe Connect setup flow with improved state verification
+* General code cleanup and uninstall cleanup
+
+= Fixed =
+* Transaction deduplication checks
+* Missing `isset()` check for connected_account_id
+* Missing `isset()` check for amount_paid in Stripe object
+* Float precision issue in price handling
+* Translation string issues
+
+= 4.22.6 =
+* Add fix for low priority broken access control reported by patchstack
+
+= 4.22.5 =
+* Add handling for a free user during registration for a Stripe webhook if the page loading process fails
+* Bump tested up to version
+
+= 4.22.4 =
+* Add fix for subscriber not created if registration page does not finish processing
+* Add fix for duplicate transactions during a Stripe registration
+* Add Stripe Connect params to Checkout API calls
+* Add fix for authentication during Stripe Connect onboarding
+
+= 4.22.3 =
+* Add fix for possible duplicate transactions during registration when using Stripe
+
+= 4.22.2 =
+* Create a subscriber from a webhook if page does not load correctly after a registration
+
+= 4.22.1 =
+* Add level id throughout admin settings
+* Allow subscriptions less than a dollar
+* Fix formatting on subscriber admin page
+* Adjust subscriber table columns
+* Fix output of email exists error during registration
+* Add check for subscription data to invoice payment succeeded event
+
+= 4.22.0 =
+* Add new subscriber admin screens
+* Optimize Stripe code throughout plugin
+
+= 4.21.8 =
+* Add check for page link on login form if profile page is not set
+* Add fix for direct link display in admin if register page is not set
+* Update attributes in leaky_paywall_subscriber shortcode
+
+= 4.21.7 =
+* Add leaky_paywall_after_registration_submit_field action
+* Add filter when retrieving a stripe plan
+* Fix to parse shortcodes in leaky_paywall_not_subscriber output
+* Fix index error
+
+= 4.21.6 =
+* Add setting for hiding registration form
+* Update payment status during stripe sync
+* Add additional logging
+
+= 4.21.5 =
+* Adjust customer lookup during Stripe webhook
+
+= 4.21.4 =
+* Add webhook check for incomplete_expired status from Stripe
+* Update handling of Stripe errors when using a 100% off coupon
+
+= 4.21.3 =
+* Fix for CSRF vulnerability for deleting a level
+* Process stripe payment element redirect url
+* Add leaky_paywall_rest_meta filter
+* Add webhook handling for the subscr_failed event from paypal
+* Find user by email if subscriber id is missing
+* Hide deleted levels from add new subscriber form
+
+= 4.21.2 =
+* Get stripe client secret from pending setup intent
+* Add translation strings
+
+= 4.21.1 =
+* Add leaky_paywall_stripe_checkout_fields filter
+* Update translation strings
+* Fix ampersand display on register button
+
+= 4.21.0 =
+* Add check for paypal payment method when using multiple options on the register form
+
+= 4.20.9 =
+* Fix renewal email reminder functionality
+* Fix price manipulation during registration
+* Fix setting first and last name of logged-in users during registration if they do not exist yet
+* Add after cancel action if the user cancels in the Stripe customer portal
+* Add user parameter to leaky_paywall_user_has_access function
+* Update stripe sync function to update expiration and plan
+
+= 4.20.8 =
+* Fix for free registration levels when using Stripe
+
+= 4.20.7 =
+* Add error checking to payment element
+* Add check for succeeded payment intents
+* Add level id when getting all levels
+
+= 4.20.6 =
+* Update Stripe to use the Payment element
+* Update Stripe PHP library to latest version
+* Add Stripe Billing Address element
+* Update wording for tracking recurring payments
+* Store nag location after stripe checkout registration
+* Update translation strings
+* Remove Apple Pay Stripe setting
+
+= 4.20.5 =
+* Add login form to register page
+* Fix to not allow a user to register for a deleted level
+* Update account shortcode actions
+* Add links to stripe dashboard for stripe customers in subscriber table
+
+= 4.20.4 =
+* Fix login form display on profile shortcode
+
+= 4.20.3 =
+* Refactor profile shortcode to use actions instead of filters
+* Move cancellation and payment update functionality to extensions
+
+= 4.20.2 =
+* Add date filter to content insights
+* Add chart library for use in insights data
+* Add link to renew license if invalid
+* Fix typo in readme
+
+= 4.20.1 =
+* Add new interface for Insights
+* Update plugin styling with new Leaky Paywall branding
+* Fix PHP error for floats for Stripe
+
+= 4.20.0 =
+* Fix handling of Apple Pay to allow for coupons
+* Add check for settings link display
+
+= 4.19.9 =
+* Add receipt email when using Stripe Elements
+* Set float on Stripe price
+* Fix test mode variable for PHP compatibility
+* Update upgrade messaging
+
+= 4.19.8 =
+* Add general settings to Payment tab
+* Do not process a plan for pay per post from stripe checkout
+* Update default modal styles
+* Add leaky_paywall_after_wp_user_profile_fields action
+
+= 4.19.7 =
+* Update tested up to to 6.2
+* Add field data during stripe checkout
+* Update wording on account page for trialing subscribers
+
+= 4.19.6 =
+* Update restriction rules for accessing a taxonomy when all taxonomies are restricted
+* Update stripe checkout handling for alternative payment methods
+* Check if a user has access when getting their current level id
+
+= 4.19.5 =
+* Add setting fields to create a new level if all levels have been deleted
+* Update restriction logic for specific use cases
+* Fix for PHP 8 error handling
+
+= 4.19.4 =
+* Fix for slashes in level settings
+* Fix has access value in REST API data
+
+= 4.19.3 =
+* Display manual payment as an option on the registration form if multiple payment gateways are enabled
+* Update calculation and display of currency symbol in Insights
+* Display stripe customer portal on template shortcode
+* Update help doc URLs
+* Update logic for renewal reminders
+* Fix deprecation notices for PHP 8
+* Add Insights link to admin bar menu
+
+= 4.19.2 =
+* Add new Insights dashboard
+* Add setting for restricting Stripe assets
+* Fix broken links in admin
+* Code cleanup
+
+= 4.19.1 =
+* Add setting for Stripe Customer Portal to My Account page
+* Update currency and tax behavior on Stripe Checkout session
+* Allow for script tracking in subscribe and upgrade nags
+
+= 4.19.0 =
+* Fix rounding off error for Apple Pay
+* Add filters for stripe checkout session args
+* Fix help link for webhooks
+* Add function to format display price
+* Update readme
